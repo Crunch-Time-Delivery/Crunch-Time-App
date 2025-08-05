@@ -1,0 +1,9 @@
+body {
+    font-family: 'Inter', sans-serif;
+}
+.cart-item {
+    transition: all 0.3s ease;
+}
+.cart-item:hover {
+    background-color: #f1f5f9;
+}
