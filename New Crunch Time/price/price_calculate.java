@@ -17,9 +17,8 @@ public class PriceCalculator {
             JSONArray items = jsonObject.getJSONArray("menuItems");
 
             double totalPrice = 0.0;
-            double taxRate = 0.08; // Example tax rate (8%)
-            double deliveryFee = 5.99; // Example delivery fee
-
+         double deliveryFee = 5.99; // Example delivery fee
+//Calc 10% of menu price , Add VAT at the below the Total amount
             // Print menu items and calculate subtotal
             System.out.println("Menu Items:");
             for (int i = 0; i < items.length(); i++) {
@@ -36,7 +35,6 @@ public class PriceCalculator {
 
             // Display results
             System.out.printf("%nSubtotal: $%.2f%n", totalPrice);
-            System.out.printf("Tax (%.1f%%): $%.2f%n", taxRate * 100, tax);
             System.out.printf("Delivery Fee: $%.2f%n", deliveryFee);
             System.out.printf("Total: $%.2f%n", finalTotal);
 
