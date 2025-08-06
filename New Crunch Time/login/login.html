@@ -1,1 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Login Page</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
+  input { display: block; margin: 10px 0; padding: 10px; width: 100%; }
+  button { padding: 10px; width: 100%; }
+  .error { color: red; }
+</style>
+</head>
+<body>
+<h2>Login</h2>
+<div id="message"></div>
+<input type="email" id="email" placeholder="Email" />
+<input type="password" id="password" placeholder="Password" />
+<button id="loginBtn">Login</button>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+<script src="login.js"></script>
+</body>
+</html>
