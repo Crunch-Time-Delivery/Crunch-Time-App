@@ -13,7 +13,7 @@ const GeolocationPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [locationData, setLocationData] = useState(null);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Function to fetch geolocation by domain or IP
   const getGeolocation = async (query) => {
