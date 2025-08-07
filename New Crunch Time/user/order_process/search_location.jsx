@@ -25,7 +25,7 @@ function GeolocationPage() {
     }
   }, []);
 
-  const initMap = (lat, lng) => {
+  const initMaap = (lat, lng) => {
     // Initialize your map from geolocation.java logic
     // For demo, using Leaflet directly here
     const leafletMap = L.map('map').setView([lat, lng], 14);
