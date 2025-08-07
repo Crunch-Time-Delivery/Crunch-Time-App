@@ -83,7 +83,7 @@ function GeolocationPage() {
         <button className="search-button" onClick={handleSearch}>Search</button>
       </div>
 
-      {/* Map */}
+      {/* Map geolocation*/}
       <div id="map"></div>
 
       {/* Re-center Button (Arrow Icon) */}
