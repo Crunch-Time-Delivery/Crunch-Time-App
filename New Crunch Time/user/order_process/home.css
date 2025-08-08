@@ -1,0 +1,185 @@
+/* Basic Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  position: relative;
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+}
+
+.top-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.deliver-now {
+  color: grey;
+  font-weight: bold;
+}
+
+#address {
+  color: grey;
+  margin-top: 5px;
+}
+
+/* User profile icon */
+#userProfileIcon {
+  position: relative;
+  cursor: pointer;
+}
+
+#userProfileIcon img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+#profilePopup {
+  display: none;
+  position: absolute;
+  top: 50px; /* adjust as needed */
+  right: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px;
+  z-index: 10;
+}
+
+/* Top right icons */
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Halaal icon */
+.halaal-icon img {
+  width: 30px;
+  height: 30px;
+}
+
+/* Search Section */
+.search-section {
+  display: flex;
+  padding: 10px 20px;
+  align-items: center;
+  gap: 10px;
+}
+
+#searchInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#sortButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Categories */
+.categories {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+}
+
+.category {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.category img {
+  width: 50px;
+  height: 50px;
+}
+
+.category-label.grey {
+  color: grey;
+  margin-top: 5px;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  margin-top: 10px;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: transparent;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Specific button styles */
+#filterBtn {
+  border: 1px solid red;
+  color: black;
+}
+
+#filterBtn.active {
+  background-color: red;
+  color: #fff;
+}
+
+#nearbyBtn,
+#halaalBtn,
+#checkoutBtn {
+  border: 1px solid red;
+  color: black;
+}
+
+/* Order Options */
+.order-options {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.order-card {
+  position: relative;
+  cursor: pointer;
+}
+
+.order-card img {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+}
+
+.order-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 0 0 8px 8px;
+}
+
+/* Content Sections */
+.content-section {
+  padding: 20px;
+  border-top: 1px solid #ccc;
+}
