@@ -1,13 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Create Account</title>
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8" />
+<title>Register Page</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
+  input { display: block; margin: 10px 0; padding: 10px; width: 100%; }
+  button { padding: 10px; width: 100%; }
+  .error { color: red; }
+  .success { color: green; }
+</style>
 </head>
 <body>
-  <div id="root"></div>
-  <script src="create_account.jsx" type="module"></script>
+  <div class="slide active" id="slide1">
+            <a href="https://example.com" class="background-link">
+                <img src="img/Screenshot (196).png" alt="Background Image" class="background-img">
+            </a>
+            
+        </div>
+<h2>Create Account</h2>
+<p>Welcome to CrunchTime halaal food delivery. Signup to create a free account to start ordering</p>
+<div id="message"></div>
+<input type="text" id="fullName" placeholder="Full Name" />
+<input type="email" id="email" placeholder="Email Address" />
+<input type="tel" id="phone" placeholder="Phone Number" />
+<input type="password" id="password" placeholder="Password" />
+<p>By logging in or registering, you have agreed to the Terms and Conditions and Privacy Policy.</p>
+<button id="registerBtn">Create Account</button>
+<p>Already have an account?</p><p>Login</p>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+<script src="welcome_registration.js"></script>
+<script src="welcome_registration.jsx"></script>
 </body>
 </html>
