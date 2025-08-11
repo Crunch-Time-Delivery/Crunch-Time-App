@@ -2,27 +2,173 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Register Page</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Welcome Registration</title>
 <style>
+  /* Reset some default styles */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* Container for the background image */
+  #slide1 {
+    width: 100%;
+    max-width: 600px;
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .background-link {
+    display: block;
+  }
+
+  .background-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+
+  /* Welcome Heading */
+  h2 {
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 10px;
+  }
+
+  /* Welcome message */
+  p {
+    text-align: center;
+    font-size: 1em;
+    margin-bottom: 20px;
+    padding: 0 10px;
+    line-height: 1.4;
+  }
+
+  /* Buttons styling */
+  .btn {
+    display: block;
+    width: 200px;
+    max-width: 80%;
+    padding: 12px 20px;
+    margin: 10px auto;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  /* Specific styles for each button */
+  #registerBtn1 {
+    background-color: red;
+    color: white;
+  }
+
+  #registerBtn1:hover {
+    background-color: darkred;
+  }
+
+  #registerBtn2 {
+    background-color: transparent;
+    color: red;
+    border: 2px solid red;
+  }
+
+  #registerBtn2:hover {
+    background-color: #ffe6e6;
+  }
+
+  #registerBtn3 {
+    background-color: red;
+    color: white;
+  }
+
+  #registerBtn3:hover {
+    background-color: darkred;
+  }
+
+  /* Terms and Conditions / Privacy Policy container */
+  .legal {
+    max-width: 600px;
+    text-align: center;
+    font-size: 0.9em;
+    margin-top: 20px;
+    padding: 0 10px;
+  }
+
+  /* Links styling */
+  .legal a {
+    color: red;
+    text-decoration: underline;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    h2 {
+      font-size: 1.8em;
+    }
+    p {
+      font-size: 0.95em;
+    }
+    .btn {
+      width: 80%;
+      font-size: 1em;
+    }
+  }
 </style>
 </head>
 <body>
-   <div class="slide active" id="slide1">
-            <a href="https://example.com" class="background-link">
-                <img src="img/Screenshot (196).png" alt="Background Image" class="background-img">
-            </a>
-            
-        </div>
-<h2>Welcome</h2>
-<p>Before enjoying CrunchTime deliveries 
-Register now</p>
-<button id="registerBtnd1">Create Account</button>
-<button id="registerBtn2">Login</button>
-<button id="registerBtn3">Browse Menu</button>
-<p>By Logging in Or Registering, You Have Agreed To</p>The Terms And Conditions</p>and</p>Privacy Policy</p>
+  <!-- Background image section -->
+  
+    
+      <img src="img/converted-image.jpg%28 4%29" alt="Background Image" class="background-img" />
+    
+  
 
+  <!-- Welcome Header -->
+  <h2>Welcome</h2>
+
+  <!-- Main message -->
+  <p>Before enjoying CrunchTime deliveries<br>Register now</p>
+
+  <!-- Buttons -->
+  <button  id="registerBtn1" class="btn" >Create Account</button>
+  <button id="registerBtn2" class="btn">Login</button>
+  <button id="registerBtn3" class="btn">Browse Menu</button>
+
+  <!-- Terms and Policies -->
+  <div class="legal">
+    <p>
+      By logging in or registering, you have agreed to the 
+      <a href="https://example.com/terms" target="_blank">Terms and Conditions</a> 
+      and <a href="https://example.com/privacy" target="_blank">Privacy Policy</a>.
+    </p>
+  </div>
+
+<!-- Optional: Include your JavaScript files here -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+<script>
+  document.getElementById('registerBtn1').addEventListener('click', function() {
+    window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/registration/create_account.html';
+  });
+   document.getElementById('registerBtn2').addEventListener('click', function() {
+    window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/login/login.html';
+  })
+</script>
 <script src="welcome_registration.js"></script>
 <script src="welcome_registration.jsx"></script>
 </body>

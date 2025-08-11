@@ -2,21 +2,246 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Login Page</title>
 <style>
-  body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
-  input { display: block; margin: 10px 0; padding: 10px; width: 100%; }
-  button { padding: 10px; width: 100%; }
-  .error { color: red; }
+  /* Reset & Base Styles */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* Container */
+  .container {
+    max-width: 400px;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Background Image */
+  .background-section {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .background-section a {
+    display: block;
+  }
+  .background-section img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  /* Headings & Text */
+  h2 {
+    margin-top: 20px;
+    font-size: 1.8em;
+    margin-bottom: 10px;
+  }
+  p {
+    margin-bottom: 15px;
+    font-size: 1em;
+  }
+
+  /* Centered message for errors/info */
+  #message {
+    margin-bottom: 15px;
+    color: red; /* For errors */
+  }
+
+  /* Input fields */
+  input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  /* Buttons */
+  #loginBtn {
+    width: 100%;
+    padding: 10px;
+    background-color: red;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+  }
+  #loginBtn:hover {
+    background-color: darkred;
+  }
+
+  /* Forgot Password link */
+  .forgot-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.3s;
+  }
+  .forgot-link:hover {
+    border-color: red;
+  }
+
+  /* "Don't have an account" text and register link */
+  .register-section {
+    margin-top: 20px;
+    font-size: 0.9em;
+  }
+  .register-link {
+    border: 2px solid red;
+    color: red;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 5px;
+    text-decoration: none;
+  }
+  .register-link:hover {
+    background-color: #ffe6e6;
+  }
+
+  /* Forgot Password Popup */
+  #forgotPasswordModal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  #popupContent {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    position: relative;
+  }
+  #popupContent h3 {
+    margin-bottom: 15px;
+  }
+  #popupContent input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+  }
+  #popupClose {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.2em;
+    cursor: pointer;
+  }
+
+  /* Responsive adjustments */
+  @media(max-width: 600px) {
+    body {
+      padding: 10px;
+    }
+  }
 </style>
 </head>
 <body>
-<h2>Login</h2>
-<div id="message"></div>
-<input type="email" id="email" placeholder="Email" />
-<input type="password" id="password" placeholder="Password" />
-<button id="loginBtn">Login</button>
+<div class="container">
+  <!-- Background Image -->
+  <div class="background-section">
+    <a href="https://example.com" class="background-link">
+      <img src="converted-image.jpg" alt="Background Image" class="background-img" />
+    </a>
+  </div>
 
+  <!-- Welcome & Instruction -->
+  <h2>Welcome</h2>
+  <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
+
+  <!-- Message -->
+  <div id="message"></div>
+
+  <!-- Email & Password Inputs -->
+  <h2>Email</h2>
+  <input type="email" id="email" placeholder="Email" />
+  <h2>Password</h2>
+  <input type="password" id="password" placeholder="Password" />
+
+  <!-- Forgot Password Link -->
+  <div>
+    <span class="forgot-link" id="forgotPassword">Forgot password?</span>
+  </div>
+
+  <!-- Login Button -->
+  <button id="loginBtn">Login</button>
+
+  <!-- Register Section -->
+  <div class="register-section">
+    Don't have an account? <a href="http://127.0.0.1:5500/New%20Crunch%20Time/registration/create_account.html" class="register-link">Register here</a>
+  </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgotPasswordModal">
+  <div id="popupContent">
+    <div id="popupClose">&times;</div>
+    <h3>Reset Password</h3>
+    <input type="email" id="forgotEmail" placeholder="Enter your email" />
+    <button id="resetPasswordBtn">Send Reset Link</button>
+  </div>
+</div>
+
+<script>
+  // Show the forgot password popup
+  document.getElementById('forgotPassword').addEventListener('click', () => {
+    document.getElementById('forgotPasswordModal').style.display = 'flex';
+  });
+
+  // Close the popup
+  document.getElementById('popupClose').addEventListener('click', () => {
+    document.getElementById('forgotPasswordModal').style.display = 'none';
+  });
+
+  // Close popup when clicking outside content
+  document.getElementById('forgotPasswordModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('forgotPasswordModal')) {
+      document.getElementById('forgotPasswordModal').style.display = 'none';
+    }
+  });
+
+  // Handle reset password
+  document.getElementById('resetPasswordBtn').addEventListener('click', () => {
+    const email = document.getElementById('forgotEmail').value;
+    if (email) {
+      alert(`Reset link sent to ${email}`); // Replace with actual API call
+      document.getElementById('forgotPasswordModal').style.display = 'none';
+    } else {
+      alert('Please enter your email');
+    }
+  });
+</script>
+
+<!-- Optional: Your login script -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
 <script src="login.js"></script>
 </body>

@@ -2,34 +2,243 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Register Page</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create Account</title>
 <style>
-  body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
-  input { display: block; margin: 10px 0; padding: 10px; width: 100%; }
-  button { padding: 10px; width: 100%; }
-  .error { color: red; }
-  .success { color: green; }
+  /* Reset and base styles */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 500px;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  /* Background image section */
+  .background-section {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .background-section a {
+    display: block;
+  }
+  .background-section img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  /* Headings and paragraphs */
+  h2 {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 1.5em;
+  }
+
+  p {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1em;
+    padding: 0 10px;
+    line-height: 1.4;
+  }
+
+  /* Form input styles */
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+  }
+
+  /* Terms and conditions */
+  .terms {
+    font-size: 0.9em;
+    margin: 15px 0;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .terms a {
+    color: red;
+    text-decoration: underline;
+  }
+
+  /* Error handling button container */
+  .error-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 15px 0;
+  }
+
+  /* The clickable error button (acts as a checkbox) */
+  #errorToggle {
+    display: none;
+  }
+
+  /* Custom checkbox button with icon */
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    padding: 8px;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    transition: border 0.3s, background-color 0.3s;
+  }
+
+  /* Checkmark icon style */
+  .checkmark {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    color: green;
+  }
+
+  /* Show checkmark when checked */
+  #errorToggle:checked + .checkbox-label .checkmark {
+    display: block;
+  }
+
+  /* Create Account Button */
+  #createAccountBtn {
+    width: 100%;
+    padding: 12px;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+  }
+
+  #createAccountBtn:hover {
+    background-color: darkred;
+  }
+
+  /* Already have an account */
+  .login-text {
+    text-align: center;
+    margin-top: 15px;
+  }
+
+  .login-text a {
+    color: red;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    body {
+      padding: 10px;
+    }
+  }
 </style>
 </head>
 <body>
-  <div class="slide active" id="slide1">
-            <a href="https://example.com" class="background-link">
-                <img src="img/Screenshot (196).png" alt="Background Image" class="background-img">
-            </a>
-            
-        </div>
-<h2>Create Account</h2>
-<p>Welcome to CrunchTime halaal food delivery. Signup to create a free account to start ordering</p>
-<div id="message"></div>
-<input type="text" id="fullName" placeholder="Full Name" />
-<input type="email" id="email" placeholder="Email Address" />
-<input type="tel" id="phone" placeholder="Phone Number" />
-<input type="password" id="password" placeholder="Password" />
-<p>By logging in or registering, you have agreed to the Terms and Conditions and Privacy Policy.</p>
-<button id="registerBtn">Create Account</button>
-<p>Already have an account?</p><p>Login</p>
+<div class="container">
+  <!-- Background Image -->
+  <div class="background-section">
+    <a href="https://example.com" class="background-link">
+      <img src="img/converted-image.jpg" alt="Background Image" class="background-img" />
+    </a>
+  </div>
+
+  <!-- Main Heading -->
+  <h2>Create Account</h2>
+  <!-- Description -->
+  <p>Welcome to CrunchTime halaal food delivery. Signup to create a free account to start ordering</p>
+
+  <!-- Error Handling Checkbox -->
+  <div class="error-container">
+    <input type="checkbox" id="errorToggle" />
+    <label for="errorToggle" class="checkbox-label">
+      <div class="checkmark" style="display:none;">✔</div>
+      <span>Click here to accept terms</span>
+    </label>
+  </div>
+
+  <!-- Form Inputs -->
+  <div class="form-group">
+    <label for="fullName">Full Name</label>
+    <input type="text" id="fullName" placeholder="Full Name" />
+  </div>
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" id="email" placeholder="Email Address" />
+  </div>
+  <div class="form-group">
+    <label for="phone">Phone Number</label>
+    <input type="tel" id="phone" placeholder="Phone Number" />
+  </div>
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Password" />
+  </div>
+
+  <!-- Terms and Conditions & Privacy Policy -->
+  <div class="terms">
+    <p>
+      By logging in or registering, you have agreed to the 
+      <a href="https://example.com/terms" target="_blank">Terms and Conditions</a> 
+      and <a href="https://example.com/privacy" target="_blank">Privacy Policy</a>.
+    </p>
+  </div>
+
+  <!-- Create Account Button -->
+  <button id="createAccountBtn">Create Account</button>
+
+  <!-- Already have an account -->
+  <div class="login-text">
+    <p>Already have an account? <a href="login.html">Login</a></p>
+  </div>
+</div>
+
+<script>
+  // Optional: toggle checkmark display based on checkbox
+  document.getElementById('errorToggle').addEventListener('change', function() {
+    const checkmark = document.querySelector('.checkmark');
+    checkmark.style.display = this.checked ? 'block' : 'none';
+  });
+</script>
+
+<!-- Your scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-<script src="welcome_registration.js"></script>
-<script src="welcome_registration.jsx"></script>
+<script src="create_account.jsx"></script>
 </body>
 </html>
