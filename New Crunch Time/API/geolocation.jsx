@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import './geolocation.css'; // Import CSS for styling
 
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.REACT_APP_SUPABASE_KEY; // Ensure this is set in .env
+const supabaseKey =  process.env.SUPABASE_KEY // Ensure this is set in .env
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const BASE_URL = 'http://ip-api.com/json/';

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Payment_Mangement</title>
+<style>
+/* Reset and base styles */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  background: #f5f5f5;
+}
+
+/* Header styles */
+.header {
+  background-color: #d32f2f; /* Red */
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0.5em 1em;
+  position: relative;
+  z-index: 1000;
+}
+
+/* Title or logo */
+.header h1 {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+/* Dropdown menu container */
+.menu {
+  margin-left: auto;
+  position: relative;
+}
+
+.menu button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0.5em 1em;
+}
+
+/* Dropdown content */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: #fff;
+  min-width: 200px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  z-index: 1001;
+  flex-direction: column;
+}
+
+.dropdown-content a {
+  padding: 12px 16px;
+  text-decoration: none;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+}
+
+.dropdown-content a:hover {
+  background-color: #eee;
+}
+
+/* Show dropdown on hover or click (handled by JS) */
+.show {
+  display: flex;
+}
+
+/* Main content styles */
+.content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 50px);
+}
+
+/* For mobile, tablet, laptop responsiveness */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Your CSS -->
+  <link rel="stylesheet" href="" />
+</head>
+<body>
+  <!-- React root -->
+  <div id="root"></div>
+
+  <!-- React & ReactDOM CDN (for demo, you can replace with local build) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Your main JSX script -->
+  <script src="dashboard.jsx" type="module"></script>
+</body>
+</html>
+<script>
+
+</script>
+
+<!-- Your scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+<script src="payment_mangement.jsx"></script>
+</body>
+</html>
