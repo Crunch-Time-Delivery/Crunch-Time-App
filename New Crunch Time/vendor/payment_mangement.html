@@ -5,11 +5,54 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Payment_Mangement</title>
 <style>
-  
+  .page-container {
+  max-width: 800px;
+  margin: 2em auto;
+  padding: 1em;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 1em;
+}
+
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transactions-table th,
+.transactions-table td {
+  border: 1px solid #ddd;
+  padding: 0.75em;
+  text-align: left;
+}
+
+transactions-table th {
+  background-color: #f0f0f0;
+}
 </style>
 </head>
 <body>
-
+<div class="page-container">
+  <h2>Payment Management</h2>
+  <table class="transactions-table">
+    <thead>
+      <tr>
+        <th>Transaction ID</th>
+        <th>Order ID</th>
+        <th>Amount</th>
+        <th>Method</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="transactionsBody">
+      <!-- Transactions will be inserted dynamically -->
+    </tbody>
+  </table>
+</div>
 <script>
 
 </script>
