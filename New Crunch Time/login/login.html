@@ -59,10 +59,10 @@
     font-size: 1em;
   }
 
-  /* Centered message for errors/info */
+  /* Error message */
   #message {
     margin-bottom: 15px;
-    color: red; /* For errors */
+    color: red;
   }
 
   /* Input fields */
@@ -91,7 +91,7 @@
     background-color: darkred;
   }
 
-  /* Forgot Password link */
+  /* Forgot link */
   .forgot-link {
     display: inline-block;
     margin-top: 10px;
@@ -104,7 +104,7 @@
     border-color: red;
   }
 
-  /* "Don't have an account" text and register link */
+  /* Register section */
   .register-section {
     margin-top: 20px;
     font-size: 0.9em;
@@ -122,9 +122,9 @@
     background-color: #ffe6e6;
   }
 
-  /* Forgot Password Popup */
-  #forgotPasswordModal {
-    display: none; /* Hidden by default */
+  /* Role selection popup overlay */
+  #popupOverlay {
+    display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.5);
@@ -132,22 +132,17 @@
     align-items: center;
     z-index: 1000;
   }
-  #popupContent {
+
+  /* Popup box */
+  .popupBox {
     background: #fff;
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 12px;
     max-width: 400px;
     width: 90%;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     position: relative;
-  }
-  #popupContent h3 {
-    margin-bottom: 15px;
-  }
-  #popupContent input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
+    text-align: center;
   }
   #popupClose {
     position: absolute;
@@ -156,108 +151,44 @@
     font-size: 1.2em;
     cursor: pointer;
   }
-
-  /* Responsive adjustments */
-  @media(max-width: 600px) {
-    body {
-      padding: 10px;
+  .roleBtn {
+    background-color: #d32f2f;
+    color: #fff;
+    padding: 15px;
+    margin: 10px 0;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .roleBtn:hover {
+    background-color: #b71c1c;
+  }
+  @media(max-width: 500px){
+    .roleBtn {
+      padding: 12px;
+      font-size: 1em;
     }
   }
-  /* Button to trigger popup */
-.trigger-btn {
-  display: block;
-  margin: 100px auto;
-  padding: 15px 30px;
-  font-size: 1.2em;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-.trigger-btn:hover {
-  background-color: #0056b3;
-}
-
-/* Overlay popup background */
-#popupOverlay {
-  display: none; /* Hidden by default */
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-/* Popup box */
-.popupBox {
-  background: #fff;
-  padding: 2em;
-  border-radius: 12px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  position: relative;
-  text-align: center;
-}
-
-/* Role buttons inside popup */
-.roleBtn {
-  background-color: #d32f2f; /* red */
-  color: #fff;
-  padding: 15px;
-  margin: 10px 0;
-  width: 100%;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.2em;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-.roleBtn:hover {
-  background-color: #b71c1c;
-}
-
-/* Close button (X) in popup */
-.closeBtn {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  background: transparent;
-  border: none;
-  font-size: 1.5em;
-  cursor: pointer;
-  color: #555;
-}
-.closeBtn:hover {
-  color: #000;
-}
-
-/* Responsive adjustments */
-@media(max-width: 500px){
-  .roleBtn {
-    padding: 12px;
-    font-size: 1em;
-  }
-}
 </style>
 </head>
 <body>
-<div class="container">
+
+<div class="container" id="root">
   <!-- Background Image -->
   <div class="background-section">
-    <a href="https://example.com" class="background-link">
+    <a href="https://example.com">
       <img src="converted-image.jpg" alt="Background Image" class="background-img" />
     </a>
   </div>
 
-  <!-- Welcome & Instruction -->
-  <h2>Welcome</h2>
+  <!-- Login Heading and Instructions -->
+  <h2>Login</h2>
   <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
 
-  <!-- Message -->
+  <!-- Message for errors/info -->
   <div id="message"></div>
 
   <!-- Email & Password Inputs -->
@@ -266,108 +197,129 @@
   <h2>Password</h2>
   <input type="password" id="password" placeholder="Password" />
 
-  <!-- Forgot Password Link -->
+  <!-- Forgot Password -->
   <div>
     <span class="forgot-link" id="forgotPassword">Forgot password?</span>
   </div>
 
   <!-- Login Button -->
-  <button class="trigger-btn" id="loginBtn">Login</button>
+  <button id="loginBtn">Login</button>
 
-<!-- Popup Overlay -->
-<div id="popupOverlay">
-  <div class="popupBox">
-    <button class="closeBtn" id="closePopup">&times;</button>
-    <h3>Select Your Role</h3>
-    <button class="roleBtn" id="userBtn" data-role="user">User</button>
-    <button class="roleBtn" id="driverBtn" data-role="driver">Driver</button>
-    <button class="roleBtn" id="vendorBtn" data-role="vendor">Vendor</button>
+  <!-- Role selection popup -->
+  <div id="popupOverlay">
+    <div class="popupBox">
+      <button class="closeBtn" id="closePopup">&times;</button>
+      <h3>Select Your Role</h3>
+      <button class="roleBtn" data-role="user">User</button>
+      <button class="roleBtn" data-role="driver">Driver</button>
+      <button class="roleBtn" data-role="vendor">Vendor</button>
+    </div>
   </div>
-</div>
 
-
-
-  <!-- Register Section -->
+  <!-- Register section -->
   <div class="register-section">
-    Don't have an account? <a href="http://127.0.0.1:5500/New%20Crunch%20Time/registration/create_account.html" class="register-link">Register here</a>
+    Don't have an account? <a href="create_account.html" class="register-link">Register here</a>
   </div>
 </div>
 
 <!-- Forgot Password Modal -->
-<div id="forgotPasswordModal">
-  <div id="popupContent">
-    <div id="popupClose">&times;</div>
+<div id="forgotPasswordModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000;">
+  <div style="background:#fff; padding:20px; border-radius:8px; max-width:400px; width:90%; position:relative;">
+    <div id="popupClose" style="position:absolute; top:8px; right:12px; font-size:1.2em; cursor:pointer;">&times;</div>
     <h3>Reset Password</h3>
-    <input type="email" id="forgotEmail" placeholder="Enter your email" />
-    <button id="resetPasswordBtn">Send Reset Link</button>
+    <input type="email" id="forgotEmail" placeholder="Enter your email" style="width:100%; padding:10px; margin-bottom:15px;"/>
+    <button id="resetPasswordBtn" style="width:100%; padding:10px; background:red; color:#fff; border:none; border-radius:4px;">Send Reset Link</button>
   </div>
 </div>
 
-<script>
-  // Show the forgot password popup
-  document.getElementById('forgotPassword').addEventListener('click', () => {
-    document.getElementById('forgotPasswordModal').style.display = 'flex';
-  });
+<!-- Load React & Babel -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
 
-  // Close the popup
-  document.getElementById('popupClose').addEventListener('click', () => {
-    document.getElementById('forgotPasswordModal').style.display = 'none';
-  });
+<!-- Scripts -->
+<script type="text/babel">
 
-  // Close popup when clicking outside content
-  document.getElementById('forgotPasswordModal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('forgotPasswordModal')) {
-      document.getElementById('forgotPasswordModal').style.display = 'none';
-    }
-  });
+// Show popup for login role selection
+document.getElementById('loginBtn').onclick = () => {
+  document.getElementById('popupOverlay').style.display='flex';
+};
 
-  // Handle reset password
-  document.getElementById('resetPasswordBtn').addEventListener('click', () => {
-    const email = document.getElementById('forgotEmail').value;
-    if (email) {
-      alert(`Reset link sent to ${email}`); // Replace with actual API call
-      document.getElementById('forgotPasswordModal').style.display = 'none';
-    } else {
-      alert('Please enter your email');
-    }
-  });
+// Close popup
+document.getElementById('closePopup').onclick = () => {
+  document.getElementById('popupOverlay').style.display='none';
+};
 
- // Show popup
-  document.getElementById('loginBtn').onclick = () => {
-    document.getElementById('popupOverlay').style.display = 'flex';
+// Outside click close
+window.onclick = (e) => {
+  if(e.target===document.getElementById('popupOverlay')){
+    document.getElementById('popupOverlay').style.display='none';
   }
+};
 
-  // Hide popup
-  document.getElementById('closePopup').onclick = () => {
-    document.getElementById('popupOverlay').style.display = 'none';
-  }
-
-  // When clicking outside the popup box
-  window.onclick = (e) => {
-    if(e.target === document.getElementById('popupOverlay')){
-      document.getElementById('popupOverlay').style.display = 'none';
+// Role buttons navigation
+document.querySelectorAll('.roleBtn').forEach(btn => {
+  btn.onclick = () => {
+    const role = btn.getAttribute('data-role');
+    if(role==='user'){
+      window.location.href='user/order_process/search_location.html';
+    }else if(role==='driver'){
+      window.location.href='driver/order_view.html';
+    }else if(role==='vendor'){
+      window.location.href='vendor/manage_orders.html';
     }
   }
+});
 
-  // Redirect on button click
-  document.querySelectorAll('.roleBtn').forEach(btn => {
-    btn.onclick = () => {
-      const role = btn.getAttribute('data-role');
-      if(role === 'user'){
-        window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/user/order_process/search_location.html'; // change to your login/register page
-      } else if(role === 'driver'){
-        window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/driver/order_view.html';
-      } else if(role === 'vendor'){
-        window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/vendor/manage_orders.html';
-      }
-    }
-  });
+// Forgot password modal
+document.getElementById('forgotPassword').onclick = () => {
+  document.getElementById('forgotPasswordModal').style.display='flex';
+};
+document.getElementById('popupClose').onclick = () => {
+  document.getElementById('forgotPasswordModal').style.display='none';
+};
+document.getElementById('resetPasswordBtn').onclick = () => {
+  const email = document.getElementById('forgotEmail').value;
+  alert(`Password reset link sent to ${email}`); // Replace with your API call
+  document.getElementById('forgotPasswordModal').style.display='none';
+};
 
+// Login button handler
+const { useState } = React;
+
+function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setLoading(true);
+    setError('');
+    // Replace with your login API logic, e.g., Supabase
+    // Simulate success for demo
+    setTimeout(() => {
+      alert('Login successful!');
+      setLoading(false);
+    }, 1000);
+  };
+
+  return (
+    <div style={{width:'100%', display:'flex', flexDirection:'column', alignItems:'center'}}>
+      <h2>Login</h2>
+      {error && <p className="error">{error}</p>}
+      <input type="email" placeholder="Email" value={email} onChange={(e)=>setEmail(e.target.value)} />
+      <input type="password" placeholder="Password" value={password} onChange={(e)=>setPassword(e.target.value)} />
+      <button onClick={handleLogin} disabled={loading} style={{width:'100%', padding:'10px', marginTop:'20px', background:'red', color:'#fff', border:'none', borderRadius:'4px'}}>
+        {loading ? 'Logging in...' : 'Login'}
+      </button>
+    </div>
+  );
+}
+
+// Render React login component
+ReactDOM.render(<Login />, document.getElementById('root'));
 
 </script>
-
-<!-- Optional: Your login script -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-<script src="login.js"></script>
 </body>
 </html>

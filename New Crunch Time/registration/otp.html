@@ -58,12 +58,6 @@
     font-size: 1em;
   }
 
-  /* Main instruction text */
-  .instruction {
-    margin-top: 10px;
-    font-size: 1em;
-  }
-
   /* OTP input styles */
   .otp-input {
     width: 50px;
@@ -76,13 +70,13 @@
     outline: none;
     transition: border-color 0.3s;
   }
-  /* Outline when input is entered */
+  /* Outline when input is focused or filled */
   .otp-input:focus,
   .otp-input.filled {
     border-color: red;
   }
 
-  /* OTP button styles (for placeholder purposes) */
+  /* OTP buttons (optional) */
   .otp-buttons {
     display: flex;
     justify-content: center;
@@ -103,15 +97,13 @@
     background-color: #fff;
     transition: border-color 0.3s;
   }
-  /* Optional: highlight selected OTP buttons */
   .otp-btn:hover {
     border-color: #888;
   }
 
-  /* Resend code section */
+  /* Resend code */
   .resend-section {
     margin-top: 15px;
-    font-size: 0.9em;
   }
   .resend-link {
     color: red;
@@ -154,7 +146,7 @@
 </style>
 </head>
 <body>
-<div class="container">
+<div class="container" id="root">
   <!-- Background Image -->
   <div class="background-section">
     <a href="https://example.com" class="background-link">
@@ -162,10 +154,12 @@
     </a>
   </div>
 
-  <!-- Headings and Instructions -->
+  <!-- Headings & Instructions -->
   <h2>Verify Account</h2>
   <p>Please enter the OTP number sent to your email to reset your password</p>
   <p>Enter your OTP code here</p>
+
+  <!-- OTP inputs -->
   <div class="otp-inputs" style="display:flex; justify-content:center; margin-top:10px;">
     <input type="text" maxlength="1" class="otp-input" id="otp1" />
     <input type="text" maxlength="1" class="otp-input" id="otp2" />
@@ -173,7 +167,7 @@
     <input type="text" maxlength="1" class="otp-input" id="otp4" />
   </div>
 
-  <!-- Placeholder for OTP buttons (if needed) -->
+  <!-- Optional OTP buttons -->
   <div class="otp-buttons">
     <div class="otp-btn" id="otpBtn1">1</div>
     <div class="otp-btn" id="otpBtn2">2</div>
@@ -190,25 +184,28 @@
   <button id="confirmBtn">Confirm</button>
 </div>
 
-<script>
-  // Example: Generate OTP code (simulate sending)
+<!-- Load React and Babel for JSX -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+
+<!-- Script for OTP logic and React component -->
+<script type="text/babel">
+  // Generate a dummy OTP for demo
   const generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
   console.log("Generated OTP (for testing):", generatedOTP);
 
-  // Resend code handler (simulate resend)
+  // Resend OTP
   document.getElementById('resendCode').addEventListener('click', () => {
     alert('OTP code resent!');
-    // Generate new OTP
-    // You could add your API call here for actual resend
+    // Implement actual resend logic here
   });
 
-  // OTP input handling
+  // OTP input focus handling
   const inputs = document.querySelectorAll('.otp-input');
-
   inputs.forEach((input, index) => {
     input.addEventListener('input', () => {
       if (input.value.length === 1) {
-        // Move to next input
         if (index < inputs.length - 1) {
           inputs[index + 1].focus();
         }
@@ -217,7 +214,6 @@
     });
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Backspace' && input.value === '') {
-        // Move to previous input
         if (index > 0) {
           inputs[index - 1].focus();
         }
@@ -225,16 +221,79 @@
     });
   });
 
-  // Confirm button click
-  document.getElementById('confirmBtn').addEventListener('click', () => {
-    const otpCode = Array.from(inputs).map(input => input.value).join('');
-    if (otpCode.length !== 4 || otpCode !== generatedOTP) {
-      alert('Invalid OTP. Please try again.');
-    } else {
-      alert('OTP verified successfully!');
-      // Proceed to next step or redirect
-    }
-  });
+  // Confirm button handler
+document.getElementById('confirmBtn').addEventListener('click', () => {
+  const otpCode = Array.from(inputs).map(input => input.value).join('');
+  if (otpCode.length !== 4 || otpCode !== generatedOTP) {
+    alert('Invalid OTP. Please try again.');
+  } else {
+    alert('OTP verified successfully!');
+    // Proceed further or redirect
+  }
+});
+
+  // React component for OTP verification (optional, for extended use)
+  const { useState, useEffect } = React;
+
+  function OTPVerification() {
+    const [otp, setOtp] = useState(['', '', '', '']);
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
+
+    useEffect(() => {
+      const storedEmail = localStorage.getItem('email') || '';
+      setEmail(storedEmail);
+      // Simulate sending OTP
+      console.log(`Sending OTP to ${storedEmail}`);
+      setMessage(`OTP sent to ${storedEmail}`);
+    }, []);
+
+    const handleChange = (index, value) => {
+      if (/^\d?$/.test(value)) {
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
+        if (value && index < 3) {
+          document.getElementById(`otp-input-${index + 1}`).focus();
+        }
+      }
+    };
+
+    const handleVerify = () => {
+      const enteredOtp = otp.join('');
+      if (enteredOtp === '1234') { // For demo, hardcoded OTP
+        alert('OTP verified!');
+      } else {
+        alert('Incorrect OTP, try again.');
+      }
+    };
+
+    return (
+      <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        <h1 style={{ color: 'black' }}>Verify Account</h1>
+        <p style={{ color: 'black' }}>Please enter the OTP number sent to your email to reset your password</p>
+        <p style={{ backgroundColor: 'grey', padding: '10px', width: 'fit-content', margin: '0 auto' }}>Enter your OTP code here</p>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+          {otp.map((digit, idx) => (
+            <input
+              key={idx}
+              id={`otp-input-${idx}`}
+              type="text"
+              maxLength="1"
+              style={{ width: '50px', height: '50px', fontSize: '1.5em', textAlign: 'center', margin: '0 5px', border: '2px solid #ccc', borderRadius: '4px' }}
+              value={digit}
+              onChange={(e) => handleChange(idx, e.target.value)}
+            />
+          ))}
+        </div>
+        <p style={{ cursor: 'pointer', color: 'red', marginTop: '15px' }} onClick={() => alert('Resend OTP!')}>Didn't receive code? Request again</p>
+        <button style={{ backgroundColor: 'red', color: 'white', padding: '10px 20px', marginTop: '20px' }} onClick={handleVerify}>Confirm</button>
+      </div>
+    );
+  }
+
+  // Optionally, render the React component somewhere
+  // ReactDOM.render(<OTPVerification />, document.getElementById('reactOTP'));
 </script>
 </body>
 </html>

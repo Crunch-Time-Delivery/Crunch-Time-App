@@ -20,6 +20,7 @@
     padding: 20px;
   }
 
+  /* Main container */
   .container {
     max-width: 500px;
     width: 100%;
@@ -43,11 +44,10 @@
     border-radius: 8px;
   }
 
-  /* Headings and paragraphs */
+  /* Headings & description */
   h2 {
     text-align: center;
-    margin-top: 20px;
-    margin-bottom: 10px;
+    margin: 20px 0 10px 0;
     font-size: 1.5em;
   }
 
@@ -59,26 +59,28 @@
     line-height: 1.4;
   }
 
-  /* Form input styles */
+  /* Form group styles */
   .form-group {
     margin-bottom: 15px;
   }
-
   label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
   }
-
-  input {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"] {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 1em;
+    background-color: #f2f2f2;
+    color: #333;
   }
 
-  /* Terms and conditions */
+  /* Terms & Privacy */
   .terms {
     font-size: 0.9em;
     margin: 15px 0;
@@ -88,48 +90,6 @@
   .terms a {
     color: red;
     text-decoration: underline;
-  }
-
-  /* Error handling button container */
-  .error-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 15px 0;
-  }
-
-  /* The clickable error button (acts as a checkbox) */
-  #errorToggle {
-    display: none;
-  }
-
-  /* Custom checkbox button with icon */
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    user-select: none;
-    padding: 8px;
-    border: 2px solid transparent;
-    border-radius: 4px;
-    transition: border 0.3s, background-color 0.3s;
-  }
-
-  /* Checkmark icon style */
-  .checkmark {
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2em;
-    color: green;
-  }
-
-  /* Show checkmark when checked */
-  #errorToggle:checked + .checkbox-label .checkmark {
-    display: block;
   }
 
   /* Create Account Button */
@@ -145,111 +105,84 @@
     margin-top: 20px;
     transition: background-color 0.3s;
   }
-
   #createAccountBtn:hover {
     background-color: darkred;
   }
 
-  /* Already have an account */
+  /* Already have account text */
   .login-text {
     text-align: center;
     margin-top: 15px;
   }
-
   .login-text a {
     color: red;
     text-decoration: underline;
     cursor: pointer;
   }
 
+  /* Popup overlay for role selection */
+  #popupOverlay {
+    display: none; /* hidden initially */
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  /* Popup box styling */
+  .popupBox {
+    background: #fff;
+    padding: 2em;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    position: relative;
+    text-align: center;
+  }
+  /* Close button style */
+  .closeBtn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #555;
+  }
+  .closeBtn:hover {
+    color: #000;
+  }
+  /* Role buttons inside popup */
+  .roleBtn {
+    background-color: #d32f2f; /* red */
+    color: #fff;
+    padding: 15px;
+    margin: 10px 0;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .roleBtn:hover {
+    background-color: #b71c1c;
+  }
+
   /* Responsive adjustments */
-  @media (max-width: 600px) {
-    body {
-      padding: 10px;
+  @media(max-width: 500px){
+    .roleBtn {
+      padding: 12px;
+      font-size: 1em;
     }
   }
-  /* Button to trigger popup */
-.trigger-btn {
-  display: block;
-  margin: 100px auto;
-  padding: 15px 30px;
-  font-size: 1.2em;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-.trigger-btn:hover {
-  background-color: #0056b3;
-}
-
-/* Overlay popup background */
-#popupOverlay {
-  display: none; /* Hidden by default */
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-/* Popup box */
-.popupBox {
-  background: #fff;
-  padding: 2em;
-  border-radius: 12px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  position: relative;
-  text-align: center;
-}
-
-/* Role buttons inside popup */
-.roleBtn {
-  background-color: #d32f2f; /* red */
-  color: #fff;
-  padding: 15px;
-  margin: 10px 0;
-  width: 100%;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.2em;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-.roleBtn:hover {
-  background-color: #b71c1c;
-}
-
-/* Close button (X) in popup */
-.closeBtn {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  background: transparent;
-  border: none;
-  font-size: 1.5em;
-  cursor: pointer;
-  color: #555;
-}
-.closeBtn:hover {
-  color: #000;
-}
-
-/* Responsive adjustments */
-@media(max-width: 500px){
-  .roleBtn {
-    padding: 12px;
-    font-size: 1em;
-  }
-}
 </style>
 </head>
 <body>
+
 <div class="container">
   <!-- Background Image -->
   <div class="background-section">
@@ -258,19 +191,9 @@
     </a>
   </div>
 
-  <!-- Main Heading -->
+  <!-- Heading & Description -->
   <h2>Create Account</h2>
-  <!-- Description -->
-  <p>Welcome to CrunchTime halaal food delivery. Signup to create a free account to start ordering</p>
-
-  <!-- Error Handling Checkbox -->
-  <div class="error-container">
-    <input type="checkbox" id="errorToggle" />
-    <label for="errorToggle" class="checkbox-label">
-      <div class="checkmark" style="display:none;">✔</div>
-      <span>Click here to accept terms</span>
-    </label>
-  </div>
+  <p>Welcome To CrunchTime Halaal Food Delivery. Signup To Create A Free Account To Start Ordering</p>
 
   <!-- Form Inputs -->
   <div class="form-group">
@@ -289,8 +212,12 @@
     <label for="password">Password</label>
     <input type="password" id="password" placeholder="Password" />
   </div>
+  <!-- Error/Terms Checkbox -->
+  <div class="error-box" style="display:flex; align-items:center; justify-content:center; margin-bottom:15px;">
+    <input type="checkbox" id="termsCheckbox" style="margin-right:8px;">
 
-  <!-- Terms and Conditions & Privacy Policy -->
+  </div>
+  <!-- Terms & Privacy Policy notice -->
   <div class="terms">
     <p>
       By logging in or registering, you have agreed to the 
@@ -299,66 +226,154 @@
     </p>
   </div>
 
-  <!-- Create Account Button -->
+  
+
+  <!-- Trigger Button for Role Popup -->
   <button class="trigger-btn" id="createAccountBtn">Create Account</button>
 
-  <!-- Popup Overlay -->
-<div id="popupOverlay">
-  <div class="popupBox">
-    <button class="closeBtn" id="closePopup">&times;</button>
-    <h3>Select Your Role</h3>
-    <button class="roleBtn" id="userBtn" data-role="user">User</button>
-    <button class="roleBtn" id="driverBtn" data-role="driver">Driver</button>
-    <button class="roleBtn" id="vendorBtn" data-role="vendor">Vendor</button>
+  <!-- Role Selection Popup -->
+  <div id="popupOverlay">
+    <div class="popupBox">
+      <button class="closeBtn" id="closePopup">&times;</button>
+      <h3>Select Your Role</h3>
+      <button class="roleBtn" id="userBtn" data-role="user">User</button>
+      <button class="roleBtn" id="driverBtn" data-role="driver">Driver</button>
+      <button class="roleBtn" id="vendorBtn" data-role="vendor">Vendor</button>
+    </div>
   </div>
-</div>
 
-  <!-- Already have an account -->
-  <div class="login-text">
+  <!-- Link to login -->
+  <div class="login-text" style="text-align:center; margin-top:15px;">
     <p>Already have an account? <a href="http://127.0.0.1:5500/New%20Crunch%20Time/login/login.html">Login</a></p>
   </div>
 </div>
 
-<script>
-  // Optional: toggle checkmark display based on checkbox
-  document.getElementById('errorToggle').addEventListener('change', function() {
-    const checkmark = document.querySelector('.checkmark');
-    checkmark.style.display = this.checked ? 'block' : 'none';
+<!-- React & Babel -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+
+<!-- Main Script -->
+<script type="text/babel">
+  // Toggle terms acceptance display (optional)
+  document.getElementById('termsCheckbox')?.addEventListener('change', function() {
+    // Optional: do something when terms accepted
   });
-   // Show popup
+
+  // Show popup on button click
   document.getElementById('createAccountBtn').onclick = () => {
+    if(!document.getElementById('termsCheckbox').checked){
+      alert('Please accept the terms to proceed.');
+      return;
+    }
     document.getElementById('popupOverlay').style.display = 'flex';
   }
 
-  // Hide popup
+  // Close popup
   document.getElementById('closePopup').onclick = () => {
     document.getElementById('popupOverlay').style.display = 'none';
   }
 
-  // When clicking outside the popup box
-  window.onclick = (e) => {
-    if(e.target === document.getElementById('popupOverlay')){
-      document.getElementById('popupOverlay').style.display = 'none';
-    }
-  }
-
-  // Redirect on button click
+  // Role buttons actions
   document.querySelectorAll('.roleBtn').forEach(btn => {
     btn.onclick = () => {
       const role = btn.getAttribute('data-role');
       if(role === 'user'){
-        window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/user/order_process/search_location.html'; // change to your login/register page
+        window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/user/order_process/search_location.html';
       } else if(role === 'driver'){
-        window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/driver/order_view.html';
+        window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/driver/order_view.html';
       } else if(role === 'vendor'){
-        window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/vendor/manage_orders.html';
+        window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/vendor/manage_orders.html';
       }
     }
   });
+
+  // React CreateAccount component
+  const { useState } = React;
+
+  function CreateAccount() {
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [successMsg, setSuccessMsg] = useState('');
+
+    const handleCreateAccount = async () => {
+      if(!fullName || !email || !phone || !password){
+        setError('Please fill all fields');
+        return;
+      }
+      // Initialize Supabase
+      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+      const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+      const supabaseKey = process.env.SUPABASE_KEY // Replace with your key
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      const { data, error } = await supabase
+        .from('Account')
+        .insert([{ full_name: fullName, email: email, phone: phone, password: password }])
+        .single();
+
+      if(error){
+        setError('Error: ' + error.message);
+      } else {
+        setSuccessMsg('Account created successfully!');
+        localStorage.setItem('email', email);
+        window.location.href='otp.html';
+      }
+    };
+
+    return (
+      <div style={{marginTop: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', maxWidth: '400px'}}>
+        <h2 style={{ color: 'red' }}>crunchtime</h2>
+        <h3 style={{ color: 'grey' }}>Create Account</h3>
+        <p>Welcome To CrunchTime Halaal Food Delivery. Signup To Create A Free Account To Start Ordering</p>
+        {error && <div style={{color: 'red'}}>{error}</div>}
+        {successMsg && <div style={{color: 'green'}}>{successMsg}</div>}
+
+        <input
+          type="text"
+          placeholder="Enter full name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          style={{width: '100%', padding: '8px', marginBottom: '10px'}}
+        />
+        <input
+          type="email"
+          placeholder="Enter email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{width: '100%', padding: '8px', marginBottom: '10px'}}
+        />
+        <input
+          type="tel"
+          placeholder="Enter phone number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          style={{width: '100%', padding: '8px', marginBottom: '10px'}}
+        />
+        <input
+          type="password"
+          placeholder="Enter password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{width: '100%', padding: '8px', marginBottom: '10px'}}
+        />
+
+        <button onClick={handleCreateAccount} style={{width: '100%', padding: '10px', backgroundColor: 'red', color: 'white', border: 'none', borderRadius: '4px'}}>
+          Create Account
+        </button>
+      </div>
+    );
+  }
+
+  // Optional: Render the CreateAccount component inside the popup
+  // ReactDOM.render(<CreateAccount />, document.getElementById('reactContainer'));
 </script>
 
-<!-- Your scripts -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-<script src="create_account.jsx"></script>
+<!-- Container for React component if needed -->
+<div id="reactContainer"></div>
+
 </body>
 </html>

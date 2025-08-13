@@ -5,13 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Welcome Registration</title>
 <style>
-  /* Reset some default styles */
+  /* Your existing styles here (same as previous) */
   * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
   }
-
   body {
     font-family: Arial, sans-serif;
     background-color: #f9f9f9;
@@ -22,34 +21,23 @@
     min-height: 100vh;
     padding: 20px;
   }
-
-  /* Container for the background image */
   #slide1 {
     width: 100%;
     max-width: 600px;
     position: relative;
     margin-bottom: 20px;
   }
-
-  .background-link {
-    display: block;
-  }
-
   .background-img {
     width: 100%;
     height: auto;
     display: block;
     border-radius: 8px;
   }
-
-  /* Welcome Heading */
   h2 {
     text-align: center;
     font-size: 2em;
     margin-bottom: 10px;
   }
-
-  /* Welcome message */
   p {
     text-align: center;
     font-size: 1em;
@@ -57,8 +45,6 @@
     padding: 0 10px;
     line-height: 1.4;
   }
-
-  /* Buttons styling */
   .btn {
     display: block;
     width: 200px;
@@ -71,37 +57,28 @@
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
   }
-
-  /* Specific styles for each button */
   #registerBtn1 {
     background-color: red;
     color: white;
   }
-
   #registerBtn1:hover {
     background-color: darkred;
   }
-
   #registerBtn2 {
     background-color: transparent;
     color: red;
     border: 2px solid red;
   }
-
   #registerBtn2:hover {
     background-color: #ffe6e6;
   }
-
   #registerBtn3 {
     background-color: red;
     color: white;
   }
-
   #registerBtn3:hover {
     background-color: darkred;
   }
-
-  /* Terms and Conditions / Privacy Policy container */
   .legal {
     max-width: 600px;
     text-align: center;
@@ -109,14 +86,10 @@
     margin-top: 20px;
     padding: 0 10px;
   }
-
-  /* Links styling */
   .legal a {
     color: red;
     text-decoration: underline;
   }
-
-  /* Responsive adjustments */
   @media (max-width: 768px) {
     h2 {
       font-size: 1.8em;
@@ -132,12 +105,9 @@
 </style>
 </head>
 <body>
-  <!-- Background image section -->
-  
-    
-      <img src="img/converted-image (4).jpg" alt="Background Image" class="background-img" />
-    
-  
+
+  <!-- Background image -->
+  <img src="img/converted-image (4).jpg" alt="Background Image" class="background-img" />
 
   <!-- Welcome Header -->
   <h2>Welcome</h2>
@@ -146,9 +116,12 @@
   <p>Before enjoying CrunchTime deliveries<br>Register now</p>
 
   <!-- Buttons -->
-  <button  id="registerBtn1" class="btn" >Create Account</button>
+  <button id="registerBtn1" class="btn">Create Account</button>
   <button id="registerBtn2" class="btn">Login</button>
   <button id="registerBtn3" class="btn">Browse Menu</button>
+
+  <!-- React root container for registration form -->
+  <div id="react-root"></div>
 
   <!-- Terms and Policies -->
   <div class="legal">
@@ -159,17 +132,97 @@
     </p>
   </div>
 
-<!-- Optional: Include your JavaScript files here -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-<script>
-  document.getElementById('registerBtn1').addEventListener('click', function() {
-    window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/registration/create_account.html';
-  });
-   document.getElementById('registerBtn2').addEventListener('click', function() {
-    window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/login/login.html';
-  })
-</script>
-<script src="welcome_registration.js"></script>
-<script src="welcome_registration.jsx"></script>
+  <!-- Load React, ReactDOM, Babel for JSX transpiling -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+
+  <!-- Your custom script to handle button clicks and load React component -->
+  <script type="text/babel">
+    // Button event handlers
+    document.getElementById('registerBtn1').addEventListener('click', () => {
+      ReactDOM.render(<RegisterPage />, document.getElementById('react-root'));
+    });
+    document.getElementById('registerBtn2').addEventListener('click', () => {
+      window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/login/login.html';
+    });
+    document.getElementById('registerBtn3').addEventListener('click', () => {
+      window.location.href = 'menu.html'; // Update as needed
+    });
+
+    // React Registration Component
+    function RegisterPage() {
+      const { useState, useMemo } = React;
+      const [fullName, setFullName] = useState('');
+      const [email, setEmail] = useState('');
+      const [phone, setPhone] = useState('');
+      const [password, setPassword] = useState('');
+      const [message, setMessage] = useState(null);
+      const [error, setError] = useState(null);
+
+      const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+      const supabaseKey =  process.env.SUPABASE_KEY // Replace with your key
+      const supabase = useMemo(() => createClient(supabaseUrl, supabaseKey), []);
+
+      const handleRegister = async () => {
+        setMessage(null);
+        setError(null);
+        const { data, error } = await supabase
+          .from('users') // your table
+          .insert([
+            {
+              full_name: fullName,
+              email: email,
+              phone_number: phone,
+              password: password,
+            },
+          ]);
+        if (error) {
+          setError(error.message);
+        } else {
+          setMessage('Registration successful!');
+        }
+      };
+
+      return (
+        <div style={{marginTop: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', maxWidth: '400px', width: '100%'}}>
+          <h2>Register</h2>
+          {error && <p style={{color: 'red'}}>{error}</p>}
+          {message && <p style={{color: 'green'}}>{message}</p>}
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            style={{width: '100%', padding: '8px', marginBottom: '10px'}}
+          />
+          <input
+            type="email"
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{width: '100%', padding: '8px', marginBottom: '10px'}}
+          />
+          <input
+            type="tel"
+            placeholder="Phone Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            style={{width: '100%', padding: '8px', marginBottom: '10px'}}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{width: '100%', padding: '8px', marginBottom: '10px'}}
+          />
+          <button onClick={handleRegister} style={{width: '100%', padding: '10px', backgroundColor: 'red', color: 'white', border: 'none', borderRadius: '4px'}}>
+            Register
+          </button>
+        </div>
+      );
+    }
+  </script>
 </body>
 </html>
