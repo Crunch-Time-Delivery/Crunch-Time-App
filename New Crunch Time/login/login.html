@@ -218,7 +218,7 @@
 
   <!-- Register section -->
   <div class="register-section">
-    Don't have an account? <a href="create_account.html" class="register-link">Register here</a>
+    Don't have an account? <a href="http://127.0.0.1:5500/New%20Crunch%20Time/registration/create_account.html" class="register-link">Register here</a>
   </div>
 </div>
 
@@ -286,8 +286,13 @@ document.getElementById('resetPasswordBtn').onclick = () => {
 
 // Login button handler
 const { useState } = React;
+      // Initialize Supabase
+      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+      const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+      const supabaseKey = process.env.SUPABASE_KEY // Replace with your key
+      const supabase = createClient(supabaseUrl, supabaseKey);
 
-function Login() {
+      function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
