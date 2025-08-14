@@ -1,21 +1,566 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dashboard_Admin</title>
-<style>
-  
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <style>
+    /* Reset and basic styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+    }
+
+    /* Top Red Bar */
+    .top-bar {
+      background-color: red;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: relative;
+    }
+
+    /* Left side: Profile info */
+    .profile-section {
+      display: flex;
+      align-items: center;
+    }
+    .profile-picture {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #fff; /* Placeholder */
+      margin-right: 10px;
+    }
+    .admin-name {
+      color: #fff;
+      font-weight: bold;
+    }
+
+    /* Menu icon */
+    .menu-icon {
+      font-size: 24px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* Main Content */
+    .dashboard-container {
+      padding: 20px;
+    }
+
+    /* Filters and buttons */
+    .filters {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .filter-btn {
+      padding: 8px 12px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .filter-btn:hover {
+      background-color: #eee;
+    }
+
+    /* Income summary */
+    .income-summary {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .income-box {
+      background-color: #fff;
+      padding: 15px;
+      flex: 1;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .income-box h3 {
+      margin-bottom: 10px;
+    }
+    .income-amount {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    /* Performance section */
+    .performance-section {
+      margin-top: 30px;
+    }
+    .performance-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+    .performance-title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .performance-details {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .performance-icon {
+      font-size: 24px;
+    }
+    .order-rate {
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      font-weight: bold;
+    }
+
+    /* Year dropdown */
+    .year-dropdown {
+      position: relative;
+    }
+    .year-button {
+      padding: 8px 12px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+    .year-options {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: #fff;
+      border: 1px solid #ccc;
+      display: none; /* Hidden by default, toggle with JavaScript */
+      flex-direction: column;
+      z-index: 10;
+    }
+    /* Show dropdown when active */
+    .year-dropdown.active .year-options {
+      display: flex;
+    }
+
+    /* Boxes for order total and target */
+    .boxes-container {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .box {
+      background-color: #fff;
+      padding: 15px;
+      flex: 1;
+      border-radius: 8px;
+      position: relative;
+    }
+    .box-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .profile-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #ccc;
+      margin-right: 10px;
+    }
+    .box-title {
+      font-weight: bold;
+    }
+    .box-amount {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .target-container {
+      margin-top: 10px;
+    }
+    .linear-bar {
+      height: 10px;
+      background-color: #ddd;
+      margin-top: 5px;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .target-progress {
+      height: 10px;
+      background-color: #4caf50;
+      width: 75%; /* Example target progress */
+    }
+
+    /* Select options and icons */
+    .selection-row {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .select-box {
+      flex: 1;
+    }
+    .select-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .select-header h4 {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .select-options {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .option-icon {
+      width: 30px;
+      height: 30px;
+      background-color: #eee;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+    .option-number {
+      font-size: 14px;
+    }
+
+    /* Wave graph placeholder */
+    .wave-graph {
+      height: 50px;
+      background-color: #e0e0e0;
+      margin-top: 10px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    /* Bottom stats */
+    .stats {
+      margin-top: 30px;
+    }
+    .stat-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      position: relative;
+    }
+    .stat-button {
+      position: fixed;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 8px 12px;
+      background-color: red;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .stat-info {
+      margin-left: 50px;
+      font-size: 14px;
+    }
+
+    /* Popular food section */
+    .popular-food {
+      margin-top: 30px;
+    }
+    .food-header {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .circle-graph {
+      width: 200px;
+      height: 200px;
+      background-color: #ddd;
+      border-radius: 50%;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .food-types {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .food-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .food-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+    .food-label {
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
+  <div id="root">
+    <!-- Static HTML content based on JSX -->
+    <div>
+      <!-- Top Red Bar -->
+      <div class="top-bar">
+        <div class="profile-section">
+          <div class="profile-picture"></div>
+          <div class="admin-name">Admin Dashboard</div>
+        </div>
+        <div class="menu-icon" title="Menu">&#9776;</div>
+      </div>
 
-<script>
+      <!-- Main Dashboard Content -->
+      <div class="dashboard-container">
+        <!-- Filter Establishments Button and Income Summary -->
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="filter-btn">
+            Filter Establishments ▼
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button style="background-color:red; color:#fff; border:none; padding:8px 12px; border-radius:4px;">Total Income</button>
+            <button style="background-color:red; color:#fff; border:none; padding:8px 12px; border-radius:4px;">Income</button>
+            <button style="background-color:red; color:#fff; border:none; padding:8px 12px; border-radius:4px;">Expense</button>
+            <button style="background-color:red; color:#fff; border:none; padding:8px 12px; border-radius:4px;">Withdraw</button>
+          </div>
+        </div>
 
-</script>
+        <!-- Income Display -->
+        <div style="margin-top:20px;">
+          <h2>Total Income: R10,000</h2>
+        </div>
 
-<!-- Your scripts -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-<script src="dashboard.jsx"></script>
+        <!-- Performance Heading & Percentage -->
+        <div class="performance-section">
+          <div class="performance-header">
+           <!--<div class="order-rate">Order Rate</div>    (Make another container this heading)--> 
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="performance-title">Performance</div>
+              <div class="performance-icon" title="Performance">&#128200;</div>
+            </div>
+
+
+            <!-- Year Dropdown -->
+            <div class="year-dropdown" style="position:relative;">
+              <button class="year-button" onclick="toggleYearDropdown()">January ▼</button>
+              <div class="year-options" id="yearOptions">
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('January')">January</div>
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('February')">February</div>
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('March')">March</div>
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('April')">April</div>
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('May')">May</div>
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('June')">June</div>
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('July')">July</div>
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('August')">August</div>
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('September')">September</div>
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('October')">October</div>
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('November')">November</div>
+                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('December')">December</div>
+                <!-- Add more months as needed -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Boxes for Order Total and Target -->
+          <div class="boxes-container">
+            <!-- Order Total -->
+            <div class="box">
+              <div class="box-header">
+                <div class="profile-icon"></div>
+                <div class="box-title">Order Total</div>
+              </div>
+              <div class="box-amount">$5000</div>
+            </div>
+            <!-- Target -->
+            <div class="box">
+              <div class="box-header">
+                <div class="profile-icon"></div>
+                <div class="box-title">Target</div>
+              </div>
+              <div class="target-container">
+                <div class="linear-bar">
+                  <div class="target-progress"></div>
+                </div>
+                <div style="margin-top:10px;">Target: 75%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Select Options for Last Month & Last Year -->
+          <div class="selection-row" style="display:flex; gap:20px; margin-top:20px;">
+            <!-- Last Month -->
+            <div class="select-box">
+              <div class="select-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h4>One This Month</h4>
+                <div class="option-icon" title="Options">&#8942;</div>
+              </div>
+              <div>Number: 80</div>
+              <!-- Wave Graph Placeholder -->
+               <!-- Add BarGraph Display here -->
+              <div class="wave-graph">Wave Graph</div>
+            </div>
+            <!-- Last Year -->
+            <div class="select-box">
+              <div class="select-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h4>One Last</h4>
+                <div class="option-icon" title="Options">&#8942;</div>
+              </div>
+              <div>Number: 70</div>
+              <!-- Wave Graph Placeholder -->
+              <div class="wave-graph">Wave Graph</div>
+            </div>
+          </div>
+
+          <!-- Bottom Order Stats -->
+          <div class="stats" style="margin-top:30px;">
+            <!-- Orders Complete -->
+            <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
+              <button class="stat-button" title="Orders Complete">&#10003;</button>
+              <div class="stat-info">Total Orders Complete: 120</div>
+            </div>
+            <!-- Orders Delivered -->
+            <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
+              <button class="stat-button" title="Orders Delivered">&#10003;</button>
+              <div class="stat-info">Total Orders Delivered: 100</div>
+            </div>
+            <!-- Orders Cancelled -->
+            <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
+              <button class="stat-button" title="Orders Cancelled">&#9888;</button>
+              <div class="stat-info">Total Orders Cancelled: 10</div>
+            </div>
+            <!-- Orders Pending -->
+            <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
+              <button class="stat-button" title="Orders Pending">&#9203;</button>
+              <div class="stat-info">Orders Pending: 10</div>
+            </div>
+          </div>
+
+          <!-- Popular Food Section -->
+          <div class="popular-food" style="margin-top:30px;">
+            <div class="food-header">Popular Food</div>
+            <!-- Circular Graph Placeholder -->
+            <div class="circle-graph">Circle Graph</div>
+            <!-- Add the CircleGraph here -->
+            <!-- Food Types -->
+            <div class="food-types">
+              <div class="food-item">
+                <div class="food-color" style="background-color:#FF6384"></div>
+                <div>Fast Food - 40%</div>
+              </div>
+              <div class="food-item">
+                <div class="food-color" style="background-color:#36A2EB"></div>
+                <div>Asian - 20%</div>
+              </div>
+              <div class="food-item">
+                <div class="food-color" style="background-color:#FFCE56"></div>
+                <div>Pasta - 15%</div>
+              </div>
+              <div class="food-item">
+                <div class="food-color" style="background-color:#4BC0C0"></div>
+                <div>Mexican - 10%</div>
+              </div>
+              <div class="food-item">
+                <div class="food-color" style="background-color:#9966FF"></div>
+                <div>Turkish - 5%</div>
+              </div>
+              <div class="food-item">
+                <div class="food-color" style="background-color:#FF9F40"></div>
+                <div>Desserts - 10%</div>
+              </div>
+            </div>
+            <!-- Order Delivered Text -->
+            <div style="margin-top:20px; font-weight:bold;">Order Delivered</div>
+            <!-- Linear Bar for Food Types -->
+            <div style="margin-top:10px;">
+              <!-- For each food type, show bar -->
+              <div style="margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between;">
+                  <div>Fast Food</div>
+                  <div>40%</div>
+                </div>
+                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                  <div style="width:40%; height:10px; background-color:#FF6384;"></div>
+                </div>
+              </div>
+              <div style="margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between;">
+                  <div>Asian</div>
+                  <div>20%</div>
+                </div>
+                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                  <div style="width:20%; height:10px; background-color:#36A2EB;"></div>
+                </div>
+              </div>
+              <div style="margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between;">
+                  <div>Pasta</div>
+                  <div>15%</div>
+                </div>
+                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                  <div style="width:15%; height:10px; background-color:#FFCE56;"></div>
+                </div>
+              </div>
+              <div style="margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between;">
+                  <div>Mexican</div>
+                  <div>10%</div>
+                </div>
+                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                  <div style="width:10%; height:10px; background-color:#4BC0C0;"></div>
+                </div>
+              </div>
+              <div style="margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between;">
+                  <div>Turkish</div>
+                  <div>5%</div>
+                </div>
+                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                  <div style="width:5%; height:10px; background-color:#9966FF;"></div>
+                </div>
+              </div>
+              <div style="margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between;">
+                  <div>Desserts</div>
+                  <div>10%</div>
+                </div>
+                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                  <div style="width:10%; height:10px; background-color:#FF9F40;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // JavaScript for dropdown toggle
+      function toggleYearDropdown() {
+        document.getElementById('yearOptions').parentElement.classList.toggle('active');
+      }
+      function selectMonth(month) {
+        document.querySelector('.year-button').textContent = month + ' ▼';
+        document.getElementById('yearOptions').parentElement.classList.remove('active');
+      }
+    </script>
+  </div>
 </body>
 </html>
