@@ -42,7 +42,7 @@ function Dashboard() {
       <div className="top-bar">
         <div className="profile-section">
           <div className="profile-picture"></div>
-          <div className="admin-name">Admin Name</div>
+          <div className="admin-name">Admin Dashboard</div>
         </div>
         <div className="menu-icon" title="Menu">&#9776;</div>
       </div>
@@ -80,6 +80,17 @@ function Dashboard() {
                 <div className="year-options" style={{ position: 'absolute', top: '100%', right: 0, background: '#fff', border: '1px solid #ccc', display: 'flex', flexDirection: 'column', zIndex: 10 }}>
                   <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('January')}>January</div>
                   <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('February')}>February</div>
+            <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('March')}>March</div>
+                  <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('April')}>April</div>
+                  <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('May')}>May</div>
+                  <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('June')}>June</div>
+                  <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('July')}>July</div>
+                   <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('August')}>January</div>
+                  <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('September')}>January</div>
+                 <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('October')}>January</div>
+                  <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('November')}>January</div>
+                  <div style={{ padding: '8px', cursor: 'pointer' }} onClick={() => selectMonth('December')}>January</div>
+                 
                   {/* Add more months as needed */}
                 </div>
               )}
