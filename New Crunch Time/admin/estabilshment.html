@@ -54,6 +54,32 @@
     cursor: pointer;
   }
 
+  /* Container for filter and search, placed below the top bar */
+  .filter-search-container {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    gap: 10px;
+    background-color: #fff;
+  }
+
+  /* Dropdown style */
+  .filter-dropdown {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+  }
+
+  /* Search input style */
+  #search-input {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+    flex: 1;
+  }
+
   /* Container for all info boxes */
   .container {
     padding: 20px;
@@ -154,9 +180,21 @@
 <div class="top-bar">
   <div class="profile-section">
     <div class="profile-picture"></div>
-    <div class="admin-name">Admin Estabilshment</div>
+    <div class="admin-name">Admin Establishment</div>
   </div>
   <div class="menu-icon" title="Menu">&#9776;</div>
+</div>
+
+<!-- Filter dropdown and search bar placed below top bar -->
+<div class="filter-search-container">
+  <select id="establishment-filter" class="filter-dropdown">
+    <option value="">Select Establishment</option>
+    <option value="Restaurant">Restaurant</option>
+    <option value="Cafe">Cafe</option>
+    <option value="Bar">Bar</option>
+    <option value="Diner">Diner</option>
+  </select>
+  <input type="text" id="search-input" placeholder="Search..." />
 </div>
 
 <!-- Container for multiple info boxes -->
@@ -172,31 +210,26 @@
   const addBtn = document.getElementById('add-btn');
 
   function createInfoBox() {
-    // Create main info box
     const box = document.createElement('div');
     box.className = 'info-box';
 
-    // Icon section
+    // Icon
     const iconSection = document.createElement('div');
     iconSection.className = 'icon-section';
 
     const iconDiv = document.createElement('div');
     iconDiv.className = 'icon';
-    iconDiv.innerHTML = '&#128247;'; // Camera icon as placeholder
+    iconDiv.innerHTML = '&#128247;';
     iconDiv.title = "Click to change image";
-
-    // Optional: implement image change on click
     iconDiv.onclick = () => {
       alert('Image icon clicked! You can implement image change here.');
     };
-
     iconSection.appendChild(iconDiv);
 
-    // Details section
+    // Details
     const detailsDiv = document.createElement('div');
     detailsDiv.className = 'details';
 
-    // Helper to create editable field
     function createField(labelText, valueText) {
       const p = document.createElement('p');
       p.className = 'field';
@@ -205,7 +238,6 @@
       return p;
     }
 
-    // Create fields
     const nameField = createField('Name', 'Sample Restaurant');
     const contactField = createField('Contact', '123-456-7890');
     const websiteField = createField('Website', 'https://example.com');
@@ -217,11 +249,10 @@
     detailsDiv.appendChild(websiteField);
     detailsDiv.appendChild(addressField);
 
-    // Hyperlinks container
+    // Links
     const linksDiv = document.createElement('div');
     linksDiv.className = 'links';
 
-    // "Edit" link
     const editLink = document.createElement('a');
     editLink.className = 'hyperlink';
     editLink.innerText = 'Edit';
@@ -231,17 +262,13 @@
     editLink.onclick = (e) => {
       e.preventDefault();
       isEditing = !isEditing;
-      // Toggle contentEditable
       [nameField, contactField, websiteField, addressField].forEach(field => {
         field.contentEditable = isEditing;
-        // Optional: change background to indicate editing
         field.style.backgroundColor = isEditing ? '#ffe' : '';
       });
-      // Change link text
       editLink.innerText = isEditing ? 'Save' : 'Edit';
     };
 
-    // "View Menu" link
     const viewLink = document.createElement('a');
     viewLink.className = 'hyperlink';
     viewLink.innerText = 'View Menu';
@@ -252,18 +279,10 @@
       alert('Viewing the menu! You can replace this with modal or page navigation.');
     };
 
-    // Append links
     linksDiv.appendChild(editLink);
     linksDiv.appendChild(viewLink);
 
-    // Append links to details
-    detailsDiv.appendChild(linksDiv);
-
-    // Append icon and details to main box
-    box.appendChild(iconSection);
-    box.appendChild(detailsDiv);
-
-    // Optional: add a remove button
+    // Remove button
     const removeBtn = document.createElement('button');
     removeBtn.innerText = 'Remove';
     removeBtn.style.marginLeft = '10px';
@@ -271,20 +290,30 @@
       container.removeChild(box);
     };
 
-    // Append remove button
+    // Assemble box
+    box.appendChild(iconSection);
+    box.appendChild(detailsDiv);
     box.appendChild(removeBtn);
 
-    // Append to container
     container.appendChild(box);
   }
 
   // Initialize with one info box
   createInfoBox();
 
-  // Add new info box on button click
-  addBtn.onclick = () => {
+  // Add new info box
+  document.getElementById('add-btn').onclick = () => {
     createInfoBox();
   };
+
+  // Search bar (trigger on Enter)
+  document.getElementById('search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      alert('Searching for: ' + this.value);
+      // You can implement filtering based on search and selected establishment here
+    }
+  });
 </script>
 
 </body>
