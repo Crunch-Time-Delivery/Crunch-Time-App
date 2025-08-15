@@ -141,9 +141,11 @@
     margin-top: 10px;
     display: flex;
     gap: 15px;
+    align-items: center;
   }
 
-  .hyperlink {
+  /* Style for hyperlinks: "Edit" and "View Menu" in red */
+  .hyperlink-red {
     color: red;
     text-decoration: none;
     font-weight: bold;
@@ -151,8 +153,25 @@
     font-size: 1em;
   }
 
-  .hyperlink:hover {
+  .hyperlink-red:hover {
     text-decoration: underline;
+  }
+
+  /* Remove button style */
+  .remove-btn {
+    margin-left: 10px;
+    padding: 6px 12px;
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .remove-btn:hover {
+    background-color: #c0392b;
   }
 
   /* Add button style */
@@ -213,23 +232,24 @@
     const box = document.createElement('div');
     box.className = 'info-box';
 
-    // Icon
+    // Icon section
     const iconSection = document.createElement('div');
     iconSection.className = 'icon-section';
 
     const iconDiv = document.createElement('div');
     iconDiv.className = 'icon';
-    iconDiv.innerHTML = '&#128247;';
+    iconDiv.innerHTML = '&#128247;'; // Camera icon
     iconDiv.title = "Click to change image";
     iconDiv.onclick = () => {
       alert('Image icon clicked! You can implement image change here.');
     };
     iconSection.appendChild(iconDiv);
 
-    // Details
+    // Details section
     const detailsDiv = document.createElement('div');
     detailsDiv.className = 'details';
 
+    // Function to create a field
     function createField(labelText, valueText) {
       const p = document.createElement('p');
       p.className = 'field';
@@ -249,12 +269,13 @@
     detailsDiv.appendChild(websiteField);
     detailsDiv.appendChild(addressField);
 
-    // Links
+    // Links container
     const linksDiv = document.createElement('div');
     linksDiv.className = 'links';
 
+    // "Edit" / "Save" toggle link in red
     const editLink = document.createElement('a');
-    editLink.className = 'hyperlink';
+    editLink.className = 'hyperlink-red';
     editLink.innerText = 'Edit';
     editLink.href = '#';
     let isEditing = false;
@@ -269,8 +290,9 @@
       editLink.innerText = isEditing ? 'Save' : 'Edit';
     };
 
+    // "View Menu" link in red
     const viewLink = document.createElement('a');
-    viewLink.className = 'hyperlink';
+    viewLink.className = 'hyperlink-red';
     viewLink.innerText = 'View Menu';
     viewLink.href = '#';
 
@@ -284,8 +306,8 @@
 
     // Remove button
     const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
     removeBtn.innerText = 'Remove';
-    removeBtn.style.marginLeft = '10px';
     removeBtn.onclick = () => {
       container.removeChild(box);
     };
@@ -311,7 +333,7 @@
     if (e.key === 'Enter') {
       e.preventDefault();
       alert('Searching for: ' + this.value);
-      // You can implement filtering based on search and selected establishment here
+      // Implement filtering based on search and selected establishment here
     }
   });
 </script>
