@@ -1,185 +1,76 @@
-/* Basic Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* src/user/order_process/home.css */
+.home-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Header */
-.header {
+.home-container h1 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.home-container ul {
+  list-style: none;
+  padding: 0;
+}
+
+.home-container li {
   display: flex;
   justify-content: space-between;
-  padding: 10px 20px;
-  position: relative;
-  background-color: #fff;
-  border-bottom: 1px solid #ccc;
-}
-
-.top-left {
-  display: flex;
-  flex-direction: column;
-}
-
-.deliver-now {
-  color: grey;
-  font-weight: bold;
-}
-
-#address {
-  color: grey;
-  margin-top: 5px;
-}
-
-/* User profile icon */
-#userProfileIcon {
-  position: relative;
-  cursor: pointer;
-}
-
-#userProfileIcon img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-#profilePopup {
-  display: none;
-  position: absolute;
-  top: 50px; /* adjust as needed */
-  right: 0;
-  background: #fff;
-  border: 1px solid #ccc;
+  align-items: center;
   padding: 10px;
-  z-index: 10;
-}
-
-/* Top right icons */
-.top-right {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-/* Halaal icon */
-.halaal-icon img {
-  width: 30px;
-  height: 30px;
-}
-
-/* Search Section */
-.search-section {
-  display: flex;
-  padding: 10px 20px;
-  align-items: center;
-  gap: 10px;
-}
-
-#searchInput {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  background-color: #ffffff;
   border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
 }
 
-#sortButton {
-  background: none;
-  border: none;
-  cursor: pointer;
+.home-container li:hover {
+  transform: translateY(-2px);
 }
 
-/* Categories */
-.categories {
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
+.home-container li span {
+  font-size: 16px;
+  color: #34495e;
 }
 
-.category {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-}
-
-.category img {
-  width: 50px;
-  height: 50px;
-}
-
-.category-label.grey {
-  color: grey;
-  margin-top: 5px;
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-  margin-top: 10px;
-}
-
-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+.home-container button {
+  padding: 8px 16px;
+  background-color: #e74c3c;
+  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background-color: transparent;
-  font-weight: bold;
   font-size: 14px;
+  transition: background-color 0.3s;
 }
 
-/* Specific button styles */
-#filterBtn {
-  border: 1px solid red;
-  color: black;
+.home-container button:hover {
+  background-color: #c0392b;
 }
 
-#filterBtn.active {
-  background-color: red;
-  color: #fff;
-}
-
-#nearbyBtn,
-#halaalBtn,
-#checkoutBtn {
-  border: 1px solid red;
-  color: black;
-}
-
-/* Order Options */
-.order-options {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 20px;
-}
-
-.order-card {
-  position: relative;
+.home-container .view-cart-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
   cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.3s;
 }
 
-.order-card img {
-  width: 100px;
-  height: 100px;
-  border-radius: 8px;
-}
-
-.order-label {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  background: rgba(0,0,0,0.5);
-  color: #fff;
-  padding: 4px 8px;
-  border-radius: 0 0 8px 8px;
-}
-
-/* Content Sections */
-.content-section {
-  padding: 20px;
-  border-top: 1px solid #ccc;
+.home-container .view-cart-btn:hover {
+  background-color: #27ae60;
 }

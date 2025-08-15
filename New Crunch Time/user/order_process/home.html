@@ -1,109 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Food Delivery App</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Menu</title>
+    <link rel="stylesheet" href="home.css">
 </head>
 <body>
-  <!-- Top Header -->
-  <header class="header">
-    <div class="top-left">
-      <span class="deliver-now">Deliver Now</span>
-      <div class="address" id="address">Loading address...</div>
+    <div class="home-container">
+        <h1>Food Menu</h1>
+        <ul>
+            <li>
+                <span>Pizza - $10</span>
+                <button>Add to Cart</button>
+            </li>
+            <li>
+                <span>Burger - $8</span>
+                <button>Add to Cart</button>
+            </li>
+        </ul>
+        <button class="view-cart-btn">View Cart (0)</button>
     </div>
-    <div class="top-right">
-      <div class="user-profile" id="userProfileIcon">
-        <img src="profile_icon.png" alt="User Profile" />
-        <div class="popup" id="profilePopup">User Profile Details</div>
-      </div>
-      <div class="halaal-icon">
-        <img src="halaal_icon.png" alt="Halaal Icon" />
-      </div>
-    </div>
-  </header>
-
-  <!-- Search and Sorting -->
-  <section class="search-section">
-    <input type="text" id="searchInput" placeholder="Search..." />
-    <button id="sortButton" title="Sort">
-      <img src="sort_icon.png" alt="Sort" />
-    </button>
-  </section>
-
-  <!-- Categories -->
-  <section class="categories">
-    <div class="category" id="favourites">
-      <img src="favourite.png" alt="Favourites" />
-      <div class="category-label grey">Favourites</div>
-    </div>
-    <div class="category" id="gatsby">
-      <img src="gatsby.png" alt="Gatsby" />
-      <div class="category-label grey">Gatsby</div>
-    </div>
-    <div class="category" id="gourmet">
-      <img src="gourmet.png" alt="Gourmet" />
-      <div class="category-label grey">Gourmet</div>
-    </div>
-    <div class="category" id="more">
-      <img src="chip_roll.png" alt="More" />
-      <div class="category-label grey">More</div>
-    </div>
-  </section>
-
-  <!-- Action Buttons -->
-  <section class="action-buttons">
-    <button class="filter-btn" id="filterBtn">
-      <img src="filter_icon.png" alt="Filter" />
-      Filters
-    </button>
-    <button class="nearby-btn" id="nearbyBtn">
-      <img src="nearby_icon.png" alt="Nearby" />
-      Nearby
-    </button>
-    <button class="halaal-btn" id="halaalBtn">
-      <img src="nearby_icon.png" alt="Halaal" />
-      Halaal
-    </button>
-    <button class="checkout-btn" id="checkoutBtn">
-      <img src="nearby_icon.png" alt="Checkout" />
-      Checkout
-    </button>
-  </section>
-
-  <!-- Order Options -->
-  <section class="order-options" id="orderOptions">
-    <div class="order-card" id="order1">
-      <img src="order1.png" alt="Order 1" />
-      <div class="order-label">Order</div>
-    </div>
-    <div class="order-card" id="order2">
-      <img src="order2.png" alt="Order 2" />
-      <div class="order-label">Order</div>
-    </div>
-    <div class="order-card" id="order3">
-      <img src="order3.png" alt="Order 3" />
-      <div class="order-label">Order</div>
-    </div>
-  </section>
-
-  <!-- Dynamic Sections -->
-  <section class="content-section" id="favouritesSection">
-    <h2>Favourites</h2>
-    <!-- Content loaded dynamically -->
-  </section>
-
-  <section class="content-section" id="nearbySection">
-    <h2>Nearby</h2>
-    <!-- Content loaded dynamically -->
-  </section>
-
-  <section class="content-section" id="anotherSection">
-    <h2>Another Section</h2>
-    <!-- Content -->
-  </section>
-
-  <script src="home.jsx"></script>
 </body>
 </html>

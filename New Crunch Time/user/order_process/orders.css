@@ -1,25 +1,68 @@
+/* src/user/order_process/orders.css */
 .orders-container {
-  max-width: 800px;
-  margin: 50px auto;
   padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-table {
+.orders-container h1 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.orders-container p {
+  color: #34495e;
+  font-size: 16px;
+  margin: 10px 0;
+}
+
+.orders-container ul {
+  list-style: none;
+  padding: 0;
+}
+
+.orders-container li {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.orders-container .total {
+  font-weight: bold;
+  font-size: 18px;
+  color: #e74c3c;
+}
+
+.orders-container button {
+  display: block;
   width: 100%;
-  border-collapse: collapse;
+  padding: 12px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
   margin-top: 20px;
+  transition: background-color 0.3s;
 }
 
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: left;
+.orders-container button:hover {
+  background-color: #27ae60;
 }
 
-th {
-  background-color: #f4f4f4;
-}
-
-.error {
-  color: red;
+.orders-container .empty-cart {
+  text-align: center;
+  color: #7f8c8d;
+  font-style: italic;
 }

@@ -1,42 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = 'YOUR_SUPABASE_KEY'; // replace with your env or directly
-const supabase = createClient(supabaseUrl, supabaseKey);
+// src/user/order_process/order_detail.jsx (updated example)
+import './order_detail.css';
+import { useAppContext } from './AppContext';
+import { useParams } from 'react-router-dom';
 
 function OrderDetail() {
-  const [orderDetails, setOrderDetails] = useState([]);
+  const { placedOrders } = useAppContext();
+  const { id } = useParams();
+  const order = placedOrders.find((o) => o.id === parseInt(id));
 
-  useEffect(() => {
-    const fetchOrderDetails = async () => {
-      const { data, error } = await supabase
-        .from('order_detail')
-        .select('*, some_column, other_table(*)') // adjust based on your schema
-        .limit(10);
-      if (error) {
-        console.error(error);
-      } else {
-        setOrderDetails(data);
-      }
-    };
-    fetchOrderDetails();
-  }, []);
+  if (!order) return <p>Order not found</p>;
 
   return (
     <div className="order-detail-container">
-      <h1>Restaurant Info</h1>
-      {orderDetails.length > 0 ? (
-        orderDetails.map((detail, index) => (
-          <div key={index} className="order-item">
-            <p>Order ID: {detail.id}</p>
-            <p>Some Column: {detail.some_column}</p>
-            {/* Add more fields as necessary */}
-          </div>
-        ))
-      ) : (
-        <p style={{ textAlign: 'center' }}>Loading...</p>
-      )}
+      <h1>Order #{order.id} Confirmed</h1>
+      <p>Delivery to: {order.location}</p>
+      <ul>
+        {order.items.map((item) => (
+          <li key={item.id}>{item.name} x{item.quantity} - ${item.price * item.quantity}</li>
+        ))}
+      </ul>
+      <p className="total">Total: ${order.total}</p>
+      <p className="thank-you">Thank you for your order!</p>
     </div>
   );
 }
