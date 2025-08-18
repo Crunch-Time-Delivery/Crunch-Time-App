@@ -3,23 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Menu</title>
-    <link rel="stylesheet" href="home.css">
+    <title>Uber Eats Mockup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+        .header button {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        .header .search-bar {
+            flex-grow: 1;
+            margin: 0 10px;
+        }
+        .header .search-bar input {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .filters {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+        .filters button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .filters button img {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 5px;
+        }
+        .restaurant-list {
+            padding: 10px 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .restaurant-card {
+            display: flex;
+            background-color: #fff;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        .restaurant-card img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+        .restaurant-card .details {
+            flex-grow: 1;
+        }
+        .restaurant-card .rating {
+            color: #666;
+        }
+        .restaurant-card .promo {
+            color: red;
+            font-weight: bold;
+        }
+        .restaurant-card button {
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <div class="home-container">
-        <h1>Food Menu</h1>
-        <ul>
-            <li>
-                <span>Pizza - R10</span>
-                <button>Add to Cart</button>
-            </li>
-            <li>
-                <span>Burger - R8</span>
-                <button>Add to Cart</button>
-            </li>
-        </ul>
-        <button class="view-cart-btn">View Cart (0)</button>
+    <div class="header">
+        <button>☰</button>
+        <div>Crunch Time</div>
+        <button>Delivery</button>
+        <button>Pickup</button>
+        <div class="search-bar">
+            <input type="text" placeholder="Search Crunch Time ">
+        </div>
+        <button>Map Location - Pick up now</button>
+    </div>
+    <div class="filters">
+        <button><img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food"><span>Fast Food</span></button>
+        <button><img src="Images/CR7 Veg .jpg" alt="Healthy"><span>Healthy</span></button>
+        <button><img src="Images/CR7.jpg" alt="Burgers"><span>Burgers</span></button>
+        <button><img src="Images/CR7 SUCCI.jpg" alt="Chinese"><span>Chinese</span></button>
+        <button><img src="Images/CR 7 WINGS.jpg" alt="Wings"><span>Wings</span></button>
+        <button><img src="Images/CR7 PIZZA.webp" alt="Pizza"><span>Pizza</span></button>
+        <button><img src="Images/CR7 SUCCI .webp" alt="Halal"><span>Halal</span></button>
+        <button><img src="Images/CR7 KOREA .jpeg" alt="Korean"><span>Korean</span></button>
+        <button>→</button>
+    </div>
+    <div class="restaurant-list">
+        <div class="restaurant-card" onclick="alert('KFC, Parow selected')">
+            <img src="Images/RS KFC .jpeg" alt="KFC Parow">
+            <div class="details">
+                <div>KFC, Parow</div>
+                <div class="rating">4.4 ★</div>
+                <div>Sponsored - 5 min - 4.4 km</div>
+            </div>
+            <button>♥</button>
+        </div>
+        <div class="restaurant-card" onclick="alert('Sannes Palace selected')">
+            <img src="Images/RS PALACE .jpg" alt="Sannes Palace">
+            <div class="details">
+                <div>Sannes Palace</div>
+                <div class="rating">4.5 ★</div>
+                <div class="promo">Spend ZAR 100, Save ZAR 15</div>
+                <div>20 min - 0.5 km</div>
+            </div>
+            <button>♥</button>
+        </div>
+        <div class="restaurant-card" onclick="alert('DK Spot & Kota Restaurant selected')">
+            <img src="Images/RS KOTA .jpg" alt="DK Spot & Kota">
+            <div class="details">
+                <div>DK Spot & Kota Restaurant</div>
+                <div class="rating">4.0 ★</div>
+                <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
+            </div>
+            <button>♥</button>
+        </div>
+        <div class="restaurant-card" onclick="alert('Nondyebo Eatery selected')">
+            <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery">
+            <div class="details">
+                <div>Nondyebo Eatery</div>
+                <div class="rating">3.3 ★</div>
+                <div>10 min - 0.6 km</div>
+            </div>
+            <button>♥</button>
+        </div>
+        <!-- Add more restaurant cards as needed for scrolling -->
     </div>
 </body>
 </html>
