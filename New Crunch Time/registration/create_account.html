@@ -2,16 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Create Account</title>
 <style>
-  /* Reset and base styles */
+  /* Reset & Base Styles */
   * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
   }
-
   body {
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
@@ -19,8 +18,7 @@
     justify-content: center;
     padding: 20px;
   }
-
-  /* Main container */
+  /* Container styles */
   .container {
     max-width: 500px;
     width: 100%;
@@ -29,7 +27,6 @@
     padding: 20px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   }
-
   /* Background image section */
   .background-section {
     width: 100%;
@@ -43,14 +40,12 @@
     height: auto;
     border-radius: 8px;
   }
-
   /* Headings & description */
   h2 {
     text-align: center;
     margin: 20px 0 10px 0;
     font-size: 1.5em;
   }
-
   p {
     text-align: center;
     margin-bottom: 20px;
@@ -58,8 +53,7 @@
     padding: 0 10px;
     line-height: 1.4;
   }
-
-  /* Form group styles */
+  /* Form styles */
   .form-group {
     margin-bottom: 15px;
   }
@@ -79,8 +73,7 @@
     background-color: #f2f2f2;
     color: #333;
   }
-
-  /* Terms & Privacy */
+  /* Terms & button styles */
   .terms {
     font-size: 0.9em;
     margin: 15px 0;
@@ -91,8 +84,6 @@
     color: red;
     text-decoration: underline;
   }
-
-  /* Create Account Button */
   #createAccountBtn {
     width: 100%;
     padding: 12px;
@@ -108,29 +99,16 @@
   #createAccountBtn:hover {
     background-color: darkred;
   }
-
-  /* Already have account text */
-  .login-text {
-    text-align: center;
-    margin-top: 15px;
-  }
-  .login-text a {
-    color: red;
-    text-decoration: underline;
-    cursor: pointer;
-  }
-
-  /* Popup overlay for role selection */
+  /* Role popup overlay */
   #popupOverlay {
-    display: none; /* hidden initially */
+    display: none;
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top:0; left:0; right:0; bottom:0;
     background: rgba(0,0,0,0.5);
     justify-content: center;
     align-items: center;
     z-index: 1000;
   }
-  /* Popup box styling */
   .popupBox {
     background: #fff;
     padding: 2em;
@@ -141,7 +119,6 @@
     position: relative;
     text-align: center;
   }
-  /* Close button style */
   .closeBtn {
     position: absolute;
     top: 10px;
@@ -155,9 +132,8 @@
   .closeBtn:hover {
     color: #000;
   }
-  /* Role buttons inside popup */
   .roleBtn {
-    background-color: #d32f2f; /* red */
+    background-color: #d32f2f;
     color: #fff;
     padding: 15px;
     margin: 10px 0;
@@ -171,8 +147,6 @@
   .roleBtn:hover {
     background-color: #b71c1c;
   }
-
-  /* Responsive adjustments */
   @media(max-width: 500px){
     .roleBtn {
       padding: 12px;
@@ -186,7 +160,7 @@
 <div class="container">
   <!-- Background Image -->
   <div class="background-section">
-    <a href="https://example.com" class="background-link">
+    <a href="https://example.com">
       <img src="img/converted-image(4).jpg" alt="Background Image" class="background-img" />
     </a>
   </div>
@@ -195,7 +169,7 @@
   <h2>Create Account</h2>
   <p>Welcome To CrunchTime Halaal Food Delivery. Signup To Create A Free Account To Start Ordering</p>
 
-  <!-- Form Inputs -->
+ <!-- Form Inputs -->
   <div class="form-group">
     <label for="fullName">Full Name</label>
     <input type="text" id="fullName" placeholder="Full Name" />
@@ -214,7 +188,7 @@
   </div>
   <!-- Error/Terms Checkbox -->
   <div class="error-box" style="display:flex; align-items:center; justify-content:center; margin-bottom:15px;">
-    <input type="checkbox" id="termsCheckbox" style="margin-right:8px;">
+ <input type="checkbox" id="termsCheckbox" style="margin-right:8px;">
 
   </div>
   <!-- Terms & Privacy Policy notice -->
@@ -226,12 +200,11 @@
     </p>
   </div>
 
-  
 
-  <!-- Trigger Button for Role Popup -->
+  <!-- Role Selection -->
   <button class="trigger-btn" id="createAccountBtn">Create Account</button>
 
-  <!-- Role Selection Popup -->
+  <!-- Role Popup -->
   <div id="popupOverlay">
     <div class="popupBox">
       <button class="closeBtn" id="closePopup">&times;</button>
@@ -242,138 +215,117 @@
     </div>
   </div>
 
+  <!-- React container for create account form -->
+  <div id="reactContainer"></div>
+
   <!-- Link to login -->
   <div class="login-text" style="text-align:center; margin-top:15px;">
-    <p>Already have an account? <a href="http://127.0.0.1:5500/New%20Crunch%20Time/login/login.html">Login</a></p>
+    <p>Already have an account? <a href="login.html">Login</a></p>
   </div>
 </div>
 
-<!-- React & Babel -->
-<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<!-- Load React & Babel -->
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+<!-- Load Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 
-<!-- Main Script -->
 <script type="text/babel">
-  // Toggle terms acceptance display (optional)
-  document.getElementById('termsCheckbox')?.addEventListener('change', function() {
-    // Optional: do something when terms accepted
-  });
+  // Initialize Supabase client
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // <-- replace with your actual key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  // Show popup on button click
-  document.getElementById('createAccountBtn').onclick = () => {
-    if(!document.getElementById('termsCheckbox').checked){
-      alert('Please accept the terms to proceed.');
+  // Handle role popup
+document.getElementById('createAccountBtn').onclick = () => {
+  document.getElementById('popupOverlay').style.display='flex';
+};
+document.getElementById('closePopup').onclick = () => {
+  document.getElementById('popupOverlay').style.display='none';
+};
+document.querySelectorAll('.roleBtn').forEach(btn => {
+  btn.onclick = () => {
+    const role = btn.getAttribute('data-role');
+    if(role==='user') window.location.href='search_location.html';
+    if(role==='driver') window.location.href='order_view.html';
+    if(role==='vendor') window.location.href='manage_orders.html';
+  }
+});
+
+// CreateAccount React component
+const { useState } = React;
+
+function CreateAccount() {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleCreate = async () => {
+    if(!fullName || !email || !phone || !password){
+      setError('Please fill all fields');
       return;
     }
-    document.getElementById('popupOverlay').style.display = 'flex';
-  }
+    const { data, error } = await supabase
+      .from('Account')
+      .insert([{ full_name: fullName, email: email, phone: phone, password: password }]);
 
-  // Close popup
-  document.getElementById('closePopup').onclick = () => {
-    document.getElementById('popupOverlay').style.display = 'none';
-  }
-
-  // Role buttons actions
-  document.querySelectorAll('.roleBtn').forEach(btn => {
-    btn.onclick = () => {
-      const role = btn.getAttribute('data-role');
-      if(role === 'user'){
-        window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/user/order_process/search_location.html';
-      } else if(role === 'driver'){
-        window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/driver/order_view.html';
-      } else if(role === 'vendor'){
-        window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/vendor/manage_orders.html';
-      }
+    if(error){
+      setError('Error: ' + error.message);
+    } else {
+      setSuccess('Account created!');
+      localStorage.setItem('email', email);
+      window.location.href='otp.html';
     }
-  });
+  };
 
-  // React CreateAccount component
-  const { useState } = React;
+  return (
+    <div style={{marginTop: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px'}}>
+      <h2 style={{ color: 'red' }}>crunchtime</h2>
+      <h3 style={{ color: 'grey' }}>Create Account</h3>
+      <p>Welcome To CrunchTime Halaal Food Delivery. Signup To Create A Free Account To Start Ordering</p>
+      {error && <div style={{color: 'red'}}>{error}</div>}
+      {success && <div style={{color: 'green'}}>{success}</div>}
+      <input
+        type="text"
+        placeholder="Full Name"
+        value={fullName}
+        onChange={(e)=>setFullName(e.target.value)}
+        style={{width:'100%', padding:'8px', marginBottom:'10px'}}
+      />
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e)=>setEmail(e.target.value)}
+        style={{width:'100%', padding:'8px', marginBottom:'10px'}}
+      />
+      <input
+        type="tel"
+        placeholder="Phone"
+        value={phone}
+        onChange={(e)=>setPhone(e.target.value)}
+        style={{width:'100%', padding:'8px', marginBottom:'10px'}}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e)=>setPassword(e.target.value)}
+        style={{width:'100%', padding:'8px', marginBottom:'10px'}}
+      />
+      <button onClick={handleCreate} style={{width:'100%', padding:'10px', backgroundColor:'red', color:'white', border:'none', borderRadius:'4px'}}>
+        Create Account
+      </button>
+    </div>
+  );
+}
 
-  function CreateAccount() {
-    const [fullName, setFullName] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [successMsg, setSuccessMsg] = useState('');
-
-    const handleCreateAccount = async () => {
-      if(!fullName || !email || !phone || !password){
-        setError('Please fill all fields');
-        return;
-      }
-      // Initialize Supabase
-      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
-      const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-      const supabaseKey = process.env.SUPABASE_KEY // Replace with your key
-      const supabase = createClient(supabaseUrl, supabaseKey);
-
-      const { data, error } = await supabase
-        .from('Account')
-        .insert([{ full_name: fullName, email: email, phone: phone, password: password }])
-        .single();
-
-      if(error){
-        setError('Error: ' + error.message);
-      } else {
-        setSuccessMsg('Account created successfully!');
-        localStorage.setItem('email', email);
-        window.location.href='otp.html';
-      }
-    };
-
-    return (
-      <div style={{marginTop: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', maxWidth: '400px'}}>
-        <h2 style={{ color: 'red' }}>crunchtime</h2>
-        <h3 style={{ color: 'grey' }}>Create Account</h3>
-        <p>Welcome To CrunchTime Halaal Food Delivery. Signup To Create A Free Account To Start Ordering</p>
-        {error && <div style={{color: 'red'}}>{error}</div>}
-        {successMsg && <div style={{color: 'green'}}>{successMsg}</div>}
-
-        <input
-          type="text"
-          placeholder="Enter full name"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          style={{width: '100%', padding: '8px', marginBottom: '10px'}}
-        />
-        <input
-          type="email"
-          placeholder="Enter email address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{width: '100%', padding: '8px', marginBottom: '10px'}}
-        />
-        <input
-          type="tel"
-          placeholder="Enter phone number"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          style={{width: '100%', padding: '8px', marginBottom: '10px'}}
-        />
-        <input
-          type="password"
-          placeholder="Enter password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{width: '100%', padding: '8px', marginBottom: '10px'}}
-        />
-
-        <button onClick={handleCreateAccount} style={{width: '100%', padding: '10px', backgroundColor: 'red', color: 'white', border: 'none', borderRadius: '4px'}}>
-          Create Account
-        </button>
-      </div>
-    );
-  }
-
-  // Optional: Render the CreateAccount component inside the popup
-  // ReactDOM.render(<CreateAccount />, document.getElementById('reactContainer'));
+// Render the CreateAccount component
+ReactDOM.render(<CreateAccount />, document.getElementById('reactContainer'));
 </script>
-
-<!-- Container for React component if needed -->
-<div id="reactContainer"></div>
-
 </body>
 </html>

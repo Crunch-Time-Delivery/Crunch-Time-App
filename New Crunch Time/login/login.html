@@ -122,18 +122,16 @@
     background-color: #ffe6e6;
   }
 
-  /* Role selection popup overlay */
+  /* Role selection popup overlay styles */
   #popupOverlay {
     display: none;
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top:0; left:0; right:0; bottom:0;
     background: rgba(0,0,0,0.5);
     justify-content: center;
     align-items: center;
     z-index: 1000;
   }
-
-  /* Popup box */
   .popupBox {
     background: #fff;
     padding: 20px;
@@ -184,11 +182,11 @@
     </a>
   </div>
 
-  <!-- Login Heading and Instructions -->
+  <!-- Heading & Instructions -->
   <h2>Login</h2>
   <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
 
-  <!-- Message for errors/info -->
+  <!-- Error/message display -->
   <div id="message"></div>
 
   <!-- Email & Password Inputs -->
@@ -216,115 +214,85 @@
     </div>
   </div>
 
-  <!-- Register section -->
+  <!-- Register link -->
   <div class="register-section">
-    Don't have an account? <a href="http://127.0.0.1:5500/New%20Crunch%20Time/registration/create_account.html" class="register-link">Register here</a>
+    Don't have an account? <a href="create_account.html" class="register-link">Register here</a>
   </div>
 </div>
 
-<!-- Forgot Password Modal -->
-<div id="forgotPasswordModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000;">
-  <div style="background:#fff; padding:20px; border-radius:8px; max-width:400px; width:90%; position:relative;">
-    <div id="popupClose" style="position:absolute; top:8px; right:12px; font-size:1.2em; cursor:pointer;">&times;</div>
-    <h3>Reset Password</h3>
-    <input type="email" id="forgotEmail" placeholder="Enter your email" style="width:100%; padding:10px; margin-bottom:15px;"/>
-    <button id="resetPasswordBtn" style="width:100%; padding:10px; background:red; color:#fff; border:none; border-radius:4px;">Send Reset Link</button>
-  </div>
-</div>
-
-<!-- Load React & Babel -->
-<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<!-- Load React & Babel if needed -->
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+<!-- Load Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 
-<!-- Scripts -->
 <script type="text/babel">
+  // Initialize Supabase
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // <-- Replace with your real key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// Show popup for login role selection
-document.getElementById('loginBtn').onclick = () => {
-  document.getElementById('popupOverlay').style.display='flex';
-};
+  let selectedRole = null; // Store role selected
 
-// Close popup
-document.getElementById('closePopup').onclick = () => {
-  document.getElementById('popupOverlay').style.display='none';
-};
-
-// Outside click close
-window.onclick = (e) => {
-  if(e.target===document.getElementById('popupOverlay')){
-    document.getElementById('popupOverlay').style.display='none';
-  }
-};
-
-// Role buttons navigation
-document.querySelectorAll('.roleBtn').forEach(btn => {
-  btn.onclick = () => {
-    const role = btn.getAttribute('data-role');
-    if(role==='user'){
-      window.location.href='user/order_process/search_location.html';
-    }else if(role==='driver'){
-      window.location.href='driver/order_view.html';
-    }else if(role==='vendor'){
-      window.location.href='vendor/manage_orders.html';
+  // Role selection handlers
+  document.querySelectorAll('.roleBtn').forEach(btn => {
+    btn.onclick = () => {
+      selectedRole = btn.getAttribute('data-role');
+      document.getElementById('popupOverlay').style.display='none'; // close popup
     }
-  }
-});
+  });
 
-// Forgot password modal
-document.getElementById('forgotPassword').onclick = () => {
-  document.getElementById('forgotPasswordModal').style.display='flex';
-};
-document.getElementById('popupClose').onclick = () => {
-  document.getElementById('forgotPasswordModal').style.display='none';
-};
-document.getElementById('resetPasswordBtn').onclick = () => {
-  const email = document.getElementById('forgotEmail').value;
-  alert(`Password reset link sent to ${email}`); // Replace with your API call
-  document.getElementById('forgotPasswordModal').style.display='none';
-};
-
-// Login button handler
-const { useState } = React;
-      // Initialize Supabase
-      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
-      const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-      const supabaseKey = process.env.SUPABASE_KEY // Replace with your key
-      const supabase = createClient(supabaseUrl, supabaseKey);
-
-      function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = async () => {
-    setLoading(true);
-    setError('');
-    // Replace with your login API logic, e.g., Supabase
-    // Simulate success for demo
-    setTimeout(() => {
-      alert('Login successful!');
-      setLoading(false);
-    }, 1000);
+  // Open role selection popup
+  document.getElementById('createAccountBtn').onclick = () => {
+    document.getElementById('popupOverlay').style.display='flex';
   };
 
-  return (
-    <div style={{width:'100%', display:'flex', flexDirection:'column', alignItems:'center'}}>
-      <h2>Login</h2>
-      {error && <p className="error">{error}</p>}
-      <input type="email" placeholder="Email" value={email} onChange={(e)=>setEmail(e.target.value)} />
-      <input type="password" placeholder="Password" value={password} onChange={(e)=>setPassword(e.target.value)} />
-      <button onClick={handleLogin} disabled={loading} style={{width:'100%', padding:'10px', marginTop:'20px', background:'red', color:'#fff', border:'none', borderRadius:'4px'}}>
-        {loading ? 'Logging in...' : 'Login'}
-      </button>
-    </div>
-  );
-}
+  // Close popup
+  document.getElementById('closePopup').onclick = () => {
+    document.getElementById('popupOverlay').style.display='none';
+  };
 
-// Render React login component
-ReactDOM.render(<Login />, document.getElementById('root'));
+  window.onclick = (e) => {
+    if (e.target === document.getElementById('popupOverlay')) {
+      document.getElementById('popupOverlay').style.display='none';
+    }
+  };
 
+  // Login button handler
+document.getElementById('loginBtn').onclick = async () => {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const messageDiv = document.getElementById('message');
+  messageDiv.innerText='';
+
+  if (!email || !password) {
+    messageDiv.innerText='Please enter email and password.';
+    return;
+  }
+
+  try {
+    const { user, error } = await supabase.auth.signIn({ email, password });
+    if (error) {
+      messageDiv.innerText=error.message;
+    } else {
+      alert('Login successful!');
+      // Redirect based on role
+      if (selectedRole === 'user') {
+        window.location.href='search_location.html';
+      } else if (selectedRole === 'driver') {
+        window.location.href='order_view.html';
+      } else if (selectedRole === 'vendor') {
+        window.location.href='manage_orders.html';
+      } else {
+        window.location.href='dashboard.html'; // fallback
+      }
+    }
+  } catch (err) {
+    messageDiv.innerText='Unexpected error.';
+    console.error(err);
+  }
+};
 </script>
 </body>
 </html>

@@ -6,7 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class PriceCalculator {
-    public static void main(String[] args) {
+    public static <JSONObject> void main(String[] args) {
         try {
             // Hypothetical API endpoint for menu items
             String apiUrl = "https://api.example.com/restaurant/menu";

@@ -1,119 +1,85 @@
-import React, { useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+// item_manage.jsx
 
-const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
-const supabaseKey = process.env.REACT_APP_SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+// Import createClient (if using a build system; for CDN, it's already available as supabase)
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-function ItemManagePage() {
-  const [items, setItems] = useState([
-    { id: 1, name: 'Burger', price: 50, description: 'Beef burger' },
-    { id: 2, name: 'Pizza', price: 80, description: 'Cheese pizza' },
-  ]);
-  const [newItem, setNewItem] = useState({ name: '', price: '', description: '' });
-  const [editItemId, setEditItemId] = useState(null);
-  const [editData, setEditData] = useState({ name: '', price: '', description: '' });
+// Initialize Supabase client
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your actual key
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  const handleAdd = () => {
-    const id = Date.now();
-    setItems([...items, { id, ...newItem }]);
-    setNewItem({ name: '', price: '', description: '' });
-  };
+// Fetch items and render them into the table
+const loadItems = async () => {
+  const { data, error } = await supabase.from('Items').select('*');
+  if (error) {
+    console.error('Error fetching items:', error);
+    return;
+  }
+  renderItems(data);
+};
 
-  const handleDelete = (id) => {
-    setItems(items.filter(item => item.id !== id));
-  };
+// Render items into the table body
+const renderItems = (items) => {
+  const tbody = document.getElementById('itemsBody');
+  tbody.innerHTML = '';
+  items.forEach(item => {
+    const tr = document.createElement('tr');
 
-  const handleEdit = (item) => {
-    setEditItemId(item.id);
-    setEditData({ name: item.name, price: item.price, description: item.description });
-  };
+    tr.innerHTML = `
+      <td>${item.name}</td>
+      <td>${item.price}</td>
+      <td>${item.description}</td>
+      <td>
+        <button onclick="deleteItem(${item.id})">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+};
 
-  const handleUpdate = () => {
-    setItems(items.map(item => (item.id === editItemId ? { ...item, ...editData } : item)));
-    setEditItemId(null);
-  };
+// Add new item
+const addItem = async () => {
+  const name = document.getElementById('newName').value.trim();
+  const price = parseFloat(document.getElementById('newPrice').value);
+  const description = document.getElementById('newDescription').value.trim();
 
-  return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <h2>Item Management</h2>
-      {/* Add New Item */}
-      <div style={{ display: 'flex', gap: '1em', marginBottom: '1em' }}>
-        <input
-          placeholder="Name"
-          value={newItem.name}
-          onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-        />
-        <input
-          placeholder="Price"
-          type="number"
-          value={newItem.price}
-          onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
-        />
-        <input
-          placeholder="Description"
-          value={newItem.description}
-          onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-        />
-        <button onClick={handleAdd}>Add Item</button>
-      </div>
-      {/* Items Table */}
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ background: '#ddd' }}>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.id}>
-              {editItemId === item.id ? (
-                <>
-                  <td>
-                    <input
-                      value={editData.name}
-                      onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={editData.price}
-                      onChange={(e) => setEditData({ ...editData, price: e.target.value })}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      value={editData.description}
-                      onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                    />
-                  </td>
-                  <td>
-                    <button onClick={handleUpdate}>Save</button>
-                    <button onClick={() => setEditItemId(null)}>Cancel</button>
-                  </td>
-                </>
-              ) : (
-                <>
-                  <td>{item.name}</td>
-                  <td>{item.price}</td>
-                  <td>{item.description}</td>
-                  <td>
-                    <button onClick={() => handleEdit(item)}>Edit</button>
-                    <button onClick={() => handleDelete(item.id)}>Delete</button>
-                  </td>
-                </>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+  if (!name || isNaN(price)) {
+    alert('Please enter valid name and price.');
+    return;
+  }
 
+  const { data, error } = await supabase
+    .from('Items')
+    .insert([{ name, price, description }]);
 
-export default ItemManagePage
+  if (error) {
+    alert('Error adding item: ' + error.message);
+  } else {
+    alert('Item added successfully!');
+    document.getElementById('newName').value = '';
+    document.getElementById('newPrice').value = '';
+    document.getElementById('newDescription').value = '';
+    loadItems();
+  }
+};
+
+// Delete item
+const deleteItem = async (id) => {
+  const { error } = await supabase
+    .from('Items')
+    .delete()
+    .eq('id', id);
+  if (error) {
+    alert('Error deleting item: ' + error.message);
+  } else {
+    loadItems();
+  }
+};
+
+// Attach event to add button
+document.getElementById('addItemBtn').addEventListener('click', addItem);
+
+// Load items on page load
+window.onload = () => {
+  loadItems();
+};
