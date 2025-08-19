@@ -223,21 +223,8 @@
     <p>Already have an account? <a href="http://127.0.0.1:5500/New%20Crunch%20Time/login/login.html">Login</a></p>
   </div>
 </div>
-
-<!-- Load React & Babel -->
-<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-<script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
-<!-- Load Supabase JS -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
-
-<script type="text/babel">
-  // Initialize Supabase client
-  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = process.env.SUPABASE_KEY; // <-- replace with your actual key
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-  // Handle role popup
+<script>
+// Handle role popup
 document.getElementById('createAccountBtn').onclick = () => {
   document.getElementById('popupOverlay').style.display='flex';
 };
@@ -252,6 +239,21 @@ document.querySelectorAll('.roleBtn').forEach(btn => {
     if(role==='vendor') window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/vendor/manage_orders.html';
   }
 });
+
+
+</script>
+<!-- Load React & Babel -->
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+<!-- Load Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
+
+<script type="text/babel">
+  // Initialize Supabase client
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey = process.env.SUPABASE_KEY; // <-- replace with your actual key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // CreateAccount React component
 const { useState } = React;

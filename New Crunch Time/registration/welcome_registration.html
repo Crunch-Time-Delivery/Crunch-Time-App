@@ -131,15 +131,8 @@
       and <a href="https://example.com/privacy" target="_blank">Privacy Policy</a>.
     </p>
   </div>
-
-  <!-- Load React, ReactDOM, Babel for JSX transpiling -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
-
-  <!-- Your custom script to handle button clicks and load React component -->
-  <script type="text/babel">
-    // Button event handlers
+<script>
+// Button event handlers
     document.getElementById('registerBtn1').addEventListener('click', () => {
       ReactDOM.render(<RegisterPage />, document.getElementById('react-root'));
     });
@@ -149,6 +142,16 @@
     document.getElementById('registerBtn3').addEventListener('click', () => {
       window.location.href = 'menu.html'; // Update as needed
     });
+
+</script>
+  <!-- Load React, ReactDOM, Babel for JSX transpiling -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+
+  <!-- Your custom script to handle button clicks and load React component -->
+  <script type="text/babel">
+    
 
     // React Registration Component
     function RegisterPage() {

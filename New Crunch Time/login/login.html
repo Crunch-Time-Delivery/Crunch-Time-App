@@ -218,7 +218,7 @@
   <input type="password" id="password" placeholder="Password" />
 
   <!-- Buttons: Role select triggers login button display, login button -->
-  <button id="roleSelectBtn">Select Role</button>
+  <button id="roleSelectBtn">Login</button>
   <button id="loginBtn">Login</button>
 
   <!-- Role selection popup -->
@@ -237,22 +237,7 @@
     Don't have an account? <a href="http://127.0.0.1:5500/New%20Crunch%20Time/registration/create_account.html" class="register-link">Register here</a>
   </div>
 </div>
-
-<!-- Load React & Babel if needed -->
-<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-<script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
-<!-- Load Supabase JS -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
-
-<script type="text/babel">
-  // Initialize Supabase
-  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = process.env.SUPABASE_KEY; // Replace with your actual key
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-  let selectedRole = null; // Store role
-
+<script>
   // Role button handlers
   document.querySelectorAll('.roleBtn').forEach(btn => {
     btn.onclick = () => {
@@ -277,6 +262,23 @@
       document.getElementById('popupOverlay').style.display='none';
     }
   };
+</script>
+<!-- Load React  -->
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+<!-- Load Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
+
+<script type="text/babel">
+  // Initialize Supabase
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey = process.env.SUPABASE_KEY; // Replace with your actual key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  let selectedRole = null; // Store role
+
+  
 
   // Login process
   document.getElementById('loginBtn').onclick = async () => {

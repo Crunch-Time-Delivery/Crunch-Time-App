@@ -183,7 +183,25 @@
   <!-- Confirm button -->
   <button id="confirmBtn">Confirm</button>
 </div>
+<script>
+   // Resend OTP
+  document.getElementById('resendCode').addEventListener('click', () => {
+    alert('OTP code resent!');
+    // Implement actual resend logic here
+  });
 
+ // Confirm button handler
+document.getElementById('confirmBtn').addEventListener('click', () => {
+  const otpCode = Array.from(inputs).map(input => input.value).join('');
+  if (otpCode.length !== 4 || otpCode !== generatedOTP) {
+    alert('Invalid OTP. Please try again.');
+  } else {
+    alert('OTP verified successfully!');
+    // Proceed further or redirect
+  }
+});
+
+</script>
 <!-- Load React and Babel for JSX -->
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -194,12 +212,6 @@
   // Generate a dummy OTP for demo
   const generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
   console.log("Generated OTP (for testing):", generatedOTP);
-
-  // Resend OTP
-  document.getElementById('resendCode').addEventListener('click', () => {
-    alert('OTP code resent!');
-    // Implement actual resend logic here
-  });
 
   // OTP input focus handling
   const inputs = document.querySelectorAll('.otp-input');
@@ -221,16 +233,7 @@
     });
   });
 
-  // Confirm button handler
-document.getElementById('confirmBtn').addEventListener('click', () => {
-  const otpCode = Array.from(inputs).map(input => input.value).join('');
-  if (otpCode.length !== 4 || otpCode !== generatedOTP) {
-    alert('Invalid OTP. Please try again.');
-  } else {
-    alert('OTP verified successfully!');
-    // Proceed further or redirect
-  }
-});
+
 
   // React component for OTP verification (optional, for extended use)
   const { useState, useEffect } = React;
