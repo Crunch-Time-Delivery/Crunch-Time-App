@@ -161,7 +161,7 @@
   <!-- Background Image -->
   <div class="background-section">
     <a href="https://example.com">
-      <img src="img/converted-image(4).jpg" alt="Background Image" class="background-img" />
+      <img src="img/converted-image (4).jpg" alt="Background Image" class="background-img" />
     </a>
   </div>
 
@@ -220,7 +220,7 @@
 
   <!-- Link to login -->
   <div class="login-text" style="text-align:center; margin-top:15px;">
-    <p>Already have an account? <a href="login.html">Login</a></p>
+    <p>Already have an account? <a href="http://127.0.0.1:5500/New%20Crunch%20Time/login/login.html">Login</a></p>
   </div>
 </div>
 
@@ -234,7 +234,7 @@
 <script type="text/babel">
   // Initialize Supabase client
   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // <-- replace with your actual key
+  const supabaseKey = process.env.SUPABASE_KEY; // <-- replace with your actual key
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
   // Handle role popup
@@ -247,9 +247,9 @@ document.getElementById('closePopup').onclick = () => {
 document.querySelectorAll('.roleBtn').forEach(btn => {
   btn.onclick = () => {
     const role = btn.getAttribute('data-role');
-    if(role==='user') window.location.href='search_location.html';
-    if(role==='driver') window.location.href='order_view.html';
-    if(role==='vendor') window.location.href='manage_orders.html';
+    if(role==='user') window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/user/order_process/search_location.html';
+    if(role==='driver') window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/driver/order_view.html';
+    if(role==='vendor') window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/vendor/manage_orders.html';
   }
 });
 
@@ -278,7 +278,7 @@ function CreateAccount() {
     } else {
       setSuccess('Account created!');
       localStorage.setItem('email', email);
-      window.location.href='otp.html';
+      window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/registration/otp.html';
     }
   };
 
