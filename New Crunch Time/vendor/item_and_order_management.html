@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Management Dashboard</title>
+<style>
+  body {
+    font-family: sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+  }
+
+  /* Header styles */
+  .header {
+    position: relative;
+    height: 60px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+  }
+
+  /* Vendor text more to the right (on left side of header) */
+  .vendor-text {
+    font-weight: bold;
+    color: red;
+    font-size: 1.2em;
+    margin-right: auto; /* Push to the far left */
+  }
+
+  /* Profile menu container on right side */
+  .menu-container {
+    position: relative;
+  }
+
+  /* Profile button styles */
+  .profile-btn {
+    background: #ff0000;
+    color: #fff;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    transition: background 0.3s;
+  }
+  .profile-btn:hover {
+    background: #b30000;
+  }
+  .profile-btn i {
+    margin-right: 8px;
+  }
+
+  /* Dropdown menu */
+  .dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 50px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    min-width: 180px;
+    z-index: 1000;
+  }
+  .dropdown.show {
+    display: block;
+  }
+  .dropdown a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+  }
+  .dropdown a:hover {
+    background: #f0f0f0;
+  }
+
+  /* Main container styles */
+  .container {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+
+  h2 {
+    margin-top: 0;
+    text-align: center;
+  }
+
+  /* Item Management styles */
+  .item-section {
+    margin-top: 30px;
+  }
+  /* Form layout for item input */
+  .item-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: flex-end;
+  }
+  .item-form div {
+    display: flex;
+    flex-direction: column;
+  }
+  .item-form label {
+    margin-bottom: 5px;
+  }
+  .item-form input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 200px;
+  }
+  #addItemBtn {
+    padding: 10px 15px;
+    background-color: #e70e0e;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #addItemBtn:hover {
+    background-color: #d00c0c;
+  }
+  #item-table {
+    overflow-x: auto;
+  }
+  #item-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  #item-table th, #item-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+  #item-table th {
+    background-color: #f0f0f0;
+  }
+
+  /* Order Management styles */
+  .order-section {
+    margin-top: 50px;
+  }
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .filter-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  /* Add Order Button */
+  #addOrderBtn {
+    padding: 8px 12px;
+    background-color: #f10b0b;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #addOrderBtn:hover {
+    background-color: #f20606;
+  }
+
+  /* Orders table */
+  #ordersTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  #ordersTable th, #ordersTable td {
+    border: 1px solid #ccc;
+    padding: 8px;
+  }
+  #ordersTable th {
+    background-color: #f0f0f0;
+  }
+  button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .view-btn {
+    background-color: #ec1313;
+    color: #fff;
+  }
+  .update-btn {
+    background-color: #f10d0d;
+    color: #fff;
+  }
+  .remove-btn {
+    background-color: #f44336;
+    color: #fff;
+    margin-left: 5px;
+  }
+  /* Style for Add button in actions */
+  .add-btn {
+    background-color: #f21010;
+    color: #fff;
+    margin-left: 5px;
+  }
+  button:hover {
+    opacity: 0.9;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="vendor-text">Vendor</div>
+  <div class="menu-container">
+    <button class="profile-btn" id="profileBtn">
+      <i class="fas fa-user-circle"></i> Menu
+    </button>
+    <div class="dropdown" id="profileDropdown">
+      <a href="#">Manage Orders</a>
+      <a href="#">Manage Users</a>
+      <a href="#">Payment Management</a>
+      <a href="#">Item Manage</a>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+
+  <!-- Item Management -->
+  <div class="item-section">
+    <h2>Item Management</h2>
+    <div class="item-form">
+      <div>
+        <label for="vendor">Vendor:</label>
+        <input type="text" id="vendor" placeholder="Vendor Name" />
+      </div>
+      <div>
+        <label for="item">Item:</label>
+        <input type="text" id="item" placeholder="Item Name" />
+      </div>
+      <div>
+        <label for="price">Price:</label>
+        <input type="number" id="price" placeholder="Price" />
+      </div>
+      <div>
+        <button id="addItemBtn" onclick="addItem()">Add Item</button>
+      </div>
+    </div>
+    <div id="item-table"></div>
+  </div>
+
+  <!-- Order Management -->
+  <div class="order-section">
+    <h2>Order Management</h2>
+    <div class="order-header">
+      <button id="addOrderBtn" onclick="promptAddOrder()">Add Order</button>
+      <div class="filter-section">
+        <label for="orderFilter">Filter by status:</label>
+        <select id="orderFilter" onchange="filterOrders()">
+          <option value="All">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Delivered">Delivered</option>
+        </select>
+      </div>
+    </div>
+    <table id="ordersTable">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="ordersBody">
+        <!-- Orders will be dynamically inserted -->
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Scripts -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+  // Toggle dropdown menu
+  const profileBtn = document.getElementById('profileBtn');
+  const profileDropdown = document.getElementById('profileDropdown');
+
+  profileBtn.addEventListener('click', () => {
+    profileDropdown.classList.toggle('show');
+  });
+  window.addEventListener('click', (e) => {
+    if (!e.target.closest('.menu-container')) {
+      profileDropdown.classList.remove('show');
+    }
+  });
+
+  // ------------------------------
+  // Item Management
+  let items = [];
+
+  function addItem() {
+    const vendor = document.getElementById('vendor').value.trim();
+    const item = document.getElementById('item').value.trim();
+    const price = parseFloat(document.getElementById('price').value);
+    if (vendor && item && !isNaN(price)) {
+      items.push({ vendor, item, price });
+      displayItems();
+      document.getElementById('vendor').value = '';
+      document.getElementById('item').value = '';
+      document.getElementById('price').value = '';
+    } else {
+      alert("Please fill all fields correctly.");
+    }
+  }
+
+  function displayItems() {
+    const container = document.getElementById('item-table');
+    container.innerHTML = '';
+    if (items.length === 0) {
+      container.innerHTML = "<p>No items added yet.</p>";
+      return;
+    }
+    const table = document.createElement('table');
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Vendor</th>
+          <th>Item</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+    `;
+    const tbody = document.createElement('tbody');
+    items.forEach(it => {
+      const row = tbody.insertRow();
+      row.insertCell().textContent = it.vendor;
+      row.insertCell().textContent = it.item;
+      row.insertCell().textContent = it.price.toFixed(2);
+    });
+    table.appendChild(tbody);
+    container.appendChild(table);
+  }
+
+  // ------------------------------
+  // Order Management
+  let orders = [
+    { id: 1, customer: 'Alice', total: 120.50, status: 'Pending' },
+    { id: 2, customer: 'Bob', total: 75.00, status: 'Delivered' },
+    { id: 3, customer: 'Charlie', total: 200.00, status: 'Pending' }
+  ];
+
+  function displayOrders(filteredOrders = null) {
+    const tbody = document.getElementById('ordersBody');
+    tbody.innerHTML = '';
+
+    const dataToShow = filteredOrders || orders;
+    dataToShow.forEach(order => {
+      const row = tbody.insertRow();
+      row.insertCell().textContent = order.id;
+      row.insertCell().textContent = order.customer;
+      row.insertCell().textContent = `R ${order.total.toFixed(2)}`;
+      row.insertCell().textContent = order.status;
+      const actionsCell = row.insertCell();
+      actionsCell.innerHTML = `
+        <button class="view-btn" onclick="viewOrder(${order.id})">View</button>
+        <button class="update-btn" onclick="updateOrder(${order.id})">Update</button>
+        <button class="remove-btn" onclick="removeOrder(${order.id})">Remove</button>
+        <button class="add-btn" onclick="addOrder(${order.id})">Add</button>
+      `;
+    });
+  }
+
+  function filterOrders() {
+    const filter = document.getElementById('orderFilter').value;
+    if (filter === 'All') {
+      displayOrders();
+    } else {
+      const filtered = orders.filter(o => o.status === filter);
+      displayOrders(filtered);
+    }
+  }
+
+  function viewOrder(orderId) {
+    alert("Viewing order #" + orderId);
+  }
+
+  function updateOrder(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+      const newStatus = prompt("Enter new status (Pending/Delivered):", order.status);
+      if (newStatus === 'Pending' || newStatus === 'Delivered') {
+        order.status = newStatus;
+        filterOrders();
+      } else {
+        alert("Invalid status");
+      }
+    }
+  }
+
+  function removeOrder(orderId) {
+    if (confirm("Are you sure you want to remove order #" + orderId + "?")) {
+      orders = orders.filter(o => o.id !== orderId);
+      filterOrders();
+    }
+  }
+
+  // The "Add" button in actions calls this function:
+  function addOrder(orderId) {
+    alert("Add function triggered for order ID: " + orderId);
+    // You can expand this function to, e.g., open a form or add related data
+  }
+
+  // Function to add a new order via prompt
+  function promptAddOrder() {
+    const customer = prompt("Customer Name:");
+    const totalStr = prompt("Total in R:");
+    const status = prompt("Status (Pending/Delivered):");
+    const total = parseFloat(totalStr);
+    if (customer && !isNaN(total) && (status === 'Pending' || status === 'Delivered')) {
+      const newId = orders.length > 0 ? Math.max(...orders.map(o => o.id)) + 1 : 1;
+      orders.push({ id: newId, customer, total, status });
+      filterOrders();
+    } else {
+      alert("Invalid input. Please try again.");
+    }
+  }
+
+  // Initialize display
+  window.onload = () => {
+    displayItems();
+    displayOrders();
+  };
+</script>
+</body>
+</html>
