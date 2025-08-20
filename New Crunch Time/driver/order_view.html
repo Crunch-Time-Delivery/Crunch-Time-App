@@ -1,103 +1,475 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Details</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .order-details {
-            margin-top: 20px;
-        }
-        .order-details p {
-            margin: 10px 0;
-            font-size: 16px;
-        }
-        .order-items {
-            margin-top: 20px;
-        }
-        .order-items table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .order-items th, .order-items td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        .order-items th {
-            background-color: #f2f2f2;
-        }
-        .back-button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #ff0000;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-        .back-button:hover {
-            background-color: #b30000;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Driver App</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+  }
+  /* Header style */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+  }
+  .driver-label {
+    font-weight: bold;
+    color: red;
+    font-size: 20px;
+  }
+  .menu-container {
+    position: relative;
+  }
+  .menu-button {
+    background-color: red;
+    color: #fff;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  .menu-button:hover {
+    background-color: darkred;
+  }
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #fff;
+    min-width: 200px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .dropdown-content a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+  }
+  .dropdown-content a:hover {
+    background-color: #f2f2f2;
+  }
+  .menu-container.show .dropdown-content {
+    display: block;
+  }
+
+  /* Main content styling */
+  .container {
+    max-width: 900px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+
+  h1 {
+    text-align: center;
+    color: #333;
+  }
+
+  /* Form styles */
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  input, select, button {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  input[type="file"] {
+    padding: 4px;
+  }
+
+  /* Buttons */
+ .action-btn {
+    background-color: #ff0000;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  .action-btn:hover {
+    background-color: #b30000;
+  }
+
+  /* Display none class for hiding sections */
+ .hidden {
+    display: none;
+  }
+
+  /* Order details styles */
+  .order-details {
+    margin-top: 20px;
+  }
+  .order-details p {
+    margin: 8px 0;
+  }
+
+  /* Order items table styles */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  th {
+    background: #f2f2f2;
+  }
+
+  /* Rating stars */
+  .star-rating {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .star {
+    font-size: 24px;
+    cursor: pointer;
+    color: #ccc;
+  }
+  .star.selected {
+    color: gold;
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Order Details</h1>
-        <div class="order-details">
-            <p><strong>Order ID:</strong> #12345</p>
-            <p><strong>Customer Name:</strong> John Doe</p>
-            <p><strong>Order Date:</strong> August 15, 2025</p>
-            <p><strong>Status:</strong> Processing</p>
-            <p><strong>Shipping Address:</strong> 123 Main St, City, Country</p>
-            <p><strong>Total Amount:</strong> R99.99</p>
-        </div>
-        <div class="order-items">
-            <h2>Order Items</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Product A</td>
-                        <td>2</td>
-                        <td>R29.99</td>
-                        <td>R59.98</td>
-                    </tr>
-                    <tr>
-                        <td>Product B</td>
-                        <td>1</td>
-                        <td>R40.01</td>
-                        <td>R40.01</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <a href="#" class="back-button">Back to Orders</a>
+
+<!-- Header with Driver label and menu -->
+<div class="header">
+  <div class="driver-label">Driver</div>
+  <div class="menu-container" id="menuContainer">
+    <button class="menu-button" id="menuButton">Menu ▼</button>
+    <div class="dropdown-content" id="dropdownContent">
+      <a href="#" id="orderViewLink">Order View</a>
+      <a href="#" id="newDriverLink">New Driver</a>
+      <a href="#" id="driverAccountLink">Driver View Account</a>
+      <a href="#" id="logoutLink">Logout</a>
     </div>
+  </div>
+</div>
+
+<!-- Main content area -->
+<div class="container" id="contentArea">
+  <!-- Content will be injected here via JS -->
+</div>
+
+<script>
+  // Variables to hold driver registration data and status
+  let driverRegistered = false;
+  let driverApproved = false; // Simulate admin approval
+  let driverData = {}; // Store driver info
+  let currentPage = '';
+
+  // Simulate admin approval toggle
+  // For testing, you can set driverApproved = true; to simulate admin acceptance
+
+  // Initialize app
+  document.addEventListener('DOMContentLoaded', () => {
+    // Setup menu toggle
+    const menuContainer = document.getElementById('menuContainer');
+    const menuButton = document.getElementById('menuButton');
+    menuButton.addEventListener('click', () => {
+      menuContainer.classList.toggle('show');
+    });
+    document.addEventListener('click', (e) => {
+      if (!menuContainer.contains(e.target)) {
+        menuContainer.classList.remove('show');
+      }
+    });
+
+    // Menu links
+    document.getElementById('newDriverLink').addEventListener('click', () => {
+      loadNewDriverPage();
+    });
+    document.getElementById('orderViewLink').addEventListener('click', () => {
+      loadOrderView();
+    });
+    document.getElementById('driverAccountLink').addEventListener('click', () => {
+      loadDriverAccount();
+    });
+    document.getElementById('logoutLink').addEventListener('click', () => {
+      // Reset registration
+      driverRegistered = false;
+      driverApproved = false;
+      driverData = {};
+      loadNewDriverPage();
+    });
+
+    // On start, show registration page if not registered
+    if (!driverRegistered) {
+      loadNewDriverPage();
+    } else {
+      // If registered, check approval
+      if (driverApproved) {
+        loadOrderView();
+      } else {
+        showWaitingApproval();
+      }
+    }
+  });
+
+  function showWaitingApproval() {
+    const content = document.getElementById('contentArea');
+    content.innerHTML = `
+      <h2 style="text-align:center;">Waiting for admin approval...</h2>
+    `;
+  }
+
+  function loadNewDriverPage() {
+    currentPage = 'newDriver';
+
+    const content = document.getElementById('contentArea');
+    content.innerHTML = `
+      <h1>Register as a Driver</h1>
+      <form id="driverForm">
+        <label>Upload Selfie (Driver Photo):</label>
+        <input type="file" id="driverPhoto" accept="image/*" required />
+        <label>Name:</label>
+        <input type="text" id="driverName" required />
+        <label>Email:</label>
+        <input type="email" id="driverEmail" required />
+        <label>ID Number:</label>
+        <input type="text" id="driverID" required />
+        <label>Bank Account Details:</label>
+        <input type="text" id="bankDetails" placeholder="Account Number" required />
+        <label>Bank Name:</label>
+        <select id="bankName" required>
+          <option value="">Select Bank</option>
+          <option value="FNB">FNB</option>
+          <option value="Standard Bank">Standard Bank</option>
+          <option value="Capitec">Capitec</option>
+          <option value="NedBank">NedBank</option>
+          <option value="Other">Other</option>
+        </select>
+        <div id="otherBankDiv" class="hidden">
+          <label>Specify Bank:</label>
+          <input type="text" id="otherBank" />
+        </div>
+        <label>Driver's License Upload:</label>
+        <input type="file" id="driverLicense" accept="image/*" required />
+        <label>Car Details:</label>
+        <input type="text" id="carColor" placeholder="Car Color" required />
+        <input type="text" id="carType" placeholder="Car Type" required />
+        <label>Car Photo:</label>
+        <input type="file" id="carPhoto" accept="image/*" required />
+        <label>Car Registration Number:</label>
+        <input type="text" id="carRegNumber" required />
+        <button type="submit" class="action-btn">Submit Registration</button>
+      </form>
+    `;
+
+    document.getElementById('bankName').addEventListener('change', () => {
+      const val = document.getElementById('bankName').value;
+      document.getElementById('otherBankDiv').className = (val === 'Other') ? '' : 'hidden';
+    });
+
+    document.getElementById('driverForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Collect data
+      const driverPhotoFile = document.getElementById('driverPhoto').files[0];
+      const driverLicenseFile = document.getElementById('driverLicense').files[0];
+      const carPhotoFile = document.getElementById('carPhoto').files[0];
+
+      // For demo, we'll just check if files are selected
+      if (!driverPhotoFile || !driverLicenseFile || !carPhotoFile) {
+        alert('Please upload all required images.');
+        return;
+      }
+
+      // Save data (simulate upload & admin approval)
+      driverData = {
+        name: document.getElementById('driverName').value,
+        email: document.getElementById('driverEmail').value,
+        idNumber: document.getElementById('driverID').value,
+        bankDetails: document.getElementById('bankDetails').value,
+        bankName: document.getElementById('bankName').value,
+        carColor: document.getElementById('carColor').value,
+        carType: document.getElementById('carType').value,
+        carRegNumber: document.getElementById('carRegNumber').value,
+        // Simulate images as base64 strings or URLs
+        driverPhoto: URL.createObjectURL(driverPhotoFile),
+        driverLicense: URL.createObjectURL(driverLicenseFile),
+        carPhoto: URL.createObjectURL(carPhotoFile),
+        approved: false // Initially not approved
+      };
+
+      driverRegistered = true;
+      // Simulate admin approval after delay
+      alert("Registration submitted. Waiting for admin approval...");
+      // For demo, auto-approve after 2 seconds
+      setTimeout(() => {
+        driverData.approved = true;
+        driverApproved = true;
+        loadOrderView();
+        alert("Admin approved your registration. You can now access order view.");
+      }, 2000);
+    });
+  }
+
+  function loadOrderView() {
+    if (!driverRegistered || !driverApproved) {
+      alert('You are not approved yet or not registered.');
+      loadNewDriverPage();
+      return;
+    }
+    currentPage = 'orderView';
+
+    const content = document.getElementById('contentArea');
+    // For GPS simulation, we'll just display a message
+    content.innerHTML = `
+      <h1>Order Details</h1>
+      <div class="order-details">
+        <p><strong>Order ID:</strong> #12345</p>
+        <p><strong>Customer Name:</strong> John Doe</p>
+        <p><strong>Order Date:</strong> August 15, 2025</p>
+        <p><strong>Status:</strong> Processing</p>
+        <p><strong>Order within your area:</strong> Yes (simulated GPS location)</p>
+        <p><strong>Shipping Address:</strong> 123 Main St, City</p>
+        <p><strong>Total Amount:</strong> R99.99</p>
+      </div>
+      <div class="order-items">
+        <h2>Order Items</h2>
+        <table>
+          <thead>
+            <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Product A</td><td>2</td><td>R29.99</td><td>R59.98</td></tr>
+            <tr><td>Product B</td><td>1</td><td>R40.01</td><td>R40.01</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <a href="#" class="back-button" id="backToMain">Back</a>
+    `;
+    document.getElementById('backToMain').addEventListener('click', (e) => {
+      e.preventDefault();
+      loadAppropriatePage();
+    });
+  }
+
+  function loadDriverAccount() {
+    if (!driverRegistered) {
+      alert('Please register first.');
+      loadNewDriverPage();
+      return;
+    }
+    currentPage='driverAccount';
+
+    const content = document.getElementById('contentArea');
+    // Show editable profile
+    content.innerHTML = `
+      <h1>Driver Profile</h1>
+      <form id="driverProfileForm">
+        <label>Selfie:</label>
+        <input type="file" accept="image/*" id="profilePhoto" />
+        ${driverData.driverPhoto ? `<img src="${driverData.driverPhoto}" width="100" />` : ''}
+        <label>Name:</label>
+        <input type="text" id="profileName" value="${driverData.name}" />
+        <label>Email:</label>
+        <input type="email" id="profileEmail" value="${driverData.email}" />
+        <label>ID Number:</label>
+        <input type="text" id="profileID" value="${driverData.idNumber}" />
+        <label>Bank Details:</label>
+        <input type="text" id="profileBankDetails" value="${driverData.bankDetails}" />
+        <label>Bank Name:</label>
+        <select id="profileBankName">
+          <option value="FNB" ${driverData.bankName==='FNB'?'selected':''}>FNB</option>
+          <option value="Standard Bank" ${driverData.bankName==='Standard Bank'?'selected':''}>Standard Bank</option>
+          <option value="Capitec" ${driverData.bankName==='Capitec'?'selected':''}>Capitec</option>
+          <option value="NedBank" ${driverData.bankName==='NedBank'?'selected':''}>NedBank</option>
+          <option value="Other" ${driverData.bankName==='Other'?'selected':''}>Other</option>
+        </select>
+        <div id="editOtherBankDiv" class="${driverData.bankName==='Other'?'':'hidden'}">
+          <label>Specify Bank:</label>
+          <input type="text" id="editOtherBank" value="${driverData.otherBank || ''}" />
+        </div>
+        <label>Driver License:</label>
+        <input type="file" accept="image/*" id="profileLicense" />
+        <label>Car Color:</label>
+        <input type="text" id="profileCarColor" value="${driverData.carColor}" />
+        <label>Car Type:</label>
+        <input type="text" id="profileCarType" value="${driverData.carType}" />
+        <label>Car Photo:</label>
+        <input type="file" accept="image/*" id="profileCarPhoto" />
+        <label>Car Registration Number:</label>
+        <input type="text" id="profileCarReg" value="${driverData.carRegNumber}" />
+        <button type="submit" class="action-btn">Save</button>
+      </form>
+      <button id="terminateBtn" style="margin-top:10px; background-color:red;">Terminate Driver</button>
+      <a href="#" class="back-button" id="backToMain">Back</a>
+    `;
+
+    // Show/hide other bank input
+    document.getElementById('profileBankName').addEventListener('change', () => {
+      document.getElementById('editOtherBankDiv').className = (document.getElementById('profileBankName').value==='Other')?'':'hidden';
+    });
+
+    // Load existing images
+    if (driverData.driverPhoto) {
+      // Show existing driver photo if available
+    }
+
+    document.getElementById('driverProfileForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Collect data
+      // For simplicity, we won't handle image uploads here, just simulate
+      driverData.name = document.getElementById('profileName').value;
+      driverData.email = document.getElementById('profileEmail').value;
+      driverData.idNumber = document.getElementById('profileID').value;
+      driverData.bankDetails = document.getElementById('profileBankDetails').value;
+      driverData.bankName = document.getElementById('profileBankName').value;
+      driverData.carColor = document.getElementById('profileCarColor').value;
+      driverData.carType = document.getElementById('profileCarType').value;
+      driverData.carRegNumber = document.getElementById('profileCarReg').value;
+
+      // Send email to admin (simulate)
+      alert('Profile saved and sent to admin.');
+    });
+
+    document.getElementById('terminateBtn').addEventListener('click', () => {
+      if (confirm('Are you sure you want to terminate your driver account? Admin will be notified.')) {
+        // Simulate termination
+        alert('Termination request sent to admin.');
+        // Remove driver data
+        driverRegistered=false;
+        driverApproved=false;
+        driverData={};
+        loadNewDriverPage();
+      }
+    });
+  }
+
+  function loadAppropriatePage() {
+    if (!driverRegistered) {
+      loadNewDriverPage();
+    } else if (driverApproved) {
+      loadOrderView();
+    } else {
+      showWaitingApproval();
+    }
+  }
+</script>
+
 </body>
 </html>
