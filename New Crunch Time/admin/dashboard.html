@@ -1,566 +1,696 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard</title>
-  <style>
-    /* Reset and basic styles */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin</title>
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {
+    font-family: Arial, sans-serif; background:#f0f2f5; margin:0;
+  }
+  /* Top header with CRUNCHTIME */
+  .top-header {
+    width: 100%;
+    background: #fff;
+    padding: 10px 20px;
+    font-weight: bold;
+    font-size: 24px;
+    color: red;
+    text-align: center;
+    border-bottom: 1px solid #ccc;
+  }
+  /* Fixed Header styles */
+  .header {
+    display:flex; justify-content:space-between; align-items:center;
+    background:red; padding:10px 20px; color:#fff; position:fixed; top:0; width:100%; height:60px; z-index:1000; border-bottom:1px solid #ccc;
+  }
+  /* Make sure content below accounts for fixed header height */
+  body { padding-top: 70px; }
 
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f2f5;
-    }
+  /* Styles for menu container and dropdown */
+  .menu-container {
+    position:relative;
+  }
+  #menuDropdown {
+    display:none;
+    position:absolute; top:100%; left:0; background:#fff; border:1px solid #ccc; padding:5px; box-shadow:0 2px 8px rgba(0,0,0,0.2);
+    z-index: 1001;
+  }
+  #menuDropdown button {
+    display:block; width:100%; padding:8px; border:none; background:none; cursor:pointer;
+  }
 
-    /* Top Red Bar */
-    .top-bar {
-      background-color: red;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      position: relative;
-    }
+  /* Profile section styles */
+  .profile-section {
+    display:flex; align-items:center; cursor:pointer; margin-left:auto;
+  }
+  #profileImage {
+    border-radius:50%; width:40px; height:40px; object-fit:cover;
+  }
+  .admin-name {
+    margin-left:10px;
+  }
 
-    /* Left side: Profile info */
-    .profile-section {
-      display: flex;
-      align-items: center;
-    }
-    .profile-picture {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: #fff; /* Placeholder */
-      margin-right: 10px;
-    }
-    .admin-name {
-      color: #fff;
-      font-weight: bold;
-    }
+  /* Sections hidden/shown */
+  .section { display:none; padding-top:70px; }
+  .section.active { display:block; }
+  /* Buttons styling */
+  button {
+    padding:8px 12px; border:none; border-radius:4px; cursor:pointer; margin:5px;
+  }
+  .btn-primary { background:#4CAF50; color:#fff; }
+  .btn-primary:hover { background:#45a049; }
 
-    /* Menu icon */
-    .menu-icon {
-      font-size: 24px;
-      color: #fff;
-      cursor: pointer;
-    }
+  /* Modal overlays for Register, OTP, Login, Drivers/Vendors accept/reject */
+  .modal {
+    display:flex; align-items:center; justify-content:center;
+    position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;
+  }
+  .modal-box {
+    background:#fff; padding:30px; border-radius:8px; width:350px; max-height:80%; overflow-y:auto;
+  }
 
-    /* Main Content */
-    .dashboard-container {
-      padding: 20px;
-    }
+  /* Chart container styling */
+  .charts-container {
+    display:flex; gap:20px; flex-wrap:wrap; margin-top:20px;
+  }
 
-    /* Filters and buttons */
-    .filters {
-      margin-top: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .filter-btn {
-      padding: 8px 12px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-    }
-    .filter-btn:hover {
-      background-color: #eee;
-    }
+  /* Common styles for sections */
+  h2 {
+    margin-bottom:10px;
+  }
 
-    /* Income summary */
-    .income-summary {
-      display: flex;
-      gap: 20px;
-      margin-top: 20px;
-    }
-    .income-box {
-      background-color: #fff;
-      padding: 15px;
-      flex: 1;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .income-box h3 {
-      margin-bottom: 10px;
-    }
-    .income-amount {
-      font-size: 24px;
-      font-weight: bold;
-    }
+  /* Driver profile styling */
+  .driver-profile {
+    display:flex; align-items:center; margin-bottom:20px; border:1px solid #ccc; border-radius:8px; padding:10px;
+  }
+  .driver-img {
+    width:80px; height:80px; border-radius:50%; object-fit:cover; margin-right:15px; background:#eee;
+  }
+  .driver-info {
+    flex:1;
+  }
+  .driver-info h4 {
+    margin:0 0 5px 0;
+  }
+  .driver-details p {
+    margin:2px 0;
+  }
 
-    /* Performance section */
-    .performance-section {
-      margin-top: 30px;
-    }
-    .performance-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: relative;
-    }
-    .performance-title {
-      font-size: 20px;
-      font-weight: bold;
-    }
-    .performance-details {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .performance-icon {
-      font-size: 24px;
-    }
-    .order-rate {
-      position: absolute;
-      top: 10px;
-      left: 20px;
-      font-weight: bold;
-    }
+  /* Bottom right hyperlinks */
+  .bottom-links {
+    position: absolute; right: 20px; bottom: 20px; display:flex; flex-direction:column; align-items:flex-end;
+  }
+  .hyperlink-red {
+    color:red; text-decoration:underline; cursor:pointer; margin-top:10px; font-weight:bold;
+  }
 
-    /* Year dropdown */
-    .year-dropdown {
-      position: relative;
-    }
-    .year-button {
-      padding: 8px 12px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      cursor: pointer;
-    }
-    .year-options {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      background: #fff;
-      border: 1px solid #ccc;
-      display: none; /* Hidden by default, toggle with JavaScript */
-      flex-direction: column;
-      z-index: 10;
-    }
-    /* Show dropdown when active */
-    .year-dropdown.active .year-options {
-      display: flex;
-    }
-
-    /* Boxes for order total and target */
-    .boxes-container {
-      display: flex;
-      gap: 20px;
-      margin-top: 20px;
-    }
-    .box {
-      background-color: #fff;
-      padding: 15px;
-      flex: 1;
-      border-radius: 8px;
-      position: relative;
-    }
-    .box-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .profile-icon {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background-color: #ccc;
-      margin-right: 10px;
-    }
-    .box-title {
-      font-weight: bold;
-    }
-    .box-amount {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-    .target-container {
-      margin-top: 10px;
-    }
-    .linear-bar {
-      height: 10px;
-      background-color: #ddd;
-      margin-top: 5px;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-    .target-progress {
-      height: 10px;
-      background-color: #4caf50;
-      width: 75%; /* Example target progress */
-    }
-
-    /* Select options and icons */
-    .selection-row {
-      display: flex;
-      gap: 20px;
-      margin-top: 20px;
-    }
-    .select-box {
-      flex: 1;
-    }
-    .select-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .select-header h4 {
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-    .select-options {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .option-icon {
-      width: 30px;
-      height: 30px;
-      background-color: #eee;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      border-radius: 50%;
-    }
-    .option-number {
-      font-size: 14px;
-    }
-
-    /* Wave graph placeholder */
-    .wave-graph {
-      height: 50px;
-      background-color: #e0e0e0;
-      margin-top: 10px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-    }
-
-    /* Bottom stats */
-    .stats {
-      margin-top: 30px;
-    }
-    .stat-row {
-      display: flex;
-      align-items: center;
-      margin-bottom: 15px;
-      position: relative;
-    }
-    .stat-button {
-      position: fixed;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      padding: 8px 12px;
-      background-color: red;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .stat-info {
-      margin-left: 50px;
-      font-size: 14px;
-    }
-
-    /* Popular food section */
-    .popular-food {
-      margin-top: 30px;
-    }
-    .food-header {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .circle-graph {
-      width: 200px;
-      height: 200px;
-      background-color: #ddd;
-      border-radius: 50%;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-    }
-    .food-types {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    .food-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .food-color {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-    }
-    .food-label {
-      font-size: 14px;
-    }
-  </style>
+  /* Additional styling for establishment and restaurant */
+  #establishment, #restaurant {
+    padding: 20px;
+  }
+  /* Establishment card style */
+  .establishment-card {
+    border: 1px solid #ccc; padding:10px; border-radius:8px; margin-bottom:10px; background:#fff;
+  }
+  /* Restaurant box style */
+  .restaurant-box {
+    border: 1px solid #ccc; padding:10px; border-radius:8px; margin-bottom:10px; display:flex; align-items:center; gap:10px;
+  }
+</style>
 </head>
 <body>
-  <div id="root">
-    <!-- Static HTML content based on JSX -->
-    <div>
-      <!-- Top Red Bar -->
-      <div class="top-bar">
-        <div class="profile-section">
-          <div class="profile-picture"></div>
-          <div class="admin-name">Admin Dashboard</div>
-        </div>
-        <div class="menu-icon" title="Menu">&#9776;</div>
+
+<!-- Register Modal -->
+<div id="registerModal" class="modal" style="display:flex;">
+  <div class="modal-box">
+    <h3>Register New Admin</h3>
+    <input type="email" id="regEmail" placeholder="Invitation Email" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <input type="text" id="regName" placeholder="Full Name" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <input type="password" id="regPassword" placeholder="Password" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <button style="width:100%;" onclick="startRegistration()">Create Account</button>
+  </div>
+</div>
+
+<!-- OTP Modal -->
+<div id="otpModal" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h3>Enter OTP</h3>
+    <input type="text" id="otpInput" placeholder="OTP" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <button style="width:100%;" onclick="verifyOTP()">Verify OTP</button>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h3>Admin Login</h3>
+    <input type="text" id="username" placeholder="Username" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <input type="password" id="password" placeholder="Password" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <button style="width:100%;" onclick="verifyLogin()">Login</button>
+  </div>
+</div>
+
+<!-- Updated Fixed Header with Dropdown Menu and Profile -->
+<div class="header">
+  <!-- Left: Menu Icon with Dropdown -->
+  <div class="menu-container">
+    <div class="menu-icon" title="Menu" style="cursor:pointer; font-size:24px;" onclick="toggleMenuDropdown()">☰</div>
+    <div id="menuDropdown">
+      <button onclick="showSection('dashboard')">Dashboard</button>
+      <button onclick="showSection('establishment')">Establishment</button>
+      <button onclick="showSection('restaurant')">Restaurant Menu</button>
+      <button onclick="showSection('Driver')">Driver</button>
+      <button onclick="showSection('Vendor')">Vendor</button>
+    </div>
+  </div>
+ 
+  <!-- Right: User Profile -->
+  <div class="profile-section" style="display:flex; align-items:center; cursor:pointer;" onclick="triggerProfileImageUpload()">
+    <img src="https://via.placeholder.com/40" id="profileImage" alt="Profile" />
+    <input type="file" id="profileImageInput" accept="image/*" style="display:none;" onchange="updateProfileImage(event)">
+    <div class="admin-name" id="adminName">Admin Name</div>
+  </div>
+</div>
+
+<!-- Sections -->
+
+<!-- Dashboard -->
+<div id="dashboard" class="section active">
+  <!-- Dashboard Chart Container -->
+  <div>
+    <div class="top-bar" style="margin-top:0;">
+      <div class="profile-section">
+        <div class="profile-picture"></div>
+        <div class="admin-name">Admin Dashboard</div>
       </div>
-
-      <!-- Main Dashboard Content -->
-      <div class="dashboard-container">
-        <!-- Filter Establishments Button and Income Summary -->
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div class="filter-btn">
-            Filter Establishments ▼
+      <div class="menu-icon" title="Menu">☰</div>
+    </div>
+    <div class="dashboard-container">
+      <!-- Filters & Income -->
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 20px 0 20px;">
+        <div class="filter-btn">
+          Filter Establishments ▼
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button style="background-color:red; color:#fff;">Total Income</button>
+          <button style="background-color:red; color:#fff;">Income</button>
+          <button style="background-color:red; color:#fff;">Expense</button>
+          <button style="background-color:red; color:#fff;">Withdraw</button>
+        </div>
+      </div>
+      <div style="margin-top:20px; padding-left:20px;">
+        <h2>Total Income: R10,000</h2>
+      </div>
+      <!-- Performance -->
+      <div class="performance-section" style="margin-top:20px; padding:0 20px;">
+        <div class="performance-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="performance-title" style="font-size:20px;font-weight:bold;">Performance</div>
+            <div class="performance-icon" title="Performance" style="font-size:24px;">📈</div>
           </div>
-          <div style="display:flex; gap:10px; align-items:center;">
-            <button style="background-color:red; color:#fff; border:none; padding:8px 12px; border-radius:4px;">Total Income</button>
-            <button style="background-color:red; color:#fff; border:none; padding:8px 12px; border-radius:4px;">Income</button>
-            <button style="background-color:red; color:#fff; border:none; padding:8px 12px; border-radius:4px;">Expense</button>
-            <button style="background-color:red; color:#fff; border:none; padding:8px 12px; border-radius:4px;">Withdraw</button>
+          <!-- Year Dropdown -->
+          <div class="year-dropdown" style="position:relative;">
+            <button class="year-button" onclick="toggleYearDropdown()">January ▼</button>
+            <div class="year-options" id="yearOptions" style="display:none; position:absolute; top:100%; right:0; background:#fff; border:1px solid #ccc; flex-direction:column; z-index:10;">
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('January')">January</div>
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('February')">February</div>
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('March')">March</div>
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('April')">April</div>
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('May')">May</div>
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('June')">June</div>
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('July')">July</div>
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('August')">August</div>
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('September')">September</div>
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('October')">October</div>
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('November')">November</div>
+              <div style="padding:8px; cursor:pointer;" onclick="selectMonth('December')">December</div>
+            </div>
           </div>
         </div>
-
-        <!-- Income Display -->
-        <div style="margin-top:20px;">
-          <h2>Total Income: R10,000</h2>
+        <!-- Boxes for Order Total & Target -->
+        <div class="boxes-container" style="display:flex; gap:20px; margin-top:20px;">
+          <!-- Order Total -->
+          <div class="box" style="background:#fff; padding:15px; flex:1; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+            <div class="box-header" style="display:flex; align-items:center; margin-bottom:10px;">
+              <div class="profile-icon" style="width:30px; height:30px; border-radius:50%; background:#ccc; margin-right:10px;"></div>
+              <div class="box-title" style="font-weight:bold;">Order Total</div>
+            </div>
+            <div class="box-amount" style="font-size:20px;">$5000</div>
+          </div>
+          <!-- Target -->
+          <div class="box" style="background:#fff; padding:15px; flex:1; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+            <div class="box-header" style="display:flex; align-items:center; margin-bottom:10px;">
+              <div class="profile-icon" style="width:30px; height:30px; border-radius:50%; background:#ccc; margin-right:10px;"></div>
+              <div class="box-title" style="font-weight:bold;">Target</div>
+            </div>
+            <div class="target-container" style="margin-top:10px;">
+              <div class="linear-bar" style="height:10px; background:#ddd; border-radius:5px; overflow:hidden;">
+                <div class="target-progress" style="width:75%; height:10px; background:#4caf50;"></div>
+              </div>
+              <div style="margin-top:10px;">Target: 75%</div>
+            </div>
+          </div>
         </div>
-
-        <!-- Performance Heading & Percentage -->
-        <div class="performance-section">
-          <div class="performance-header">
-           <!--<div class="order-rate">Order Rate</div>    (Make another container this heading)--> 
-            <div style="display:flex; align-items:center; gap:10px;">
-              <div class="performance-title">Performance</div>
-              <div class="performance-icon" title="Performance">&#128200;</div>
+        <!-- Select Last Month & Last Year -->
+        <div class="selection-row" style="display:flex; gap:20px; margin-top:20px;">
+          <!-- Last Month -->
+          <div class="select-box" style="flex:1;">
+            <div class="select-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <h4>One This Month</h4>
+              <div class="option-icon" title="Options" style="width:30px; height:30px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">⋮</div>
             </div>
-
-
-            <!-- Year Dropdown -->
-            <div class="year-dropdown" style="position:relative;">
-              <button class="year-button" onclick="toggleYearDropdown()">January ▼</button>
-              <div class="year-options" id="yearOptions">
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('January')">January</div>
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('February')">February</div>
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('March')">March</div>
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('April')">April</div>
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('May')">May</div>
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('June')">June</div>
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('July')">July</div>
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('August')">August</div>
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('September')">September</div>
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('October')">October</div>
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('November')">November</div>
-                <div style="padding:8px; cursor:pointer;" onclick="selectMonth('December')">December</div>
-                <!-- Add more months as needed -->
-              </div>
+            <div>Number: 80</div>
+            <div class="wave-graph" style="height:50px; background:#e0e0e0; margin-top:10px; border-radius:4px; display:flex; align-items:center; justify-content:center;">Wave Graph</div>
+          </div>
+          <!-- Last Year -->
+          <div class="select-box" style="flex:1;">
+            <div class="select-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <h4>One Last</h4>
+              <div class="option-icon" title="Options" style="width:30px; height:30px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">⋮</div>
+            </div>
+            <div>Number: 70</div>
+            <div class="wave-graph" style="height:50px; background:#e0e0e0; margin-top:10px; border-radius:4px; display:flex; align-items:center; justify-content:center;">Wave Graph</div>
+          </div>
+        </div>
+        <!-- Bottom Order Stats -->
+        <div class="stats" style="margin-top:30px;">
+          <!-- Orders Complete -->
+          <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
+            <button class="stat-button" title="Orders Complete" style="position:fixed; left:10px; top:50%; transform:translateY(-50%); padding:8px 12px; background:red; color:#fff; border:none; border-radius:4px; cursor:pointer;">✓</button>
+            <div class="stat-info" style="margin-left:50px;">Total Orders Complete: 120</div>
+          </div>
+          <!-- Orders Delivered -->
+          <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
+            <button class="stat-button" title="Orders Delivered" style="position:fixed; left:10px; top:50%; transform:translateY(-50%); padding:8px 12px; background:red; color:#fff; border:none; border-radius:4px; cursor:pointer;">✓</button>
+            <div class="stat-info" style="margin-left:50px;">Total Orders Delivered: 100</div>
+          </div>
+          <!-- Orders Cancelled -->
+          <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
+            <button class="stat-button" title="Orders Cancelled" style="position:fixed; left:10px; top:50%; transform:translateY(-50%); padding:8px 12px; background:#f44336; color:#fff; border:none; border-radius:4px; cursor:pointer;">⚠</button>
+            <div class="stat-info" style="margin-left:50px;">Total Orders Cancelled: 10</div>
+          </div>
+          <!-- Orders Pending -->
+          <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
+            <button class="stat-button" title="Orders Pending" style="position:fixed; left:10px; top:50%; transform:translateY(-50%); padding:8px 12px; background:#2196F3; color:#fff; border:none; border-radius:4px; cursor:pointer;">⏳</button>
+            <div class="stat-info" style="margin-left:50px;">Orders Pending: 10</div>
+          </div>
+        </div>
+        <!-- Popular Food -->
+        <div class="popular-food" style="margin-top:30px;">
+          <div class="food-header" style="font-size:20px; font-weight:bold; margin-bottom:10px;">Popular Food</div>
+          <div class="circle-graph" style="width:200px; height:200px; background:#ddd; border-radius:50%; margin-bottom:20px; display:flex; align-items:center; justify-content:center; font-weight:bold;">Circle Graph</div>
+          <!-- Food Types -->
+          <div class="food-types" style="display:flex; flex-wrap:wrap; gap:15px;">
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF6384;"></div>
+              <div>Fast Food - 40%</div>
+            </div>
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#36A2EB;"></div>
+              <div>Asian - 20%</div>
+            </div>
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FFCE56;"></div>
+              <div>Pasta - 15%</div>
+            </div>
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#4BC0C0;"></div>
+              <div>Mexican - 10%</div>
+            </div>
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#9966FF;"></div>
+              <div>Turkish - 5%</div>
+            </div>
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF9F40;"></div>
+              <div>Desserts - 10%</div>
             </div>
           </div>
-
-          <!-- Boxes for Order Total and Target -->
-          <div class="boxes-container">
-            <!-- Order Total -->
-            <div class="box">
-              <div class="box-header">
-                <div class="profile-icon"></div>
-                <div class="box-title">Order Total</div>
+          <!-- Order Delivered Bar -->
+          <div style="margin-top:20px; font-weight:bold;">Order Delivered</div>
+          <div style="margin-top:10px;">
+            <!-- Each food type bar -->
+            <div style="margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between;">
+                <div>Fast Food</div><div>40%</div>
               </div>
-              <div class="box-amount">$5000</div>
-            </div>
-            <!-- Target -->
-            <div class="box">
-              <div class="box-header">
-                <div class="profile-icon"></div>
-                <div class="box-title">Target</div>
-              </div>
-              <div class="target-container">
-                <div class="linear-bar">
-                  <div class="target-progress"></div>
-                </div>
-                <div style="margin-top:10px;">Target: 75%</div>
+              <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                <div style="width:40%; height:10px; background:#FF6384;"></div>
               </div>
             </div>
-          </div>
-
-          <!-- Select Options for Last Month & Last Year -->
-          <div class="selection-row" style="display:flex; gap:20px; margin-top:20px;">
-            <!-- Last Month -->
-            <div class="select-box">
-              <div class="select-header" style="display:flex; justify-content:space-between; align-items:center;">
-                <h4>One This Month</h4>
-                <div class="option-icon" title="Options">&#8942;</div>
+            <div style="margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between;">
+                <div>Asian</div><div>20%</div>
               </div>
-              <div>Number: 80</div>
-              <!-- Wave Graph Placeholder -->
-               <!-- Add BarGraph Display here -->
-              <div class="wave-graph">Wave Graph</div>
-            </div>
-            <!-- Last Year -->
-            <div class="select-box">
-              <div class="select-header" style="display:flex; justify-content:space-between; align-items:center;">
-                <h4>One Last</h4>
-                <div class="option-icon" title="Options">&#8942;</div>
-              </div>
-              <div>Number: 70</div>
-              <!-- Wave Graph Placeholder -->
-              <div class="wave-graph">Wave Graph</div>
-            </div>
-          </div>
-
-          <!-- Bottom Order Stats -->
-          <div class="stats" style="margin-top:30px;">
-            <!-- Orders Complete -->
-            <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
-              <button class="stat-button" title="Orders Complete">&#10003;</button>
-              <div class="stat-info">Total Orders Complete: 120</div>
-            </div>
-            <!-- Orders Delivered -->
-            <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
-              <button class="stat-button" title="Orders Delivered">&#10003;</button>
-              <div class="stat-info">Total Orders Delivered: 100</div>
-            </div>
-            <!-- Orders Cancelled -->
-            <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
-              <button class="stat-button" title="Orders Cancelled">&#9888;</button>
-              <div class="stat-info">Total Orders Cancelled: 10</div>
-            </div>
-            <!-- Orders Pending -->
-            <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
-              <button class="stat-button" title="Orders Pending">&#9203;</button>
-              <div class="stat-info">Orders Pending: 10</div>
-            </div>
-          </div>
-
-          <!-- Popular Food Section -->
-          <div class="popular-food" style="margin-top:30px;">
-            <div class="food-header">Popular Food</div>
-            <!-- Circular Graph Placeholder -->
-            <div class="circle-graph">Circle Graph</div>
-            <!-- Add the CircleGraph here -->
-            <!-- Food Types -->
-            <div class="food-types">
-              <div class="food-item">
-                <div class="food-color" style="background-color:#FF6384"></div>
-                <div>Fast Food - 40%</div>
-              </div>
-              <div class="food-item">
-                <div class="food-color" style="background-color:#36A2EB"></div>
-                <div>Asian - 20%</div>
-              </div>
-              <div class="food-item">
-                <div class="food-color" style="background-color:#FFCE56"></div>
-                <div>Pasta - 15%</div>
-              </div>
-              <div class="food-item">
-                <div class="food-color" style="background-color:#4BC0C0"></div>
-                <div>Mexican - 10%</div>
-              </div>
-              <div class="food-item">
-                <div class="food-color" style="background-color:#9966FF"></div>
-                <div>Turkish - 5%</div>
-              </div>
-              <div class="food-item">
-                <div class="food-color" style="background-color:#FF9F40"></div>
-                <div>Desserts - 10%</div>
+              <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                <div style="width:20%; height:10px; background:#36A2EB;"></div>
               </div>
             </div>
-            <!-- Order Delivered Text -->
-            <div style="margin-top:20px; font-weight:bold;">Order Delivered</div>
-            <!-- Linear Bar for Food Types -->
-            <div style="margin-top:10px;">
-              <!-- For each food type, show bar -->
-              <div style="margin-bottom:8px;">
-                <div style="display:flex; justify-content:space-between;">
-                  <div>Fast Food</div>
-                  <div>40%</div>
-                </div>
-                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
-                  <div style="width:40%; height:10px; background-color:#FF6384;"></div>
-                </div>
+            <div style="margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between;">
+                <div>Pasta</div><div>15%</div>
               </div>
-              <div style="margin-bottom:8px;">
-                <div style="display:flex; justify-content:space-between;">
-                  <div>Asian</div>
-                  <div>20%</div>
-                </div>
-                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
-                  <div style="width:20%; height:10px; background-color:#36A2EB;"></div>
-                </div>
+              <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                <div style="width:15%; height:10px; background:#FFCE56;"></div>
               </div>
-              <div style="margin-bottom:8px;">
-                <div style="display:flex; justify-content:space-between;">
-                  <div>Pasta</div>
-                  <div>15%</div>
-                </div>
-                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
-                  <div style="width:15%; height:10px; background-color:#FFCE56;"></div>
-                </div>
+            </div>
+            <div style="margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between;">
+                <div>Mexican</div><div>10%</div>
               </div>
-              <div style="margin-bottom:8px;">
-                <div style="display:flex; justify-content:space-between;">
-                  <div>Mexican</div>
-                  <div>10%</div>
-                </div>
-                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
-                  <div style="width:10%; height:10px; background-color:#4BC0C0;"></div>
-                </div>
+              <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                <div style="width:10%; height:10px; background:#4BC0C0;"></div>
               </div>
-              <div style="margin-bottom:8px;">
-                <div style="display:flex; justify-content:space-between;">
-                  <div>Turkish</div>
-                  <div>5%</div>
-                </div>
-                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
-                  <div style="width:5%; height:10px; background-color:#9966FF;"></div>
-                </div>
+            </div>
+            <div style="margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between;">
+                <div>Turkish</div><div>5%</div>
               </div>
-              <div style="margin-bottom:8px;">
-                <div style="display:flex; justify-content:space-between;">
-                  <div>Desserts</div>
-                  <div>10%</div>
-                </div>
-                <div class="linear-bar" style="background-color:#ddd; height:10px; border-radius:5px; overflow:hidden;">
-                  <div style="width:10%; height:10px; background-color:#FF9F40;"></div>
-                </div>
+              <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                <div style="width:5%; height:10px; background:#9966FF;"></div>
+              </div>
+            </div>
+            <div style="margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between;">
+                <div>Desserts</div><div>10%</div>
+              </div>
+              <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+                <div style="width:10%; height:10px; background:#FF9F40;"></div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-
-    <script>
-      // JavaScript for dropdown toggle
-      function toggleYearDropdown() {
-        document.getElementById('yearOptions').parentElement.classList.toggle('active');
-      }
-      function selectMonth(month) {
-        document.querySelector('.year-button').textContent = month + ' ▼';
-        document.getElementById('yearOptions').parentElement.classList.remove('active');
-      }
-    </script>
   </div>
+  <!-- END Dashboard HTML -->
+</div>
+
+<!-- Establishment -->
+<div id="establishment" class="section">
+  <h2>Establishment Management</h2>
+  <div style="padding:20px;">
+    <div class="establishment-card">
+      <h3>Sample Restaurant</h3>
+      <p>Address: 123 Main St</p>
+      <p>Contact: 555-1234</p>
+    </div>
+    <button onclick="addEstablishment()">Add Establishment</button>
+  </div>
+</div>
+
+<!-- Restaurant Menu -->
+<div id="restaurant" class="section">
+  <h2>Restaurant Menu</h2>
+  <div id="restaurantContainer" style="padding:20px;">
+    <!-- Dynamic entries will be added here -->
+  </div>
+  <button id="addRestaurantBtn" style="margin:20px; padding:10px 20px; background:red; color:#fff; border:none; border-radius:6px; cursor:pointer;">Add Restaurant</button>
+</div>
+
+<!-- Driver -->
+<div id="Driver" class="section" style="padding-top:70px; position:relative;">
+  <h2 style="margin-left:20px;">Driver Information & Orders</h2>
+  <div style="padding:20px;">
+    <!-- Example driver profiles -->
+    <div class="driver-profile">
+      <img src="https://via.placeholder.com/80" class="driver-img" alt="Driver Picture" />
+      <div class="driver-info">
+        <h4>John Doe</h4>
+        <div class="driver-details">
+          <p>Contact: 123-456-7890</p>
+          <p>Plate: ABC-1234</p>
+          <p>Email: john@example.com</p>
+          <p>Ratings: 4.5 ★</p>
+          <p>Comments: Very punctual.</p>
+        </div>
+        <button class="hyperlink-red" onclick="showPastDeliveries('John Doe')">Past Deliveries</button>
+        <button class="hyperlink-red" onclick="showDocuments('John Doe')">View Documents</button>
+      </div>
+    </div>
+    <div class="driver-profile">
+      <img src="https://via.placeholder.com/80" class="driver-img" alt="Driver Picture" />
+      <div class="driver-info">
+        <h4>Jane Smith</h4>
+        <div class="driver-details">
+          <p>Contact: 987-654-3210</p>
+          <p>Plate: XYZ-5678</p>
+          <p>Email: jane@example.com</p>
+          <p>Ratings: 4.8 ★</p>
+          <p>Comments: Great driver.</p>
+        </div>
+        <button class="hyperlink-red" onclick="showPastDeliveries('Jane Smith')">Past Deliveries</button>
+        <button class="hyperlink-red" onclick="showDocuments('Jane Smith')">View Documents</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Vendor -->
+<div id="Vendor" class="section" style="padding-top:70px; position:relative;">
+  <h2 style="margin-left:20px;">Vendor Management</h2>
+  <div style="padding:20px;">
+    <button onclick="showVendors()">Show All Vendors</button>
+  </div>
+</div>
+
+<!-- Scripts for functionality -->
+<script>
+  // Show section
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.style.display='none');
+    document.getElementById(id).style.display='block';
+  }
+
+  // Toggle dropdown menu
+  function toggleMenuDropdown() {
+    const dropdown = document.getElementById('menuDropdown');
+    if (dropdown.style.display === 'block') {
+      dropdown.style.display='none';
+    } else {
+      dropdown.style.display='block';
+    }
+  }
+
+  // Close dropdown if clicked outside
+  document.addEventListener('click', function(event) {
+    const menuContainer = document.querySelector('.menu-container');
+    if (!menuContainer.contains(event.target)) {
+      document.getElementById('menuDropdown').style.display='none';
+    }
+  });
+
+  // Profile image upload
+  function triggerProfileImageUpload() {
+    document.getElementById('profileImageInput').click();
+  }
+
+  function updateProfileImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader=new FileReader();
+      reader.onload=function(e) {
+        document.getElementById('profileImage').src=e.target.result;
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // Registration and login
+  let tempAdminData = {};
+  let generatedOTP = '';
+
+  function startRegistration() {
+    const email = document.getElementById('regEmail').value.trim();
+    const name = document.getElementById('regName').value.trim();
+    const password = document.getElementById('regPassword').value.trim();
+    if(!name || !password){
+      alert('Please fill all fields.');
+      return;
+    }
+    tempAdminData = {email, name, password};
+    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    alert('Your OTP is: ' + generatedOTP);
+    document.getElementById('registerModal').style.display='none';
+    document.getElementById('otpModal').style.display='flex';
+  }
+
+  function verifyOTP() {
+    const inputOTP = document.getElementById('otpInput').value.trim();
+    if(inputOTP===generatedOTP){
+      alert('Registration verified! Please login.');
+      localStorage.setItem('admin', JSON.stringify(tempAdminData));
+      tempAdminData={};
+      generatedOTP='';
+      document.getElementById('otpModal').style.display='none';
+      document.getElementById('loginModal').style.display='flex';
+    } else {
+      alert('Incorrect OTP. Try again.');
+    }
+  }
+
+  function verifyLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const adminStr = localStorage.getItem('admin');
+    if(!adminStr){
+      alert('No admin registered. Please register first.');
+      return;
+    }
+    const admin=JSON.parse(adminStr);
+    if(username===admin.email && password===admin.password){
+      alert('Login successful!');
+      document.getElementById('loginModal').style.display='none';
+      showSection('dashboard');
+    } else {
+      alert('Invalid credentials.');
+    }
+  }
+
+  // Initialize charts
+  function initCharts() {
+    const ctxRev = document.getElementById('revenueChart')?.getContext('2d');
+    if(ctxRev){
+      new Chart(ctxRev, {
+        type:'line',
+        data:{
+          labels:['Jan','Feb','Mar','Apr','May','Jun'],
+          datasets:[{
+            label:'Revenue',
+            data:[1200,1500,1800,2000,1700,2200],
+            backgroundColor:'rgba(75,192,192,0.2)',
+            borderColor:'rgba(75,192,192,1)',
+            borderWidth:2,
+            fill:true,
+            tension:0.4
+          }]
+        },
+        options:{ responsive:true, plugins:{ legend:{ display:false } } }
+      });
+    }
+    const ctxPay = document.getElementById('paymentsChart')?.getContext('2d');
+    if(ctxPay){
+      new Chart(ctxPay, {
+        type:'bar',
+        data:{
+          labels:['Paid','Pending','Cancelled'],
+          datasets:[{
+            label:'Payments',
+            data:[50,20,10],
+            backgroundColor:['#4CAF50','#FFC107','#F44336']
+          }]
+        },
+        options:{ responsive:true, plugins:{ legend:{ display:false } } }
+      });
+    }
+  }
+
+  window.onload = () => {
+    initCharts();
+    createRestaurantBox();
+  };
+
+  // Add Restaurant
+  function createRestaurantBox() {
+    const container = document.getElementById('restaurantContainer');
+    const box = document.createElement('div');
+    box.className='restaurant-box';
+
+    // Image
+    const img = document.createElement('img');
+    img.src='https://via.placeholder.com/150';
+    img.style.width='150px'; img.style.height='150px'; img.style.objectFit='cover'; img.style.borderRadius='8px';
+
+    // Details
+    const details = document.createElement('div');
+    details.style.display='flex'; details.style.flexDirection='column'; details.style.flex='1';
+
+    const nameEl = document.createElement('h3');
+    nameEl.contentEditable=true;
+    nameEl.innerText='Restaurant Name';
+
+    const linkEl = document.createElement('a');
+    linkEl.href='#';
+    linkEl.innerText='Restaurant Menu';
+    linkEl.style.color='#007bff'; linkEl.style.textDecoration='underline';
+
+    // Buttons
+    const btns = document.createElement('div');
+    btns.style.display='flex'; btns.style.gap='10px'; btns.style.marginTop='10px';
+
+    const editBtn = document.createElement('button');
+    editBtn.innerHTML='✎';
+    editBtn.title='Edit';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.innerHTML='×';
+    removeBtn.title='Remove';
+
+    // Event handlers
+    editBtn.onclick= ()=>{ nameEl.contentEditable=true; nameEl.focus(); };
+    removeBtn.onclick= ()=>{ container.removeChild(box); };
+
+    btns.appendChild(editBtn);
+    btns.appendChild(removeBtn);
+
+    details.appendChild(nameEl);
+    details.appendChild(linkEl);
+    details.appendChild(btns);
+
+    box.appendChild(img);
+    box.appendChild(details);
+    container.appendChild(box);
+  }
+
+  document.getElementById('addRestaurantBtn').onclick = () => {
+    createRestaurantBox();
+  };
+
+  // Show Past Deliveries
+  function showPastDeliveries(driverName) {
+    alert('Showing past deliveries for ' + driverName);
+  }
+
+  // Show Documents
+  function showDocuments(driverName) {
+    alert('Showing documents for ' + driverName);
+  }
+
+  // Show Vendors
+  function showVendors() {
+    alert('Display all vendors with accept/reject options and history.');
+  }
+
+  // Add Establishment
+  function addEstablishment() {
+    const estDiv = document.createElement('div');
+    estDiv.className='establishment-card';
+    estDiv.innerHTML= `
+      <h3>New Establishment</h3>
+      <p>Address: New Address</p>
+      <p>Contact: New Contact</p>
+    `;
+    document.querySelector('#establishment div').appendChild(estDiv);
+  }
+
+  // Toggle Year Dropdown
+  function toggleYearDropdown() {
+    const el = document.getElementById('yearOptions');
+    if (el.style.display==='none' || el.style.display==='') {
+      el.style.display='block';
+    } else {
+      el.style.display='none';
+    }
+  }
+
+  function selectMonth(month) {
+    document.querySelector('.year-button').innerText=month + ' ▼';
+    document.getElementById('yearOptions').style.display='none';
+  }
+</script>
 </body>
 </html>

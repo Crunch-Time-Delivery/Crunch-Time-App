@@ -15,13 +15,16 @@
 
   /* Header styles */
   .header {
-    position: relative;
+    position: fixed;
+    top: 0;
+    width: 100%;
     height: 60px;
     background-color: #fff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     display: flex;
     align-items: center;
     padding: 0 20px;
+    z-index: 999;
   }
 
   /* Vendor label on left */
@@ -29,13 +32,17 @@
     font-weight: bold;
     color: red;
     font-size: 1.2em;
-    margin-right: auto; /* push to far left */
   }
 
-  /* Profile menu on right */
+  /* Menu container with right alignment */
   .menu-container {
+    margin-left: auto; /* pushes to the right side */
+    display: flex;
+    align-items: center;
     position: relative;
   }
+
+  /* Menu button style */
   .profile-btn {
     background: #ff0000;
     color: #fff;
@@ -50,6 +57,8 @@
   .profile-btn:hover {
     background: #b30000;
   }
+
+  /* Dropdown menu styles */
   .dropdown {
     display: none;
     position: absolute;
@@ -75,10 +84,10 @@
     background: #f0f0f0;
   }
 
-  /* Container for page content */
+  /* Container for page content, with top padding to account for fixed header */
   .container {
     max-width: 1200px;
-    margin: 20px auto;
+    margin: 80px auto 20px; /* margin-top to clear the header */
     padding: 20px;
     background: #fff;
     border-radius: 8px;
@@ -92,22 +101,17 @@
     margin-bottom: 20px;
   }
 
-  /* Registration modal styles */
-  #registerModal {
-    display: none; /* Hidden by default */
+  /* Modal overlays for Register, OTP, Login */
+  .modal {
+    display: flex; align-items: center; justify-content: center;
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    justify-content: center; align-items: center;
-    z-index: 2000;
+    background: rgba(0,0,0,0.5); z-index: 9999;
   }
-  #registerModal .modal-content {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    width: 300px;
+  .modal-box {
+    background: #fff; padding: 30px; border-radius: 8px; width: 350px; max-height: 80%; overflow-y: auto;
   }
 
-  /* Item Management */
+  /* Item Management styles */
  .item-section {
     margin-top: 30px;
   }
@@ -143,7 +147,6 @@
   }
   #item-table {
     margin-top: 20px;
-    overflow-x: auto;
   }
   #item-table table {
     width: 100%;
@@ -156,7 +159,7 @@
   #item-table th {
     background-color: #f0f0f0;
   }
-  /* Food image upload preview */
+  /* Food image preview */
   #foodImagePreview {
     width: 100px;
     height: auto;
@@ -164,7 +167,7 @@
     margin-top: 10px;
   }
 
-  /* Order Management */
+  /* Order Management styles */
  .order-section {
     margin-top: 50px;
   }
@@ -224,25 +227,43 @@
 </head>
 <body>
 
-<!-- Registration Modal -->
-<div id="registerModal">
-  <div class="modal-content">
-    <h3>Register Vendor</h3>
-    <form id="registerForm">
-      <input type="text" id="regUsername" placeholder="Username" required /><br/><br/>
-      <input type="password" id="regPassword" placeholder="Password" required /><br/><br/>
-      <input type="email" id="regEmail" placeholder="Email" required /><br/><br/>
-      <input type="tel" id="regPhone" placeholder="Phone Number" required /><br/><br/>
-      <button type="submit">Register</button>
-    </form>
+<!-- Register Modal -->
+<div id="registerModal" class="modal" style="display:flex;">
+  <div class="modal-box">
+    <h3>Register New Vendor</h3>
+    <input type="email" id="regEmail" placeholder="Invitation Email" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <input type="text" id="regName" placeholder="Full Name" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <input type="password" id="regPassword" placeholder="Password" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <button style="width:100%;" onclick="startRegistration()">Create Account</button>
+  </div>
+</div>
+
+<!-- OTP Modal -->
+<div id="otpModal" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h3>Enter OTP</h3>
+    <input type="text" id="otpInput" placeholder="OTP" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <button style="width:100%;" onclick="verifyOTP()">Verify OTP</button>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h3>Vendor Login</h3>
+    <input type="text" id="username" placeholder="Username" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <input type="password" id="password" placeholder="Password" style="width:100%; margin-bottom:10px; padding:8px;"/>
+    <button style="width:100%;" onclick="verifyLogin()">Login</button>
   </div>
 </div>
 
 <!-- Header -->
 <div class="header">
   <div class="vendor-text">Vendor</div>
+  
+  <!-- Menu button on the right -->
   <div class="menu-container">
-    <button class="profile-btn" id="profileBtn">
+    <button class="profile-btn" id="profileBtn" style="margin-right:10px;">
       <i class="fas fa-user-circle"></i> Menu
     </button>
     <div class="dropdown" id="profileDropdown">
@@ -316,237 +337,368 @@
 
 <!-- Scripts -->
 <script>
-  // --- Access Control & Login ---
-  window.onload = () => {
-    checkLogin();
-  };
+// Check if vendor already logged in or registered
+if(localStorage.getItem('vendorLoggedIn')==='true'){
+  showSection('itemSection');
+} else {
+  // Show login modal if not logged in
+  showLogin();
+}
 
-  function checkLogin() {
-    if (!localStorage.getItem('vendorLoggedIn')) {
-      showRegisterModal();
-    } else {
-      // If logged in, show main sections
-      document.getElementById('mainContent').style.display = 'block';
-      document.getElementById('registerModal').style.display = 'none';
-      // Show Order section
-      document.getElementById('orderSection').style.display = 'block';
-      // Initialize data
-      displayItems();
-      displayOrders();
-    }
+// Function to show sections
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  document.getElementById(id).style.display='block';
+}
+
+// Registration & OTP handling
+let tempAdminData = {};
+let generatedOTP = '';
+
+function startRegistration() {
+  const email = document.getElementById('regEmail').value.trim();
+  const name = document.getElementById('regName').value.trim();
+  const password = document.getElementById('regPassword').value.trim();
+  if(!name || !password || !email){
+    alert('Fill all fields.');
+    return;
   }
+  tempAdminData = {email, name, password};
+  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+  alert('Your OTP is: ' + generatedOTP);
+  document.getElementById('registerModal').style.display='none';
+  document.getElementById('otpModal').style.display='flex';
+}
 
-  function showRegisterModal() {
-    document.getElementById('registerModal').style.display = 'flex';
-    document.getElementById('mainContent').style.display = 'none';
-  }
-
-  document.getElementById('registerForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    // Save vendor info
-    const username = document.getElementById('regUsername').value.trim();
-    const password = document.getElementById('regPassword').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const phone = document.getElementById('regPhone').value.trim();
-    localStorage.setItem('vendorUsername', username);
-    localStorage.setItem('vendorPassword', password);
-    localStorage.setItem('vendorEmail', email);
-    localStorage.setItem('vendorPhone', phone);
+function verifyOTP() {
+  const inputOTP = document.getElementById('otpInput').value.trim();
+  if(inputOTP===generatedOTP){
+    alert('OTP verified! Sending notification...');
+    sendNotificationEmail();
+    // Save login state
     localStorage.setItem('vendorLoggedIn', 'true');
+    localStorage.setItem('vendorEmail', tempAdminData.email);
+    localStorage.setItem('vendorPassword', tempAdminData.password);
+    // After registration, show the items page
+    document.getElementById('otpModal').style.display='none';
+    showSection('itemSection');
+  } else {
+    alert('Incorrect OTP.');
+  }
+}
 
-    // Simulate email notification
-    alert(`Notification sent to crunchtimedrivein@gmail.com:\nVendor registered with email ${email}`);
+// Login
+function showLogin() {
+  document.getElementById('loginModal').style.display='flex';
+}
+function verifyLogin() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const storedEmail = localStorage.getItem('vendorEmail');
+  const storedPass = localStorage.getItem('vendorPassword');
+  if(!storedEmail || !storedPass){
+    alert('No vendor registered. Please register first.');
+    return;
+  }
+  if(username===storedEmail && password===storedPass){
+    alert('Login successful!');
+    document.getElementById('loginModal').style.display='none';
+    localStorage.setItem('vendorLoggedIn', 'true');
+    showSection('itemSection');
+  } else {
+    alert('Invalid credentials.');
+  }
+}
 
-    // Close modal and show dashboard
-    document.getElementById('registerModal').style.display = 'none';
-    document.getElementById('mainContent').style.display = 'block';
-    document.getElementById('orderSection').style.display = 'block';
+// Send email notification (simulate)
+function sendNotificationEmail() {
+  fetch('https://yourserver.com/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      to: 'crunchtimedrivein@gmail.com',
+      subject: 'New Vendor Registration',
+      message: 'A new vendor has registered on your platform.'
+    })
+  }).then(res => {
+    if(res.ok) console.log('Notification sent.');
+    else console.error('Failed to send notification.');
+  }).catch(e => console.error('Error:', e));
+}
 
-    // Initialize data
-    displayItems();
-    displayOrders();
-  });
+// Logout
+function logout() {
+  localStorage.removeItem('vendorLoggedIn');
+  localStorage.removeItem('vendorEmail');
+  localStorage.removeItem('vendorPassword');
+  alert('Logged out.');
+  showLogin();
+}
 
-  // --- Profile menu toggle ---
-  const profileBtn = document.getElementById('profileBtn');
-  const profileDropdown = document.getElementById('profileDropdown');
-  profileBtn.onclick = () => {
-    profileDropdown.classList.toggle('show');
-  };
-  window.onclick = (e) => {
-    if (!e.target.closest('.menu-container')) {
-      profileDropdown.classList.remove('show');
-    }
-  };
+// Menu toggle for dropdown
+const profileBtn = document.getElementById('profileBtn');
+const profileDropdown = document.getElementById('profileDropdown');
+profileBtn.onclick = () => {
+  profileDropdown.classList.toggle('show');
+};
+window.onclick = (e) => {
+  if (!e.target.closest('.menu-container')) {
+    profileDropdown.classList.remove('show');
+  }
+};
 
-  // --- Item Management ---
-  let items = [];
-
-  function addItem() {
-    const vendor = document.getElementById('vendor').value.trim();
-    const item = document.getElementById('item').value.trim();
-    const price = parseFloat(document.getElementById('price').value);
-    const imageInput = document.getElementById('foodImage');
-    const imageFile = imageInput.files[0];
-    let imageData = '';
-
-    if (!vendor || !item || isNaN(price)) {
-      alert('Please fill all fields correctly.');
-      return;
-    }
-
-    if (imageFile) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        imageData = reader.result;
-        saveItem(vendor, item, price, imageData);
-        resetItemForm();
-      };
-      reader.readAsDataURL(imageFile);
-    } else {
-      saveItem(vendor, item, price, '');
+// Item Management
+let items = [];
+function addItem() {
+  const vendor = document.getElementById('vendor').value.trim();
+  const item = document.getElementById('item').value.trim();
+  const price = parseFloat(document.getElementById('price').value);
+  const imageFile = document.getElementById('foodImage').files[0];
+  if(!vendor || !item || isNaN(price)){
+    alert('Fill all fields correctly.');
+    return;
+  }
+  if(imageFile){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      saveItem(vendor, item, price, e.target.result);
       resetItemForm();
     }
+    reader.readAsDataURL(imageFile);
+  } else {
+    saveItem(vendor, item, price, '');
+    resetItemForm();
   }
-
-  function saveItem(vendor, item, price, imageData) {
-    items.push({ vendor, item, price, imageData });
-    displayItems();
-  }
-
-  function resetItemForm() {
-    document.getElementById('vendor').value = '';
-    document.getElementById('item').value = '';
-    document.getElementById('price').value = '';
-    document.getElementById('foodImage').value = '';
-    document.getElementById('foodImagePreview').style.display = 'none';
-  }
-
-  function displayItems() {
-    const container = document.getElementById('item-table');
-    container.innerHTML = '';
-    if (items.length === 0) {
-      container.innerHTML = '<p>No items added yet.</p>';
-      return;
-    }
-    const table = document.createElement('table');
-    table.innerHTML = `
-      <thead>
-        <tr>
-          <th>Vendor</th>
-          <th>Item</th>
-          <th>Price</th>
-          <th>Image</th>
-        </tr>
-      </thead>`;
-    const tbody = document.createElement('tbody');
-    items.forEach((it, index) => {
-      const row = tbody.insertRow();
-      row.insertCell().textContent = it.vendor;
-      row.insertCell().textContent = it.item;
-      row.insertCell().textContent = `R ${it.price.toFixed(2)}`;
-      const imgCell = row.insertCell();
-      if (it.imageData) {
-        const img = document.createElement('img');
-        img.src = it.imageData;
-        img.width = 50;
-        img.alt = 'Food Image';
-        imgCell.appendChild(img);
-      } else {
-        imgCell.textContent = 'No Image';
-      }
-    });
-    table.appendChild(tbody);
-    container.appendChild(table);
-  }
-
-  // --- Food Image Preview ---
-  document.getElementById('foodImage').addEventListener('change', function() {
-    const preview = document.getElementById('foodImagePreview');
-    if (this.files && this.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-      };
-      reader.readAsDataURL(this.files[0]);
-    } else {
-      preview.style.display = 'none';
+}
+function saveItem(vendor, item, price, imageData){
+  items.push({vendor, item, price, imageData});
+  displayItems();
+}
+function resetItemForm() {
+  document.getElementById('vendor').value='';
+  document.getElementById('item').value='';
+  document.getElementById('price').value='';
+  document.getElementById('foodImage').value='';
+  document.getElementById('foodImagePreview').style.display='none';
+}
+function displayItems() {
+  const container=document.getElementById('item-table');
+  container.innerHTML='';
+  if(items.length===0){ container.innerHTML='<p>No items added.</p>'; return; }
+  const table=document.createElement('table');
+  table.innerHTML=`
+    <thead>
+      <tr>
+        <th>Vendor</th><th>Item</th><th>Price</th><th>Image</th>
+      </tr>
+    </thead>`;
+  const tbody=document.createElement('tbody');
+  items.forEach((it, idx)=>{
+    const row=tbody.insertRow();
+    row.insertCell().innerText=it.vendor;
+    row.insertCell().innerText=it.item;
+    row.insertCell().innerText=`R ${it.price.toFixed(2)}`;
+    const imgCell=row.insertCell();
+    if(it.imageData){
+      const img=document.createElement('img');
+      img.src=it.imageData; img.width=50; alt='Food';
+      imgCell.appendChild(img);
+    }else{
+      imgCell.innerText='No Image';
     }
   });
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
 
-  // --- Order Management ---
- let orders = [
-    { id: 1, customer: 'Alice', total: 120.50, status: 'Pending' },
-    { id: 2, customer: 'Bob', total: 75.00, status: 'Delivered' },
-    { id: 3, customer: 'Charlie', total: 200.00, status: 'Pending' }
-  ];
-
-  function displayOrders(filterStatus='All') {
-    const tbody = document.getElementById('ordersBody');
-    tbody.innerHTML = '';
-    let filteredOrders = orders;
-    if (filterStatus !== 'All') {
-      filteredOrders = orders.filter(o => o.status === filterStatus);
+// Food Image Preview
+document.getElementById('foodImage').addEventListener('change', function() {
+  const preview=document.getElementById('foodImagePreview');
+  if(this.files && this.files[0]){
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+      preview.src=e.target.result;
+      preview.style.display='block';
     }
-    filteredOrders.forEach(order => {
-      const row = tbody.insertRow();
-      row.insertCell().textContent = order.id;
-      row.insertCell().textContent = order.customer;
-      row.insertCell().textContent = `R ${order.total.toFixed(2)}`;
-      row.insertCell().textContent = order.status;
-      const actionsCell = row.insertCell();
-      actionsCell.innerHTML = `
-        <button class="view-btn" onclick="viewOrder(${order.id})">View</button>
-        <button class="update-btn" onclick="updateOrder(${order.id})">Update</button>
-        <button class="remove-btn" onclick="removeOrder(${order.id})">Remove</button>
-      `;
-    });
+    reader.readAsDataURL(this.files[0]);
+  }else{
+    preview.style.display='none';
   }
+});
 
-  function filterOrders() {
-    const filterVal = document.getElementById('orderFilter').value;
-    displayOrders(filterVal);
-  }
+// Order Management
+let orders = [
+  { id: 1, customer: 'Alice', total: 120.50, status: 'Pending' },
+  { id: 2, customer: 'Bob', total: 75.00, status: 'Delivered' },
+  { id: 3, customer: 'Charlie', total: 200.00, status: 'Pending' }
+];
 
-  function viewOrder(id) {
-    alert('Viewing order #' + id);
-  }
-
-  function updateOrder(id) {
-    const order = orders.find(o => o.id === id);
-    if (order) {
-      const newStatus = prompt("Enter status (Pending/Delivered):", order.status);
-      if (newStatus === 'Pending' || newStatus === 'Delivered') {
-        order.status = newStatus;
-        filterOrders();
-      } else {
-        alert('Invalid status');
-      }
-    }
-  }
-
-  function removeOrder(id) {
-    if (confirm('Remove order #' + id + '?')) {
-      orders = orders.filter(o => o.id !== id);
+function displayOrders(filter='All'){
+  const tbody=document.getElementById('ordersBody');
+  tbody.innerHTML='';
+  const filtered= filter==='All' ? orders : orders.filter(o=>o.status===filter);
+  filtered.forEach(o=>{
+    const row=tbody.insertRow();
+    row.insertCell().innerText=o.id;
+    row.insertCell().innerText=o.customer;
+    row.insertCell().innerText=`R ${o.total.toFixed(2)}`;
+    row.insertCell().innerText=o.status;
+    const actions=row.insertCell();
+    actions.innerHTML=`
+      <button class="view-btn" onclick="viewOrder(${o.id})">View</button>
+      <button class="update-btn" onclick="updateOrder(${o.id})">Update</button>
+      <button class="remove-btn" onclick="removeOrder(${o.id})">Remove</button>
+    `;
+  });
+}
+function filterOrders() {
+  const val=document.getElementById('orderFilter').value;
+  displayOrders(val);
+}
+function viewOrder(id){ alert('Viewing order #'+id); }
+function updateOrder(id){
+  const order=orders.find(o=>o.id===id);
+  if(order){
+    const newStatus=prompt('Enter status (Pending/Delivered):', order.status);
+    if(newStatus==='Pending'||newStatus==='Delivered'){
+      order.status=newStatus;
       filterOrders();
+    }else{
+      alert('Invalid status');
     }
   }
+}
+function removeOrder(id){
+  if(confirm('Remove order #'+id+'?')){
+    orders=orders.filter(o=>o.id!==id);
+    filterOrders();
+  }
+}
+function promptAddOrder() {
+  const customer=prompt('Customer Name:');
+  const totalStr=prompt('Total in R:');
+  const status=prompt('Status (Pending/Delivered):');
+  const total=parseFloat(totalStr);
+  if(customer && !isNaN(total) && (status==='Pending'||status==='Delivered')){
+    const newId=orders.length>0?Math.max(...orders.map(o=>o.id))+1:1;
+    orders.push({id:newId, customer, total, status});
+    filterOrders();
+  }else{
+    alert('Invalid input.');
+  }
+}
 
-  function promptAddOrder() {
-    const customer = prompt('Customer Name:');
-    const totalStr = prompt('Total in R:');
-    const status = prompt('Status (Pending/Delivered):');
-    const total = parseFloat(totalStr);
-    if (customer && !isNaN(total) && (status==='Pending'||status==='Delivered')) {
-      const newId = orders.length > 0 ? Math.max(...orders.map(o=>o.id))+1 : 1;
-      orders.push({id:newId, customer, total, status});
-      filterOrders();
-    } else {
-      alert('Invalid input.');
-    }
+// Utility to show sections
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  document.getElementById(id).style.display='block';
+}
+
+// Registration modal trigger (optional button)
+function registerVendor() {
+  if(localStorage.getItem('vendorLoggedIn')!=='true'){
+    document.getElementById('registerModal').style.display='flex';
+  } else {
+    showSection('itemSection');
   }
+}
+
+// Registration process
+function startRegistration() {
+  const email = document.getElementById('regEmail').value.trim();
+  const name = document.getElementById('regName').value.trim();
+  const password = document.getElementById('regPassword').value.trim();
+  if(!name || !password || !email){
+    alert('Fill all fields.');
+    return;
+  }
+  // Save credentials temporarily
+  window.tempAdminData = {email, name, password};
+  window.generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+  alert('Your OTP is: ' + window.generatedOTP);
+  document.getElementById('registerModal').style.display='none';
+  document.getElementById('otpModal').style.display='flex';
+}
+
+function verifyOTP() {
+  const inputOTP = document.getElementById('otpInput').value.trim();
+  if(inputOTP===window.generatedOTP){
+    alert('OTP verified! Sending notification...');
+    sendNotificationEmail();
+    // Save login info
+    localStorage.setItem('vendorLoggedIn', 'true');
+    localStorage.setItem('vendorEmail', window.tempAdminData.email);
+    localStorage.setItem('vendorPassword', window.tempAdminData.password);
+    // Hide modal
+    document.getElementById('otpModal').style.display='none';
+    showSection('itemSection');
+  } else {
+    alert('Incorrect OTP.');
+  }
+}
+
+// Login
+function showLogin() {
+  document.getElementById('loginModal').style.display='flex';
+}
+function verifyLogin() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const storedEmail = localStorage.getItem('vendorEmail');
+  const storedPass = localStorage.getItem('vendorPassword');
+  if(!storedEmail || !storedPass){
+    alert('No vendor registered. Please register first.');
+    return;
+  }
+  if(username===storedEmail && password===storedPass){
+    alert('Login successful!');
+    document.getElementById('loginModal').style.display='none';
+    localStorage.setItem('vendorLoggedIn', 'true');
+    showSection('itemSection');
+  } else {
+    alert('Invalid credentials.');
+  }
+}
+
+// Send email notification (simulate)
+function sendNotificationEmail() {
+  fetch('https://yourserver.com/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      to: 'crunchtimedrivein@gmail.com',
+      subject: 'New Vendor Registration',
+      message: 'A new vendor has registered on your platform.'
+    })
+  }).then(res => {
+    if(res.ok) console.log('Notification sent.');
+    else console.error('Failed to send notification.');
+  }).catch(e => console.error('Error:', e));
+}
+
+// Logout
+function logout() {
+  localStorage.removeItem('vendorLoggedIn');
+  localStorage.removeItem('vendorEmail');
+  localStorage.removeItem('vendorPassword');
+  alert('Logged out.');
+  showLogin();
+}
+
+// Food Image Preview
+document.getElementById('foodImage').addEventListener('change', function() {
+  const preview=document.getElementById('foodImagePreview');
+  if(this.files && this.files[0]){
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+      preview.src=e.target.result;
+      preview.style.display='block';
+    }
+    reader.readAsDataURL(this.files[0]);
+  }else{
+    preview.style.display='none';
+  }
+});
 </script>
-
 </body>
 </html>
