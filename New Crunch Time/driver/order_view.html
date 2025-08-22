@@ -137,19 +137,34 @@
     background: #f2f2f2;
   }
 
-  /* Rating stars */
-  .star-rating {
-    display: flex;
-    gap: 8px;
+  /* OTP Modal Styles */
+  .modal {
+    display: none; 
+    position: fixed; 
+    z-index: 2000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.4);
+  }
+  .modal-content {
+    background-color: #fff;
+    margin: 15% auto; 
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+  }
+  .modal input {
+    width: 80%;
+    padding: 8px;
     margin-top: 10px;
   }
-  .star {
-    font-size: 24px;
-    cursor: pointer;
-    color: #ccc;
-  }
-  .star.selected {
-    color: gold;
+  .modal button {
+    margin-top: 15px;
+    padding: 8px 12px;
   }
 </style>
 </head>
@@ -169,6 +184,28 @@
   </div>
 </div>
 
+<!-- OTP Modal -->
+<div id="otpModal" class="modal">
+  <div class="modal-content">
+    <h3>Enter OTP</h3>
+    <p>We've sent a 4-digit OTP to your email and phone.</p>
+    <input type="text" id="otpInput" maxlength="4" placeholder="Enter OTP" />
+    <div style="margin-top:10px;">
+      <button id="verifyOtpBtn">Verify</button>
+      <button id="resendOtpBtn">Resend OTP</button>
+    </div>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal">
+  <div class="modal-content">
+    <h3>Login</h3>
+    <input type="email" id="loginEmail" placeholder="Email" />
+    <button id="loginBtn">Login</button>
+  </div>
+</div>
+
 <!-- Main content area -->
 <div class="container" id="contentArea">
   <!-- Content will be injected here via JS -->
@@ -177,12 +214,16 @@
 <script>
   // Variables to hold driver registration data and status
   let driverRegistered = false;
-  let driverApproved = false; // Simulate admin approval
+  let driverApproved = false; // Will be set true after admin approval post-login
   let driverData = {}; // Store driver info
   let currentPage = '';
 
-  // Simulate admin approval toggle
-  // For testing, you can set driverApproved = true; to simulate admin acceptance
+  // OTP variables
+  let generatedOtp = '';
+  let otpVerified = false;
+
+  // Admin approval simulation
+  let adminApprovalTimeout = null;
 
   // Initialize app
   document.addEventListener('DOMContentLoaded', () => {
@@ -209,25 +250,79 @@
       loadDriverAccount();
     });
     document.getElementById('logoutLink').addEventListener('click', () => {
-      // Reset registration
+      // Reset registration and approval
       driverRegistered = false;
       driverApproved = false;
       driverData = {};
-      loadNewDriverPage();
+      clearAdminApprovalTimeout();
+      loadLoginPage();
     });
 
-    // On start, show registration page if not registered
+    // Start with login page if not registered
     if (!driverRegistered) {
-      loadNewDriverPage();
+      loadLoginPage();
     } else {
-      // If registered, check approval
-      if (driverApproved) {
-        loadOrderView();
-      } else {
-        showWaitingApproval();
-      }
+      // If registered, start at login
+      loadLoginPage();
     }
   });
+
+  function loadLoginPage() {
+    currentPage = 'login';
+    const content = document.getElementById('contentArea');
+    content.innerHTML = `
+      <h1>Driver Login</h1>
+      <button id="openLoginModal" class="action-btn">Login</button>
+    `;
+    document.getElementById('openLoginModal').addEventListener('click', () => {
+      showLoginModal();
+    });
+  }
+
+  function showLoginModal() {
+    document.getElementById('loginModal').style.display = 'block';
+    document.getElementById('loginEmail').value = '';
+  }
+
+  function hideLoginModal() {
+    document.getElementById('loginModal').style.display = 'none';
+  }
+
+  document.getElementById('loginBtn').addEventListener('click', () => {
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    if (driverData.email && email === driverData.email.toLowerCase()) {
+      // On login, check approval
+      if (driverApproved) {
+        alert('Login successful! Accessing order view.');
+        loadOrderView();
+      } else {
+        alert('Waiting for admin approval...');
+        // Simulate admin approval after delay
+        simulateAdminApproval();
+        showWaitingApproval();
+        hideLoginModal();
+      }
+    } else {
+      alert('Invalid email. Please try again.');
+    }
+  });
+
+  function simulateAdminApproval() {
+    // Only set timeout if not already set
+    if (!adminApprovalTimeout) {
+      adminApprovalTimeout = setTimeout(() => {
+        driverApproved = true;
+        alert('Admin approved your registration! You can now access order view.');
+      }, 3000); // 3 seconds delay for demo
+    }
+  }
+
+  function clearAdminApprovalTimeout() {
+    if (adminApprovalTimeout) {
+      clearTimeout(adminApprovalTimeout);
+      adminApprovalTimeout = null;
+    }
+  }
 
   function showWaitingApproval() {
     const content = document.getElementById('contentArea');
@@ -236,6 +331,7 @@
     `;
   }
 
+  // Registration process
   function loadNewDriverPage() {
     currentPage = 'newDriver';
 
@@ -249,6 +345,8 @@
         <input type="text" id="driverName" required />
         <label>Email:</label>
         <input type="email" id="driverEmail" required />
+        <label>Phone Number:</label>
+        <input type="tel" id="driverPhone" placeholder="e.g., 0612345678" required />
         <label>ID Number:</label>
         <input type="text" id="driverID" required />
         <label>Bank Account Details:</label>
@@ -290,53 +388,109 @@
       const driverPhotoFile = document.getElementById('driverPhoto').files[0];
       const driverLicenseFile = document.getElementById('driverLicense').files[0];
       const carPhotoFile = document.getElementById('carPhoto').files[0];
+      const phoneNumber = document.getElementById('driverPhone').value.trim();
 
-      // For demo, we'll just check if files are selected
       if (!driverPhotoFile || !driverLicenseFile || !carPhotoFile) {
         alert('Please upload all required images.');
         return;
       }
 
-      // Save data (simulate upload & admin approval)
+      // Save data
       driverData = {
         name: document.getElementById('driverName').value,
         email: document.getElementById('driverEmail').value,
         idNumber: document.getElementById('driverID').value,
+        phoneNumber: phoneNumber,
         bankDetails: document.getElementById('bankDetails').value,
         bankName: document.getElementById('bankName').value,
+        otherBank: document.getElementById('otherBank').value,
         carColor: document.getElementById('carColor').value,
         carType: document.getElementById('carType').value,
         carRegNumber: document.getElementById('carRegNumber').value,
-        // Simulate images as base64 strings or URLs
         driverPhoto: URL.createObjectURL(driverPhotoFile),
         driverLicense: URL.createObjectURL(driverLicenseFile),
         carPhoto: URL.createObjectURL(carPhotoFile),
-        approved: false // Initially not approved
+        approved: false
       };
-
       driverRegistered = true;
-      // Simulate admin approval after delay
-      alert("Registration submitted. Waiting for admin approval...");
-      // For demo, auto-approve after 2 seconds
-      setTimeout(() => {
-        driverData.approved = true;
-        driverApproved = true;
-        loadOrderView();
-        alert("Admin approved your registration. You can now access order view.");
-      }, 2000);
+
+      // Generate OTP and send
+      generateAndSendOtp();
+
+      // Show OTP modal
+      showOtpModal();
+
     });
   }
 
+  function generateAndSendOtp() {
+    generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+    alert(`OTP sent to Phone: ${driverData.phoneNumber} and Email: ${driverData.email}. (OTP: ${generatedOtp})`);
+  }
+
+  function showOtpModal() {
+    document.getElementById('otpModal').style.display = 'block';
+    document.getElementById('otpInput').value = '';
+    otpVerified = false;
+  }
+
+  function hideOtpModal() {
+    document.getElementById('otpModal').style.display = 'none';
+  }
+
+  document.getElementById('verifyOtpBtn').addEventListener('click', () => {
+    const enteredOtp = document.getElementById('otpInput').value.trim();
+    if (enteredOtp === generatedOtp) {
+      otpVerified = true;
+      alert('OTP verified! Awaiting admin approval...');
+      hideOtpModal();
+      // After OTP verification, simulate admin approval after delay
+      simulateAdminApproval();
+    } else {
+      alert('Incorrect OTP. Please try again.');
+    }
+  });
+
+  document.getElementById('resendOtpBtn').addEventListener('click', () => {
+    generateAndSendOtp();
+    alert('OTP resent.');
+  });
+
+  function simulateAdminApproval() {
+    // Simulate admin approval after a delay (e.g., 3 seconds)
+    setTimeout(() => {
+      driverApproved = true;
+      alert('Admin approved your registration! You can now login and access order view.');
+    }, 3000);
+  }
+
+  // When driver logs in, check approval status
+  function checkApprovalOnLogin() {
+    if (driverApproved) {
+      loadOrderView();
+    } else {
+      showWaitingApproval();
+    }
+  }
+
+  // Show waiting message during approval delay
+  function showWaitingApproval() {
+    const content = document.getElementById('contentArea');
+    content.innerHTML = `
+      <h2 style="text-align:center;">Waiting for admin approval...</h2>
+    `;
+  }
+
+  // Load order view
   function loadOrderView() {
     if (!driverRegistered || !driverApproved) {
       alert('You are not approved yet or not registered.');
-      loadNewDriverPage();
+      loadLoginPage();
       return;
     }
     currentPage = 'orderView';
 
     const content = document.getElementById('contentArea');
-    // For GPS simulation, we'll just display a message
     content.innerHTML = `
       <h1>Order Details</h1>
       <div class="order-details">
@@ -419,21 +573,12 @@
       <button id="terminateBtn" style="margin-top:10px; background-color:red;">Terminate Driver</button>
       <a href="#" class="back-button" id="backToMain">Back</a>
     `;
-
-    // Show/hide other bank input
     document.getElementById('profileBankName').addEventListener('change', () => {
       document.getElementById('editOtherBankDiv').className = (document.getElementById('profileBankName').value==='Other')?'':'hidden';
     });
-
-    // Load existing images
-    if (driverData.driverPhoto) {
-      // Show existing driver photo if available
-    }
-
     document.getElementById('driverProfileForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      // Collect data
-      // For simplicity, we won't handle image uploads here, just simulate
+      // Save profile info
       driverData.name = document.getElementById('profileName').value;
       driverData.email = document.getElementById('profileEmail').value;
       driverData.idNumber = document.getElementById('profileID').value;
@@ -442,16 +587,11 @@
       driverData.carColor = document.getElementById('profileCarColor').value;
       driverData.carType = document.getElementById('profileCarType').value;
       driverData.carRegNumber = document.getElementById('profileCarReg').value;
-
-      // Send email to admin (simulate)
       alert('Profile saved and sent to admin.');
     });
-
     document.getElementById('terminateBtn').addEventListener('click', () => {
       if (confirm('Are you sure you want to terminate your driver account? Admin will be notified.')) {
-        // Simulate termination
         alert('Termination request sent to admin.');
-        // Remove driver data
         driverRegistered=false;
         driverApproved=false;
         driverData={};
@@ -470,6 +610,5 @@
     }
   }
 </script>
-
 </body>
 </html>

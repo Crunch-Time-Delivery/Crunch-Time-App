@@ -218,7 +218,7 @@
   }
   .view-btn { background-color: #ec1313; color:#fff; }
   .update-btn { background-color: #f10d0d; color:#fff; }
-  .remove-btn { background-color: #f44336; color:#fff; }
+  .remove-btn { background-color: #f51808; color:#fff; }
   .add-btn { background-color: #f21010; color:#fff; }
   button:hover {
     opacity: 0.9;
@@ -270,6 +270,7 @@
       <a href="http://127.0.0.1:5500/New%20Crunch%20Time/vendor/item_and_order_management.html" id="menuItem">Item & Order Management</a>
       <a href="http://127.0.0.1:5500/New%20Crunch%20Time/vendor/item_and_order_management.html" id="menuUsers">Manage Users</a>
       <a href="http://127.0.0.1:5500/New%20Crunch%20Time/vendor/payment_mangement.html" id="menuPayment">Payment Management</a>
+      <a href="#" onclick="logout()">Logout</a>
     </div>
   </div>
 </div>
@@ -355,6 +356,23 @@ function showSection(id){
 let tempAdminData = {};
 let generatedOTP = '';
 
+// Function to simulate sending OTP via email & SMS to admin
+function sendOTPNotification(otp) {
+  // Replace URL with your backend API to send email/SMS
+  fetch('https://yourserver.com/send-notification', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: 'crunchtimedrivein@gmail.com', // admin email
+      phone: '1234567890', // admin phone number
+      message: `New OTP for vendor registration: ${otp}`
+    })
+  }).then(res => {
+    if(res.ok) console.log('OTP notification sent via email & SMS.');
+    else console.error('Failed to send OTP notification.');
+  }).catch(e => console.error('Error:', e));
+}
+
 function startRegistration() {
   const email = document.getElementById('regEmail').value.trim();
   const name = document.getElementById('regName').value.trim();
@@ -363,23 +381,26 @@ function startRegistration() {
     alert('Fill all fields.');
     return;
   }
-  tempAdminData = {email, name, password};
-  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-  alert('Your OTP is: ' + generatedOTP);
+  // Save credentials temporarily
+  window.tempAdminData = {email, name, password};
+  window.generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+  // Send OTP via email & SMS
+  sendOTPNotification(window.generatedOTP);
+  alert('Your OTP is: ' + window.generatedOTP);
   document.getElementById('registerModal').style.display='none';
   document.getElementById('otpModal').style.display='flex';
 }
 
 function verifyOTP() {
   const inputOTP = document.getElementById('otpInput').value.trim();
-  if(inputOTP===generatedOTP){
+  if(inputOTP===window.generatedOTP){
     alert('OTP verified! Sending notification...');
     sendNotificationEmail();
-    // Save login state
+    // Save login info
     localStorage.setItem('vendorLoggedIn', 'true');
-    localStorage.setItem('vendorEmail', tempAdminData.email);
-    localStorage.setItem('vendorPassword', tempAdminData.password);
-    // After registration, show the items page
+    localStorage.setItem('vendorEmail', window.tempAdminData.email);
+    localStorage.setItem('vendorPassword', window.tempAdminData.password);
+    // Hide modal
     document.getElementById('otpModal').style.display='none';
     showSection('itemSection');
   } else {
@@ -471,7 +492,8 @@ function addItem() {
   }
 }
 function saveItem(vendor, item, price, imageData){
-  items.push({vendor, item, price, imageData});
+  // Default stock status as 'In Stock'
+  items.push({vendor, item, price, imageData, stock:'In Stock'});
   displayItems();
 }
 function resetItemForm() {
@@ -489,7 +511,7 @@ function displayItems() {
   table.innerHTML=`
     <thead>
       <tr>
-        <th>Vendor</th><th>Item</th><th>Price</th><th>Image</th>
+        <th>Vendor</th><th>Item</th><th>Price</th><th>Image</th><th>Stock Status</th><th>Actions</th>
       </tr>
     </thead>`;
   const tbody=document.createElement('tbody');
@@ -506,9 +528,24 @@ function displayItems() {
     }else{
       imgCell.innerText='No Image';
     }
+    // Stock Status Cell
+    const stockCell=row.insertCell();
+    stockCell.innerText=it.stock;
+    // Actions Cell
+    const actionsCell=row.insertCell();
+    // "Out of Stock" toggle button
+    const outOfStockBtn=document.createElement('button');
+    outOfStockBtn.innerText=it.stock==='In Stock'?'Mark Out of Stock':'Mark In Stock';
+    outOfStockBtn.onclick=()=>toggleStockStatus(idx);
+    actionsCell.appendChild(outOfStockBtn);
   });
   table.appendChild(tbody);
   container.appendChild(table);
+}
+// Toggle stock status
+function toggleStockStatus(index){
+  items[index].stock= items[index].stock==='In Stock'?'Out of Stock':'In Stock';
+  displayItems();
 }
 
 // Food Image Preview
@@ -615,6 +652,8 @@ function startRegistration() {
   // Save credentials temporarily
   window.tempAdminData = {email, name, password};
   window.generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+  // Send OTP via email & SMS
+  sendOTPNotification(window.generatedOTP);
   alert('Your OTP is: ' + window.generatedOTP);
   document.getElementById('registerModal').style.display='none';
   document.getElementById('otpModal').style.display='flex';
@@ -675,30 +714,6 @@ function sendNotificationEmail() {
     else console.error('Failed to send notification.');
   }).catch(e => console.error('Error:', e));
 }
-
-// Logout
-function logout() {
-  localStorage.removeItem('vendorLoggedIn');
-  localStorage.removeItem('vendorEmail');
-  localStorage.removeItem('vendorPassword');
-  alert('Logged out.');
-  showLogin();
-}
-
-// Food Image Preview
-document.getElementById('foodImage').addEventListener('change', function() {
-  const preview=document.getElementById('foodImagePreview');
-  if(this.files && this.files[0]){
-    const reader=new FileReader();
-    reader.onload=(e)=>{
-      preview.src=e.target.result;
-      preview.style.display='block';
-    }
-    reader.readAsDataURL(this.files[0]);
-  }else{
-    preview.style.display='none';
-  }
-});
 </script>
 </body>
 </html>
