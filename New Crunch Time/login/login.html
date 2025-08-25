@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Login Page</title>
+<title>Menu Page</title>
 <style>
   /* Reset & Base Styles */
   * {
@@ -18,303 +18,66 @@
     justify-content: center;
     padding: 20px;
   }
-  /* Container */
-  .container {
-    max-width: 400px;
+  /* Container for menu buttons */
+  .menu-container {
+    max-width: 500px;
     width: 100%;
     background-color: #fff;
     border-radius: 8px;
-    padding: 20px;
+    padding: 30px 20px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
-  /* Background Image */
-  .background-section {
-    width: 100%;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: center;
-  }
-  .background-section a {
-    display: block;
-  }
-  .background-section img {
-    width: 80%;
-    max-width: 150px; /* Adjusted for better size */
-    height: auto;
-    border-radius: 8px;
-  }
-
-  /* Headings & Text */
+  /* Heading */
   h2 {
-    margin-top: 20px;
-    font-size: 1.8em;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    font-size: 2em;
+    color: #333;
   }
-  p {
-    margin-bottom: 15px;
-    font-size: 1em;
-  }
-
-  /* Error message */
-  #message {
-    margin-bottom: 15px;
-    color: red;
-  }
-
-  /* Input fields */
-  input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    font-size: 1em;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-
   /* Buttons */
-  #loginBtn {
-    width: 100%;
-    padding: 10px;
-    background-color: red;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.3s;
-    display: none; /* Initially hidden, shown when popup is triggered */
-  }
-  #loginBtn:hover {
-    background-color: darkred;
-  }
-
-  /* Role Selection Button */
-  #roleSelectBtn {
-    width: 100%;
-    padding: 10px;
-    background-color: #d21919;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: background-color 0.3s;
-  }
-  #roleSelectBtn:hover {
-    background-color: #c01515;
-  }
-
-  /* Forgot link */
-  .forgot-link {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 8px;
-    border: 2px solid transparent;
-    cursor: pointer;
-    transition: border-color 0.3s;
-  }
-  .forgot-link:hover {
-    border-color: red;
-  }
-
-  /* Register section */
-  .register-section {
-    margin-top: 20px;
-    font-size: 0.9em;
-  }
-  .register-link {
-    border: 2px solid red;
-    color: red;
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-left: 5px;
-    text-decoration: none;
-  }
-  .register-link:hover {
-    background-color: #ffe6e6;
-  }
-
-  /* Role selection popup overlay styles */
-  #popupOverlay {
-    display: none;
-    position: fixed;
-    top:0;
-    left:0;
-    right:0;
-    bottom:0;
-    background: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  .popupBox {
-    background: #fff;
+  .roleButton {
+    width: 80%;
+    max-width: 300px;
     padding: 20px;
-    border-radius: 12px;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    position: relative;
-    text-align: center;
-  }
-  #popupClose {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    font-size: 1.5em;
-    cursor: pointer;
-    background: none;
-    border: none;
-  }
-  .roleBtn {
+    margin: 15px 0;
+    font-size: 1.2em;
     background-color: #d32f2f;
     color: #fff;
-    padding: 15px;
-    margin: 10px 0;
-    width: 100%;
     border: none;
     border-radius: 8px;
-    font-size: 1.2em;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: background-color 0.3s;
   }
-  .roleBtn:hover {
+  .roleButton:hover {
     background-color: #b71c1c;
   }
+  /* Optional: Add a footer or instructions */
+  .footer {
+    margin-top: 30px;
+    font-size: 1em;
+    color: #555;
+  }
   @media(max-width: 500px){
-    .roleBtn {
-      padding: 12px;
+    .roleButton {
+      padding: 15px;
       font-size: 1em;
     }
   }
 </style>
 </head>
 <body>
-<div class="container" id="root">
 
-  <!-- Background Image -->
-  <div class="background-section">
-    <a href="https://example.com">
-      <img src="img/converted-image.jpg" alt="Background Image" class="background-img" />
-    </a>
-  </div>
-
-  <!-- Heading & Instructions -->
-  <h2>Login</h2>
-  <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
-
-  <!-- Error/message display -->
-  <div id="message"></div>
-
-  <!-- Email & Password Inputs -->
-  <h2>Email</h2>
-  <input type="email" id="email" placeholder="Email" />
-  <h2>Password</h2>
-  <input type="password" id="password" placeholder="Password" />
-
-  <!-- Buttons: Role select triggers login button display, login button -->
-  <button id="roleSelectBtn">Login</button>
-  <button id="loginBtn">Login</button>
-
-  <!-- Role selection popup -->
-  <div id="popupOverlay">
-    <div class="popupBox">
-      <button class="closeBtn" id="closePopup">&times;</button>
-      <h3>Select Your Role</h3>
-      <button class="roleBtn" data-role="user">User</button>
-      <button class="roleBtn" data-role="driver">Driver</button>
-      <button class="roleBtn" data-role="vendor">Vendor</button>
-    </div>
-  </div>
-
-  <!-- Register link -->
-  <div class="register-section">
-    Don't have an account? <a href="http://127.0.0.1:5500/New%20Crunch%20Time/registration/create_account.html" class="register-link">Register here</a>
-  </div>
+<div class="menu-container" id="root">
+  <h2>Select Your Role</h2>
+  <button class="roleButton" onclick="location.href='http://127.0.0.1:5500/New%20Crunch%20Time/admin/dashboard.html  '">Admin</button>
+  <button class="roleButton" onclick="location.href='http://127.0.0.1:5500/New%20Crunch%20Time/vendor/item_and_order_management.html  '">Vendor</button>
+  <button class="roleButton" onclick="location.href='http://127.0.0.1:5500/New%20Crunch%20Time/user/order_process/register_home.html  '">User</button>
+  <button class="roleButton" onclick="location.href='http://127.0.0.1:5500/New%20Crunch%20Time/driver/order_view.html#  '">Driver</button>
+  <div class="footer">You can navigate directly to your role's page.</div>
 </div>
-<script>
-  // Login process
-  document.getElementById('loginBtn').onclick = async () => {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const messageDiv = document.getElementById('message');
-    messageDiv.innerText = '';
 
-    // Basic validation with exceptions
-    try {
-      if (!email || !password) {
-        throw new Error('Please enter email and password.');
-      }
-      // Sign in with Supabase
-      const { user, error } = await supabase.auth.signIn({ email, password });
-      if (error) {
-        throw new Error(error.message);
-      }
-      alert('Login successful!');
-      // Redirect based on role
-      if (selectedRole === 'user') {
-        window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/user/order_process/search_location.html?';
-      } else if (selectedRole === 'driver') {
-        window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/driver/order_view.html';
-      } else if (selectedRole === 'vendor') {
-        window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/vendor/item_and_order_management.html';
-      } else {
-        window.location.href='http://127.0.0.1:5500/New%20Crunch%20Time/admin/dashboard.html'; // fallback
-      }
-    } catch (err) {
-      messageDiv.innerText = err.message;
-    }
-  };
-</script>
-<script>
-  // Role button handlers
-  document.querySelectorAll('.roleBtn').forEach(btn => {
-    btn.onclick = () => {
-      selectedRole = btn.getAttribute('data-role');
-      document.getElementById('popupOverlay').style.display='none';
-    };
-  });
-
-  // Show login button when clicking "Select Role"
-  document.getElementById('roleSelectBtn').onclick = () => {
-    document.getElementById('popupOverlay').style.display='flex';
-  };
-
-  // Hide login button when closing popup
-  document.getElementById('closePopup').onclick = () => {
-    document.getElementById('popupOverlay').style.display='none';
-  };
-
-  // Also hide login button when clicking outside popup
-  window.onclick = (e) => {
-    if (e.target === document.getElementById('popupOverlay')) {
-      document.getElementById('popupOverlay').style.display='none';
-    }
-  };
-</script>
-<!-- Load React  -->
-<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-<script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
-<!-- Load Supabase JS -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
-
-<script type="text/babel">
-  // Initialize Supabase
-  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = process.env.SUPABASE_KEY; // Replace with your actual key
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-  let selectedRole = null; // Store role
-
-  
-
-
-</script>
 </body>
 </html>

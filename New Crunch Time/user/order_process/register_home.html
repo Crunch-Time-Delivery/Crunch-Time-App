@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Crunch Time Mockup</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        position: relative;
+    }
+
+    /* Header styles */
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: #fff;
+        border-bottom: 1px solid #ddd;
+    }
+    .header button {
+        background: none;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 5px 10px;
+    }
+    .header .search-bar {
+        flex-grow: 1;
+        margin: 0 10px;
+    }
+    .header .search-bar input {
+        width: 100%;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    /* Filters styles */
+    .filters {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 20px;
+        background-color: #ffb4b4;
+        border-bottom: 0px solid #ddd;
+        overflow-x: auto;
+    }
+    .filters button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0 5px;
+    }
+    .filters button img {
+        width: 24px;
+        height: 24px;
+        margin-bottom: 5px;
+        object-fit: cover;
+    }
+
+    /* Restaurant list styles */
+    .restaurant-list {
+        padding: 10px 20px;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    .restaurant-card {
+        display: flex;
+        background-color: #fff;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        cursor: pointer;
+        align-items: center;
+    }
+    .restaurant-card img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        margin-right: 10px;
+        border-radius: 4px;
+    }
+    .restaurant-card .details {
+        flex-grow: 1;
+    }
+    .restaurant-card .rating {
+        color: #666;
+    }
+    .restaurant-card .promo {
+        color: red;
+        font-weight: bold;
+    }
+    .restaurant-card button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+    }
+
+    /* ==================== Registration & OTP Popup Styles ==================== */
+    #registerPopup {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    #registerFormContainer {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 400px;
+        max-width: 90%;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+    #registerFormContainer h2 {
+        margin-top: 0;
+        text-align: center;
+    }
+    #registerForm input {
+        width: 100%;
+        padding: 8px;
+        margin: 8px 0;
+        box-sizing: border-box;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+    #registerBtn {
+        width: 100%;
+        padding: 10px;
+        background-color: #ff0000;
+        border: none;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    #registerBtn:disabled {
+        background-color: #aaa;
+        cursor: not-allowed;
+    }
+
+    /* OTP Section inside registration popup (initially hidden) */
+    #otpSection {
+        display: none;
+        margin-top: 10px;
+    }
+    #otpSection p {
+        margin: 8px 0 4px 0;
+    }
+    #otpSection input {
+        width: 100%;
+        padding: 8px;
+        margin: 8px 0;
+        box-sizing: border-box;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+    #verifyOtpBtn {
+        width: 100%;
+        padding: 10px;
+        background-color: #28a745;
+        border: none;
+        color: #fff;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    #resendOtp {
+        background: none;
+        border: none;
+        color: blue;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 5px;
+        align-self: flex-start;
+    }
+    #successMsg {
+        display: none;
+        color: green;
+        text-align: center;
+        margin-top: 15px;
+    }
+
+    /* OTP Verification Page styles */
+    #otpPage {
+        display: none;
+        padding: 20px;
+        max-width: 500px;
+        margin: 50px auto;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        flex-direction: column;
+        align-items: center;
+    }
+    #otpPage h2 {
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    #otpVerification {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+    #otpVerification input {
+        padding: 8px;
+        margin: 8px 0;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    #otpVerification button {
+        padding: 10px;
+        margin-top: 10px;
+        background-color: #ff0000;
+        border: none;
+        color: #fff;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+    }
+    #resendOtpPage {
+        background: none;
+        border: none;
+        color: blue;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 5px;
+        align-self: flex-start;
+    }
+</style>
+</head>
+<body>
+
+<!-- Registration Popup Overlay -->
+<div id="registerPopup">
+    <div id="registerFormContainer">
+        <h2>Register</h2>
+        <form id="registerForm">
+            <input type="text" id="fullName" placeholder="Full Name" required />
+            <input type="email" id="email" placeholder="Email Address" required />
+            <input type="tel" id="phone" placeholder="Phone Number" required />
+            <input type="password" id="password" placeholder="Password" required />
+            <button type="submit" id="registerBtn">Register</button>
+        </form>
+        <div id="otpSection">
+            <p>Enter OTP sent to your email and phone</p>
+            <input type="text" id="otpInput" placeholder="Enter OTP" />
+            <button id="verifyOtpBtn">Verify OTP</button>
+            <button id="resendOtp">Resend OTP</button>
+        </div>
+        <div id="successMsg"></div>
+    </div>
+</div>
+
+<!-- OTP Verification Page -->
+<div id="otpPage">
+    <div id="otpVerification">
+        <h2>Verify Your OTP</h2>
+        <p>We've sent an OTP to your email and phone. Please enter it below:</p>
+        <input type="text" id="enteredOtp" placeholder="Enter OTP" />
+        <button id="submitOtpBtn">Verify OTP</button>
+        <button id="resendOtpPage">Resend OTP</button>
+    </div>
+</div>
+
+<!-- Existing Page Content -->
+<div class="header">
+    <button>☰</button>
+    <div>Crunch Time</div>
+    <button>Delivery</button>
+    <button>Pickup</button>
+    <div class="search-bar">
+        <input type="text" placeholder="Search Crunch Time ">
+    </div>
+    <button>Map Location - Pick up now</button>
+</div>
+<div class="filters">
+    <button><img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food"><span>Fast Food</span></button>
+    <button><img src="Images/CR7 Veg .jpg" alt="Healthy"><span>Healthy</span></button>
+    <button><img src="Images/CR7.jpg" alt="Burgers"><span>Burgers</span></button>
+    <button><img src="Images/CR7 SUCCI.jpg" alt="Chinese"><span>Chinese</span></button>
+    <button><img src="Images/CR7 WINGS.jpg" alt="Wings"><span>Wings</span></button>
+    <button><img src="Images/CR7 PIZZA.webp" alt="Pizza"><span>Pizza</span></button>
+    <button><img src="Images/CR7 SUCCI .webp" alt="Halal"><span>Halal</span></button>
+    <button><img src="Images/CR7 KOREA .jpeg" alt="Korean"><span>Korean</span></button>
+    <button>→</button>
+</div>
+<div class="restaurant-list">
+    <div class="restaurant-card" onclick="alert('STILL TO BE FIXED')">
+        <img src="Images/RS KFC .jpeg" alt="KFC Parow" />
+        <div class="details">
+            <div>KFC, Parow</div>
+            <div class="rating">4.4 ★</div>
+            <div>Sponsored - 5 min - 4.4 km</div>
+        </div>
+        <button>♥</button>
+    </div>
+    <div class="restaurant-card" onclick="alert('Sannes Palace selected')">
+        <img src="Images/RS PALACE .jpg" alt="Sannes Palace" />
+        <div class="details">
+            <div>Sannes Palace</div>
+            <div class="rating">4.5 ★</div>
+            <div>Spend ZAR 100, Save ZAR 15</div>
+            <div>20 min - 0.5 km</div>
+        </div>
+        <button>♥</button>
+    </div>
+    <div class="restaurant-card" onclick="alert('DK Spot & Kota Restaurant selected')">
+        <img src="Images/RS KOTA .jpg" alt="DK Spot & Kota" />
+        <div class="details">
+            <div>DK Spot & Kota Restaurant</div>
+            <div class="rating">4.0 ★</div>
+            <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
+        </div>
+        <button>♥</button>
+    </div>
+    <div class="restaurant-card" onclick="alert('Nondyebo Eatery selected')">
+        <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery" />
+        <div class="details">
+            <div>Nondyebo Eatery</div>
+            <div class="rating">3.3 ★</div>
+            <div>10 min - 0.6 km</div>
+        </div>
+        <button>♥</button>
+    </div>
+</div>
+
+<script>
+    // ==================== Registration & OTP Logic ====================
+    const registerPopup = document.getElementById('registerPopup');
+    const registerForm = document.getElementById('registerForm');
+    const otpSection = document.getElementById('otpSection');
+    const otpInput = document.getElementById('otpInput');
+    const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+    const resendOtpBtn = document.getElementById('resendOtp');
+    const successMsg = document.getElementById('successMsg');
+
+    const otpPage = document.getElementById('otpPage');
+    const enteredOtpInput = document.getElementById('enteredOtp');
+    const submitOtpBtn = document.getElementById('submitOtpBtn');
+    const resendOtpPageBtn = document.getElementById('resendOtpPage');
+
+    let generatedOtp = '';
+    let userData = {};
+
+    // Function to generate a 6-digit OTP
+    function generateOtp() {
+        return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    // Simulate sending email and SMS
+    function sendEmail(to, subject, body) {
+        console.log(`Sending email to ${to} with subject "${subject}" and body "${body}"`);
+        return Promise.resolve();
+    }
+    function sendSms(to, message) {
+        console.log(`Sending SMS to ${to} with message "${message}"`);
+        return Promise.resolve();
+    }
+
+    // Display browser notification for OTP
+    function notifyOtp(otp) {
+        if (Notification.permission === 'granted') {
+            new Notification('Your OTP Code', { body: `Your OTP is ${otp}` });
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    new Notification('Your OTP Code', { body: `Your OTP is ${otp}` });
+                }
+            });
+        }
+    }
+
+    // Show OTP page
+    function showOtpPage() {
+        document.getElementById('registerPopup').style.display = 'none';
+        document.querySelector('#otpPage').style.display = 'block';
+        notifyOtp(generatedOtp);
+    }
+
+    // Handle registration form submit
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        userData = {
+            fullName: document.getElementById('fullName').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            password: document.getElementById('password').value.trim()
+        };
+        generatedOtp = generateOtp();
+
+        Promise.all([
+            sendEmail(userData.email, 'Your OTP Code', `Your OTP is ${generatedOtp}`),
+            sendSms(userData.phone, `Your OTP is ${generatedOtp}`)
+        ]).then(() => {
+            alert('OTP has been sent to your email and phone.');
+            showOtpPage();
+        }).catch(() => {
+            alert('Failed to send OTP. Please try again.');
+        });
+    });
+
+    // Verify OTP from OTP page
+    document.getElementById('submitOtpBtn').addEventListener('click', function() {
+        const enteredOtp = document.getElementById('enteredOtp').value.trim();
+        if (enteredOtp === generatedOtp) {
+            alert('OTP verified! Registration complete.');
+            sendEmail('crunchtimedrivein@gmail.com', 'New User Registration', 
+                `Name: ${userData.fullName}\nEmail: ${userData.email}\nPhone: ${userData.phone}\nPassword: ${userData.password}`)
+                .then(() => {
+                    console.log('User data sent to admin email.');
+                });
+            window.location.href = 'http://127.0.0.1:5500/New%20Crunch%20Time/user/order_process/home.html'; // Your connection
+        } else {
+            alert('Incorrect OTP. Please try again.');
+        }
+    });
+
+    // Resend OTP from OTP page
+    document.getElementById('resendOtpPage').addEventListener('click', function() {
+        generatedOtp = generateOtp();
+        Promise.all([
+            sendEmail(userData.email, 'Your OTP Code', `Your OTP is ${generatedOtp}`),
+            sendSms(userData.phone, `Your OTP is ${generatedOtp}`)
+        ]).then(() => {
+            alert('OTP resent to your email and phone.');
+            notifyOtp(generatedOtp);
+        }).catch(() => {
+            alert('Failed to resend OTP. Please try again.');
+        });
+    });
+
+</script>
+</body>
+</html>
