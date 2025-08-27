@@ -1,161 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crunch Time Mockup</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #fff;
-            border-bottom: 1px solid #ddd;
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crunch Time Mockup</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: #fff;
+        border-bottom: 1px solid #ddd;
+    }
+    .header button {
+        background: none;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 5px 10px;
+    }
+    .header .search-bar {
+        flex-grow: 1;
+        margin: 0 10px;
+    }
+    .header .search-bar input {
+        width: 100%;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    .filters {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 20px;
+        background-color: #ffb4b4;
+        /* Corrected typo in border-bottom */
+        border-bottom: 1px solid #ddd;
+    }
+    .filters button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .filters button img {
+        width: 24px;
+        height: 24px;
+        margin-bottom: 5px;
+    }
+    .restaurant-list {
+        padding: 10px 20px;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    .restaurant-card {
+        display: flex;
+        background-color: #fff;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        cursor: pointer;
+        align-items: center;
+    }
+    .restaurant-card img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        margin-right: 10px;
+    }
+    .restaurant-card .details {
+        flex-grow: 1;
+    }
+    .restaurant-card .rating {
+        color: #666;
+    }
+    .restaurant-card .promo {
+        color: red;
+        font-weight: bold;
+    }
+    .restaurant-card button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+    }
 
-        }
-        .header button {
-            background: none;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 5px 10px;
-        }
-        .header .search-bar {
-            flex-grow: 1;
-            margin: 0 10px;
-        }
-        .header .search-bar input {
-            width: 100%;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .filters {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 20px;
-            background-color: #ffb4b4;
-            border-bottom: 0cap solid #ddd;
-    
-        }
-        .filters button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .filters button img {
-            width: 24px;
-            height: 24px;
-            margin-bottom: 5px;
-        }
-        .restaurant-list {
-            padding: 10px 20px;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-        .restaurant-card {
-            display: flex;
-            background-color: #fff;
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            cursor: pointer;
-        }
-        .restaurant-card img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            margin-right: 10px;
-        }
-        .restaurant-card .details {
-            flex-grow: 1;
-        }
-        .restaurant-card .rating {
-            color: #666;
-        }
-        .restaurant-card .promo {
-            color: red;
-            font-weight: bold;
-        }
-        .restaurant-card button {
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
+    /* Modal styles */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+        background-color: #fff;
+        margin: 50px auto;
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 600px;
+        position: relative;
+    }
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .menu-item {
+        margin-bottom: 10px;
+    }
+    .view-map-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 15px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+</style>
 </head>
 <body>
-    <div class="header">
-        <button>☰</button>
-        <div>Crunch Time</div>
-        <button>Delivery</button>
-        <button>Pickup</button>
-        <div class="search-bar">
-            <input type="text" placeholder="Search Crunch Time ">
-        </div>
-        <button>Map Location - Pick up now</button>
+
+<div class="header">
+    <button>☰</button>
+    <div>Crunch Time</div>
+    <button>Delivery</button>
+    <button>Pickup</button>
+    <div class="search-bar">
+        <input type="text" placeholder="Search Crunch Time ">
     </div>
-    <div class="filters">
-        <button><img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food"><span>Fast Food</span></button>
-        <button><img src="Images/CR7 Veg .jpg" alt="Healthy"><span>Healthy</span></button>
-        <button><img src="Images/CR7.jpg" alt="Burgers"><span>Burgers</span></button>
-        <button><img src="Images/CR7 SUCCI.jpg" alt="Chinese"><span>Chinese</span></button>
-        <button><img src="Images/CR 7 WINGS.jpg" alt="Wings"><span>Wings</span></button>
-        <button><img src="Images/CR7 PIZZA.webp" alt="Pizza"><span>Pizza</span></button>
-        <button><img src="Images/CR7 SUCCI .webp" alt="Halal"><span>Halal</span></button>
-        <button><img src="Images/CR7 KOREA .jpeg" alt="Korean"><span>Korean</span></button>
-        <button>→</button>
+    <button>Map Location - Pick up now</button>
+</div>
+
+<div class="filters">
+    <button><img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food"><span>Fast Food</span></button>
+    <button><img src="Images/CR7 Veg .jpg" alt="Healthy"><span>Healthy</span></button>
+    <button><img src="Images/CR7.jpg" alt="Burgers"><span>Burgers</span></button>
+    <button><img src="Images/CR7 SUCCI.jpg" alt="Chinese"><span>Chinese</span></button>
+    <button><img src="Images/CR 7 WINGS.jpg" alt="Wings"><span>Wings</span></button>
+    <button><img src="Images/CR7 PIZZA.webp" alt="Pizza"><span>Pizza</span></button>
+    <button><img src="Images/CR7 SUCCI .webp" alt="Halal"><span>Halal</span></button>
+    <button><img src="Images/CR7 KOREA .jpeg" alt="Korean"><span>Korean</span></button>
+    <button>→</button>
+</div>
+
+<div class="restaurant-list">
+    <div class="restaurant-card" onclick="showMenu('KFC Parow')">
+        <img src="Images/RS KFC .jpeg" alt="KFC Parow" />
+        <div class="details">
+            <div>KFC, Parow</div>
+            <div class="rating">4.4 ★</div>
+            <div>Sponsored - 5 min - 4.4 km</div>
+        </div>
+        <button onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
     </div>
-    <div class="restaurant-list">
-        <div class="restaurant-card" onclick="alert('STILL TO BE FIXED')">
-            <img src="Images/RS KFC .jpeg" alt="KFC Parow">
-            <div class="details">
-                <div>KFC, Parow</div>
-                <div class="rating">4.4 ★</div>
-                <div>Sponsored - 5 min - 4.4 km</div>
-            </div>
-            <button>♥</button>
+    <div class="restaurant-card" onclick="showMenu('Sannes Palace')">
+        <img src="Images/RS PALACE .jpg" alt="Sannes Palace" />
+        <div class="details">
+            <div>Sannes Palace</div>
+            <div class="rating">4.5 ★</div>
+            <div class="promo">Spend ZAR 100, Save ZAR 15</div>
+            <div>20 min - 0.5 km</div>
         </div>
-        <div class="restaurant-card" onclick="alert('Sannes Palace selected')">
-            <img src="Images/RS PALACE .jpg" alt="Sannes Palace">
-            <div class="details">
-                <div>Sannes Palace</div>
-                <div class="rating">4.5 ★</div>
-                <div class="promo">Spend ZAR 100, Save ZAR 15</div>
-                <div>20 min - 0.5 km</div>
-            </div>
-            <button>♥</button>
-        </div>
-        <div class="restaurant-card" onclick="alert('DK Spot & Kota Restaurant selected')">
-            <img src="Images/RS KOTA .jpg" alt="DK Spot & Kota">
-            <div class="details">
-                <div>DK Spot & Kota Restaurant</div>
-                <div class="rating">4.0 ★</div>
-                <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
-            </div>
-            <button>♥</button>
-        </div>
-        <div class="restaurant-card" onclick="alert('Nondyebo Eatery selected')">
-            <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery">
-            <div class="details">
-                <div>Nondyebo Eatery</div>
-                <div class="rating">3.3 ★</div>
-                <div>10 min - 0.6 km</div>
-            </div>
-            <button>♥</button>
-        </div>
-        <!-- Add more restaurant cards as needed for scrolling -->
+        <button onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
     </div>
+    <div class="restaurant-card" onclick="showMenu('DK Spot & Kota')">
+        <img src="Images/RS KOTA .jpg" alt="DK Spot & Kota" />
+        <div class="details">
+            <div>DK Spot & Kota Restaurant</div>
+            <div class="rating">4.0 ★</div>
+            <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
+        </div>
+        <button onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+    </div>
+    <div class="restaurant-card" onclick="showMenu('Nondyebo Eatery')">
+        <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery" />
+        <div class="details">
+            <div>Nondyebo Eatery</div>
+            <div class="rating">3.3 ★</div>
+            <div>10 min - 0.6 km</div>
+        </div>
+        <button onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+    </div>
+</div>
+
+<!-- Modal for Menu -->
+<div id="menuModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2 id="restaurantName">Restaurant Menu</h2>
+        <div id="menuItems">
+            <!-- Menu items will be inserted here dynamically -->
+        </div>
+        <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
+    </div>
+</div>
+
+<script>
+    // Placeholder menu data
+    const restaurantMenus = {
+        "KFC Parow": [
+            { name: "Zinger Burger", price: "R50" },
+            { name: "Fries", price: "R20" },
+            { name: "Cola", price: "R15" }
+        ],
+        "Sannes Palace": [
+            { name: "Chicken Curry", price: "R80" },
+            { name: "Veggie Plate", price: "R60" },
+            { name: "Lemonade", price: "R10" }
+        ],
+        "DK Spot & Kota": [
+            { name: "Kota Special", price: "R25" },
+            { name: "Fries", price: "R20" },
+            { name: "Soda", price: "R15" }
+        ],
+        "Nondyebo Eatery": [
+            { name: "Wrap", price: "R40" },
+            { name: "Salad", price: "R35" },
+            { name: "Juice", price: "R12" }
+        ]
+    };
+
+    let currentRestaurant = '';
+
+    function showMenu(restaurantName) {
+        currentRestaurant = restaurantName;
+        document.getElementById('restaurantName').innerText = restaurantName + ' Menu';
+        const menuDiv = document.getElementById('menuItems');
+        menuDiv.innerHTML = '';
+        const menuItems = restaurantMenus[restaurantName] || [];
+        menuItems.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'menu-item';
+            div.innerHTML = `<strong>${item.name}</strong> - ${item.price}`;
+            menuDiv.appendChild(div);
+        });
+        document.getElementById('menuModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('menuModal').style.display = 'none';
+    }
+
+    function viewMap() {
+        // For demo, open Google Maps with location based on restaurant
+        let url = '';
+        switch (currentRestaurant) {
+            case 'KFC Parow':
+                url = 'https://www.google.com/maps/search/?api=1&query=KFC+Parow';
+                break;
+            case 'Sannes Palace':
+                url = 'https://www.google.com/maps/search/?api=1&query=Sannes+Palace';
+                break;
+            case 'DK Spot & Kota':
+                url = 'https://www.google.com/maps/search/?api=1&query=DK+Spot+Kota';
+                break;
+            case 'Nondyebo Eatery':
+                url = 'https://www.google.com/maps/search/?api=1&query=Nondyebo+Eatery';
+                break;
+            default:
+                url = 'https://www.google.com/maps';
+        }
+        window.open(url, '_blank');
+    }
+
+    // Optional: clicking outside modal closes it
+    window.onclick = function(event) {
+        const modal = document.getElementById('menuModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    // Toggle favorite (heart button)
+    function toggleFavorite(btn) {
+        if (btn.innerText === '♥') {
+            btn.innerText = '♡';
+        } else {
+            btn.innerText = '♥';
+        }
+    }
+</script>
+
 </body>
 </html>
