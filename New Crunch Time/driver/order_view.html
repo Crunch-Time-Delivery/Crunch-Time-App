@@ -110,7 +110,7 @@
     background-color: #b30000;
   }
 
-  /* Display none class for hiding sections */
+  /* Hidden class */
  .hidden {
     display: none;
   }
@@ -179,7 +179,7 @@
       <a href="#" id="orderViewLink">Order View</a>
       <a href="#" id="newDriverLink">New Driver</a>
       <a href="#" id="driverAccountLink">Driver View Account</a>
-     
+      <a href="#" id="logoutLink">Logout</a>
     </div>
   </div>
 </div>
@@ -202,8 +202,22 @@
   <div class="modal-content">
     <h3>Login</h3>
     <input type="email" id="loginEmail" placeholder="Email" />
-        <input type="password" id="loginPassword" placeholder="Password" />
+    <input type="password" id="loginPassword" placeholder="Password" />
     <button id="loginBtn">Login</button>
+    <p style="margin-top:10px;"><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>
+  </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgotPasswordModal" class="modal">
+  <div class="modal-content">
+    <h3>Reset Password</h3>
+    <p>Enter your email to reset password:</p>
+    <input type="email" id="forgotEmail" placeholder="Your email" />
+    <div style="margin-top:10px;">
+      <button id="sendResetBtn">Send Reset Link</button>
+      <button id="cancelResetBtn">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -213,20 +227,25 @@
 </div>
 
 <script>
-  // Variables to hold driver registration data and status
+  // Variables
   let driverRegistered = false;
-  let driverApproved = false; // Will be set true after admin approval post-login
-  let driverData = {}; // Store driver info
+  let driverApproved = false;
+  let driverData = {}; 
   let currentPage = '';
 
-  // OTP variables
   let generatedOtp = '';
   let otpVerified = false;
 
-  // Admin approval simulation
   let adminApprovalTimeout = null;
 
-  // Initialize app
+  // Helper to toggle modal
+  function showModal(id) {
+    document.getElementById(id).style.display = 'block';
+  }
+  function hideModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     // Setup menu toggle
     const menuContainer = document.getElementById('menuContainer');
@@ -251,7 +270,8 @@
       loadDriverAccount();
     });
     document.getElementById('logoutLink').addEventListener('click', () => {
-      // Reset registration and approval
+      if (driverData.email) localStorage.setItem('driverEmail', driverData.email);
+      if (driverData.password) localStorage.setItem('driverPassword', driverData.password);
       driverRegistered = false;
       driverApproved = false;
       driverData = {};
@@ -259,62 +279,90 @@
       loadLoginPage();
     });
 
-    // Start with login page if not registered
+    // Forgot password link
+    document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      showModal('forgotPasswordModal');
+    });
+    document.getElementById('cancelResetBtn').addEventListener('click', () => {
+      hideModal('forgotPasswordModal');
+    });
+    document.getElementById('sendResetBtn').addEventListener('click', () => {
+      const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+      if (driverData.email && email === driverData.email.toLowerCase()) {
+        alert('Password reset link sent to your email (simulated).');
+      } else {
+        alert('Email not found.');
+      }
+      hideModal('forgotPasswordModal');
+    });
+
+    // Check for existing credentials
     if (!driverRegistered) {
       loadLoginPage();
     } else {
-      // If registered, start at login
       loadLoginPage();
     }
   });
 
+  // Load login page
   function loadLoginPage() {
     currentPage = 'login';
     const content = document.getElementById('contentArea');
+    const savedEmail = localStorage.getItem('driverEmail') || '';
+    const savedPassword = localStorage.getItem('driverPassword') || '';
+
     content.innerHTML = `
       <h1>Driver Login</h1>
       <button id="openLoginModal" class="action-btn">Login</button>
     `;
     document.getElementById('openLoginModal').addEventListener('click', () => {
-      showLoginModal();
+      showModal('loginModal');
+      document.getElementById('loginEmail').value = savedEmail;
+      document.getElementById('loginPassword').value = savedPassword;
     });
   }
 
-  function showLoginModal() {
-    document.getElementById('loginModal').style.display = 'block';
-    document.getElementById('loginEmail').value = '';
+  // Show login modal
+  function showLoginModal(email = '', password = '') {
+    showModal('loginModal');
+    document.getElementById('loginEmail').value = email;
+    document.getElementById('loginPassword').value = password;
   }
 
   function hideLoginModal() {
-    document.getElementById('loginModal').style.display = 'none';
+    hideModal('loginModal');
   }
 
+  // Login button
   document.getElementById('loginBtn').addEventListener('click', () => {
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password = document.getElementById('loginPassword').value.trim();
+
     if (driverData.email && email === driverData.email.toLowerCase()) {
-      // On login, check approval
+      // Save credentials
+      localStorage.setItem('driverEmail', email);
+      localStorage.setItem('driverPassword', password);
       if (driverApproved) {
         alert('Login successful! Accessing order view.');
         loadOrderView();
       } else {
         alert('Waiting for admin approval...');
-        // Simulate admin approval after delay
         simulateAdminApproval();
         showWaitingApproval();
         hideLoginModal();
       }
     } else {
-      alert('Invalid email. Please try again.');
+      alert('Invalid email.');
     }
   });
 
   function simulateAdminApproval() {
-    // Only set timeout if not already set
     if (!adminApprovalTimeout) {
       adminApprovalTimeout = setTimeout(() => {
         driverApproved = true;
         alert('Admin approved your registration! You can now access order view.');
-      }, 3000); // 3 seconds delay for demo
+      }, 3000);
     }
   }
 
@@ -326,13 +374,12 @@
   }
 
   function showWaitingApproval() {
-    const content = document.getElementById('contentArea');
-    content.innerHTML = `
+    document.getElementById('contentArea').innerHTML = `
       <h2 style="text-align:center;">Waiting for admin approval...</h2>
     `;
   }
 
-  // Registration process
+  // Registration
   function loadNewDriverPage() {
     currentPage = 'newDriver';
 
@@ -385,7 +432,6 @@
 
     document.getElementById('driverForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      // Collect data
       const driverPhotoFile = document.getElementById('driverPhoto').files[0];
       const driverLicenseFile = document.getElementById('driverLicense').files[0];
       const carPhotoFile = document.getElementById('carPhoto').files[0];
@@ -396,7 +442,6 @@
         return;
       }
 
-      // Save data
       driverData = {
         name: document.getElementById('driverName').value,
         email: document.getElementById('driverEmail').value,
@@ -411,16 +456,14 @@
         driverPhoto: URL.createObjectURL(driverPhotoFile),
         driverLicense: URL.createObjectURL(driverLicenseFile),
         carPhoto: URL.createObjectURL(carPhotoFile),
-        approved: false
+        approved: false,
+        email: document.getElementById('driverEmail').value,
+        password: 'password123' // For demo purposes
       };
       driverRegistered = true;
 
-      // Generate OTP and send
       generateAndSendOtp();
-
-      // Show OTP modal
       showOtpModal();
-
     });
   }
 
@@ -445,7 +488,6 @@
       otpVerified = true;
       alert('OTP verified! Awaiting admin approval...');
       hideOtpModal();
-      // After OTP verification, simulate admin approval after delay
       simulateAdminApproval();
     } else {
       alert('Incorrect OTP. Please try again.');
@@ -457,32 +499,6 @@
     alert('OTP resent.');
   });
 
-  function simulateAdminApproval() {
-    // Simulate admin approval after a delay (e.g., 3 seconds)
-    setTimeout(() => {
-      driverApproved = true;
-      alert('Admin approved your registration! You can now login and access order view.');
-    }, 3000);
-  }
-
-  // When driver logs in, check approval status
-  function checkApprovalOnLogin() {
-    if (driverApproved) {
-      loadOrderView();
-    } else {
-      showWaitingApproval();
-    }
-  }
-
-  // Show waiting message during approval delay
-  function showWaitingApproval() {
-    const content = document.getElementById('contentArea');
-    content.innerHTML = `
-      <h2 style="text-align:center;">Waiting for admin approval...</h2>
-    `;
-  }
-
-  // Load order view
   function loadOrderView() {
     if (!driverRegistered || !driverApproved) {
       alert('You are not approved yet or not registered.');
@@ -579,7 +595,6 @@
     });
     document.getElementById('driverProfileForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      // Save profile info
       driverData.name = document.getElementById('profileName').value;
       driverData.email = document.getElementById('profileEmail').value;
       driverData.idNumber = document.getElementById('profileID').value;

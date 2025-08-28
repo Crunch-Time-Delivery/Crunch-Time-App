@@ -71,6 +71,7 @@
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         cursor: pointer;
         align-items: center;
+        position: relative;
     }
     .restaurant-card img {
         width: 100px;
@@ -88,11 +89,16 @@
         color: red;
         font-weight: bold;
     }
+    /* Remove default button styling from heart button */
     .restaurant-card button {
         background: none;
         border: none;
         cursor: pointer;
         font-size: 20px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: transparent;
     }
 
     /* Modal styles */
@@ -289,6 +295,8 @@
 <div id="menuModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal()">&times;</span>
+        <!-- Added image for restaurant -->
+        <img id="restaurantImage" src="" alt="Restaurant Image" style="width:100%; max-height:200px; object-fit:cover; border-radius:5px; margin-bottom:10px;">
         <h2 id="restaurantName">Restaurant Menu</h2>
         <div id="menuItems">
             <!-- Menu items will be inserted here dynamically -->
@@ -352,7 +360,30 @@
 
     function showMenu(restaurantName) {
         currentRestaurant = restaurantName;
+
+        // Set the restaurant name
         document.getElementById('restaurantName').innerText = restaurantName + ' Menu';
+
+        // Set the image based on the restaurant
+        const imageElement = document.getElementById('restaurantImage');
+        switch (restaurantName) {
+            case 'KFC Parow':
+                imageElement.src = 'Images/RS KFC .jpeg';
+                break;
+            case 'Sannes Palace':
+                imageElement.src = 'Images/RS PALACE .jpg';
+                break;
+            case 'DK Spot & Kota':
+                imageElement.src = 'Images/RS KOTA .jpg';
+                break;
+            case 'Nondyebo Eatery':
+                imageElement.src = 'Images/RS NONDYEBO.jpg';
+                break;
+            default:
+                imageElement.src = '';
+        }
+
+        // Populate menu items
         const menuDiv = document.getElementById('menuItems');
         menuDiv.innerHTML = '';
         const menuItems = restaurantMenus[restaurantName] || [];
