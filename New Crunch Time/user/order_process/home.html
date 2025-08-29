@@ -41,7 +41,6 @@
         justify-content: space-between;
         padding: 10px 20px;
         background-color: #ffb4b4;
-        /* Corrected typo in border-bottom */
         border-bottom: 1px solid #ddd;
     }
     .filters button {
@@ -224,6 +223,66 @@
         border-radius: 5px;
         cursor: pointer;
     }
+
+    /* Checkout page styles */
+    #checkoutPage {
+        display: none;
+        padding: 20px;
+        background: #fff;
+        max-width: 600px;
+        margin: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        margin-top: 20px;
+    }
+    #checkoutPage h2, #checkoutPage h3 {
+        margin-top: 0;
+    }
+    #checkoutItems {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0;
+    }
+    #checkoutItems li {
+        margin-bottom: 8px;
+    }
+    /* Style for "Go to Checkout" button */
+    #checkoutBtn {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        background-color: #ff0000;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: background-color 0.3s;
+    }
+    #checkoutBtn:hover {
+        background-color: #fb0404;
+    }
+    /* Confirm and Cancel buttons in checkout */
+    .pay-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    .confirm-btn {
+        background-color: #f90404;
+        color: white;
+    }
+    .cancel-btn {
+        background-color: #f40505;
+        color: white;
+        margin-left: 10px;
+    }
 </style>
 </head>
 <body>
@@ -322,10 +381,27 @@
     </div>
 </div>
 
-<!-- Cart / Selected items display -->
+<!-- Order Summary -->
 <div id="orderSummary" style="padding:10px 20px; background:#fff; max-height:200px; overflow-y:auto; margin:10px;">
     <h4>Order Summary</h4>
     <ul id="orderItems"></ul>
+    <!-- Add the Checkout Button here -->
+    <button id="checkoutBtn" class="checkout-btn" onclick="goToCheckout()">Go to Checkout</button>
+</div>
+
+<!-- Checkout page (hidden initially) -->
+<div id="checkoutPage">
+    <h2>Checkout</h2>
+    <h3>Order Summary</h3>
+    <ul id="checkoutItems"></ul>
+    <h3>Total: <span id="totalAmount">R0</span></h3>
+    <h3>Payment Method</h3>
+    <div style="margin-bottom:20px;">
+        <input type="radio" id="eft" name="payment" value="EFT" checked>
+        <label for="eft">EFT Bank Transfer</label>
+    </div>
+    <button class="pay-btn confirm-btn" onclick="confirmEFT()">Confirm EFT Payment</button>
+    <button class="pay-btn cancel-btn" onclick="cancelCheckout()">Cancel</button>
 </div>
 
 <script>
@@ -465,7 +541,6 @@
 
     function addItemToOrder() {
         if (selectedFoodItem) {
-            // Add item with quantity to order
             orderItems.push({
                 name: selectedFoodItem.name,
                 price: selectedFoodItem.price,
@@ -473,7 +548,6 @@
             });
             updateOrderSummary();
         }
-        // Reset and stay in modal for adding more
         closeFoodModal();
     }
 
@@ -483,7 +557,7 @@
         orderItems.forEach((item, index) => {
             const li = document.createElement('li');
             li.innerHTML = `${item.name} x${item.quantity} @ ${item.price} each`;
-            // Optional: add remove button
+            // Remove button
             const removeBtn = document.createElement('button');
             removeBtn.innerText = 'Remove';
             removeBtn.style.marginLeft = '10px';
@@ -494,6 +568,44 @@
             li.appendChild(removeBtn);
             ul.appendChild(li);
         });
+    }
+
+    // Go to checkout
+    function goToCheckout() {
+        if (orderItems.length === 0) {
+            alert("Your cart is empty!");
+            return;
+        }
+        // Populate checkout items
+        const ul = document.getElementById('checkoutItems');
+        ul.innerHTML = '';
+        let total = 0;
+        orderItems.forEach(item => {
+            const li = document.createElement('li');
+            const priceNumber = parseFloat(item.price.replace('R', ''));
+            total += priceNumber * item.quantity;
+            li.innerHTML = `${item.name} x${item.quantity} @ ${item.price} each`;
+            ul.appendChild(li);
+        });
+        document.getElementById('totalAmount').innerText = `R${total.toFixed(2)}`;
+        // Show checkout page
+        document.getElementById('checkoutPage').style.display = 'block';
+        // Hide order summary
+        document.querySelector('#orderSummary').style.display = 'none';
+    }
+
+    function cancelCheckout() {
+        document.getElementById('checkoutPage').style.display = 'none';
+        document.querySelector('#orderSummary').style.display = 'block';
+    }
+
+    function confirmEFT() {
+        alert("Your EFT payment has been processed successfully. Thank you for your order!");
+        // Clear cart
+        orderItems = [];
+        updateOrderSummary();
+        // Hide checkout
+        cancelCheckout();
     }
 </script>
 

@@ -64,7 +64,7 @@
   .btn-primary { background:#4CAF50; color:#fff; }
   .btn-primary:hover { background:#45a049; }
 
-  /* Modal overlays for login, credential change, add admin */
+  /* Modal overlays for login, credential change, add admin, role view */
   .modal {
     display:flex; align-items:center; justify-content:center;
     position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;
@@ -109,6 +109,12 @@
     max-width: 400px;
     margin: 20px 0;
   }
+  /* New style for Role View & Delete Buttons */
+  .role-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
 </style>
 </head>
 <body>
@@ -290,28 +296,7 @@
           </div>
         </div>
         <!-- Bottom Order Stats -->
-        <div class="stats" style="margin-top:30px;">
-          <!-- Orders Complete -->
-          <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
-            <button class="stat-button" title="Orders Complete" style="position:fixed; left:10px; top:50%; transform:translateY(-50%); padding:8px 12px; background:red; color:#fff; border:none; border-radius:4px; cursor:pointer;">✓</button>
-            <div class="stat-info" style="margin-left:50px;">Total Orders Complete: 120</div>
-          </div>
-          <!-- Orders Delivered -->
-          <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
-            <button class="stat-button" title="Orders Delivered" style="position:fixed; left:10px; top:50%; transform:translateY(-50%); padding:8px 12px; background:red; color:#fff; border:none; border-radius:4px; cursor:pointer;">✓</button>
-            <div class="stat-info" style="margin-left:50px;">Total Orders Delivered: 100</div>
-          </div>
-          <!-- Orders Cancelled -->
-          <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
-            <button class="stat-button" title="Orders Cancelled" style="position:fixed; left:10px; top:50%; transform:translateY(-50%); padding:8px 12px; background:#f44336; color:#fff; border:none; border-radius:4px; cursor:pointer;">⚠</button>
-            <div class="stat-info" style="margin-left:50px;">Total Orders Cancelled: 10</div>
-          </div>
-          <!-- Orders Pending -->
-          <div class="stat-row" style="display:flex; align-items:center; margin-bottom:15px; position:relative;">
-            <button class="stat-button" title="Orders Pending" style="position:fixed; left:10px; top:50%; transform:translateY(-50%); padding:8px 12px; background:#2196F3; color:#fff; border:none; border-radius:4px; cursor:pointer;">⏳</button>
-            <div class="stat-info" style="margin-left:50px;">Orders Pending: 10</div>
-          </div>
-        </div>
+        <!-- ... existing code ... -->
         <!-- Popular Food -->
         <div class="popular-food" style="margin-top:30px;">
           <div class="food-header" style="font-size:20px; font-weight:bold; margin-bottom:10px;">Popular Food</div>
@@ -346,6 +331,7 @@
               <div>Desserts - 10%</div>
             </div>
           </div>
+          
           <!-- Order Delivered Bar -->
           <div style="margin-top:20px; font-weight:bold;">Order Delivered</div>
           <div style="margin-top:10px;">
@@ -401,6 +387,93 @@
           </div>
         </div>
       </div>
+      
+      <!-- View Select Role Button -->
+      <div style="margin:30px 20px;">
+        <button style="background:red; color:#fff; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;" onclick="showRolePopup()">View Select Role</button>
+      </div>
+      
+      <!-- Role Popup -->
+      <div id="rolePopup" class="modal" style="display:none; flex-direction:column;">
+        <div class="modal-box" style="width:90%; max-height:90%; overflow-y:auto;">
+          <h3>Role Management</h3>
+          <!-- Tables for User, Vendor, Driver -->
+          
+          <!-- User Table -->
+          <h4>User Accounts</h4>
+          <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr><th>Email</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>user1@example.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('User', 'user1@example.com')">View</button>
+                  <button onclick="deleteRole('User', 'user1@example.com')">Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <td>user2@example.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('User', 'user2@example.com')">View</button>
+                  <button onclick="deleteRole('User', 'user2@example.com')">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <!-- Vendor Table -->
+          <h4>Vendor Accounts</h4>
+          <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr><th>Email</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>vendor1@example.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('Vendor', 'vendor1@example.com')">View</button>
+                  <button onclick="deleteRole('Vendor', 'vendor1@example.com')">Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <td>vendor2@example.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('Vendor', 'vendor2@example.com')">View</button>
+                  <button onclick="deleteRole('Vendor', 'vendor2@example.com')">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <!-- Driver Table -->
+          <h4>Driver Accounts</h4>
+          <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr><th>Email</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>driver1@example.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('Driver', 'driver1@example.com')">View</button>
+                  <button onclick="deleteRole('Driver', 'driver1@example.com')">Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <td>driver2@example.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('Driver', 'driver2@example.com')">View</button>
+                  <button onclick="deleteRole('Driver', 'driver2@example.com')">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <button style="margin-top:15px; background:red; color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="closeRolePopup()">Close</button>
+        </div>
+      </div>
+      
     </div>
   </div>
 </div>
@@ -472,6 +545,18 @@
   </div>
 </div>
 
+<!-- Role Info Popup -->
+<div id="roleInfoPopup" class="modal" style="display:none; flex-direction:column;">
+  <div class="modal-box" style="width:90%; max-height:90%; overflow-y:auto;">
+    <h3>Role Information</h3>
+    <div id="roleInfoContent" style="margin-bottom:20px;">
+      <!-- Role details will be inserted here -->
+    </div>
+    <button style="margin-top:10px; background:rgb(255, 0, 0); color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="sendNotification()">Send Email/Notification</button>
+    <button style="margin-top:10px; background:red; color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="closeRoleInfo()">Close</button>
+  </div>
+</div>
+
 <script>
   // Admin Credentials
   let adminUsername = 'crunchtimeadmin';
@@ -481,8 +566,8 @@
   function sendEmail(to, subject, body) {
     alert(`Simulated Email to ${to}:\nSubject: ${subject}\n${body}`);
   }
-  function sendSMS(to, message) {
-    alert(`Simulated SMS to ${to}:\n${message}`);
+  function sendNotification(to, message) {
+    alert(`Simulated Notification to ${to}:\n${message}`);
   }
 
   // Show section
@@ -666,6 +751,8 @@
       },
       options:{ responsive:true, plugins:{ legend:{ display:true } } }
     });
+    // Draw the circle graph
+    drawCircleGraph();
   }
 
   // Draw circle graph
@@ -764,20 +851,49 @@
   window.onload = () => {
     initCharts();
     createRestaurantBox();
-    // Draw wave graphs
-    drawWaveGraphs();
-    drawCircleGraph();
   };
 
-  // Draw wave graphs
-  function drawWaveGraphs() {
-    // Already handled in initCharts() but kept for structure
+  // --- Additional Functions for Role Popup ---
+  function showRolePopup() {
+    document.getElementById('rolePopup').style.display='flex';
   }
 
-  // Draw circle graph
-  function drawCircleGraph() {
-    // Already handled in initCharts() but kept for structure
+  function closeRolePopup() {
+    document.getElementById('rolePopup').style.display='none';
   }
+
+  function viewRoleInfo(roleType, email) {
+    document.getElementById('roleInfoContent').innerHTML= `
+      <h4>${roleType} Role Details</h4>
+      <p>Email: ${email}</p>
+      <p>Role: ${roleType}</p>
+      <p>Status: Active</p>
+    `;
+    // Save email and role for sending email/notification
+    window.currentRoleEmail=email;
+    window.currentRoleType=roleType;
+    showRoleInfo();
+  }
+
+  function deleteRole(roleType, email) {
+    alert(`Are you sure you want to delete ${roleType} account: ${email}?`);
+  }
+
+  function showRoleInfo() {
+    document.getElementById('roleInfoPopup').style.display='flex';
+  }
+
+  function closeRoleInfo() {
+    document.getElementById('roleInfoPopup').style.display='none';
+  }
+
+  function sendNotification() {
+    const email=window.currentRoleEmail;
+    if(email){
+      sendEmail(email, 'Notification from Admin', 'You have a new notification from admin.');
+    }
+  }
+
 </script>
 </body>
 </html>
