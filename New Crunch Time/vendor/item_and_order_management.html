@@ -42,7 +42,7 @@
     display:flex; align-items:center; justify-content:center; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;
   }
   .modal-box { background:#fff; padding:20px; border-radius:8px; width:400px; max-height:80%; overflow-y:auto; }
-  input[type=text], input[type=number], input[type=password] {
+  input[type=text], input[type=number], input[type=password], input[type=email] {
     width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;
   }
 </style>
@@ -163,29 +163,34 @@
 
 <script>
 // =================== State & Utility ===================
-if(localStorage.getItem('vendorLoggedIn')==='true'){
-  showSection('section-items');
-} else {
-  showLogin();
-}
-function showLogin() {
-  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  document.getElementById('loginModal').style.display='flex';
-}
-function showSection(id){
-  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  document.getElementById(id).style.display='block';
-}
-function toggleDropdown() {
-  document.getElementById('profileDropdown').classList.toggle('show');
-}
-window.onclick = (e) => {
-  if (!e.target.closest('.menu-container')) {
-    document.getElementById('profileDropdown').classList.remove('show');
-  }
-}
-// =================== Register & OTP ===================
 let tempAdminData={}, generatedOTP='';
+
+function init() {
+  // Show registration modal first
+  showRegistration();
+}
+window.onload = () => {
+  // If user is already logged in, show dashboard
+  if(localStorage.getItem('vendorLoggedIn')==='true'){
+    showSection('section-items');
+  } else {
+    init(); // start registration flow
+  }
+};
+
+// Show registration modal
+function showRegistration() {
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  document.getElementById('loginModal').style.display='none';
+  document.getElementById('registerModal').style.display='flex';
+  document.getElementById('otpModal').style.display='none';
+  // Reset registration fields
+  document.getElementById('regEmail').value='';
+  document.getElementById('regName').value='';
+  document.getElementById('regPassword').value='';
+}
+
+// Start registration process
 function startRegistration() {
   const email=document.getElementById('regEmail').value.trim();
   const name=document.getElementById('regName').value.trim();
@@ -194,47 +199,78 @@ function startRegistration() {
   tempAdminData={email, name, pass};
   generatedOTP = Math.floor(100000 + Math.random()*900000).toString();
   alert('Your OTP: '+generatedOTP);
+  // Show OTP modal
   document.getElementById('registerModal').style.display='none';
   document.getElementById('otpModal').style.display='flex';
+  document.getElementById('otpInput').value='';
 }
+
+// Verify OTP
 function verifyOTP() {
   const inputOTP=document.getElementById('otpInput').value.trim();
   if(inputOTP===generatedOTP){
-    alert('OTP verified! Register complete.');
+    alert('OTP verified! Registration complete.');
     // Save credentials
     localStorage.setItem('vendorEmail', tempAdminData.email);
     localStorage.setItem('vendorPassword', tempAdminData.pass);
     localStorage.setItem('vendorLoggedIn','true');
+    // After registration and OTP, show login
     document.getElementById('otpModal').style.display='none';
-    showSection('section-items');
-  }else{
+    showLogin();
+  } else {
     alert('Incorrect OTP');
   }
 }
-function resendOTP() {
-  generatedOTP= Math.floor(100000 + Math.random()*900000).toString();
-  alert('Resent OTP: '+generatedOTP);
-  // Send OTP via backend
+
+// Show login modal
+function showLogin() {
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  document.getElementById('loginModal').style.display='flex';
+  document.getElementById('username').value='';
+  document.getElementById('password').value='';
 }
+
+// Verify login
 function verifyLogin() {
-  const username=document.getElementById('username').value.trim();
-  const pass=document.getElementById('password').value.trim();
-  const storedEmail=localStorage.getItem('vendorEmail');
-  const storedPass=localStorage.getItem('vendorPassword');
-  if(!storedEmail || !storedPass){ alert('Register first'); return; }
-  if(username===storedEmail && pass===storedPass){
+  const username = document.getElementById('username').value.trim();
+  const pass = document.getElementById('password').value.trim();
+  const storedEmail = localStorage.getItem('vendorEmail');
+  const storedPass = localStorage.getItem('vendorPassword');
+  if (!storedEmail || !storedPass) { alert('Register first'); return; }
+  if (username === storedEmail && pass === storedPass) {
     alert('Logged in');
-    localStorage.setItem('vendorLoggedIn','true');
+    localStorage.setItem('vendorLoggedIn', 'true');
+    // Hide login modal
+    document.getElementById('loginModal').style.display='none';
     showSection('section-items');
-  }else{
+  } else {
     alert('Invalid');
   }
 }
+
+// Show section
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.style.display='none');
+  document.getElementById(id).style.display='block';
+}
+
+// Logout
 function logout() {
   localStorage.clear();
   alert('Logged out');
-  showLogin();
+  showRegistration(); // restart flow from registration
 }
+
+// Toggle dropdown menu
+function toggleDropdown() {
+  document.getElementById('profileDropdown').classList.toggle('show');
+}
+window.onclick = (e) => {
+  if (!e.target.closest('.menu-container')) {
+    document.getElementById('profileDropdown').classList.remove('show');
+  }
+}
+
 // =================== CRUD Data ===================
 let items=[], orders=[], users=[], payments=[];
 
@@ -429,6 +465,7 @@ function showManagement(type) {
   else if(type==='users'){ document.getElementById('section-users').style.display='block'; renderUsers(); }
   else if(type==='payment'){ document.getElementById('section-payments').style.display='block'; renderPayments(); }
 }
+
 // Modal open/close functions
 function openItemForm() {
   document.getElementById('itemFormTitle').innerText='Add Item';
