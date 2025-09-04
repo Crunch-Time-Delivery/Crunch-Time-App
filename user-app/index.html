@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Home Dashboard</title>
+<title>User Home Dashboard</title>
 <style>
 /* Basic Reset & Body */
 body {
@@ -287,17 +287,24 @@ body {
 #closePaymentModal {
     position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: bold; cursor: pointer;
 }
-#cardForm {
-    display: flex; flex-direction: column; gap: 10px; margin-top: 10px;
-}
-#cardForm input {
-    padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 5px;
-}
-#payButton {
-    margin-top: 15px; padding: 10px; background-color: #f50505; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;
-}
-#payButton:hover { background-color: #f90303; }
 
+/* Bank Details Modal */
+#bankDetailsModal {
+    display: none;
+    position: fixed; z-index: 9999;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center; align-items: center;
+}
+#bankDetailsContent {
+    background: #fff; padding: 20px; border-radius: 10px; max-width: 400px; width: 90%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    position: relative; animation: popin 0.3s ease;
+}
+#closeBankDetails {
+    position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: bold; cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -312,8 +319,8 @@ body {
         <input type="text" placeholder="Search Crunch Time ">
     </div>
     <a href="http://127.0.0.1:5500/New%20Crunch%20Time/user/order_process/search_location.html" style="text-decoration: none;">
-  <button>Map Location - Pick up now</button>
-</a>
+      <button>Map Location - Pick up now</button>
+    </a>
 </div>
 
 <!-- FILTERS -->
@@ -355,4 +362,958 @@ body {
         <div class="details">
             <div>DK Spot & Kota Restaurant</div>
             <div class="rating">4.0 ★</div>
+            <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
+        </div>
+        <button class="heart" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+    </div>
+    <div class="restaurant-card" onclick="showMenu('Nondyebo Eatery')">
+        <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery" />
+        <div class="details">
+            <div>Nondyebo Eatery</div>
+            <div class="rating">3.3 ★</div>
+            <div>10 min - 0.6 km</div>
+        </div>
+        <button class="heart" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+    </div>
+</div>
+
+<!-- Modal for Menu -->
+<div id="menuModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <img id="restaurantImage" src="" alt="Restaurant Image" />
+        <h2 id="restaurantName">Restaurant Menu</h2>
+        <div id="menuItems"></div>
+        <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
+    </div>
+</div>
+
+<!-- Food modal for adding items -->
+<div id="foodModal">
+    <div id="foodModalContent">
+        <span class="food-close-btn" onclick="closeFoodModal()">&times;</span>
+        <h3 id="foodItemName">Food Item</h3>
+        <div style="display:flex; align-items:center; justify-content:space-around; margin-top:10px;">
+            <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+            <span id="foodQuantity">1</span>
+            <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+        </div>
+        <div style="margin-top:20px; display:flex; justify-content:center;">
+            <button class="add-more-btn" onclick="addItemToOrder()">Add More Items</button>
+            <button class="exit-btn" onclick="closeFoodModal()">Exit</button>
+        </div>
+    </div>
+</div>
+
+<!-- Order Summary -->
+<div id="orderSummary">
+    <h4>Order Summary</h4>
+    <ul id="orderItems"></ul>
+    <button id="checkoutBtn" class="checkout-btn" onclick="goToCheckout()">Go to Checkout</button>
+    <button id="orderHistoryBtn" class="add-more-btn" style="background-color:#b30000; margin-top:10px;" onclick="showOrderHistory()">My Order History</button>
+    <div id="voucherSection">
+        <button id="voucherButton" onclick="openVoucherModal()">Enter Voucher / Coupon</button>
+    </div>
+</div>
+
+<!-- Contact details for driver (hidden initially, shown in checkout) -->
+<div id="driverContact" style="margin-top:20px; padding:10px; background:#f0f0f0; border-radius:5px; display:none;">
+    <h4>Contact Driver</h4>
+    <p>Call: <a href="tel:+27123456789">+27 12 345 6789</a></p>
+    <p>Message: <a href="sms:+27123456789">Send Message</a></p>
+</div>
+
+<!-- Popup for searching driver (hidden initially) -->
+<div id="searchDriverPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000;">
+    <div style="background:#fff; padding:30px; border-radius:10px; text-align:center;">
+        <h2>Searching for a driver...</h2>
+        <p>Please wait while we assign a driver to your order.</p>
+    </div>
+</div>
+
+<!-- Checkout page (hidden initially) -->
+<div id="checkoutPage">
+    <h2 id="checkoutRestaurantTitle">Checkout</h2>
+    <h3>Order Breakdown</h3>
+    <ul id="checkoutItems"></ul>
+    <div id="costBreakdown" style="margin-top:10px;">
+        <p>Subtotal: <span id="subtotalDisplay">R0.00</span></p>
+        <!-- Removed VAT line -->
+        <p>Service Fee: <span id="serviceFeeDisplay">R5.00</span></p>
+        <p>Tip: <span id="tipDisplay">R3.00</span></p>
+        <p>Delivery Fee: <span id="deliveryFeeDisplay">R10.00</span></p>
+        <h3>Total (Tax Incl.): <span id="totalAmount">R0.00</span></h3>
+        <p style="margin-top:10px; font-weight:bold;">Discount Applied: <span id="discountAmount">R0.00</span></p>
+    </div>
+    <h3>Payment Method</h3>
+    <div style="margin-bottom:20px;">
+        <!-- Payment options -->
+        <label style="margin-right:15px;">
+            <input type="radio" name="payment" value="EFT" checked> EFT Bank Transfer
+        </label>
+        <label style="margin-right:15px;">
+            <input type="radio" name="payment" value="VISA"> <img src="https://img.icons8.com/color/48/000000/visa.png" style="width:24px; height:24px; vertical-align:middle; margin-right:5px;"> Visa
+        </label>
+        <label style="margin-right:15px;">
+            <input type="radio" name="payment" value="MasterCard"> <img src="https://img.icons8.com/color/48/000000/mastercard-logo.png" style="width:24px; height:24px; vertical-align:middle; margin-right:5px;"> MasterCard
+        </label>
+        <label style="margin-right:15px;">
+            <input type="radio" name="payment" value="AMEX"> <img src="https://img.icons8.com/color/48/000000/amex.png" style="width:24px; height:24px; vertical-align:middle; margin-right:5px;"> Amex
+        </label>
+    </div>
+    <button class="pay-btn confirm-btn" onclick="confirmPayment()">Confirm Payment</button>
+    <button class="pay-btn cancel-btn" onclick="cancelCheckout()">Cancel</button>
+</div>
+
+<!-- Voucher modal -->
+<div id="voucherModal" style="display:none; justify-content:center; align-items:center;">
+    <div id="voucherContent" style="background:#fff; padding:20px; border-radius:10px; width:90%; max-width:400px; animation:popin 0.3s ease; position:relative;">
+        <span id="closeVoucher" onclick="closeVoucherModal()" style="position:absolute; top:10px; right:15px; font-size:24px; font-weight:bold; cursor:pointer;">&times;</span>
+        <h3>Enter Voucher Code</h3>
+        <input type="text" id="voucherInput" placeholder="Enter your coupon code" style="width:100%; padding:8px; font-size:16px; margin-top:20px; border:1px solid #ccc; border-radius:5px;">
+        <button id="applyVoucher" onclick="applyVoucher()" style="margin-top:15px; padding:10px 20px; background-color:#f40505; border:none; border-radius:5px; color:#fff; font-size:16px; cursor:pointer;">Apply Coupon</button>
+        <div id="qrCodeContainer" style="margin-top:20px; text-align:center;">
+            <p>Or scan QR code:</p>
+            <div id="qrCodePlaceholder" style="width:150px; height:150px; background:#eee; display:inline-block; line-height:150px; color:#999; font-size:14px; border-radius:10px;">[QR CODE IMAGE]</div>
+        </div>
+    </div>
+</div>
+
+<!-- Order History Modal -->
+<div id="orderHistoryModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeOrderHistory()" style="top:10px; right:15px;">&times;</span>
+        <h2>My Order History</h2>
+        <div id="orderHistoryList" style="max-height:400px; overflow-y:auto; margin-top:10px;"></div>
+    </div>
+</div>
+
+<!-- Payment Gateway Modal -->
+<div id="paymentModal">
+  <div id="paymentModalContent" style="background:#fff; padding:20px; border-radius:10px; max-width:400px; width:90%; box-shadow:0 4px 12px rgba(0,0,0,0.2); position:relative; animation:popin 0.3s ease;">
+    <span id="closePaymentModal" onclick="closePaymentGateway()" style="position:absolute; top:10px; right:15px; font-size:24px; font-weight:bold; cursor:pointer;">&times;</span>
+    <h3>Enter Card Details</h3>
+    <form id="cardForm">
+      <input type="text" id="cardNumber" placeholder="Card Number" maxlength="19" required>
+      <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" required>
+      <input type="text" id="cardCVV" placeholder="CVV" maxlength="4" required>
+      <button type="button" id="payButton" style="margin-top:15px; padding:10px; background-color:#f40505; color:#fff; border:none; border-radius:5px; cursor:pointer; font-size:16px;" onclick="processCardPayment()">Pay</button>
+    </form>
+  </div>
+</div>
+
+<!-- Company Banking Details Modal -->
+<div id="bankDetailsModal">
+  <div id="bankDetailsContent" style="background:#fff; padding:20px; border-radius:10px; max-width:400px; width:90%; box-shadow:0 4px 12px rgba(0,0,0,0.2); position:relative; animation:popin 0.3s ease;">
+    <span id="closeBankDetails" onclick="closeBankDetailsModal()" style="position:absolute; top:10px; right:15px; font-size:24px; font-weight:bold; cursor:pointer;">&times;</span>
+    <h3>Enter Company Banking Details</h3>
+    <textarea id="bankDetailsInput" placeholder="Enter your company's banking info here..." style="width:100%; height:150px; margin-top:10px; padding:10px; border:1px solid #ccc; border-radius:5px;"></textarea>
+    <button style="margin-top:15px; padding:10px 20px; background-color:#007bff; color:#fff; border:none; border-radius:5px; cursor:pointer;" onclick="saveBankDetails()">Save Details</button>
+  </div>
+</div>
+
+<script>
+// Placeholder menu data
+const restaurantMenus = {
+    "KFC Parow": [
+        { name: "Zinger Burger", price: "R50" },
+        { name: "Fries", price: "R20" },
+        { name: "Cola", price: "R15" }
+    ],
+    "Sannes Palace": [
+        { name: "Chicken Curry", price: "R80" },
+        { name: "Veggie Plate", price: "R60" },
+        { name: "Lemonade", price: "R10" }
+    ],
+    "DK Spot & Kota": [
+        { name: "Kota Special", price: "R25" },
+        { name: "Fries", price: "R20" },
+        { name: "Soda", price: "R15" }
+    ],
+    "Nondyebo Eatery": [
+        { name: "Wrap", price: "R40" },
+        { name: "Salad", price: "R35" },
+        { name: "Juice", price: "R12" }
+    ]
+};
+
+let currentRestaurant = '';
+let selectedFoodItem = null;
+let currentQuantity = 1;
+let orderItems = [];
+let savedCards = [];
+let appliedVoucher = null;
+let discountAmount = 0;
+
+// Fees
+const SERVICE_FEE = 5.00;
+const TIP = 3.00;
+const DELIVERY_FEE = 10.00;
+
+// Show menu
+function showMenu(restaurantName) {
+    currentRestaurant = restaurantName;
+    document.getElementById('restaurantName').innerText = restaurantName + ' Menu';
+
+    const imageElement = document.getElementById('restaurantImage');
+    switch (restaurantName) {
+        case 'KFC Parow': imageElement.src='Images/RS KFC.jpeg'; break;
+        case 'Sannes Palace': imageElement.src='Images/RS PALACE.jpg'; break;
+        case 'DK Spot & Kota': imageElement.src='Images/RS KOTA.jpg'; break;
+        case 'Nondyebo Eatery': imageElement.src='Images/RS NONDYEBO.jpg'; break;
+        default: imageElement.src=''; break;
+    }
+
+    const menuDiv = document.getElementById('menuItems');
+    menuDiv.innerHTML='';
+    const menuList = restaurantMenus[restaurantName] || [];
+    menuList.forEach(item => {
+        const div = document.createElement('div');
+        div.className='menu-item';
+        div.innerHTML=`<strong>${item.name}</strong> - ${item.price}`;
+        div.onclick=()=>{ openFoodModal(item); };
+        menuDiv.appendChild(div);
+    });
+    document.getElementById('menuModal').style.display='block';
+}
+
+function closeModal() { document.getElementById('menuModal').style.display='none'; }
+function viewMap() {
+    let url='';
+    switch (currentRestaurant) {
+        case 'KFC Parow': url='https://www.google.com/maps/search/?api=1&query=KFC+Parow'; break;
+        case 'Sannes Palace': url='https://www.google.com/maps/search/?api=1&query=Sannes+Palace'; break;
+        case 'DK Spot & Kota': url='https://www.google.com/maps/search/?api=1&query=DK+Spot+Kota'; break;
+        case 'Nondyebo Eatery': url='https://www.google.com/maps/search/?api=1&query=Nondyebo+Eatery'; break;
+        default: url='https://www.google.com/maps'; break;
+    }
+    window.open(url,'_blank');
+}
+
+window.onclick=function(event) {
+    if (event.target==document.getElementById('menuModal')) closeModal();
+    if (event.target==document.getElementById('foodModal')) closeFoodModal();
+    if (event.target==document.getElementById('voucherModal')) closeVoucherModal();
+    if (event.target==document.getElementById('orderHistoryModal')) closeOrderHistory();
+    if (event.target==document.getElementById('paymentModal')) closePaymentGateway();
+    if (event.target==document.getElementById('bankDetailsModal')) closeBankDetailsModal();
+}
+
+// Favorite toggle
+function toggleFavorite(btn) {
+    btn.innerText = (btn.innerText==='♥') ? '♡':'♥';
+}
+
+// Food modal
+function openFoodModal(foodItem) {
+    selectedFoodItem=foodItem;
+    currentQuantity=1;
+    document.getElementById('foodItemName').innerText=foodItem.name;
+    document.getElementById('foodQuantity').innerText=currentQuantity;
+    document.getElementById('foodModal').style.display='flex';
+}
+function closeFoodModal() { document.getElementById('foodModal').style.display='none'; }
+function changeQuantity(delta) {
+    currentQuantity+=delta;
+    if (currentQuantity<1) currentQuantity=1;
+    document.getElementById('foodQuantity').innerText=currentQuantity;
+}
+function addItemToOrder() {
+    if (selectedFoodItem) {
+        // Ask for opinion
+        const opinion = prompt(`How do you want your ${selectedFoodItem.name}? (e.g., Spicy, Less Salt, No Onion, etc.)`, '');
+        if (opinion !== null) {
+            selectedFoodItem.opinion = opinion;
+        }
+        orderItems.push({ 
+            name: selectedFoodItem.name, 
+            price: selectedFoodItem.price, 
+            quantity: currentQuantity,
+            opinion: selectedFoodItem.opinion || 'No preference'
+        });
+        updateOrderSummary();
+    }
+    closeFoodModal();
+}
+
+// Update order summary to include opinions
+function updateOrderSummary() {
+    const ul=document.getElementById('orderItems');
+    ul.innerHTML='';
+    orderItems.forEach((item,index) => {
+        const li=document.createElement('li');
+        li.innerHTML=`${item.name} x${item.quantity} ${item.price} <br/>Opinion: ${item.opinion}`;
+        const removeBtn=document.createElement('button');
+        removeBtn.innerText='Remove';
+        removeBtn.onclick=()=>{ orderItems.splice(index,1); updateOrderSummary(); };
+        li.appendChild(removeBtn);
+        ul.appendChild(li);
+    });
+}
+
+// Save order to history
+function saveOrderToHistory() {
+    let history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+    const timestamp = new Date().toISOString();
+    const totalText = document.getElementById('totalAmount').innerText;
+    history.push({ timestamp, restaurant: currentRestaurant, items: [...orderItems], total: totalText });
+    localStorage.setItem('orderHistory', JSON.stringify(history));
+}
+
+function showOrderHistory() {
+    const history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+    const container = document.getElementById('orderHistoryList');
+    container.innerHTML='';
+
+    if (history.length === 0) {
+        container.innerHTML='<p>No order history available.</p>';
+    } else {
+        history.slice().reverse().forEach((entry, index) => {
+            const div = document.createElement('div');
+            div.style.border='1px solid #ccc';
+            div.style.borderRadius='5px';
+            div.style.padding='10px';
+            div.style.marginBottom='10px';
+            div.innerHTML = `
+                <strong>${new Date(entry.timestamp).toLocaleString()}</strong><br/>
+                Restaurant: ${entry.restaurant}<br/>
+                Total: ${entry.total}
+                <button style="margin-top:5px; background-color:#b30000; color:#fff; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;" onclick='viewOrderDetails(${index})'>View</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+    document.getElementById('orderHistoryModal').style.display='flex';
+}
+
+function viewOrderDetails(index) {
+    const history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+    const order = history.slice().reverse()[index];
+    alert(`Order Details:\nRestaurant: ${order.restaurant}\nTotal: ${order.total}\nItems:\n` + order.items.map(i => `${i.name} x${i.quantity} @ ${i.price} Opinion: ${i.opinion}`).join('\n'));
+}
+function closeOrderHistory() {
+    document.getElementById('orderHistoryModal').style.display='none';
+}
+
+// Main checkout
+function goToCheckout() {
+    if (orderItems.length===0) { alert("Your cart is empty!"); return; }
+    // Save current order
+    saveOrderToHistory();
+
+    document.getElementById('checkoutRestaurantTitle').innerText = currentRestaurant + ' - Checkout';
+
+    const ul=document.getElementById('checkoutItems');
+    ul.innerHTML='';
+
+    let subtotal=0;
+    orderItems.forEach(item => {
+        const li=document.createElement('li');
+        const priceNum=parseFloat(item.price.replace('R','').trim());
+        const totalItemPrice=priceNum*item.quantity;
+        subtotal+=totalItemPrice;
+        li.innerHTML=`${item.name} x${item.quantity} ${item.price} = R${totalItemPrice.toFixed(2)}`;
+        ul.appendChild(li);
+    });
+
+    // VAT is included, so omit VAT line
+    // const vat=subtotal*0.15; // Removed
+    let total=subtotal+SERVICE_FEE+TIP+DELIVERY_FEE;
+
+    if (appliedVoucher) {
+        total -= discountAmount;
+        if (total<0) total=0;
+    }
+
+    // Update display
+    document.getElementById('subtotalDisplay').innerText=`R${subtotal.toFixed(2)}`;
+    // VAT line removed
+    document.getElementById('serviceFeeDisplay').innerText=`R${SERVICE_FEE.toFixed(2)}`;
+    document.getElementById('tipDisplay').innerText=`R${TIP.toFixed(2)}`;
+    document.getElementById('deliveryFeeDisplay').innerText=`R${DELIVERY_FEE.toFixed(2)}`;
+    document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
+    document.getElementById('discountAmount').innerText=`R${discountAmount.toFixed(2)}`;
+
+    // Show contact details for driver
+    document.getElementById('driverContact').style.display='block';
+
+    // Show the driver search popup
+    document.getElementById('searchDriverPopup').style.display='flex';
+
+    // Simulate driver search delay, then hide popup
+    setTimeout(() => {
+        document.getElementById('searchDriverPopup').style.display='none';
+        alert('Driver has been assigned! Your driver will arrive shortly.');
+        // After payment, return to main menu:
+        resetOrderAndReturnHome();
+    }, 3000); // 3 seconds delay
+    // Show checkout
+    document.getElementById('checkoutPage').style.display='block';
+    document.querySelector('#orderSummary').style.display='none';
+}
+
+function cancelCheckout() {
+    document.getElementById('checkoutPage').style.display='none';
+    document.querySelector('#orderSummary').style.display='block';
+    // Hide driver contact
+    document.getElementById('driverContact').style.display='none';
+}
+
+// Get selected payment method
+function getSelectedPaymentMethod() {
+    const radios=document.getElementsByName('payment');
+    for (let r of radios) {
+        if (r.checked) return r.value;
+    }
+    return 'EFT';
+}
+
+// Confirm payment
+function confirmPayment() {
+    const method = getSelectedPaymentMethod();
+    if (method === 'EFT') {
+        // Show banking details modal
+        showBankDetailsModal();
+        // The order will be processed after user inputs banking info and clicks save
+    } else {
+        // For card methods, open modal and simulate API
+        openPaymentGateway();
+    }
+}
+
+// After successful bank transfer simulation
+function simulateBankPayment() {
+    alert('Processing bank transfer...');
+    // Simulate API call
+    fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        body: JSON.stringify({ order: orderItems, amount: document.getElementById('totalAmount').innerText }),
+        headers: { 'Content-type': 'application/json; charset=UTF-8' }
+    }).then(response => response.json())
+      .then(data => {
+        alert('Bank transfer successful! Your order is confirmed.');
+        // After success, return to main menu:
+        resetOrderAndReturnHome();
+      }).catch(() => {
+        alert('Failed to process bank transfer. Please try again.');
+      });
+}
+
+// Process card payment
+function processCardPayment() {
+    const number = document.getElementById('cardNumber').value.trim();
+    const expiry = document.getElementById('cardExpiry').value.trim();
+    const cvv = document.getElementById('cardCVV').value.trim();
+
+    if (!number || !expiry || !cvv) {
+        alert('Please fill all card details.');
+        return;
+    }
+    if (number.length < 13 || number.length > 19 || isNaN(number.replace(/\s+/g,""))) {
+        alert('Invalid card number.');
+        return;
+    }
+    if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+        alert('Invalid expiry format.');
+        return;
+    }
+    if (cvv.length < 3 || cvv.length > 4 || isNaN(cvv)) {
+        alert('Invalid CVV.');
+        return;
+    }
+    const maskedNumber='**** **** **** ' + number.slice(-4);
+    alert(`Payment of ${document.getElementById('totalAmount').innerText} successful via card ending with ${number.slice(-4)}!`);
+    closePaymentGateway();
+    document.getElementById('cardForm').reset();
+
+    // Save card info temporarily
+    const cardInfo = {
+        number: maskedNumber,
+        expiry: expiry,
+        cvv: cvv
+    };
+    savedCards.push(cardInfo);
+
+    // Show driver popup
+    document.getElementById('searchDriverPopup').style.display='flex';
+
+    setTimeout(() => {
+        document.getElementById('searchDriverPopup').style.display='none';
+        alert('Driver has been assigned! Your driver will arrive shortly.');
+        // After payment, return to main menu:
+        resetOrderAndReturnHome();
+    }, 3000);
+}
+
+// Show bank details modal
+function showBankDetailsModal() {
+    document.getElementById('bankDetailsModal').style.display='flex';
+}
+function closeBankDetailsModal() {
+    document.getElementById('bankDetailsModal').style.display='none';
+}
+function saveBankDetails() {
+    const details = document.getElementById('bankDetailsInput').value.trim();
+    if (!details) {
+        alert('Please enter banking details.');
+        return;
+    }
+    alert('Banking details saved.');
+    closeBankDetailsModal();
+    // Now simulate bank transfer
+    simulateBankPayment();
+}
+
+// Utility to reset order and show main menu
+function resetOrderAndReturnHome() {
+    orderItems = [];
+    updateOrderSummary();
+    document.getElementById('checkoutPage').style.display='none';
+    document.querySelector('#orderSummary').style.display='block';
+    document.getElementById('driverContact').style.display='none';
+}
+
+// ------------------- Popup functions -------------------
+function openVoucherModal() { document.getElementById('voucherModal').style.display='flex'; }
+function closeVoucherModal() { document.getElementById('voucherModal').style.display='none'; }
+function applyVoucher() {
+    const code = document.getElementById('voucherInput').value.trim();
+    if (code === 'SAVE10') {
+        alert('Voucher applied! R10 off.');
+        discountAmount = 10;
+        appliedVoucher = 'SAVE10';
+    } else if (code === 'FREESHIP') {
+        alert('Free delivery voucher applied! (simulated)');
+        // could implement free delivery, but for now just alert
+    } else {
+        alert('Invalid voucher code.');
+        discountAmount = 0;
+        appliedVoucher = null;
+    }
+    closeVoucherModal();
+}
+
+// Show order history
+function showOrderHistory() {
+    const history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+    const container = document.getElementById('orderHistoryList');
+    container.innerHTML='';
+
+    if (history.length === 0) {
+        container.innerHTML='<p>No order history available.</p>';
+    } else {
+        history.slice().reverse().forEach((entry, index) => {
+            const div = document.createElement('div');
+            div.style.border='1px solid #ccc';
+            div.style.borderRadius='5px';
+            div.style.padding='10px';
+            div.style.marginBottom='10px';
+            div.innerHTML = `
+                <strong>${new Date(entry.timestamp).toLocaleString()}</strong><br/>
+                Restaurant: ${entry.restaurant}<br/>
+                Total: ${entry.total}
+                <button style="margin-top:5px; background-color:#b30000; color:#fff; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;" onclick='viewOrderDetails(${index})'>View</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+    document.getElementById('orderHistoryModal').style.display='flex';
+}
+function viewOrderDetails(index) {
+    const history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+    const order = history.slice().reverse()[index];
+    alert(`Order Details:\nRestaurant: ${order.restaurant}\nTotal: ${order.total}\nItems:\n` + order.items.map(i => `${i.name} x${i.quantity} @ ${i.price} Opinion: ${i.opinion}`).join('\n'));
+}
+function closeOrderHistory() { document.getElementById('orderHistoryModal').style.display='none'; }
+
+// ------------------- Payment Modal functions -------------------
+function openPaymentGateway() {
+    document.getElementById('paymentModal').style.display='flex';
+}
+function closePaymentGateway() {
+    document.getElementById('paymentModal').style.display='none';
+}
+
+// Process card payment
+function processCardPayment() {
+    const number = document.getElementById('cardNumber').value.trim();
+    const expiry = document.getElementById('cardExpiry').value.trim();
+    const cvv = document.getElementById('cardCVV').value.trim();
+
+    if (!number || !expiry || !cvv) {
+        alert('Please fill all card details.');
+        return;
+    }
+    if (number.length < 13 || number.length > 19 || isNaN(number.replace(/\s+/g,""))) {
+        alert('Invalid card number.');
+        return;
+    }
+    if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+        alert('Invalid expiry format.');
+        return;
+    }
+    if (cvv.length < 3 || cvv.length > 4 || isNaN(cvv)) {
+        alert('Invalid CVV.');
+        return;
+    }
+    const maskedNumber='**** **** **** ' + number.slice(-4);
+    alert(`Payment of ${document.getElementById('totalAmount').innerText} successful via card ending with ${number.slice(-4)}!`);
+    closePaymentGateway();
+    document.getElementById('cardForm').reset();
+
+    // Save card info temporarily
+    const cardInfo = {
+        number: maskedNumber,
+        expiry: expiry,
+        cvv: cvv
+    };
+    savedCards.push(cardInfo);
+
+    // Show driver popup
+    document.getElementById('searchDriverPopup').style.display='flex';
+
+    setTimeout(() => {
+        document.getElementById('searchDriverPopup').style.display='none';
+        alert('Driver has been assigned! Your driver will arrive shortly.');
+        // After payment, return to main menu:
+        resetOrderAndReturnHome();
+    }, 3000);
+}
+
+// Show bank details modal
+function showBankDetailsModal() {
+    document.getElementById('bankDetailsModal').style.display='flex';
+}
+function closeBankDetailsModal() {
+    document.getElementById('bankDetailsModal').style.display='none';
+}
+function saveBankDetails() {
+    const details = document.getElementById('bankDetailsInput').value.trim();
+    if (!details) {
+        alert('Please enter banking details.');
+        return;
+    }
+    alert('Banking details saved.');
+    closeBankDetailsModal();
+    // Now simulate bank transfer
+    simulateBankPayment();
+}
+
+// Simulate bank transfer
+function simulateBankPayment() {
+    alert('Processing bank transfer...');
+    fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        body: JSON.stringify({ order: orderItems, amount: document.getElementById('totalAmount').innerText }),
+        headers: { 'Content-type': 'application/json; charset=UTF-8' }
+    }).then(response => response.json())
+      .then(data => {
+        alert('Bank transfer successful! Your order is confirmed.');
+        resetOrderAndReturnHome();
+      }).catch(() => {
+        alert('Failed to process bank transfer. Please try again.');
+      });
+}
+
+// Utility to handle checkout cancellation
+function cancelCheckout() {
+    document.getElementById('checkoutPage').style.display='none';
+    document.querySelector('#orderSummary').style.display='block';
+    document.getElementById('driverContact').style.display='none';
+}
+
+// ------------------- Event Listeners -------------------
+window.onload = function() {
+    // Hide driver contact initially
+    document.getElementById('driverContact').style.display='none';
+    const radios = document.getElementsByName('payment');
+    for (let r of radios) {
+        r.onclick=onPaymentMethodChange;
+    }
+};
+function onPaymentMethodChange() {
+    const radios=document.getElementsByName('payment');
+    for (let r of radios) {
+        if (r.checked && r.value !== 'EFT') {
+            openPaymentGateway();
+            break;
+        }
+    }
+}
+
+// ------------------- Core functions -------------------
+function showMenu(restaurantName) {
+    currentRestaurant = restaurantName;
+    document.getElementById('restaurantName').innerText = restaurantName + ' Menu';
+
+    const imageElement = document.getElementById('restaurantImage');
+    switch (restaurantName) {
+        case 'KFC Parow': imageElement.src='Images/RS KFC.jpeg'; break;
+        case 'Sannes Palace': imageElement.src='Images/RS PALACE.jpg'; break;
+        case 'DK Spot & Kota': imageElement.src='Images/RS KOTA.jpg'; break;
+        case 'Nondyebo Eatery': imageElement.src='Images/RS NONDYEBO.jpg'; break;
+        default: imageElement.src=''; break;
+    }
+
+    const menuDiv = document.getElementById('menuItems');
+    menuDiv.innerHTML='';
+    const menuList = restaurantMenus[restaurantName] || [];
+    menuList.forEach(item => {
+        const div = document.createElement('div');
+        div.className='menu-item';
+        div.innerHTML=`<strong>${item.name}</strong> - ${item.price}`;
+        div.onclick=()=>{ openFoodModal(item); };
+        menuDiv.appendChild(div);
+    });
+    document.getElementById('menuModal').style.display='block';
+}
+
+function closeModal() { document.getElementById('menuModal').style.display='none'; }
+function viewMap() {
+    let url='';
+    switch (currentRestaurant) {
+        case 'KFC Parow': url='https://www.google.com/maps/search/?api=1&query=KFC+Parow'; break;
+        case 'Sannes Palace': url='https://www.google.com/maps/search/?api=1&query=Sannes+Palace'; break;
+        case 'DK Spot & Kota': url='https://www.google.com/maps/search/?api=1&query=DK+Spot+Kota'; break;
+        case 'Nondyebo Eatery': url='https://www.google.com/maps/search/?api=1&query=Nondyebo+Eatery'; break;
+        default: url='https://www.google.com/maps'; break;
+    }
+    window.open(url,'_blank');
+}
+
+function openFoodModal(foodItem) {
+    selectedFoodItem=foodItem;
+    currentQuantity=1;
+    document.getElementById('foodItemName').innerText=foodItem.name;
+    document.getElementById('foodQuantity').innerText=currentQuantity;
+    document.getElementById('foodModal').style.display='flex';
+}
+function closeFoodModal() { document.getElementById('foodModal').style.display='none'; }
+function changeQuantity(delta) {
+    currentQuantity+=delta;
+    if (currentQuantity<1) currentQuantity=1;
+    document.getElementById('foodQuantity').innerText=currentQuantity;
+}
+function addItemToOrder() {
+    if (selectedFoodItem) {
+        const opinion = prompt(`How do you want your ${selectedFoodItem.name}? (e.g., Spicy, Less Salt, No Onion, etc.)`, '');
+        if (opinion !== null) {
+            selectedFoodItem.opinion = opinion;
+        }
+        orderItems.push({ 
+            name: selectedFoodItem.name, 
+            price: selectedFoodItem.price, 
+            quantity: currentQuantity,
+            opinion: selectedFoodItem.opinion || 'No preference'
+        });
+        updateOrderSummary();
+    }
+    closeFoodModal();
+}
+function updateOrderSummary() {
+    const ul=document.getElementById('orderItems');
+    ul.innerHTML='';
+    orderItems.forEach((item,index) => {
+        const li=document.createElement('li');
+        li.innerHTML=`${item.name} x${item.quantity} ${item.price} <br/>Opinion: ${item.opinion}`;
+        const removeBtn=document.createElement('button');
+        removeBtn.innerText='Remove';
+        removeBtn.onclick=()=>{ orderItems.splice(index,1); updateOrderSummary(); };
+        li.appendChild(removeBtn);
+        ul.appendChild(li);
+    });
+}
+function saveOrderToHistory() {
+    let history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+    const timestamp = new Date().toISOString();
+    const totalText = document.getElementById('totalAmount').innerText;
+    history.push({ timestamp, restaurant: currentRestaurant, items: [...orderItems], total: totalText });
+    localStorage.setItem('orderHistory', JSON.stringify(history));
+}
+function showOrderHistory() {
+    const history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+    const container = document.getElementById('orderHistoryList');
+    container.innerHTML='';
+
+    if (history.length === 0) {
+        container.innerHTML='<p>No order history available.</p>';
+    } else {
+        history.slice().reverse().forEach((entry, index) => {
+            const div = document.createElement('div');
+            div.style.border='1px solid #ccc';
+            div.style.borderRadius='5px';
+            div.style.padding='10px';
+            div.style.marginBottom='10px';
+            div.innerHTML = `
+                <strong>${new Date(entry.timestamp).toLocaleString()}</strong><br/>
+                Restaurant: ${entry.restaurant}<br/>
+                Total: ${entry.total}
+                <button style="margin-top:5px; background-color:#b30000; color:#fff; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;" onclick='viewOrderDetails(${index})'>View</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+    document.getElementById('orderHistoryModal').style.display='flex';
+}
+function viewOrderDetails(index) {
+    const history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+    const order = history.slice().reverse()[index];
+    alert(`Order Details:\nRestaurant: ${order.restaurant}\nTotal: ${order.total}\nItems:\n` + order.items.map(i => `${i.name} x${i.quantity} @ ${i.price} Opinion: ${i.opinion}`).join('\n'));
+}
+function closeOrderHistory() { document.getElementById('orderHistoryModal').style.display='none'; }
+
+// Checkout
+function goToCheckout() {
+    if (orderItems.length===0) { alert("Your cart is empty!"); return; }
+    saveOrderToHistory();
+
+    document.getElementById('checkoutRestaurantTitle').innerText = currentRestaurant + ' - Checkout';
+
+    const ul=document.getElementById('checkoutItems');
+    ul.innerHTML='';
+
+    let subtotal=0;
+    orderItems.forEach(item => {
+        const li=document.createElement('li');
+        const priceNum=parseFloat(item.price.replace('R','').trim());
+        const totalItemPrice=priceNum*item.quantity;
+        subtotal+=totalItemPrice;
+        li.innerHTML=`${item.name} x${item.quantity} ${item.price} = R${totalItemPrice.toFixed(2)}`;
+        ul.appendChild(li);
+    });
+
+    // VAT is included, no VAT line
+    let total=subtotal+SERVICE_FEE+TIP+DELIVERY_FEE;
+    if (appliedVoucher) {
+        total -= discountAmount;
+        if (total<0) total=0;
+    }
+
+    document.getElementById('subtotalDisplay').innerText=`R${subtotal.toFixed(2)}`;
+    document.getElementById('serviceFeeDisplay').innerText=`R${SERVICE_FEE.toFixed(2)}`;
+    document.getElementById('tipDisplay').innerText=`R${TIP.toFixed(2)}`;
+    document.getElementById('deliveryFeeDisplay').innerText=`R${DELIVERY_FEE.toFixed(2)}`;
+    document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
+    document.getElementById('discountAmount').innerText=`R${discountAmount.toFixed(2)}`;
+
+    document.getElementById('driverContact').style.display='block';
+
+    document.getElementById('searchDriverPopup').style.display='flex';
+
+    setTimeout(() => {
+        document.getElementById('searchDriverPopup').style.display='none';
+        alert('Driver has been assigned! Your driver will arrive shortly.');
+        resetOrderAndReturnHome();
+    }, 3000);
+    document.getElementById('checkoutPage').style.display='block';
+    document.querySelector('#orderSummary').style.display='none';
+}
+function cancelCheckout() {
+    document.getElementById('checkoutPage').style.display='none';
+    document.querySelector('#orderSummary').style.display='block';
+    document.getElementById('driverContact').style.display='none';
+}
+function getSelectedPaymentMethod() {
+    const radios=document.getElementsByName('payment');
+    for (let r of radios) {
+        if (r.checked) return r.value;
+    }
+    return 'EFT';
+}
+function confirmPayment() {
+    const method = getSelectedPaymentMethod();
+    if (method === 'EFT') {
+        showBankDetailsModal();
+    } else {
+        openPaymentGateway();
+    }
+}
+
+// After bank transfer simulation
+function simulateBankPayment() {
+    alert('Processing bank transfer...');
+    fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        body: JSON.stringify({ order: orderItems, amount: document.getElementById('totalAmount').innerText }),
+        headers: { 'Content-type': 'application/json; charset=UTF-8' }
+    }).then(response => response.json())
+      .then(data => {
+        alert('Bank transfer successful! Your order is confirmed.');
+        resetOrderAndReturnHome();
+      }).catch(() => {
+        alert('Failed to process bank transfer. Please try again.');
+      });
+}
+
+// Card payment
+function processCardPayment() {
+    const number = document.getElementById('cardNumber').value.trim();
+    const expiry = document.getElementById('cardExpiry').value.trim();
+    const cvv = document.getElementById('cardCVV').value.trim();
+
+    if (!number || !expiry || !cvv) {
+        alert('Please fill all card details.');
+        return;
+    }
+    if (number.length < 13 || number.length > 19 || isNaN(number.replace(/\s+/g,""))) {
+        alert('Invalid card number.');
+        return;
+    }
+    if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+        alert('Invalid expiry format.');
+        return;
+    }
+    if (cvv.length < 3 || cvv.length > 4 || isNaN(cvv)) {
+        alert('Invalid CVV.');
+        return;
+    }
+    const maskedNumber='**** **** **** ' + number.slice(-4);
+    alert(`Payment of ${document.getElementById('totalAmount').innerText} successful via card ending with ${number.slice(-4)}!`);
+    closePaymentGateway();
+    document.getElementById('cardForm').reset();
+
+    const cardInfo = {
+        number: maskedNumber,
+        expiry: expiry,
+        cvv: cvv
+    };
+    savedCards.push(cardInfo);
+    document.getElementById('searchDriverPopup').style.display='flex';
+
+    setTimeout(() => {
+        document.getElementById('searchDriverPopup').style.display='none';
+        alert('Driver has been assigned! Your driver will arrive shortly.');
+        resetOrderAndReturnHome();
+    }, 3000);
+}
+
+// Show bank details modal
+function showBankDetailsModal() {
+    document.getElementById('bankDetailsModal').style.display='flex';
+}
+function closeBankDetailsModal() {
+    document.getElementById('bankDetailsModal').style.display='none';
+}
+function saveBankDetails() {
+    const details = document.getElementById('bankDetailsInput').value.trim();
+    if (!details) {
+        alert('Please enter banking details.');
+        return;
+    }
+    alert('Banking details saved.');
+    closeBankDetailsModal();
+    simulateBankPayment();
+}
+
+// Utility to reset order and show main menu
+function resetOrderAndReturnHome() {
+    orderItems = [];
+    updateOrderSummary();
+    document.getElementById('checkoutPage').style.display='none';
+    document.querySelector('#orderSummary').style.display='block';
+    document.getElementById('driverContact').style.display='none';
+}
+</script>
+</body>
+</html>
 
