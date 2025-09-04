@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Delivery Location</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    .search-location-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    form {
+      display: flex;
+      margin-bottom: 10px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 8px;
+      font-size: 16px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #map {
+      height: 400px;
+      width: 100%;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="search-location-container">
+    <h1>Search Delivery Location</h1>
+    <form id="locationForm">
+      <input type="text" id="locationInput" placeholder="Enter address or city" />
+      <button type="submit">Set Location</button>
+    </form>
+    <div id="map"></div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    let map = L.map('map').setView([37.7749, -122.4194], 12); // Default to San Francisco
+    let marker;
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    document.getElementById('locationForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const address = document.getElementById('locationInput').value;
+      geocodeAddress(address);
+    });
+
+    function geocodeAddress(address) {
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data && data.length > 0) {
+            const firstResult = data[0];
+            const lat = parseFloat(firstResult.lat);
+            const lon = parseFloat(firstResult.lon);
+            // Center map
+            map.setView([lat, lon], 15);
+            // Add or move marker
+            if (marker) {
+              marker.setLatLng([lat, lon]);
+            } else {
+              marker = L.marker([lat, lon]).addTo(map);
+            }
+            // Optional: Save the location (e.g., to localStorage)
+            // localStorage.setItem('savedLocation', JSON.stringify({lat, lon, address}));
+          } else {
+            alert('Location not found. Please try another address.');
+          }
+        })
+        .catch((err) => {
+          console.error('Error during geocoding:', err);
+          alert('Error fetching location data. Please try again.');
+        });
+    }
+  </script>
+</body>
+</html>
