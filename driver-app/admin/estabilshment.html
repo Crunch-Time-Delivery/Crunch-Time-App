@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Restaurant Info Dashboard</title>
+<style>
+  /* Reset styles */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+  }
+
+  /* Top Red Bar */
+  .top-bar {
+    background-color: red;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+  }
+
+  /* Profile section */
+  .profile-section {
+    display: flex;
+    align-items: center;
+  }
+
+  .profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #fff; /* Placeholder */
+    margin-right: 10px;
+  }
+
+  .admin-name {
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+
+  /* Menu icon */
+  .menu-icon {
+    font-size: 24px;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* Container for filter and search, placed below the top bar */
+  .filter-search-container {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    gap: 10px;
+    background-color: #fff;
+  }
+
+  /* Dropdown style */
+  .filter-dropdown {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+  }
+
+  /* Search input style */
+  #search-input {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+    flex: 1;
+  }
+
+  /* Container for all info boxes */
+  .container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Each info box styling */
+  .info-box {
+    display: flex;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* Icon (clickable image placeholder) */
+  .icon-section {
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .icon {
+    width: 60px;
+    height: 60px;
+    background-color: #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+  }
+
+  .icon:hover {
+    background-color: #bbb;
+  }
+
+  /* Details section */
+  .details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Individual fields */
+  .field {
+    font-weight: bold;
+    outline: none;
+  }
+
+  /* Hyperlinks container */
+  .links {
+    margin-top: 10px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+
+  /* Style for hyperlinks: "Edit" and "View Menu" in red */
+  .hyperlink-red {
+    color: red;
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1em;
+  }
+
+  .hyperlink-red:hover {
+    text-decoration: underline;
+  }
+
+  /* Remove button style */
+  .remove-btn {
+    margin-left: 10px;
+    padding: 6px 12px;
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .remove-btn:hover {
+    background-color: #c0392b;
+  }
+
+  /* Add button style */
+  #add-btn {
+    margin: 20px auto;
+    padding: 12px 24px;
+    background-color: red;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    cursor: pointer;
+    display: block;
+    transition: background-color 0.3s;
+  }
+
+  #add-btn:hover {
+    background-color: darkred;
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Red Bar -->
+<div class="top-bar">
+  <div class="profile-section">
+    <div class="profile-picture"></div>
+    <div class="admin-name">Admin Establishment</div>
+  </div>
+  <div class="menu-icon" title="Menu">&#9776;</div>
+</div>
+
+<!-- Filter dropdown and search bar placed below top bar -->
+<div class="filter-search-container">
+  <select id="establishment-filter" class="filter-dropdown">
+    <option value="">Select Establishment</option>
+    <option value="Restaurant">Restaurant</option>
+    <option value="Cafe">Cafe</option>
+    <option value="Bar">Bar</option>
+    <option value="Diner">Diner</option>
+  </select>
+  <input type="text" id="search-input" placeholder="Search..." />
+</div>
+
+<!-- Container for multiple info boxes -->
+<div class="container" id="info-container">
+  <!-- Dynamic content will be added here -->
+</div>
+
+<!-- Add button -->
+<button id="add-btn">Add Restaurant Info</button>
+
+<script>
+  const container = document.getElementById('info-container');
+  const addBtn = document.getElementById('add-btn');
+
+  function createInfoBox() {
+    const box = document.createElement('div');
+    box.className = 'info-box';
+
+    // Icon section
+    const iconSection = document.createElement('div');
+    iconSection.className = 'icon-section';
+
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'icon';
+    iconDiv.innerHTML = '&#128247;'; // Camera icon
+    iconDiv.title = "Click to change image";
+    iconDiv.onclick = () => {
+      alert('Image icon clicked! You can implement image change here.');
+    };
+    iconSection.appendChild(iconDiv);
+
+    // Details section
+    const detailsDiv = document.createElement('div');
+    detailsDiv.className = 'details';
+
+    // Function to create a field
+    function createField(labelText, valueText) {
+      const p = document.createElement('p');
+      p.className = 'field';
+      p.contentEditable = true;
+      p.innerText = labelText + ': ' + valueText;
+      return p;
+    }
+
+    const nameField = createField('Name', 'Sample Restaurant');
+    const contactField = createField('Contact', '123-456-7890');
+    const websiteField = createField('Website', 'https://example.com');
+    const addressField = createField('Address', '123 Main St, City');
+
+    // Append fields
+    detailsDiv.appendChild(nameField);
+    detailsDiv.appendChild(contactField);
+    detailsDiv.appendChild(websiteField);
+    detailsDiv.appendChild(addressField);
+
+    // Links container
+    const linksDiv = document.createElement('div');
+    linksDiv.className = 'links';
+
+    // "Edit" / "Save" toggle link in red
+    const editLink = document.createElement('a');
+    editLink.className = 'hyperlink-red';
+    editLink.innerText = 'Edit';
+    editLink.href = '#';
+    let isEditing = false;
+
+    editLink.onclick = (e) => {
+      e.preventDefault();
+      isEditing = !isEditing;
+      [nameField, contactField, websiteField, addressField].forEach(field => {
+        field.contentEditable = isEditing;
+        field.style.backgroundColor = isEditing ? '#ffe' : '';
+      });
+      editLink.innerText = isEditing ? 'Save' : 'Edit';
+    };
+
+    // "View Menu" link in red
+    const viewLink = document.createElement('a');
+    viewLink.className = 'hyperlink-red';
+    viewLink.innerText = 'View Menu';
+    viewLink.href = '#';
+
+    viewLink.onclick = (e) => {
+      e.preventDefault();
+      alert('Viewing the menu! You can replace this with modal or page navigation.');
+    };
+
+    linksDiv.appendChild(editLink);
+    linksDiv.appendChild(viewLink);
+
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.innerText = 'Remove';
+    removeBtn.onclick = () => {
+      container.removeChild(box);
+    };
+
+    // Assemble box
+    box.appendChild(iconSection);
+    box.appendChild(detailsDiv);
+    box.appendChild(removeBtn);
+
+    container.appendChild(box);
+  }
+
+  // Initialize with one info box
+  createInfoBox();
+
+  // Add new info box
+  document.getElementById('add-btn').onclick = () => {
+    createInfoBox();
+  };
+
+  // Search bar (trigger on Enter)
+  document.getElementById('search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      alert('Searching for: ' + this.value);
+      // Implement filtering based on search and selected establishment here
+    }
+  });
+</script>
+
+</body>
+</html>
