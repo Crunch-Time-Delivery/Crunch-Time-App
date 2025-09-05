@@ -3,929 +3,717 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>User Home Dashboard</title>
+<title>Home Dashboard</title>
+<!-- QRCode & sha256 libraries -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-sha256/dist/sha256.min.js"></script>
 <style>
-/* Basic Reset & Body */
+/* --- Combined Styles --- */
+
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f9f9f9;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background-color: #f9f9f9;
 }
+
 /* Header styles */
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #fff;
-    border-bottom: 1px solid #ddd;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
 }
 .header button {
-    background: none;
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
-    padding: 5px 10px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px 10px;
 }
-.header .search-bar {
-    flex-grow: 1;
-    margin: 0 10px;
+.search-bar {
+  flex: 1;
+  min-width: 200px;
+  margin: 10px;
 }
-.header .search-bar input {
-    width: 100%;
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+.search-bar input {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
 }
 
-/* Filters Bar */
+/* Filters styles */
 .filters {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 20px;
-    background-color: #ffb4b4;
-    border-bottom: 1px solid #ddd;
-    flex-wrap: wrap;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #ffb4b4;
+  border-bottom: 1px solid #ddd;
 }
 .filters button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 5px;
-    font-size: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 5px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .filters button img {
-    width: 24px;
-    height: 24px;
-    margin-bottom: 5px;
+  width: 24px;
+  height: 24px;
+  margin-bottom: 5px;
+  object-fit: cover;
+  border-radius: 4px;
 }
 
-/* Restaurant list styles */
+/* Restaurant cards */
 .restaurant-list {
-    padding: 10px 20px;
-    max-height: 70vh;
-    overflow-y: auto;
+  padding: 10px 20px;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 .restaurant-card {
-    display: flex;
-    background-color: #fff;
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    cursor: pointer;
-    align-items: center;
-    position: relative;
-    transition: background 0.2s;
+  display: flex;
+  background: #fff;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  cursor: pointer;
+  position: relative;
+  align-items: center;
 }
 .restaurant-card img {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 5px;
-    margin-right: 10px;
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin-right: 10px;
 }
 .restaurant-card .details {
-    flex-grow: 1;
+  flex: 1;
 }
-.restaurant-card .rating {
-    color: #666;
-}
-.restaurant-card .promo {
-    color: red;
-    font-weight: bold;
-}
-.restaurant-card button.heart {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    background-color: transparent;
+.restaurant-card .rating { color: #666; font-weight: bold; }
+.restaurant-card .promo { color: red; font-weight: bold; }
+.fav {
+  position: absolute; top: 10px; right: 10px; font-size: 20px; background:none; border:none; cursor:pointer;
 }
 
-/* Modal styles */
+/* Modal overlay styles */
 .modal {
-    display: none; 
-    position: fixed;
-    z-index: 999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.6);
-    justify-content: center;
-    align-items: center;
+  display: none; position: fixed; z-index: 999; left:0; top:0; width:100%; height:100%;
+  background: rgba(0,0,0,0.5);
 }
 .modal-content {
-    background-color: #fff;
-    margin: 50px auto;
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 600px;
-    width: 90%;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    position: relative;
-    animation: popin 0.3s ease;
-}
-@keyframes popin {
-    from {transform: scale(0.9); opacity: 0;}
-    to {transform: scale(1); opacity: 1;}
+  background:#fff; margin:50px auto; padding:20px; border-radius:10px; max-width:600px; position:relative;
 }
 .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
+  position:absolute; top:10px; right:15px; font-size:24px; cursor:pointer; font-weight:bold;
 }
 #restaurantImage {
-    width: 100%;
-    max-height: 200px;
-    object-fit: cover;
-    border-radius: 5px;
-    margin-bottom: 10px;
+  width:100%; max-height:200px; object-fit:cover; border-radius:5px; margin-bottom:10px; cursor:pointer;
 }
-.menu-item {
-    margin-bottom: 10px;
-    cursor: pointer;
-    padding: 8px;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    transition: background 0.2s;
+
+/* Specific modal sizes for opinion & food detail modals */
+#foodOpinionModal, #restaurantMenuModal, #foodDetailModal {
+  max-width:400px;
 }
-.menu-item:hover {
-    background-color: #f0f0f0;
-}
-.view-map-btn {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 10px 15px;
-    background-color: #ff0000;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    text-decoration: none;
-}
-#foodModal {
-    display: none;
-    position: fixed; z-index: 9999;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    justify-content: center; align-items: center;
-}
-#foodModalContent {
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    position: relative;
-    animation: popin 0.3s ease;
-}
-.food-close-btn {
-    position: absolute;
-    top: 10px; right: 15px;
-    font-size: 24px; font-weight: bold; cursor: pointer;
-}
-#foodItemName {
-    margin-top: 0; margin-bottom: 10px;
-}
-.quantity-controls {
-    display: flex; align-items: center; gap: 10px; margin-top: 10px;
-}
-.quantity-btn {
-    padding: 5px 10px; font-size: 18px; cursor: pointer; background-color: #ddd; border: none; border-radius: 4px;
-}
+
+/* Order & Receipt styles */
 #orderSummary {
-    padding: 10px 20px; background: #fff;
-    max-height: 200px; overflow-y: auto; margin: 10px;
+  padding: 10px 20px;
+  background: #fff;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 10px;
+  border-radius: 4px;
 }
-#orderSummary h4 { margin-top: 0; }
+#orderItems {
+  list-style: none;
+  padding: 0;
+}
 #orderItems li {
-    margin-bottom: 8px; padding: 6px; background: #f7f7f7; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;
-}
-#orderItems button {
-    background-color: #b30000; color: #fff; border: none; border-radius: 3px; padding: 3px 8px; cursor: pointer; font-size: 12px;
+  margin-bottom: 8px;
 }
 #checkoutPage {
-    display: none; padding: 20px; background: #fff; max-width: 700px; margin: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-top: 20px;
+  display: none;
+  padding: 20px;
+  background: #fff;
+  max-width: 600px;
+  margin: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  margin-top: 20px;
 }
-#checkoutPage h2 { margin-top: 0; }
-#checkoutItems { list-style: none; padding: 0; max-height: 150px; overflow-y: auto; }
-#checkoutItems li { margin-bottom: 8px; padding: 6px; background: #f7f7f7; border-radius: 4px; }
-#costBreakdown p { margin: 5px 0; }
-#costBreakdown h3 { margin-top: 10px; }
+#checkoutPage h2, #checkoutPage h3 {
+  margin-top: 0;
+}
+#checkoutItems {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+#checkoutItems li {
+  margin-bottom: 8px;
+}
+
+/* Buttons styling */
+button {
+  padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; margin-top:10px;
+}
 #checkoutBtn {
-    display: block; width: 100%; padding: 15px; background-color: #ff0000; color: #fff; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px;
+  width:100%; padding:15px; background:#f00; color:#fff; font-size:16px; border-radius:8px; margin-top:10px;
 }
-#checkoutBtn:hover { background-color: #fb0404; }
-#voucherModal {
-    display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center;
+#checkoutBtn:hover { background:#b00; }
+.pay-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 20px;
 }
-#voucherContent {
-    background: #fff; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; animation: popin 0.3s ease; position: relative;
+.confirm-btn {
+  background-color: #f90404;
+  color: white;
 }
-#closeVoucher {
-    position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: bold; cursor: pointer;
+.cancel-btn {
+  background-color: #f40505;
+  color: white;
+  margin-left: 10px;
 }
-#voucherInput {
-    width: 100%; padding: 8px; font-size: 16px; margin-top: 20px; border: 1px solid #ccc; border-radius: 5px;
+
+/* Voucher & QR code styles */
+#qrCodeContainer {
+  margin-top:10px; padding:10px; border:1px solid #ddd; display:inline-block; border-radius:4px;
 }
-#applyVoucher {
-    margin-top: 15px; padding: 10px 20px; background-color:#f40505; border:none; border-radius:5px; color:#fff; font-size:16px; cursor:pointer;
-}
-#applyVoucher:hover { background-color: #f30404; }
-#qrCodeContainer { margin-top: 20px; }
-#qrCodePlaceholder {
-    width: 150px; height: 150px; background: #eee; display: inline-block; line-height: 150px; color: #999; font-size: 14px; border-radius: 10px; text-align: center;
-}
+
+/* Additional modals for order history & voucher */
 #orderHistoryModal {
-    display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center;
+  display: none;
 }
 #orderHistoryModal .modal-content {
-    max-width: 800px; width: 90%; padding: 20px; overflow-y: auto; max-height: 80%; background: #fff; border-radius: 10px;
+  max-height: 80vh;
+  overflow-y: auto;
 }
-#paymentModal {
-    display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center;
+#orderHistoryList div {
+  border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius:4px;
 }
-#paymentModalContent {
-    background: #fff; padding: 20px; border-radius: 10px; max-width: 400px; width: 90%; box-shadow:0 4px 12px rgba(0,0,0,0.2); position:relative; animation:popin 0.3s ease;
+#orderHistoryList button {
+  margin-top: 10px;
 }
-#closePaymentModal {
-    position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: bold; cursor:pointer;
+/* Order History Button Style */
+#orderHistoryBtn {
+  background-color: red;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  margin-top: 10px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
 }
-#bankDetailsModal {
-    display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center;
+/* Voucher modal styles similar to other popups */
+#voucherModal {
+  display: none;
 }
-#bankDetailsContent {
-    background: #fff; padding: 20px; border-radius: 10px; max-width: 400px; width: 90%; box-shadow:0 4px 12px rgba(0,0,0,0.2); position:relative; animation:popin 0.3s ease;
-}
-#closeBankDetails {
-    position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: bold; cursor:pointer;
+#voucherModal .modal-content {
+  max-width: 400px;
 }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- Header -->
 <div class="header">
-    <button>☰</button>
-    <div>Crunch Time</div>
-    <button>Delivery</button>
-    <button>Pickup</button>
-    <div class="search-bar">
-        <input type="text" placeholder="Search Crunch Time ">
-    </div>
-    <a href="http://127.0.0.1:5500/New%20Crunch%20Time/user/order_process/search_location.html" style="text-decoration:none;">
-      <button>Map Location - Pick up now</button>
-    </a>
+  <button>&#9776;</button>
+  <div>Crunch Time</div>
+  <button>Delivery</button>
+  <button>Pickup</button>
+  <div class="search-bar">
+    <input type="text" placeholder="Search Crunch Time" />
+  </div>
+  <button onclick="openMapLocation()">Map Location - Pick up now</button>
 </div>
 
-<!-- FILTERS -->
+<!-- Filters -->
 <div class="filters">
-    <button><img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food"><span>Fast Food</span></button>
-    <button><img src="Images/CR7 Veg .jpg" alt="Healthy"><span>Healthy</span></button>
-    <button><img src="Images/CR7.jpg" alt="Burgers"><span>Burgers</span></button>
-    <button><img src="Images/CR7 SUCCI.jpg" alt="Chinese"><span>Chinese</span></button>
-    <button><img src="Images/CR7 WINGS.jpg" alt="Wings"><span>Wings</span></button>
-    <button><img src="Images/CR7 PIZZA.webp" alt="Pizza"><span>Pizza</span></button>
-    <button><img src="Images/CR7 SUCCI.webp" alt="Halal"><span>Halal</span></button>
-    <button><img src="Images/CR7 KOREA.jpeg" alt="Korean"><span>Korean</span></button>
-    <button>→</button>
+  <button><img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food" /><span>Fast Food</span></button>
+  <button><img src="Images/CR7 Veg .jpg" alt="Healthy" /><span>Healthy</span></button>
+  <button><img src="Images/CR7.jpg" alt="Burgers" /><span>Burgers</span></button>
+  <button><img src="Images/CR7 SUCCI.jpg" alt="Chinese" /><span>Chinese</span></button>
+  <button><img src="Images/CR7 WINGS.jpg" alt="Wings" /><span>Wings</span></button>
+  <button><img src="Images/CR7 PIZZA.webp" alt="Pizza" /><span>Pizza</span></button>
+  <button><img src="Images/CR7 SUCCI .webp" alt="Halal" /><span>Halal</span></button>
+  <button><img src="Images/CR7 KOREA .jpeg" alt="Korean" /><span>Korean</span></button>
+  <button>&rarr;</button>
 </div>
 
-<!-- RESTAURANT LIST -->
-<div class="restaurant-list">
-    <div class="restaurant-card" onclick="showMenu('KFC Parow')">
-        <img src="Images/RS KFC.jpeg" alt="KFC Parow" />
-        <div class="details">
-            <div>KFC, Parow</div>
-            <div class="rating">4.4 ★</div>
-            <div>Sponsored - 5 min - 4.4 km</div>
-        </div>
-        <button class="heart" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+<!-- Restaurant list -->
+<div class="restaurant-list" id="restaurantList">
+  <!-- Sample restaurants; add more as needed -->
+  <div class="restaurant-card" onclick="showMenu('KFC Parow')">
+    <img src="Images/RS KFC .jpeg" alt="KFC Parow" />
+    <div class="details">
+      <div>KFC, Parow</div>
+      <div class="rating">4.4 ★</div>
+      <div>Sponsored - 5 min - 4.4 km</div>
     </div>
-    <div class="restaurant-card" onclick="showMenu('Sannes Palace')">
-        <img src="Images/RS PALACE.jpg" alt="Sannes Palace" />
-        <div class="details">
-            <div>Sannes Palace</div>
-            <div class="rating">4.5 ★</div>
-            <div class="promo">Spend ZAR 100, Save ZAR 15</div>
-            <div>20 min - 0.5 km</div>
-        </div>
-        <button class="heart" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+  <div class="restaurant-card" onclick="showMenu('Sannes Palace')">
+    <img src="Images/RS PALACE .jpg" alt="Sannes Palace" />
+    <div class="details">
+      <div>Sannes Palace</div>
+      <div class="rating">4.5 ★</div>
+      <div class="promo">Spend ZAR 100, Save ZAR 15</div>
+      <div>20 min - 0.5 km</div>
     </div>
-    <div class="restaurant-card" onclick="showMenu('DK Spot & Kota')">
-        <img src="Images/RS KOTA.jpg" alt="DK Spot & Kota" />
-        <div class="details">
-            <div>DK Spot & Kota Restaurant</div>
-            <div class="rating">4.0 ★</div>
-            <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
-        </div>
-        <button class="heart" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+  <div class="restaurant-card" onclick="showMenu('DK Spot & Kota')">
+    <img src="Images/RS KOTA .jpg" alt="DK Spot & Kota" />
+    <div class="details">
+      <div>DK Spot & Kota Restaurant</div>
+      <div class="rating">4.0 ★</div>
+      <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
     </div>
-    <div class="restaurant-card" onclick="showMenu('Nondyebo Eatery')">
-        <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery" />
-        <div class="details">
-            <div>Nondyebo Eatery</div>
-            <div class="rating">3.3 ★</div>
-            <div>10 min - 0.6 km</div>
-        </div>
-        <button class="heart" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+  <div class="restaurant-card" onclick="showMenu('Nondyebo Eatery')">
+    <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery" />
+    <div class="details">
+      <div>Nondyebo Eatery</div>
+      <div class="rating">3.3 ★</div>
+      <div>10 min - 0.6 km</div>
     </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
 </div>
 
-<!-- Modal for Menu -->
+<!-- Modal for Restaurant Menu -->
 <div id="menuModal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-        <img id="restaurantImage" src="" alt="Restaurant Image" />
-        <h2 id="restaurantName">Restaurant Menu</h2>
-        <div id="menuItems"></div>
-        <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
-    </div>
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <!-- Image for restaurant -->
+    <img id="restaurantImage" src="" alt="Restaurant Image" />
+    <h2 id="restaurantName">Restaurant Menu</h2>
+    <div id="menuItems"></div>
+    <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
+  </div>
 </div>
 
-<!-- Food modal for adding items -->
-<div id="foodModal">
-    <div id="foodModalContent">
-        <span class="food-close-btn" onclick="closeFoodModal()">&times;</span>
-        <h3 id="foodItemName">Food Item</h3>
-        <div style="display:flex; align-items:center; justify-content:space-around; margin-top:10px;">
-            <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
-            <span id="foodQuantity">1</span>
-            <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
-        </div>
-        <div style="margin-top:20px; display:flex; justify-content:center;">
-            <button class="add-more-btn" onclick="addItemToOrder()">Add More Items</button>
-            <button class="exit-btn" onclick="closeFoodModal()">Exit</button>
-        </div>
+<!-- Food Modal for selecting options before adding -->
+<div id="foodOpinionModal" class="modal">
+  <div class="modal-content" style="max-width:400px;">
+    <span class="close-btn" onclick="closeFoodOpinionModal()">&times;</span>
+    <h3>Tell us your preference</h3>
+    <select id="opinionChoice" style="width:100%; padding:8px;">
+      <option>No preference</option>
+      <option>Spicy</option>
+      <option>Less Salt</option>
+      <option>Extra cheese</option>
+      <option>No onions</option>
+      <option>Less Sugar</option>
+      <option>Extra Ice</option>
+    </select>
+    <div style="margin-top:20px; display:flex; justify-content:center;">
+      <button class="add-more-btn" onclick="confirmFoodOpinion()">Next</button>
     </div>
+  </div>
+</div>
+
+<!-- Food item modal for adding food -->
+<div id="foodModal" class="food-modal">
+  <div class="food-modal-content">
+    <span class="food-close-btn" onclick="closeFoodModal()">&times;</span>
+    <h3 id="foodItemName">Food Item</h3>
+    <div style="display:flex; align-items:center; justify-content:space-around; margin-top:10px;">
+      <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+      <span id="foodQuantity">1</span>
+      <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+    </div>
+    <div style="margin-top:20px; display:flex; justify-content:center;">
+      <button class="add-more-btn" onclick="addItemToOrder()">Add to Order</button>
+      <button class="exit-btn" onclick="closeFoodModal()">Exit</button>
+    </div>
+  </div>
 </div>
 
 <!-- Order Summary -->
-<div id="orderSummary">
-    <h4>Order Summary</h4>
-    <ul id="orderItems"></ul>
-    <button id="checkoutBtn" class="checkout-btn" onclick="goToCheckout()">Go to Checkout</button>
-    <button id="orderHistoryBtn" class="add-more-btn" style="background-color:#b30000; margin-top:10px;" onclick="showOrderHistory()">My Order History</button>
-    <div id="voucherSection">
-        <button id="voucherButton" onclick="openVoucherModal()">Enter Voucher / Coupon</button>
-    </div>
+<div id="orderSummary" style="padding:10px 20px; background:#fff; max-height:200px; overflow-y:auto; margin:10px;">
+  <h4>Order Summary</h4>
+  <ul id="orderItems"></ul>
+  <!-- Buttons below order summary -->
+  <button id="checkoutBtn" class="checkout-btn" onclick="goToCheckout()">Go to Checkout</button>
+  <button id="orderHistoryBtn" style="background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showOrderHistory()">Order History</button>
+  <button id="voucherBtn" style="background-color:#f80505; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showVoucherInput()">Input Voucher Coupon</button>
 </div>
 
-<!-- Contact details for driver (hidden initially) -->
-<div id="driverContact" style="margin-top:20px; padding:10px; background:#f0f0f0; border-radius:5px; display:none;">
-    <h4>Contact Driver</h4>
-    <p>Call: <a href="tel:+27123456789">+27 12 345 6789</a></p>
-    <p>Message: <a href="sms:+27123456789">Send Message</a></p>
-</div>
-
-<!-- Popup for searching driver (hidden initially) -->
-<div id="searchDriverPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000;">
-    <div style="background:#fff; padding:30px; border-radius:10px; text-align:center;">
-        <h2>Searching for a driver...</h2>
-        <p>Please wait while we assign a driver to your order.</p>
-    </div>
-</div>
-
-<!-- Checkout page (new flow: payment first, then driver search) -->
-<div id="checkoutPage" style="display:none;">
-  <h2 id="checkoutRestaurantTitle">Checkout</h2>
-  <h3>Order Breakdown</h3>
+<!-- Checkout page (hidden initially) -->
+<div id="checkoutPage">
+  <h2>Checkout</h2>
+  <h3>Order Summary</h3>
   <ul id="checkoutItems"></ul>
-  <div id="costBreakdown" style="margin-top:10px;">
-    <p>Subtotal: <span id="subtotalDisplay">R0.00</span></p>
-    <p>Service Fee: <span id="serviceFeeDisplay">R5.00</span></p>
-    <p>Tip: <span id="tipDisplay">R3.00</span></p>
-    <p>Delivery Fee: <span id="deliveryFeeDisplay">R10.00</span></p>
-    <h3>Total (Tax Incl.): <span id="totalAmount">R0.00</span></h3>
-    <p style="margin-top:10px; font-weight:bold;">Discount Applied: <span id="discountAmount">R0.00</span></p>
-  </div>
+  <h3>Total: <span id="totalAmount">R0</span></h3>
   <h3>Payment Method</h3>
   <div style="margin-bottom:20px;">
-    <label><input type="radio" name="paymentMethod" value="EFT" checked> EFT Bank Transfer</label>
-    <label><input type="radio" name="paymentMethod" value="VISA"> Visa</label>
-    <label><input type="radio" name="paymentMethod" value="MasterCard"> MasterCard</label>
-    <label><input type="radio" name="paymentMethod" value="AMEX"> Amex</label>
+    <input type="radio" id="eft" name="payment" value="EFT" checked>
+    <label for="eft">EFT Bank Transfer</label>
   </div>
-  <button id="payNowBtn" style="padding:15px; background:#f40505; color:#fff; border:none; border-radius:5px; cursor:pointer; font-size:16px;" onclick="startPayment()">Pay Now</button>
-  <button style="margin-top:10px; padding:10px; background:#555; color:#fff; border:none; border-radius:5px; cursor:pointer;" onclick="cancelCheckout()">Cancel</button>
+  <button class="pay-btn confirm-btn" onclick="confirmEFT()">Confirm EFT Payment</button>
+  <button class="pay-btn cancel-btn" onclick="cancelCheckout()">Cancel</button>
 </div>
 
-<!-- Voucher modal -->
-<div id="voucherModal" style="display:none;">...</div>
+<!-- Order History Popup -->
+<div id="orderHistoryModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeOrderHistory()">&times;</span>
+    <h2>Order History</h2>
+    <div id="orderHistoryList"></div>
+  </div>
+</div>
 
-<!-- Order History Modal -->
-<div id="orderHistoryModal">...</div>
-
-<!-- Payment Gateway Modal -->
-<div id="paymentModal">...</div>
-
-<!-- Bank Details Modal -->
-<div id="bankDetailsModal">...</div>
+<!-- Voucher input popup -->
+<div id="voucherModal" class="modal">
+  <div class="modal-content" style="max-width:400px;">
+    <span class="close-btn" onclick="closeVoucherModal()">&times;</span>
+    <h3>Enter Voucher Code</h3>
+    <input type="text" id="voucherCode" placeholder="Voucher Code" style="width:100%; padding:8px;">
+    <button style="margin-top:10px; width:100%; background:#008CBA; color:#fff; padding:8px; border:none; border-radius:5px;" onclick="applyVoucher()">Apply</button>
+  </div>
+</div>
 
 <script>
-// Dummy menu data
-const restaurantMenus = {
-    "KFC Parow": [
-        { name: "Zinger Burger", price: "R50" },
-        { name: "Fries", price: "R20" },
-        { name: "Cola", price: "R15" }
-    ],
-    "Sannes Palace": [
-        { name: "Chicken Curry", price: "R80" },
-        { name: "Veggie Plate", price: "R60" },
-        { name: "Lemonade", price: "R10" }
-    ],
-    "DK Spot & Kota": [
-        { name: "Kota Special", price: "R25" },
-        { name: "Fries", price: "R20" },
-        { name: "Soda", price: "R15" }
-    ],
-    "Nondyebo Eatery": [
-        { name: "Wrap", price: "R40" },
-        { name: "Salad", price: "R35" },
-        { name: "Juice", price: "R12" }
-    ]
-};
-
+/* =========================
+   GLOBAL VARIABLES
+========================= */
+let pendingFoodItem = null;
 let currentRestaurant = '';
-let selectedFoodItem = null;
-let currentQuantity = 1;
+let currentQty = 1;
+let selectedFood = null;
 let orderItems = [];
-let savedCards = [];
-let appliedVoucher = null;
+let orderHistory = [];
 let discountAmount = 0;
 
-// Fees
-const SERVICE_FEE = 5.00;
-const TIP = 3.00;
-const DELIVERY_FEE = 10.00;
+/* =========================
+   UTILITY FUNCTIONS
+========================= */
+function showModal(id) { document.getElementById(id).style.display='block'; }
+function hideModal(id) { document.getElementById(id).style.display='none'; }
 
-// Show menu
-function showMenu(restaurantName) {
-    currentRestaurant = restaurantName;
-    document.getElementById('restaurantName').innerText = restaurantName + ' Menu';
+// Close modals on outside click
+window.onclick = function(e) {
+  const modalIds=['menuModal','foodModal','orderHistoryModal','voucherModal','searchDriverPopup','driverContact'];
+  modalIds.forEach(id => {
+    if (e.target===document.getElementById(id)) hideModal(id);
+  });
+};
 
-    const imageElement = document.getElementById('restaurantImage');
-    switch (restaurantName) {
-        case 'KFC Parow': imageElement.src='Images/RS KFC.jpeg'; break;
-        case 'Sannes Palace': imageElement.src='Images/RS PALACE.jpg'; break;
-        case 'DK Spot & Kota': imageElement.src='Images/RS KOTA.jpg'; break;
-        case 'Nondyebo Eatery': imageElement.src='Images/RS NONDYEBO.jpg'; break;
-        default: imageElement.src=''; break;
-    }
+/* =========================
+   DATA & FUNCTIONS
+========================= */
+const restaurantMenus={
+  'KFC Parow':[
+    {name:'Zinger Burger',price:'R50'},
+    {name:'Fries',price:'R20'},
+    {name:'Cola',price:'R15'}
+  ],
+  'Sannes Palace':[
+    {name:'Chicken Curry',price:'R80'},
+    {name:'Veggie Plate',price:'R60'},
+    {name:'Lemonade',price:'R10'}
+  ],
+  'DK Spot & Kota':[
+    {name:'Kota Special',price:'R25'},
+    {name:'Fries',price:'R20'},
+    {name:'Soda',price:'R15'}
+  ],
+  'Nondyebo Eatery':[
+    {name:'Wrap',price:'R40'},
+    {name:'Salad',price:'R35'},
+    {name:'Juice',price:'R12'}
+  ]
+};
 
-    const menuDiv = document.getElementById('menuItems');
-    menuDiv.innerHTML='';
-    const menuList = restaurantMenus[restaurantName] || [];
-    menuList.forEach(item => {
-        const div = document.createElement('div');
-        div.className='menu-item';
-        div.innerHTML=`<strong>${item.name}</strong> - ${item.price}`;
-        div.onclick=()=>{ openFoodModal(item); };
-        menuDiv.appendChild(div);
-    });
-    document.getElementById('menuModal').style.display='block';
+/* =========================
+   SHOW/HIDE MODALS
+========================= */
+function showModal(id) { document.getElementById(id).style.display='block'; }
+function hideModal(id) { document.getElementById(id).style.display='none'; }
+
+/* =========================
+   RESTAURANT & MENU
+========================= */
+function showMenu(restName) {
+  currentRestaurant=restName;
+
+  // Set the restaurant name
+  document.getElementById('restaurantName').innerText=restName+' Menu';
+
+  // Set the image based on the restaurant
+  const imgEl=document.getElementById('restaurantImage');
+  switch(restName){
+    case 'KFC Parow': imgEl.src='Images/RS KFC .jpeg'; break;
+    case 'Sannes Palace': imgEl.src='Images/RS PALACE .jpg'; break;
+    case 'DK Spot & Kota': imgEl.src='Images/RS KOTA .jpg'; break;
+    case 'Nondyebo Eatery': imgEl.src='Images/RS NONDYEBO.jpg'; break;
+    default: imgEl.src='';
+  }
+
+  // Populate menu
+  const menuDiv=document.getElementById('menuItems');
+  menuDiv.innerHTML='';
+  (restaurantMenus[restName]||[]).forEach(itm => {
+    const div=document.createElement('div');
+    div.className='menu-item';
+    div.innerHTML=`<strong>${itm.name}</strong> - ${itm.price}`;
+    div.onclick=()=>{ openFoodOptionModal(itm); }; // Open opinion select before adding
+    menuDiv.appendChild(div);
+  });
+  showModal('menuModal');
 }
-
-function closeModal() { document.getElementById('menuModal').style.display='none'; }
+function closeModal() { hideModal('menuModal'); }
 function viewMap() {
-    let url='';
-    switch (currentRestaurant) {
-        case 'KFC Parow': url='https://www.google.com/maps/search/?api=1&query=KFC+Parow'; break;
-        case 'Sannes Palace': url='https://www.google.com/maps/search/?api=1&query=Sannes+Palace'; break;
-        case 'DK Spot & Kota': url='https://www.google.com/maps/search/?api=1&query=DK+Spot+Kota'; break;
-        case 'Nondyebo Eatery': url='https://www.google.com/maps/search/?api=1&query=Nondyebo+Eatery'; break;
-        default: url='https://www.google.com/maps'; break;
-    }
-    window.open(url,'_blank');
+  let url='';
+  switch(currentRestaurant){
+    case 'KFC Parow': url='https://www.google.com/maps/search/?api=1&query=KFC+Parow'; break;
+    case 'Sannes Palace': url='https://www.google.com/maps/search/?api=1&query=Sannes+Palace'; break;
+    case 'DK Spot & Kota': url='https://www.google.com/maps/search/?api=1&query=DK+Spot+Kota'; break;
+    case 'Nondyebo Eatery': url='https://www.google.com/maps/search/?api=1&query=Nondyebo+Eatery'; break;
+    default: url='https://www.google.com/maps'; break;
+  }
+  window.open(url,'_blank');
 }
-
-window.onclick=function(event) {
-    if (event.target==document.getElementById('menuModal')) closeModal();
-    if (event.target==document.getElementById('foodModal')) closeFoodModal();
-    if (event.target==document.getElementById('voucherModal')) closeVoucherModal();
-    if (event.target==document.getElementById('orderHistoryModal')) closeOrderHistory();
-    if (event.target==document.getElementById('paymentModal')) closePaymentGateway();
-    if (event.target==document.getElementById('bankDetailsModal')) closeBankDetailsModal();
-}
-
-// Toggle favorite
 function toggleFavorite(btn) {
-    btn.innerText = (btn.innerText==='♥') ? '♡':'♥';
+  if (btn.innerText==='♥') { btn.innerText='♡'; }
+  else { btn.innerText='♥'; }
 }
 
-// Food modal functions
-function openFoodModal(foodItem) {
-    selectedFoodItem=foodItem;
-    currentQuantity=1;
-    document.getElementById('foodItemName').innerText=foodItem.name;
-    document.getElementById('foodQuantity').innerText=currentQuantity;
-    document.getElementById('foodModal').style.display='flex';
+/* =========================
+   Food Option Selection
+========================= */
+function openFoodOptionModal(itm) {
+  pendingFoodItem=itm;
+  currentQty=1;
+  // Reset opinion selection
+  document.getElementById('opinionChoice').value='No preference';
+  showModal('foodOpinionModal');
 }
-function closeFoodModal() { document.getElementById('foodModal').style.display='none'; }
+function closeFoodOptionModal() { hideModal('foodOpinionModal'); }
+function confirmFoodOpinion() {
+  const opinion=document.getElementById('opinionChoice').value;
+  // Add to order with opinion
+  if(pendingFoodItem){
+    orderItems.push({name:pendingFoodItem.name, price:pendingFoodItem.price, quantity:currentQty, opinion: opinion});
+    updateOrderSummary();
+  }
+  closeFoodOptionModal();
+}
+
+/* =========================
+   Food Modal for adding items
+========================= */
+function openFoodModal(itm) {
+  // For direct add without opinion
+  pendingFoodItem = itm;
+  currentQty=1;
+  document.getElementById('foodItemName').innerText=itm.name;
+  document.getElementById('foodQuantity').innerText=currentQty;
+  showModal('foodModal');
+}
+function closeFoodModal() { hideModal('foodModal'); }
 function changeQuantity(delta) {
-    currentQuantity+=delta;
-    if (currentQuantity<1) currentQuantity=1;
-    document.getElementById('foodQuantity').innerText=currentQuantity;
+  currentQty+=delta;
+  if(currentQty<1) currentQty=1;
+  document.getElementById('foodQuantity').innerText=currentQty;
 }
 function addItemToOrder() {
-    if (selectedFoodItem) {
-        const opinion = prompt(`How do you want your ${selectedFoodItem.name}? (e.g., Spicy, Less Salt, No Onion, etc.)`, '');
-        if (opinion !== null) {
-            selectedFoodItem.opinion = opinion;
-        }
-        orderItems.push({ 
-            name: selectedFoodItem.name, 
-            price: selectedFoodItem.price, 
-            quantity: currentQuantity,
-            opinion: selectedFoodItem.opinion || 'No preference'
-        });
-        updateOrderSummary();
-    }
-    closeFoodModal();
+  if(pendingFoodItem){
+    orderItems.push({name:pendingFoodItem.name, price:pendingFoodItem.price, quantity:currentQty});
+    updateOrderSummary();
+  }
+  closeFoodModal();
 }
+
+/* =========================
+   UPDATE & DISPLAY ORDER
+========================= */
 function updateOrderSummary() {
-    const ul=document.getElementById('orderItems');
-    ul.innerHTML='';
-    orderItems.forEach((item,index) => {
-        const li=document.createElement('li');
-        li.innerHTML=`${item.name} x${item.quantity} ${item.price} <br/>Opinion: ${item.opinion}`;
-        const removeBtn=document.createElement('button');
-        removeBtn.innerText='Remove';
-        removeBtn.onclick=()=>{ orderItems.splice(index,1); updateOrderSummary(); };
-        li.appendChild(removeBtn);
-        ul.appendChild(li);
-    });
+  const ul=document.getElementById('orderItems');
+  ul.innerHTML='';
+  orderItems.forEach((it,idx) => {
+    const li=document.createElement('li');
+    // Removed "x1" and "@" for simplicity
+    li.innerHTML=`${it.name} x${it.quantity} @ ${it.price}`;
+    // Add Remove button
+    const removeBtn=document.createElement('button');
+    removeBtn.innerText='Remove';
+    removeBtn.style.marginLeft='10px';
+    removeBtn.onclick=()=>{ orderItems.splice(idx,1); updateOrderSummary(); };
+    li.appendChild(removeBtn);
+    ul.appendChild(li);
+  });
 }
 
 // Save order to history
-function saveOrderToHistory() {
-    let history = JSON.parse(localStorage.getItem('orderHistory')) || [];
-    const timestamp = new Date().toISOString();
-    const totalText = document.getElementById('totalAmount').innerText;
-    history.push({ timestamp, restaurant: currentRestaurant, items: [...orderItems], total: totalText });
-    localStorage.setItem('orderHistory', JSON.stringify(history));
+function saveOrder() {
+  if (orderItems.length>0) {
+    orderHistory.push({restaurant:currentRestaurant, items:[...orderItems], date: new Date()});
+  }
 }
 
-function showOrderHistory() {
-    const history = JSON.parse(localStorage.getItem('orderHistory')) || [];
-    const container = document.getElementById('orderHistoryList');
-    container.innerHTML='';
-
-    if (history.length === 0) {
-        container.innerHTML='<p>No order history available.</p>';
-    } else {
-        history.slice().reverse().forEach((entry, index) => {
-            const div = document.createElement('div');
-            div.style.border='1px solid #ccc';
-            div.style.borderRadius='5px';
-            div.style.padding='10px';
-            div.style.marginBottom='10px';
-            div.innerHTML = `
-                <strong>${new Date(entry.timestamp).toLocaleString()}</strong><br/>
-                Restaurant: ${entry.restaurant}<br/>
-                Total: ${entry.total}
-                <button style="margin-top:5px; background-color:#b30000; color:#fff; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;" onclick='viewOrderDetails(${index})'>View</button>
-            `;
-            container.appendChild(div);
-        });
-    }
-    document.getElementById('orderHistoryModal').style.display='flex';
-}
-function viewOrderDetails(index) {
-    const history = JSON.parse(localStorage.getItem('orderHistory')) || [];
-    const order = history.slice().reverse()[index];
-    alert(`Order Details:\nRestaurant: ${order.restaurant}\nTotal: ${order.total}\nItems:\n` + order.items.map(i => `${i.name} x${i.quantity} @ ${i.price} Opinion: ${i.opinion}`).join('\n'));
-}
-function closeOrderHistory() {
-    document.getElementById('orderHistoryModal').style.display='none';
-}
-
-// Prepare checkout display
-function prepareCheckout() {
-    document.getElementById('checkoutRestaurantTitle').innerText = currentRestaurant + ' - Checkout';
-
-    const ul=document.getElementById('checkoutItems');
-    ul.innerHTML='';
-
-    let subtotal=0;
-    orderItems.forEach(item => {
-        const li=document.createElement('li');
-        const priceNum=parseFloat(item.price.replace('R','').trim());
-        const totalItemPrice=priceNum*item.quantity;
-        subtotal+=totalItemPrice;
-        li.innerHTML=`${item.name} x${item.quantity} ${item.price} = R${totalItemPrice.toFixed(2)}`;
-        ul.appendChild(li);
-    });
-
-    let total=subtotal+SERVICE_FEE+TIP+DELIVERY_FEE;
-    if (appliedVoucher) {
-        total -= discountAmount;
-        if (total<0) total=0;
-    }
-
-    document.getElementById('subtotalDisplay').innerText=`R${subtotal.toFixed(2)}`;
-    document.getElementById('serviceFeeDisplay').innerText=`R${SERVICE_FEE.toFixed(2)}`;
-    document.getElementById('tipDisplay').innerText=`R${TIP.toFixed(2)}`;
-    document.getElementById('deliveryFeeDisplay').innerText=`R${DELIVERY_FEE.toFixed(2)}`;
-    document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
-    document.getElementById('discountAmount').innerText=`R${discountAmount.toFixed(2)}`;
-}
-
-// Start payment first, then search driver
-function startPayment() {
-    const method = getSelectedPaymentMethod();
-    const totalText = document.getElementById('totalAmount').innerText;
-    const amount = parseFloat(totalText.replace('R','').trim());
-
-    if (method === 'EFT') {
-        showBankDetailsModal();
-    } else {
-        fetch('https://jsonplaceholder.typicode.com/posts', {
-            method: 'POST',
-            body: JSON.stringify({ amount: amount, method: method }),
-            headers: { 'Content-type': 'application/json; charset=UTF-8' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(`Payment successful via ${method}!`);
-            // After payment success, start searching for driver
-            searchForDriver();
-        })
-        .catch(() => {
-            alert('Payment failed. Please try again.');
-        });
-    }
-}
-
-// Search for driver after payment success
-function searchForDriver() {
-    document.getElementById('searchDriverPopup').style.display='flex';
-    setTimeout(() => {
-        document.getElementById('searchDriverPopup').style.display='none';
-        alert('Driver has been assigned! Your driver will arrive shortly.');
-        resetOrderAndReturnHome();
-    }, 3000);
-}
-
-// Cancel checkout modal
-function cancelCheckout() {
-    document.getElementById('checkoutPage').style.display='none';
-    document.querySelector('#orderSummary').style.display='block';
-    document.getElementById('driverContact').style.display='none';
-}
-
-// Show bank details modal
-function showBankDetailsModal() {
-    document.getElementById('bankDetailsModal').style.display='flex';
-}
-function closeBankDetailsModal() {
-    document.getElementById('bankDetailsModal').style.display='none';
-}
-function saveBankDetails() {
-    const details = document.getElementById('bankDetailsInput').value.trim();
-    if (!details) {
-        alert('Please enter banking details.');
-        return;
-    }
-    alert('Banking details saved.');
-    closeBankDetailsModal();
-    // simulate bank transfer
-    simulateBankPayment();
-}
-
-// simulate bank transfer
-function simulateBankPayment() {
-    alert('Processing bank transfer...');
-    fetch('https://jsonplaceholder.typicode.com/posts', {
-        method: 'POST',
-        body: JSON.stringify({ order: orderItems, amount: document.getElementById('totalAmount').innerText }),
-        headers: { 'Content-type': 'application/json; charset=UTF-8' }
-    }).then(response => response.json())
-      .then(data => {
-        alert('Bank transfer successful! Your order is confirmed.');
-        resetOrderAndReturnHome();
-      }).catch(() => {
-        alert('Failed to process bank transfer. Please try again.');
-      });
-}
-
-// Reset order and go back to main
-function resetOrderAndReturnHome() {
-    orderItems = [];
-    updateOrderSummary();
-    document.getElementById('checkoutPage').style.display='none';
-    document.querySelector('#orderSummary').style.display='block';
-    document.getElementById('driverContact').style.display='none';
-}
-
-// ------------------- Popup functions -------------------
-function openVoucherModal() { document.getElementById('voucherModal').style.display='flex'; }
-function closeVoucherModal() { document.getElementById('voucherModal').style.display='none'; }
-function applyVoucher() {
-    const code = document.getElementById('voucherInput').value.trim();
-    if (code === 'SAVE10') {
-        alert('Voucher applied! R10 off.');
-        discountAmount = 10;
-        appliedVoucher = 'SAVE10';
-    } else if (code === 'FREESHIP') {
-        alert('Free delivery voucher applied! (simulated)');
-    } else {
-        alert('Invalid voucher code.');
-        discountAmount = 0;
-        appliedVoucher = null;
-    }
-    closeVoucherModal();
-}
-
-// Show order history
-function showOrderHistory() {
-    const history = JSON.parse(localStorage.getItem('orderHistory')) || [];
-    const container = document.getElementById('orderHistoryList');
-    container.innerHTML='';
-
-    if (history.length === 0) {
-        container.innerHTML='<p>No order history available.</p>';
-    } else {
-        history.slice().reverse().forEach((entry, index) => {
-            const div = document.createElement('div');
-            div.style.border='1px solid #ccc';
-            div.style.borderRadius='5px';
-            div.style.padding='10px';
-            div.style.marginBottom='10px';
-            div.innerHTML = `
-                <strong>${new Date(entry.timestamp).toLocaleString()}</strong><br/>
-                Restaurant: ${entry.restaurant}<br/>
-                Total: ${entry.total}
-                <button style="margin-top:5px; background-color:#b30000; color:#fff; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;" onclick='viewOrderDetails(${index})'>View</button>
-            `;
-            container.appendChild(div);
-        });
-    }
-    document.getElementById('orderHistoryModal').style.display='flex';
-}
-function viewOrderDetails(index) {
-    const history = JSON.parse(localStorage.getItem('orderHistory')) || [];
-    const order = history.slice().reverse()[index];
-    alert(`Order Details:\nRestaurant: ${order.restaurant}\nTotal: ${order.total}\nItems:\n` + order.items.map(i => `${i.name} x${i.quantity} @ ${i.price} Opinion: ${i.opinion}`).join('\n'));
-}
-function closeOrderHistory() {
-    document.getElementById('orderHistoryModal').style.display='none';
-}
-
-// ------------------- Event Listeners -------------------
-window.onload = function() {
-    // hide driver contact initially
-    document.getElementById('driverContact').style.display='none';
-}
-
-// ------------------- Core flow functions -------------------
-// When user clicks "Go to Checkout"
+// Go to checkout
 function goToCheckout() {
-    // Prepare order summary
-    prepareCheckout();
-    // Show checkout modal with payment options first
-    document.getElementById('checkoutPage').style.display='block';
-    document.querySelector('#orderSummary').style.display='none';
-}
-
-// Prepare the checkout summary
-function prepareCheckout() {
-    document.getElementById('checkoutRestaurantTitle').innerText = currentRestaurant + ' - Checkout';
-
-    const ul=document.getElementById('checkoutItems');
-    ul.innerHTML='';
-
-    let subtotal=0;
-    orderItems.forEach(item => {
-        const li=document.createElement('li');
-        const priceNum=parseFloat(item.price.replace('R','').trim());
-        const totalItemPrice=priceNum*item.quantity;
-        subtotal+=totalItemPrice;
-        li.innerHTML=`${item.name} x${item.quantity} ${item.price} = R${totalItemPrice.toFixed(2)}`;
-        ul.appendChild(li);
-    });
-
-    let total=subtotal+SERVICE_FEE+TIP+DELIVERY_FEE;
-    if (appliedVoucher) {
-        total -= discountAmount;
-        if (total<0) total=0;
+  if (orderItems.length===0) { alert("Your cart is empty!"); return; }
+  saveOrder();
+  // Calculate total
+  let total=0;
+  orderItems.forEach(i => {
+    const p=parseFloat(i.price.replace('R',''));
+    total+=p*i.quantity;
+  });
+  total-=discountAmount;
+  if (total<0) total=0;
+  document.getElementById('checkoutItems').innerHTML='';
+  orderItems.forEach(i => {
+    const li=document.createElement('li');
+    li.innerHTML=`${i.name} x${i.quantity} @ ${i.price}`;
+    if(i.opinion && i.opinion!=='No preference') {
+      li.innerHTML+=`<br>Pref: ${i.opinion}`;
     }
-
-    document.getElementById('subtotalDisplay').innerText=`R${subtotal.toFixed(2)}`;
-    document.getElementById('serviceFeeDisplay').innerText=`R${SERVICE_FEE.toFixed(2)}`;
-    document.getElementById('tipDisplay').innerText=`R${TIP.toFixed(2)}`;
-    document.getElementById('deliveryFeeDisplay').innerText=`R${DELIVERY_FEE.toFixed(2)}`;
-    document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
-    document.getElementById('discountAmount').innerText=`R${discountAmount.toFixed(2)}`;
+    document.getElementById('checkoutItems').appendChild(li);
+  });
+  document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
+  document.getElementById('checkoutPage').style.display='block';
+  document.getElementById('orderSummary').style.display='none';
 }
-
-// Start payment process
-function startPayment() {
-    const method = getSelectedPaymentMethod();
-    const totalText = document.getElementById('totalAmount').innerText;
-    const amount = parseFloat(totalText.replace('R','').trim());
-
-    if (method === 'EFT') {
-        showBankDetailsModal();
-    } else {
-        fetch('https://jsonplaceholder.typicode.com/posts', {
-            method: 'POST',
-            body: JSON.stringify({ amount: amount, method: method }),
-            headers: { 'Content-type': 'application/json; charset=UTF-8' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(`Payment successful via ${method}!`);
-            // After payment success, start searching for driver
-            searchForDriver();
-        })
-        .catch(() => {
-            alert('Payment failed. Please try again.');
-        });
-    }
-}
-
-// Search for driver after payment success
-function searchForDriver() {
-    document.getElementById('searchDriverPopup').style.display='flex';
-    setTimeout(() => {
-        document.getElementById('searchDriverPopup').style.display='none';
-        alert('Driver has been assigned! Your driver will arrive shortly.');
-        resetOrderAndReturnHome();
-    }, 3000);
-}
-
-// Cancel checkout modal
 function cancelCheckout() {
-    document.getElementById('checkoutPage').style.display='none';
-    document.querySelector('#orderSummary').style.display='block';
-    document.getElementById('driverContact').style.display='none';
+  document.getElementById('checkoutPage').style.display='none';
+  document.getElementById('orderSummary').style.display='block';
 }
 
-// Show bank details modal
-function showBankDetailsModal() {
-    document.getElementById('bankDetailsModal').style.display='flex';
+/* =========================
+   PAYMENT & VOUCHER
+========================= */
+function confirmEFT() {
+  alert("Your EFT payment has been processed successfully. Thank you for your order!");
+  orderItems=[];
+  updateOrderSummary();
+  cancelCheckout();
 }
-function closeBankDetailsModal() {
-    document.getElementById('bankDetailsModal').style.display='none';
+function showVoucherInput() {
+  showModal('voucherModal');
 }
-function saveBankDetails() {
-    const details = document.getElementById('bankDetailsInput').value.trim();
-    if (!details) {
-        alert('Please enter banking details.');
-        return;
+function closeVoucherModal() {
+  hideModal('voucherModal');
+}
+function applyVoucher() {
+  const code=document.getElementById('voucherCode').value.trim();
+  if (code==='DISCOUNT10') {
+    discountAmount=10;
+    alert('Voucher applied! R10 off.');
+    generateQRCode(code);
+    updateTotalWithDiscount();
+  } else {
+    alert('Invalid code');
+    discountAmount=0;
+    generateQRCode('');
+    updateTotalWithDiscount();
+  }
+}
+function generateQRCode(text) {
+  const container=document.getElementById('qrCodeContainer');
+  container.innerHTML='';
+  if (text) { new QRCode(container, {text:text, width:128, height:128}); }
+}
+function updateTotalWithDiscount() {
+  const t=document.getElementById('totalAmount').innerText;
+  let total=parseFloat(t.replace('R',''));
+  total-=discountAmount;
+  if (total<0) total=0;
+  document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
+}
+
+/* =========================
+   Order History Functions
+========================= */
+function showOrderHistory() {
+  const listDiv=document.getElementById('orderHistoryList');
+  listDiv.innerHTML='';
+  if(orderHistory.length===0){ 
+    listDiv.innerHTML="<p>No history</p>"; 
+    showModal('orderHistoryModal'); 
+    return;
+  }
+  orderHistory.forEach((o,i) => {
+    const d=document.createElement('div');
+    d.style.border='1px solid #ccc'; d.style.padding='10px'; d.style.marginBottom='10px'; d.style.borderRadius='4px';
+    // Format date
+    const dateStr = new Date(o.date).toLocaleString();
+    d.innerHTML=`
+      <strong>Restaurant:</strong> ${o.restaurant}<br>
+      <strong>Date:</strong> ${dateStr}<br>
+      <img src="${getRestaurantImage(o.restaurant)}" style="width:50px; height:50px; object-fit:cover; border-radius:4px;">
+      <button style="margin-top:10px; background:#007bff; color:#fff; border:none; padding:8px; border-radius:4px; cursor:pointer;" onclick='viewOrderDetails(${i})'>View</button>
+    `;
+    listDiv.appendChild(d);
+  });
+  showModal('orderHistoryModal');
+}
+function closeOrderHistory() { hideModal('orderHistoryModal'); }
+function viewOrderDetails(index) {
+  const o=orderHistory[index];
+  let txt='';
+  o.items.forEach(it => {
+    txt+=`${it.name} x${it.quantity} @ ${it.price}`;
+    if(it.opinion && it.opinion!=='No preference') {
+      txt+=`\nOpinion: ${it.opinion}`;
     }
-    alert('Banking details saved.');
-    closeBankDetailsModal();
-    // simulate bank transfer
-    simulateBankPayment();
+    txt+='\n';
+  });
+  alert(`Order from ${o.restaurant}:\n${txt}`);
+}
+function getRestaurantImage(restName) {
+  switch(restName){
+    case 'KFC Parow': return 'Images/RS KFC .jpeg';
+    case 'Sannes Palace': return 'Images/RS PALACE .jpg';
+    case 'DK Spot & Kota': return 'Images/RS KOTA .jpg';
+    case 'Nondyebo Eatery': return 'Images/RS NONDYEBO.jpg';
+    default: return '';
+  }
 }
 
-// simulate bank transfer
-function simulateBankPayment() {
-    alert('Processing bank transfer...');
-    fetch('https://jsonplaceholder.typicode.com/posts', {
-        method: 'POST',
-        body: JSON.stringify({ order: orderItems, amount: document.getElementById('totalAmount').innerText }),
-        headers: { 'Content-type': 'application/json; charset=UTF-8' }
-    }).then(response => response.json())
-      .then(data => {
-        alert('Bank transfer successful! Your order is confirmed.');
-        resetOrderAndReturnHome();
-      }).catch(() => {
-        alert('Failed to process bank transfer. Please try again.');
-      });
+/* =========================
+   Voucher Button
+========================= */
+function showVoucherInput() {
+  showModal('voucherModal');
 }
 
-// Utility to reset order and go back to main
-function resetOrderAndReturnHome() {
-    orderItems = [];
-    updateOrderSummary();
-    document.getElementById('checkoutPage').style.display='none';
-    document.querySelector('#orderSummary').style.display='block';
-    document.getElementById('driverContact').style.display='none';
+/* =========================
+   Map Location
+========================= */
+function openMapLocation() { window.open('http://127.0.0.1:5500/user-app/search_location.html','_blank'); }
+
+// Confirm Payment
+function confirmEFT() {
+  alert("Your EFT payment has been processed successfully. Thank you for your order!");
+  orderItems=[];
+  updateOrderSummary();
+  cancelCheckout();
 }
+
+/* =========================
+   Additional related functions
+========================= */
+
 </script>
 </body>
 </html>
