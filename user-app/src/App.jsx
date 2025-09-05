@@ -4,7 +4,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import React, { useState } from 'react';
 import { supabase } from './supabaseClient';
-
+import { loadStripe } from '@stripe/stripe-js';
 
 
 function App() {
@@ -238,5 +238,17 @@ useEffect(() => {
 }, []);
 const sendNotification = async (data) => {
   await supabase.from('notifications').insert([{ ...data }]);
+};
+const stripePromise = loadStripe('your_public_stripe_key');
+
+const handleCheckout = async () => {
+  const stripe = await stripePromise;
+  // Call your backend to create a checkout session
+  const response = await fetch('/create-checkout-session', {
+    method: 'POST',
+  });
+  const session = await response.json();
+  // Redirect to checkout
+  await stripe.redirectToCheckout({ sessionId: session.id });
 };
 export default App;
