@@ -9,7 +9,7 @@ function MyMap() {
         attribution="&copy; OpenStreetMap contributors"
       />
       <Marker position={[51.505, -0.09]}>
-        <Popup>Hello from London!</Popup>
+        <Popup></Popup>
       </Marker>
     </MapContainer>
   );
