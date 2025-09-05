@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Home Dashboard</title>
+<!-- Your bundled CSS (if using a build tool) -->
+<link rel="stylesheet" href="assets/index.css" />
 <!-- QRCode & sha256 libraries -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/js-sha256/dist/sha256.min.js"></script>
@@ -15,7 +17,11 @@ body {
   margin: 0;
   background-color: #f9f9f9;
 }
+ <!-- React root element -->
+  <div id="root"></div>
 
+  <!-- Your React app bundle -->
+  <script src="assets/main.jsx" type="module"></script>
 /* Header styles */
 .header {
   display: flex;
