@@ -6,6 +6,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { loadStripe } from '@stripe/stripe-js';
 
+
+
 function App() {
   // State management
   const [showModal, setShowModal] = useState({
@@ -297,4 +299,5 @@ const handleCheckout = async () => {
   // Redirect to checkout
   await stripe.redirectToCheckout({ sessionId: session.id });
 };
+
 export default App;
