@@ -5,7 +5,7 @@ import './App.css'
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { loadStripe } from '@stripe/stripe-js';
+
 
 
 function App() {
@@ -377,19 +377,220 @@ useEffect(() => {
     supabase.removeSubscription(subscription);
   };
 }, []);
-const sendNotification = async (data) => {
-  await supabase.from('notifications').insert([{ ...data }]);
-};
-const stripePromise = loadStripe('your_public_stripe_key');
 
-const handleCheckout = async () => {
-  const stripe = await stripePromise;
-  // Call your backend to create a checkout session
-  const response = await fetch('/create-checkout-session', {
-    method: 'POST',
-  });
-  const session = await response.json();
-  // Redirect to checkout
-  await stripe.redirectToCheckout({ sessionId: session.id });
-};
+  const [selectedCard, setSelectedCard] = useState(null);
+
+  const handleCardSelect = (card) => {
+    setSelectedCard(card);
+  };
+
+  const handlePayNow = () => {
+    if (!selectedCard) {
+      alert('Please select a payment method.');
+      return;
+    }
+
+    // Call your backend to create the PayFast payment URL
+    fetch('/create-payfast-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: 100.00, // Example amount
+        item_name: 'Sample Item',
+        card_type: selectedCard, // optional if needed
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.paymentUrl) {
+          // Redirect user to PayFast
+          window.location.href = data.paymentUrl;
+        } else {
+          alert('Error generating payment URL.');
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('Failed to initiate payment.');
+      });
+  };
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h1>Choose Your Payment Method</h1>
+
+      {/* Payment Options */}
+      <div style={{ marginTop: '20px', display: 'flex', gap: '15px' }}>
+        {/* Visa */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            cursor: 'pointer',
+            border: selectedCard === 'Visa' ? '2px solid blue' : '1px solid #ccc',
+            padding: '10px',
+            borderRadius: '8px',
+          }}
+          onClick={() => handleCardSelect('Visa')}
+        >
+          <img
+            src="https://img.icons8.com/color/48/000000/visa.png"
+            alt="Visa"
+            style={{ width: '50px', height: '30px' }}
+          />
+          <span>Visa</span>
+        </div>
+
+        {/* MasterCard */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            cursor: 'pointer',
+            border: selectedCard === 'MasterCard' ? '2px solid blue' : '1px solid #ccc',
+            padding: '10px',
+            borderRadius: '8px',
+          }}
+          onClick={() => handleCardSelect('MasterCard')}
+        >
+          <img
+            src="https://img.icons8.com/color/48/000000/mastercard-logo.png"
+            alt="MasterCard"
+            style={{ width: '50px', height: '30px' }}
+          />
+          <span>MasterCard</span>
+        </div>
+
+        {/* Amex */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            cursor: 'pointer',
+            border: selectedCard === 'Amex' ? '2px solid blue' : '1px solid #ccc',
+            padding: '10px',
+            borderRadius: '8px',
+          }}
+          onClick={() => handleCardSelect('Amex')}
+        >
+          <img
+            src="https://img.icons8.com/color/48/000000/amex.png"
+            alt="American Express"
+            style={{ width: '50px', height: '30px' }}
+          />
+          <span>Amex</span>
+        </div>
+      </div>
+
+      {/* Pay Now Button */}
+      <button
+        style={{ marginTop: '30px', padding: '10px 20px', fontSize: '16px' }}
+        onClick={handlePayNow}
+      >
+        Pay Now
+      </button>
+    </div>
+  );
+
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [smsMessage, setSmsMessage] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailText, setEmailText] = useState('');
+  const [status, setStatus] = useState('');
+
+  const sendSMS = () => {
+    fetch('/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: phoneNumber, message: smsMessage }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setStatus('SMS sent! SID: ' + data.sid);
+        } else {
+          setStatus('Failed to send SMS.');
+        }
+      })
+      .catch((err) => setStatus('Error: ' + err.message));
+  };
+
+  const sendEmail = () => {
+    fetch('/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: email, subject: emailSubject, text: emailText }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setStatus('Email sent!');
+        } else {
+          setStatus('Failed to send email.');
+        }
+      })
+      .catch((err) => setStatus('Error: ' + err.message));
+  };
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1>Send SMS & Email</h1>
+      
+      {/* SMS Section */}
+      <h2>Send SMS</h2>
+      <input
+        type="text"
+        placeholder="Phone Number"
+        value={phoneNumber}
+        onChange={(e) => setPhoneNumber(e.target.value)}
+        style={{ width: '300px', marginBottom: '10px' }}
+      />
+      <br />
+      <textarea
+        placeholder="Message"
+        value={smsMessage}
+        onChange={(e) => setSmsMessage(e.target.value)}
+        style={{ width: '300px', height: '80px', marginBottom: '10px' }}
+      />
+      <br />
+      <button onClick={sendSMS}>Send SMS</button>
+      
+      {/* Email Section */}
+      <h2 style={{ marginTop: '30px' }}>Send Email</h2>
+      <input
+        type="email"
+        placeholder="Recipient Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{ width: '300px', marginBottom: '10px' }}
+      />
+      <br />
+      <input
+        type="text"
+        placeholder="Subject"
+        value={emailSubject}
+        onChange={(e) => setEmailSubject(e.target.value)}
+        style={{ width: '300px', marginBottom: '10px' }}
+      />
+      <br />
+      <textarea
+        placeholder="Email Body"
+        value={emailText}
+        onChange={(e) => setEmailText(e.target.value)}
+        style={{ width: '300px', height: '100px', marginBottom: '10px' }}
+      />
+      <br />
+      <button onClick={sendEmail}>Send Email</button>
+
+      <p style={{ marginTop: '20px' }}>{status}</p>
+    </div>
+  );
+
+
 export default App;
