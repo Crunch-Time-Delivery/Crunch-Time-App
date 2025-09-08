@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const app = express();
 app.use(express.json());
 
-app.post('/create-payfast-payment', (req, res) => {
+app.post('/create-payfast-payment.js', (req, res) => {
   const { amount, item_name } = req.body;
 
   // Generate the necessary data for PayFast
