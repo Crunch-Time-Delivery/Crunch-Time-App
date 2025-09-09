@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Vendor Dashboard with Full Management</title>
+<title>Vendor App</title>
 <!-- Font Awesome -->
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 <style>
@@ -537,6 +537,19 @@ function editPayment(i) {
   document.getElementById('paymentFormModal').dataset.editIndex=i;
   document.getElementById('paymentFormModal').style.display='flex';
 }
+
+
+  // Example fetch request to localhost API of main.jsx
+    fetch('http://localhost:3000/api/your-endpoint_main.jsx_vendor_app')
+      .then(response => response.json())
+      .then(data => {
+        console.log('Data from your backend:', data);
+        // You can manipulate the DOM here based on response
+        document.getElementById('contentArea').innerHTML += '<p>Data loaded from backend!</p>';
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
 </script>
 </body>
 </html>

@@ -2,59 +2,95 @@
 const express = require('express');
 const twilio = require('twilio');
 const nodemailer = require('nodemailer');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const axios = require('axios');
 
 const app = express();
+const PORT = 5000;
 app.use(express.json());
 
-// Twilio credentials
-const accountSid = 'YOUR_TWILIO_ACCOUNT_SID';
-const authToken = 'YOUR_TWILIO_AUTH_TOKEN';
-const twilioClient = twilio(accountSid, authToken);
-const twilioPhoneNumber = 'YOUR_TWILIO_PHONE_NUMBER';
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
 
-// Nodemailer setup (using Gmail example)
-const transporter = nodemailer.createTransport({
-  service: 'Gmail',
-  auth: {
-    user: 'your.email@gmail.com',
-    pass: 'your-email-password-or-app-password',
-  },
+// 1. Endpoint to create PayFast payment URL
+app.post('/create-payfast-payment', (req, res) => {
+  const { amount, item_name } = req.body;
+
+  // Typically, you'd generate a secure payment URL with PayFast API
+  // Here, we'll simulate by creating a dummy URL
+  const paymentUrl = `https://sandbox.payfast.co.za/eng/process?amount=${amount}&item_name=${encodeURIComponent(item_name)}`;
+
+  res.json({ paymentUrl });
 });
 
-app.post('/send-sms', (req, res) => {
+// 2. Endpoint to send SMS (using Twilio as example)
+app.post('/send-sms', async (req, res) => {
   const { to, message } = req.body;
-  twilioClient.messages
-    .create({
+
+  // Replace with your Twilio credentials
+  const accountSid = 'YOUR_TWILIO_SID';
+  const authToken = 'YOUR_TWILIO_AUTH_TOKEN';
+  const client = require('twilio')(accountSid, authToken);
+
+  try {
+    const messageInstance = await client.messages.create({
       body: message,
-      from: twilioPhoneNumber,
+      from: '+1234567890', // your Twilio number
       to: to,
-    })
-    .then((message) => {
-      res.json({ success: true, sid: message.sid });
-    })
-    .catch((error) => {
-      res.status(500).json({ success: false, error: error.message });
     });
+    res.json({ success: true, sid: messageInstance.sid });
+  } catch (error) {
+    console.error(error);
+     res.json({ success: false, error: error.message });
+  }
 });
 
-app.post('/send-email', (req, res) => {
+// 3. Endpoint to send Email (using Nodemailer)
+const nodemailer = require('nodemailer');
+
+app.post('/send-email', async (req, res) => {
   const { to, subject, text } = req.body;
 
-  const mailOptions = {
-    from: 'your.email@gmail.com', // Your email
-    to: to,
-    subject: subject,
-    text: text,
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      return res.status(500).json({ success: false, error: error.message });
-    }
-    res.json({ success: true, info: info.response });
+   // Configure your SMTP transporter
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.example.com',
+    port: 587,
+    auth: {
+      user: 'your_email@example.com',
+      pass: 'your_email_password',
+    },
   });
+   try {
+    await transporter.sendMail({
+      from: '"Your App" <no-reply@yourdomain.com>',
+      to,
+      subject,
+      text,
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, error: error.message });
+  }
+});
+// 4. (Optional) Endpoint to receive notifications (if you want to trigger server-side notifications)
+app.post('/notifications', (req, res) => {
+  // Handle incoming notifications if needed
+  res.json({ message: 'Notification received' });
 });
 
-app.listen(3001, () => {
-  console.log('Server listening on port 3001');
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});// 4. (Optional) Endpoint to receive notifications (if you want to trigger server-side notifications)
+app.post('/notifications', (req, res) => {
+  // Handle incoming notifications if needed
+  res.json({ message: 'Notification received' });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

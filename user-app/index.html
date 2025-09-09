@@ -716,9 +716,18 @@ function confirmEFT() {
   cancelCheckout();
 }
 
-/* =========================
-   Additional related functions
-========================= */
+
+  // Example fetch request to localhost API of main.jsx
+    fetch('http://localhost:3000/api/your-endpoint_main.jsx_user_app')
+      .then(response => response.json())
+      .then(data => {
+        console.log('Data from your backend:', data);
+        // You can manipulate the DOM here based on response
+        document.getElementById('contentArea').innerHTML += '<p>Data loaded from backend!</p>';
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
 
 </script>
 </body>
