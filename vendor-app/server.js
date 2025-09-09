@@ -2,9 +2,11 @@
 const express = require('express');
 const twilio = require('twilio');
 const nodemailer = require('nodemailer');
+const path = require('path');
 
 const app = express();
 app.use(express.json());
+const PORT = 3000;
 
 // Twilio credentials
 const accountSid = 'YOUR_TWILIO_ACCOUNT_SID';
@@ -57,4 +59,19 @@ app.post('/send-email', (req, res) => {
 
 app.listen(3001, () => {
   console.log('Server listening on port 3001');
+});
+app.use(express.static(path.join(__dirname, 'build')));
+
+// API route example
+app.get('/api/your-endpoint_main.jsx_vendor_app', (req, res) => {
+  res.json({ message: 'Hello from React backend!', timestamp: Date.now() });
+});
+
+// Fallback to serve index.html for React routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });

@@ -5,9 +5,11 @@ const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const axios = require('axios');
+const path = require('path');
 
 const app = express();
-const PORT = 5000;
+const PORT = 3000;
+
 app.use(express.json());
 
 // Middleware
@@ -93,4 +95,22 @@ app.post('/notifications', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+app.listen(3001, () => {
+  console.log('Server listening on port 3001');
+});
+app.use(express.static(path.join(__dirname, 'build')));
+
+// API route example
+app.get('/api/your-endpoint_main.jsx_driver_app', (req, res) => {
+  res.json({ message: 'Hello from React backend!', timestamp: Date.now() });
+});
+
+// Fallback to serve index.html for React routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
