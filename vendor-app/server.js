@@ -8,6 +8,23 @@ const app = express();
 app.use(express.json());
 const PORT = 3000;
 
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+
+// 1. Endpoint to create PayFast payment URL
+app.post('/create-payfast-payment', (req, res) => {
+  const { amount, item_name } = req.body;
+
+  // Typically, you'd generate a secure payment URL with PayFast API
+  // Here, we'll simulate by creating a dummy URL
+  const paymentUrl = `https://sandbox.payfast.co.za/eng/process?amount=${amount}&item_name=${encodeURIComponent(item_name)}`;
+
+  res.json({ paymentUrl });
+});
+
+
 // Twilio credentials
 const accountSid = 'YOUR_TWILIO_ACCOUNT_SID';
 const authToken = 'YOUR_TWILIO_AUTH_TOKEN';
