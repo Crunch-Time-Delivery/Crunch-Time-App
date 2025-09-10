@@ -18,6 +18,55 @@
       background-color: #f0f2f5;
     }
 
+    /* Header with menu icon and dropdown */
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #fff;
+      position: relative;
+      border-bottom: 1px solid #ccc;
+    }
+
+    /* Menu container and icon */
+    .menu-container {
+      position: relative;
+    }
+
+    .menu-icon {
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    /* Dropdown menu styles */
+    #menuDropdown {
+      display: none; /* Hidden by default */
+      position: absolute;
+      top: 40px;
+      left: 0;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      padding: 10px;
+      z-index: 1000;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #menuDropdown button {
+      width: 150px;
+      padding: 8px 12px;
+      border: none;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    #menuDropdown button:hover {
+      background-color: #ddd;
+    }
+
     /* Top Red Bar */
     .top-bar {
       background-color: red;
@@ -26,7 +75,6 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 20px;
-      position: relative;
     }
 
     /* Profile section */
@@ -49,11 +97,37 @@
       font-size: 1.2em;
     }
 
-    /* Menu icon */
+    /* Menu icon inside top bar (not used now, but kept for consistency) */
     .menu-icon {
       font-size: 24px;
       color: #fff;
       cursor: pointer;
+    }
+
+    /* Container for filter and search, placed below top bar */
+    .filter-search-container {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      gap: 10px;
+      background-color: #fff;
+    }
+
+    /* Dropdown style */
+    .filter-dropdown {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+
+    /* Search input style */
+    #search-input {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+      flex: 1;
     }
 
     /* Container for restaurant entries */
@@ -167,28 +241,74 @@
   </style>
 </head>
 <body>
+  <!-- Header with menu icon and dropdown -->
+  <div class="header">
+    <!-- Menu -->
+    <div class="menu-container">
+      <div class="menu-icon" title="Menu" style="cursor:pointer; font-size:24px;" onclick="toggleMenuDropdown()">☰</div>
+      <div id="menuDropdown">
+        <button onclick="showSection('dashboard')">Dashboard</button>
+        <button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/estabilshment.html'">Establishment</button>
+        <button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/restaurant_menu.html'">Restaurant Menu</button>
+        <button onclick="showSection('Driver')">Driver</button>
+        <button onclick="showSection('Vendor')">Vendor</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Top Red Bar -->
   <div class="top-bar">
     <div class="profile-section">
       <div class="profile-picture"></div>
       <div class="admin-name">Restaurant Menu</div>
     </div>
-    <div class="menu-icon" title="Menu">&#9776;</div>
+    <!-- Optional: Keep or remove this menu icon if you want a second one -->
   </div>
 
+  <!-- Filter dropdown and search bar -->
+  <div class="filter-search-container">
+    <select id="establishment-filter" class="filter-dropdown">
+      <option value="">Select Establishment</option>
+      <option value="Restaurant">Restaurant</option>
+      <option value="Cafe">Cafe</option>
+      <option value="Bar">Bar</option>
+      <option value="Diner">Diner</option>
+    </select>
+    <input type="text" id="search-input" placeholder="Search..." />
+  </div>
+
+  <!-- Container for restaurant entries -->
   <div class="content-container" id="content-container">
     <!-- Dynamic restaurant entries will be added here -->
   </div>
 
-  <!-- Add Button -->
+  <!-- Add button -->
   <button class="add-button" id="add-restaurant">Add Restaurant Menu</button>
 
   <script>
+    // Toggle menu dropdown
+    function toggleMenuDropdown() {
+      const dropdown = document.getElementById('menuDropdown');
+      if (dropdown.style.display === 'block') {
+        dropdown.style.display = 'none';
+      } else {
+        dropdown.style.display = 'block';
+      }
+    }
+
+    // Close dropdown if clicked outside
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('menuDropdown');
+      const menuIcon = document.querySelector('.menu-container');
+      if (!dropdown.contains(event.target) && !menuIcon.contains(event.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
+
     const container = document.getElementById('content-container');
-    const addButton = document.getElementById('add-restaurant');
+    const addBtn = document.getElementById('add-restaurant');
 
     function createRestaurantBox() {
-      // Create main box
       const box = document.createElement('div');
       box.className = 'restaurant-box';
 
@@ -197,7 +317,7 @@
       imageContainer.className = 'image-section';
 
       const img = document.createElement('img');
-      img.src = 'https://via.placeholder.com/150'; // Placeholder image
+      img.src = 'https://via.placeholder.com/150';
       img.alt = 'Restaurant Image';
       img.className = 'restaurant-image';
 
@@ -217,7 +337,6 @@
       urlLink.innerText = 'Restaurant Menu';
       urlLink.className = 'restaurant-link';
 
-      // Buttons container
       const buttonsContainer = document.createElement('div');
       buttonsContainer.className = 'buttons';
 
@@ -230,7 +349,7 @@
       // Remove button
       const removeBtn = document.createElement('button');
       removeBtn.className = 'action-btn remove-btn';
-      removeBtn.innerHTML = '&times;'; // Cross icon
+      removeBtn.innerHTML = '&times;';
       removeBtn.title = 'Remove';
 
       // Append buttons
@@ -242,33 +361,38 @@
       textBox.appendChild(urlLink);
       textBox.appendChild(buttonsContainer);
 
-      // Append image and text box to main box
+      // Append to main box
       box.appendChild(imageContainer);
       box.appendChild(textBox);
 
-      // Append main box to container
+      // Append to container
       container.appendChild(box);
 
-      // Add event listeners
+      // Event handlers
       editBtn.onclick = () => {
-        // Make editable
         restaurantName.contentEditable = true;
         restaurantName.focus();
-        // Optionally, toggle editable state
       };
-// remove button
       removeBtn.onclick = () => {
         container.removeChild(box);
       };
     }
 
-    // Add initial restaurant box
+    // Initialize with one restaurant
     createRestaurantBox();
 
-    // Add new boxes on button click
+    // Add new on button click
     document.getElementById('add-restaurant').onclick = () => {
       createRestaurantBox();
     };
+
+    // Optional: handle search
+    document.getElementById('search-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        alert('Searching for: ' + e.target.value);
+      }
+    });
   </script>
 </body>
 </html>

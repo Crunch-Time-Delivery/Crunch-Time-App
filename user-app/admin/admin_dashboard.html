@@ -167,11 +167,12 @@
   <div class="menu-container">
     <div class="menu-icon" title="Menu" style="cursor:pointer; font-size:24px;" onclick="toggleMenuDropdown()">☰</div>
     <div id="menuDropdown">
-      <button onclick="showSection('dashboard')">Dashboard</button>
-      <button onclick="showSection('establishment')">Establishment</button>
-      <button onclick="showSection('restaurant')">Restaurant Menu</button>
-      <button onclick="showSection('Driver')">Driver</button>
-      <button onclick="showSection('Vendor')">Vendor</button>
+      
+      <button onclick="showSection('dashboard')">Dashboard</button> <!-- this code is within http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html -->
+      <button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/estabilshment.html'">Establishment</button>
+<button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/restaurant_menu.html'">Restaurant Menu</button>
+      <button onclick="showSection('Driver')">Driver</button> <!-- this code is within http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html -->
+      <button onclick="showSection('Vendor')">Vendor</button> <!-- this code is within http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html -->
     </div>
   </div>
   <!-- Profile -->
@@ -476,28 +477,6 @@
       
     </div>
   </div>
-</div>
-
-<!-- Establishment -->
-<div id="establishment" class="section">
-  <h2>Establishment Management</h2>
-  <div style="padding:20px;">
-    <div class="establishment-card">
-      <h3>Sample Restaurant</h3>
-      <p>Address: 123 Main St</p>
-      <p>Contact: 555-1234</p>
-    </div>
-    <button onclick="addEstablishment()">Add Establishment</button>
-  </div>
-</div>
-
-<!-- Restaurant -->
-<div id="restaurant" class="section">
-  <h2>Restaurant Menu</h2>
-  <div id="restaurantContainer" style="padding:20px;">
-    <!-- Dynamic restaurant entries -->
-  </div>
-  <button id="addRestaurantBtn" style="margin:20px; padding:10px 20px; background:red; color:#fff; border:none; border-radius:6px; cursor:pointer;">Add Restaurant</button>
 </div>
 
 <!-- Driver -->
