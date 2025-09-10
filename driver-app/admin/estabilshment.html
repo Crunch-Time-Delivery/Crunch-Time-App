@@ -17,6 +17,57 @@
     background-color: #f0f2f5;
   }
 
+  /* Header with menu icon */
+  .header {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #fff;
+    position: relative;
+    border-bottom: 1px solid #ccc;
+  }
+
+  /* Menu container and icon */
+  .menu-container {
+    position: relative;
+  }
+
+  .menu-icon {
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  /* Dropdown menu styles */
+  #menuDropdown {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 40px;
+    left: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    padding: 10px;
+    z-index: 1000;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #menuDropdown button {
+    width: 150px;
+    padding: 8px 12px;
+    border: none;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  #menuDropdown button:hover {
+    background-color: #ddd;
+  }
+
+  /* Rest of your styles remain unchanged */
+
   /* Top Red Bar */
   .top-bar {
     background-color: red;
@@ -47,14 +98,7 @@
     font-size: 1.2em;
   }
 
-  /* Menu icon */
-  .menu-icon {
-    font-size: 24px;
-    color: #fff;
-    cursor: pointer;
-  }
-
-  /* Container for filter and search, placed below the top bar */
+  /* Filter/search container */
   .filter-search-container {
     display: flex;
     align-items: center;
@@ -88,7 +132,7 @@
     gap: 20px;
   }
 
-  /* Each info box styling */
+  /* Info box styles */
   .info-box {
     display: flex;
     background-color: #fff;
@@ -100,7 +144,7 @@
     flex-wrap: wrap;
   }
 
-  /* Icon (clickable image placeholder) */
+  /* Icon section */
   .icon-section {
     flex-shrink: 0;
     cursor: pointer;
@@ -144,7 +188,7 @@
     align-items: center;
   }
 
-  /* Style for hyperlinks: "Edit" and "View Menu" in red */
+  /* Hyperlinks in red */
   .hyperlink-red {
     color: red;
     text-decoration: none;
@@ -195,13 +239,28 @@
 </head>
 <body>
 
+<!-- Header with menu icon and dropdown -->
+<div class="header">
+  <!-- Menu -->
+  <div class="menu-container">
+    <div class="menu-icon" title="Menu" style="cursor:pointer; font-size:24px;" onclick="toggleMenuDropdown()">☰</div>
+    <div id="menuDropdown">
+      <button onclick="showSection('dashboard')">Dashboard</button>
+      <button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/estabilshment.html'">Establishment</button>
+      <button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/restaurant_menu.html'">Restaurant Menu</button>
+      <button onclick="showSection('Driver')">Driver</button>
+      <button onclick="showSection('Vendor')">Vendor</button>
+    </div>
+  </div>
+</div>
+
 <!-- Top Red Bar -->
 <div class="top-bar">
   <div class="profile-section">
     <div class="profile-picture"></div>
     <div class="admin-name">Admin Establishment</div>
   </div>
-  <div class="menu-icon" title="Menu">&#9776;</div>
+  <!-- You can keep or remove the existing menu icon if you want, but the header menu icon is now separate -->
 </div>
 
 <!-- Filter dropdown and search bar placed below top bar -->
@@ -225,6 +284,25 @@
 <button id="add-btn">Add Restaurant Info</button>
 
 <script>
+  // Function to toggle menu dropdown
+  function toggleMenuDropdown() {
+    const dropdown = document.getElementById('menuDropdown');
+    if (dropdown.style.display === 'block') {
+      dropdown.style.display = 'none';
+    } else {
+      dropdown.style.display = 'block';
+    }
+  }
+
+  // Optional: close dropdown if clicked outside
+  document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('menuDropdown');
+    const menuIcon = document.querySelector('.menu-icon');
+    if (!dropdown.contains(event.target) && !menuIcon.contains(event.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+
   const container = document.getElementById('info-container');
   const addBtn = document.getElementById('add-btn');
 

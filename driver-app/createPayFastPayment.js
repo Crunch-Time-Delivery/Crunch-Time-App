@@ -8,12 +8,12 @@ app.use(express.json());
 app.post('/create-payfast-payment.js', (req, res) => {
   const { amount, item_name } = req.body;
 
-  // Generate the necessary data for PayFast
+  // Generate the necessary data for PayFast and declaring the variable
   const merchant_id = 'YOUR_MERCHANT_ID';
   const merchant_key = 'YOUR_MERCHANT_KEY';
   const return_url = 'https://yourdomain.com/return';
   const cancel_url = 'https://yourdomain.com/cancel';
-
+// 
   const data = {
     merchant_id,
     merchant_key,
