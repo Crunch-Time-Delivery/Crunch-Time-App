@@ -4,8 +4,6 @@ import '.src/main.jsx';
 import '.src/app.jsx';
 import '.index.html';
 
-// src/VendorManagement.jsx
-
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 
