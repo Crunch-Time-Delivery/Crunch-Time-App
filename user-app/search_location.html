@@ -84,8 +84,12 @@
             } else {
               marker = L.marker([lat, lon]).addTo(map);
             }
-            // Optional: Save the location (e.g., to localStorage)
-            // localStorage.setItem('savedLocation', JSON.stringify({lat, lon, address}));
+            // Save address and coords
+            localStorage.setItem('deliveryAddress', address);
+            localStorage.setItem('deliveryCoords', JSON.stringify({ lat, lon }));
+            alert('Location set successfully!');
+            // Optional: close the window or redirect back
+            // window.close();
           } else {
             alert('Location not found. Please try another address.');
           }
