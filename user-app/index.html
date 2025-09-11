@@ -9,6 +9,9 @@
 <!-- QRCode & sha256 libraries -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/js-sha256/dist/sha256.min.js"></script>
+<!-- Leaflet CSS & JS for live driver tracking -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <style>
 /* --- Combined Styles --- */
 
@@ -252,6 +255,34 @@ button {
 #pinModal .modal-content {
   max-width: 400px;
 }
+
+/* Driver Map Modal Styles */
+#driverMapContainer {
+  display: none;
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.7);
+  z-index: 9999;
+  flex-direction: column;
+}
+#driverMap {
+  flex: 1;
+  margin: 20px auto;
+  max-width: 90%;
+  height: 400px;
+  border-radius: 8px;
+  border: 2px solid #333;
+}
+#closeMapBtn {
+  background: #f00;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  margin: 10px auto;
+  width: fit-content;
+  cursor: pointer;
+  border-radius: 4px;
+}
 </style>
 </head>
 <body>
@@ -332,6 +363,7 @@ button {
     <h2 id="restaurantName">Restaurant Menu</h2>
     <div id="menuItems"></div>
     <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
+    <button style="margin-top:10px; background:#ff0000; color:#fff; padding:8px 12px; border:none; border-radius:4px; cursor:pointer;" onclick="showFoodAndOrder()">Order Food</button>
   </div>
 </div>
 
@@ -372,6 +404,8 @@ button {
   <button id="checkoutBtn" class="checkout-btn" onclick="goToCheckout()">Go to Checkout</button>
   <button id="orderHistoryBtn" style="background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showOrderHistory()">Order History</button>
   <button id="voucherBtn" style="background-color:#f80505; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showVoucherInput()">Input Voucher Coupon</button>
+  <!-- Add driver tracking button -->
+  <button style="margin-top:10px; background:#ff0000; color:#fff; padding:10px; border:none; border-radius:5px; width:100%; font-weight:bold;" onclick="showDriverTracking()">Track Driver</button>
 </div>
 
 <!-- Checkout page (hidden initially) -->
@@ -421,6 +455,14 @@ button {
   </div>
 </div>
 
+<!-- Driver Map Modal -->
+<div id="driverMapContainer">
+  <div style="display:flex; justify-content:center; align-items:center; flex-direction:column; height:100%;">
+    <button id="closeMapBtn" onclick="closeDriverMap()">Close Map</button>
+    <div id="driverMap"></div>
+  </div>
+</div>
+
 <script>
 /* =========================
    GLOBAL VARIABLES
@@ -431,7 +473,10 @@ let currentQty = 1;
 let orderItems = [];
 let orderHistory = [];
 let discountAmount = 0;
-let userPIN = ''; // to store PIN temporarily
+let userPIN = ''; // store PIN temporarily
+
+// Map and driver marker
+let driverMap, driverMarker;
 
 /* =========================
    UTILITY FUNCTIONS
@@ -439,9 +484,9 @@ let userPIN = ''; // to store PIN temporarily
 function showModal(id) { document.getElementById(id).style.display='block'; }
 function hideModal(id) { document.getElementById(id).style.display='none'; }
 
-// Close modals on outside click
+// Outside click close for modals
 window.onclick = function(e) {
-  const modalIds=['menuModal','foodModal','orderHistoryModal','voucherModal','pinModal','foodOpinionModal'];
+  const modalIds=['menuModal','foodModal','orderHistoryModal','voucherModal','pinModal'];
   modalIds.forEach(id => {
     if (e.target===document.getElementById(id)) hideModal(id);
   });
@@ -585,17 +630,28 @@ function updateOrderSummary() {
   });
 }
 
-// Save order to history
+// Save order to history with PIN
+function generateRandomPIN() {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit PIN
+}
+
 function saveOrder() {
   if (orderItems.length>0) {
+    const pin = generateRandomPIN();
     orderHistory.push({
       restaurant: currentRestaurant,
       items: [...orderItems],
       date: new Date(),
-      pin: userPIN // store PIN here
+      pin: pin // Save PIN directly
     });
+    alert(`Your driver PIN is: ${pin}`); // Show PIN in alert or modal
   }
   userPIN=''; // reset PIN after saving
+}
+
+function showDriverTracking() {
+  // Open the tracking driver button in a new window or tab
+  window.open('tracking_driver.html', '_blank');
 }
 
 // Go to checkout
@@ -623,24 +679,86 @@ function goToCheckout() {
   document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
   document.getElementById('checkoutPage').style.display='block';
   document.getElementById('orderSummary').style.display='none';
-
-  // Show PIN modal after a short delay
+  // Show PIN modal after delay
   setTimeout(() => { showModal('pinModal'); }, 100);
 }
+
+// Cancel checkout
 function cancelCheckout() {
   document.getElementById('checkoutPage').style.display='none';
   document.getElementById('orderSummary').style.display='block';
 }
 
-/* =========================
-   PAYMENT & VOUCHER
-========================= */
+// Confirm EFT Payment
 function confirmEFT() {
   alert("Your EFT payment has been processed successfully. Thank you for your order!");
+  saveOrder(); // Save order with PIN
+  showPinModal(); // Show PIN modal for driver info
   orderItems=[];
   updateOrderSummary();
   cancelCheckout();
 }
+
+// Show PIN modal to user
+function showPinModal() {
+  document.getElementById('pinInput').value='';
+  showModal('pinModal');
+}
+function closePinModal() {
+  hideModal('pinModal');
+}
+function savePin() {
+  const pin=document.getElementById('pinInput').value.trim();
+  if(pin) {
+    userPIN=pin;
+    closePinModal();
+  } else {
+    alert('Please enter a PIN');
+  }
+}
+
+/* =========================
+   Order & Voucher
+========================= */
+function showOrderHistory() {
+  const listDiv=document.getElementById('orderHistoryList');
+  listDiv.innerHTML='';
+  if(orderHistory.length===0){ 
+    listDiv.innerHTML="<p>No history</p>"; 
+    showModal('orderHistoryModal'); 
+    return;
+  }
+  orderHistory.forEach((o,i) => {
+    const d=document.createElement('div');
+    d.style.border='1px solid #ccc'; d.style.padding='10px'; d.style.marginBottom='10px'; d.style.borderRadius='4px';
+    const dateStr = new Date(o.date).toLocaleString();
+    d.innerHTML=`
+      <strong>Restaurant:</strong> ${o.restaurant}<br>
+      <strong>Date:</strong> ${dateStr}<br>
+      <img src="${getRestaurantImage(o.restaurant)}" style="width:50px; height:50px; object-fit:cover; border-radius:4px;">
+      <button style="margin-top:10px; background:#007bff; color:#fff; border:none; padding:8px; border-radius:4px; cursor:pointer;" onclick='viewOrderDetails(${i})'>View</button>
+    `;
+    listDiv.appendChild(d);
+  });
+  showModal('orderHistoryModal');
+}
+function closeOrderHistory() { hideModal('orderHistoryModal'); }
+function viewOrderDetails(index) {
+  const o=orderHistory[index];
+  let txt='';
+  o.items.forEach(it => {
+    txt+=`${it.name} x${it.quantity} @ ${it.price}\n`;
+    if(it.opinion && it.opinion!=='No preference') {
+      txt+=`Opinion: ${it.opinion}\n`;
+    }
+  });
+  txt+=`\nOrder from ${o.restaurant}\nDate: ${new Date(o.date).toLocaleString()}\n`;
+  if (o.pin) {
+    txt+=`PIN for driver: ${o.pin}\n`;
+  }
+  alert(txt);
+}
+
 function showVoucherInput() {
   showModal('voucherModal');
 }
@@ -754,16 +872,75 @@ function confirmEFT() {
 function openMapLocation() { window.open('http://127.0.0.1:5500/user-app/search_location.html','_blank'); }
 
 // Example fetch request to localhost API of main.jsx
- fetch('http://localhost:3000/api/your-endpoint_main.jsx_user_app')
-   .then(response => response.json())
-   .then(data => {
+fetch('http://localhost:3000/api/your-endpoint_main.jsx_user_app')
+  .then(response => response.json())
+  .then(data => {
     console.log('Data from your backend:', data);
-//     // You can manipulate the DOM here based on response
-     document.getElementById('contentArea').innerHTML += '<p>Data loaded from backend!</p>';
+    // You can manipulate the DOM here based on response
+    document.getElementById('contentArea').innerHTML += '<p>Data loaded from backend!</p>';
   })
-   .catch(error => {
+  .catch(error => {
     console.error('Error fetching data:', error);
-   });
+  });
+
+/* =========================
+   Driver Tracking
+========================= */
+
+function showDriverTracking() {
+  document.getElementById('driverMapContainer').style.display='flex';
+  initializeDriverMap();
+}
+
+function closeDriverMap() {
+  document.getElementById('driverMapContainer').style.display='none';
+}
+
+function initializeDriverMap() {
+  if (!driverMap) {
+    driverMap = L.map('driverMap').setView([-33.9129, 18.4179], 14); // Example center
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(driverMap);
+    driverMarker = L.marker([-33.9129, 18.4179]).addTo(driverMap).bindPopup("Driver Location").openPopup();
+    simulateDriverMovement();
+  }
+}
+
+function simulateDriverMovement() {
+  if (driverMarker && driverMap) {
+    let lat = driverMarker.getLatLng().lat + (Math.random() - 0.5) * 0.01;
+    let lng = driverMarker.getLatLng().lng + (Math.random() - 0.5) * 0.01;
+    driverMarker.setLatLng([lat, lng]);
+    driverMap.setView([lat, lng], driverMap.getZoom());
+    setTimeout(simulateDriverMovement, 3000);
+  }
+}
+
+/* =========================
+   Helper: get restaurant image
+========================= */
+function getRestaurantImage(restName) {
+  switch(restName){
+    case 'KFC Parow': return 'Images/RS KFC .jpeg';
+    case 'Sannes Palace': return 'Images/RS PALACE .jpg';
+    case 'DK Spot & Kota': return 'Images/RS KOTA .jpg';
+    case 'Nondyebo Eatery': return 'Images/RS NONDYEBO.jpg';
+    default: return '';
+  }
+}
+
+/* =========================
+   Food Order & Button to order
+========================= */
+function showFoodAndOrder() {
+  // For simplicity, open the first restaurant's menu
+  showMenu(currentRestaurant);
+}
+
+/* =========================
+   Utility: Generate a random PIN
+========================= */
 </script>
 </body>
 </html>

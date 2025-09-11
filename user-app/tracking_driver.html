@@ -1,0 +1,51 @@
+<!-- tracking_driver.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tracking Driver</title>
+<!-- Load React & ReactDOM from CDN or your build -->
+<script src="https://unpkg.com/react/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom/umd/react-dom.development.js" crossorigin></script>
+<!-- Load Babel for JSX (if you plan to write JSX directly) -->
+<script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+<!-- Leaflet CSS & JS for map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+#mapContainer {
+  flex: 1;
+}
+button {
+  padding: 10px;
+  background-color: #f00;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+<button onclick="closeTracking()">Close Tracking</button>
+<div id="mapContainer"></div>
+
+<!-- Your React Script -->
+<script type="text/babel" src="live_tracking.jsx"></script>
+<script>
+  // Initialize React component after DOM loads
+  ReactDOM.render(<LiveTracking />, document.getElementById('mapContainer'));
+
+  function closeTracking() {
+    // Close or hide this page
+    window.location.href='index.html'; // or simply close the window if opened as popup
+  }
+</script>
+</body>
+</html>

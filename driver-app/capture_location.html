@@ -1,0 +1,31 @@
+<!-- capture_location.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Capture Location</title>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- React and Babel scripts -->
+<script src="https://cdn.jsdelivr.net/npm/react/umd/react.development.js" crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom/umd/react-dom.development.js" crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/babel-standalone/babel.min.js"></script>
+
+<!-- Your React component -->
+<script type="text/babel" src="capture_location.jsx"></script>
+
+<!-- Render React component -->
+<script type="text/babel">
+  ReactDOM.render(<CaptureLocation />, document.getElementById('root'));
+</script>
+
+<!-- Add a navigation link to search_location.html -->
+<div style="margin-top:20px; text-align:center;">
+  <a href="../user-app/search_location.html" style="font-size:16px; color:blue; text-decoration:underline;">Go to Search Location</a>
+</div>
+
+</body>
+</html>

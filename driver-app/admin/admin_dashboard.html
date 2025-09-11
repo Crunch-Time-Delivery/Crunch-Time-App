@@ -515,7 +515,7 @@
     </div>
   </div>
 </div>
-
+<div id="locationDisplay"></div>
 <!-- Vendor -->
 <div id="Vendor" class="section" style="padding-top:70px;">
   <h2 style="margin-left:20px;">Vendor Management</h2>
@@ -872,7 +872,14 @@
       sendEmail(email, 'Notification from Admin', 'You have a new notification from admin.');
     }
   }
-
+// Inside admin_dashboard.html script
+const locationData = localStorage.getItem('userLocation');
+if (locationData) {
+  const { latitude, longitude, address } = JSON.parse(locationData);
+  document.getElementById('locationDisplay').innerText = `Latitude: ${latitude}, Longitude: ${longitude}, Address: ${address}`;
+} else {
+  document.getElementById('locationDisplay').innerText = 'No location data captured yet.';
+}
 </script>
 </body>
 </html>

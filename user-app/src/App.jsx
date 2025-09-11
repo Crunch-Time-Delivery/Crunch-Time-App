@@ -9,7 +9,12 @@ import  './PayfastAPI.jsx'; // payment process
 import './smsAndEmailAPI.jsx'; // SMS & email
 import './supabaseClient.js';
 import './createPayFastPayment.js';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
+function generateRandomPIN() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 function App() {
   // State variables
@@ -28,6 +33,13 @@ function App() {
   const [pendingFoodItem, setPendingFoodItem] = useState(null);
   const [currentQty, setCurrentQty] = useState(1);
   const [foodOpinion, setFoodOpinion] = useState('No preference');
+const [total, setTotal] = useState(0);
+  const [showMap, setShowMap] = useState(false);
+  const [driverPosition, setDriverPosition] = useState([ -33.9129, 18.4179 ]);
+  const driverIntervalRef = useRef(null);
+  const [orderPIN, setOrderPIN] = useState('');
+
+
 
   // Example functions (you'll need to implement all from your script)
   const openModal = (modalName) => {
@@ -227,6 +239,135 @@ function App() {
     </div>
   );
 }
+const handleOrder = () => {
+    // Calculate total
+    let sum = 0;
+    orderItems.forEach(i => {
+      sum += i.price * i.quantity;
+    });
+    setTotal(sum);
+    // Generate PIN
+    const pin = generateRandomPIN();
+    setOrderPIN(pin);
+    // Save order
+    setOrderHistory(prev => [...prev, { items: orderItems, date: new Date(), restaurant: currentRestaurant, pin }]);
+    alert(`Order placed! Your driver PIN is: ${pin}`);
+    // Reset order
+    setOrderItems([]);
+  };
+
+  const handleShowOrderDetails = (order) => {
+    alert(
+      `Order from ${order.restaurant}\nItems:\n` +
+      order.items.map(i => `${i.name} x${i.quantity} @ R${i.price}`).join('\n') +
+      `\nOrder PIN: ${order.pin}`
+    );
+  };
+
+  const handleShowMap = () => {
+    setShowMap(true);
+    // simulate driver movement
+    if (driverIntervalRef.current) clearInterval(driverIntervalRef.current);
+    driverIntervalRef.current = setInterval(() => {
+      setDriverPosition(pos => [
+        pos[0] + (Math.random() - 0.5) * 0.01,
+        pos[1] + (Math.random() - 0.5) * 0.01
+      ]);
+    }, 3000);
+  };
+
+  const handleCloseMap = () => {
+    setShowMap(false);
+    if (driverIntervalRef.current) clearInterval(driverIntervalRef.current);
+  };
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1>React Food Order</h1>
+      
+      {/* Example restaurant selection */}
+      <div>
+        <h2>Select Restaurant</h2>
+        {Object.keys(restaurantMenus).map(rest => (
+          <button key={rest} onClick={() => setCurrentRestaurant(rest)} style={{ marginRight: '10px' }}>
+            {rest}
+          </button>
+        ))}
+      </div>
+
+      {/* Menu Items */}
+      {currentRestaurant && (
+        <div>
+          <h3>{currentRestaurant} Menu</h3>
+          {restaurantMenus[currentRestaurant].map((item, idx) => (
+            <div key={idx} style={{ marginBottom: '5px' }}>
+              <span>{item.name} - R{item.price}</span>
+              <button style={{ marginLeft: '10px' }} onClick={() => addItem(item)}>Add</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Order Summary */}
+      <div style={{ marginTop: '20px' }}>
+        <h3>Order Summary</h3>
+        {orderItems.length === 0 ? (
+          <p>No items added</p>
+        ) : (
+          <ul>
+            {orderItems.map((it, idx) => (
+              <li key={idx}>{it.name} x{it.quantity} @ R{it.price}</li>
+            ))}
+          </ul>
+        )}
+        <button onClick={handleOrder} disabled={orderItems.length === 0}>Place Order</button>
+      </div>
+
+      {/* Order History */}
+      <div style={{ marginTop: '20px' }}>
+        <h3>Order History</h3>
+        {orderHistory.length === 0 ? (
+          <p>No previous orders</p>
+        ) : (
+          orderHistory.map((order, idx) => (
+            <div key={idx} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px' }}>
+              <p>Order from: {order.restaurant}</p>
+              <p>Date: {new Date(order.date).toLocaleString()}</p>
+              <button onClick={() => handleShowOrderDetails(order)}>View Details</button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Buttons */}
+      <div style={{ marginTop: '20px' }}>
+        <button onClick={handleShowMap}>Track Driver</button>
+      </div>
+
+      {/* Map Modal */}
+      {showMap && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+          zIndex: 9999
+        }}>
+          <div style={{ width: '90%', height: '80%', position: 'relative', background: '#fff', borderRadius: '8px', overflow: 'hidden' }}>
+            <button onClick={handleCloseMap} style={{ position: 'absolute', top: 10, right: 10, zIndex: 1000 }}>Close</button>
+            <MapContainer center={driverPosition} zoom={14} style={{ height: '100%', width: '100%' }}>
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution="&copy; OpenStreetMap contributors"
+              />
+              <Marker position={driverPosition}>
+                <Popup>Driver Location</Popup>
+              </Marker>
+            </MapContainer>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
 
 
 export default App;
