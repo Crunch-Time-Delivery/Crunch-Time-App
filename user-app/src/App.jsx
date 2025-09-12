@@ -12,6 +12,7 @@ import './createPayFastPayment.js';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
+
 function generateRandomPIN() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }

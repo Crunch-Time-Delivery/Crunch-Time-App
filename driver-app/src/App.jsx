@@ -9,7 +9,8 @@ import './smsAndEmailAPI.jsx'; // SMS & email
 import React, { useState, useEffect } from 'react';
 import './supabaseClient.js';
 import './createPayFastPayment.js';
-
+import LiveTracking from './.live_tracking.jsx';
+import CaptureLocation from './capture_location.jsx'
 
 
 function App() {
@@ -363,10 +364,25 @@ function App() {
           </div>
         </div>
       )}
+      
     </div>
     
   );
  
 }
+const [lat, setLat] = useState(null);
+  const [lng, setLng] = useState(null);
+
+  const handleLocationChange = (latitude, longitude) => {
+    setLat(latitude);
+    setLng(longitude);
+  };
+
+  return (
+    <div style={{ height: '100vh', width: '100%' }}>
+      <CaptureLocation onLocationChange={handleLocationChange} />
+      <LiveTracking userLat={lat} userLng={lng} />
+    </div>
+  );
 
 export default App;
