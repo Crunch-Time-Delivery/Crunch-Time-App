@@ -42,15 +42,87 @@
     display:flex; align-items:center; justify-content:center; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;
   }
   .modal-box { background:#fff; padding:20px; border-radius:8px; width:400px; max-height:80%; overflow-y:auto; }
-  input[type=text], input[type=number], input[type=password], input[type=email] {
-    width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;
+  /* Welcome overlay style */
+  #welcomeOverlay {
+    position: fixed;
+    top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.8);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    z-index:10000;
+    text-align: center;
+    padding:20px;
+  }
+  #welcomeOverlay img {
+    max-width:250px;
+    margin-bottom:20px;
+  }
+  #welcomeOverlay h2 {
+    color: gray;
+    margin: 10px 0;
+  }
+  #welcomeOverlay p {
+    margin:10px 0;
+  }
+  /* Buttons in overlay */
+  .centered-buttons {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .centered-buttons button {
+    width:200px;
+    padding:12px;
+    margin:10px 0;
+    font-size:1em;
+    cursor:pointer;
+    border-radius:4px;
+    border:none;
+  }
+  /* Specific overlay buttons */
+  .btn-create {
+    background:#f60202; /* white text, red background */
+    color:#fff;
+  }
+  .btn-login {
+    background:#fff; /* white background */
+    color:#f60202; /* red text */
+  }
+  .btn-browser {
+    background:#f60202; /* red background */
+    color:#fff; /* white text */
+  }
+  /* Terms and conditions text */
+  #termsText {
+    margin-top:20px;
+    text-align:center;
+    font-size:0.9em;
+    color: #555;
   }
 </style>
 </head>
 <body>
 
+<!-- Welcome Overlay on page load -->
+<div id="welcomeOverlay">
+  <img src="img/screenshot (250).jpg" alt="Screenshot" />
+  <h2>Welcome</h2>
+  <p>Before enjoying CrunchTime deliveries</p>
+  <p>Register now</p>
+  <div class="centered-buttons">
+    <button class="btn-create" onclick="showRegistration(); document.getElementById('welcomeOverlay').style.display='none';">Create account</button>
+    <button class="btn-login" onclick="showLogin(); document.getElementById('welcomeOverlay').style.display='none';">Login</button>
+    <button class="btn-browser" onclick="window.location.href='dummy.html';">Browser Menu</button>
+  </div>
+  <div id="termsText">
+    By logging in or registering, you have agreed to the Terms and Conditions and Privacy Policy.
+  </div>
+</div>
+
 <!-- Register Modal -->
-<div id="registerModal" class="modal" style="display:flex;">
+<div id="registerModal" class="modal" style="display:none;">
   <div class="modal-box">
     <h3>Register New Vendor</h3>
     <input type="email" id="regEmail" placeholder="Invitation Email" />
@@ -170,27 +242,48 @@ function init() {
   showRegistration();
 }
 window.onload = () => {
-  // If user is already logged in, show dashboard
+  // Check if user is already logged in
   if(localStorage.getItem('vendorLoggedIn')==='true'){
+    document.getElementById('welcomeOverlay').style.display='none';
     showSection('section-items');
   } else {
-    init(); // start registration flow
+    // stay on overlay until user clicks a button
   }
 };
 
-// Show registration modal
+// Functions for overlay buttons
+function handleCreateAccount() {
+  document.getElementById('welcomeOverlay').style.display='none';
+  showRegistration();
+}
+function handleLogin() {
+  document.getElementById('welcomeOverlay').style.display='none';
+  showLogin();
+}
+
 function showRegistration() {
   document.querySelectorAll('.section').forEach(s=>s.style.display='none');
   document.getElementById('loginModal').style.display='none';
-  document.getElementById('registerModal').style.display='flex';
+  document.getElementById('registerModal').style.display='none';
   document.getElementById('otpModal').style.display='none';
-  // Reset registration fields
-  document.getElementById('regEmail').value='';
-  document.getElementById('regName').value='';
-  document.getElementById('regPassword').value='';
+}
+function showLogin() {
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  document.getElementById('loginModal').style.display='flex';
+  document.getElementById('username').value='';
+  document.getElementById('password').value='';
+}
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.style.display='none');
+  document.getElementById(id).style.display='block';
+}
+function logout() {
+  localStorage.clear();
+  alert('Logged out');
+  showRegistration(); // restart overlay
 }
 
-// Start registration process
+// Registration process
 function startRegistration() {
   const email=document.getElementById('regEmail').value.trim();
   const name=document.getElementById('regName').value.trim();
@@ -199,38 +292,23 @@ function startRegistration() {
   tempAdminData={email, name, pass};
   generatedOTP = Math.floor(100000 + Math.random()*900000).toString();
   alert('Your OTP: '+generatedOTP);
-  // Show OTP modal
   document.getElementById('registerModal').style.display='none';
   document.getElementById('otpModal').style.display='flex';
   document.getElementById('otpInput').value='';
 }
-
-// Verify OTP
 function verifyOTP() {
   const inputOTP=document.getElementById('otpInput').value.trim();
   if(inputOTP===generatedOTP){
     alert('OTP verified! Registration complete.');
-    // Save credentials
     localStorage.setItem('vendorEmail', tempAdminData.email);
     localStorage.setItem('vendorPassword', tempAdminData.pass);
     localStorage.setItem('vendorLoggedIn','true');
-    // After registration and OTP, show login
     document.getElementById('otpModal').style.display='none';
-    showLogin();
+    showSection('section-items');
   } else {
     alert('Incorrect OTP');
   }
 }
-
-// Show login modal
-function showLogin() {
-  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  document.getElementById('loginModal').style.display='flex';
-  document.getElementById('username').value='';
-  document.getElementById('password').value='';
-}
-
-// Verify login
 function verifyLogin() {
   const username = document.getElementById('username').value.trim();
   const pass = document.getElementById('password').value.trim();
@@ -240,7 +318,6 @@ function verifyLogin() {
   if (username === storedEmail && pass === storedPass) {
     alert('Logged in');
     localStorage.setItem('vendorLoggedIn', 'true');
-    // Hide login modal
     document.getElementById('loginModal').style.display='none';
     showSection('section-items');
   } else {
@@ -248,33 +325,19 @@ function verifyLogin() {
   }
 }
 
-// Show section
-function showSection(id) {
+// Show management section
+function showManagement(type) {
   document.querySelectorAll('.section').forEach(s => s.style.display='none');
-  document.getElementById(id).style.display='block';
+  if(type==='items'){ document.getElementById('section-items').style.display='block'; renderItems(); }
+  else if(type==='orders'){ document.getElementById('section-orders').style.display='block'; renderOrders(); }
+  else if(type==='users'){ document.getElementById('section-users').style.display='block'; renderUsers(); }
+  else if(type==='payment'){ document.getElementById('section-payments').style.display='block'; renderPayments(); }
 }
 
-// Logout
-function logout() {
-  localStorage.clear();
-  alert('Logged out');
-  showRegistration(); // restart flow from registration
-}
+// ----------- CRUD functions (your existing) -----------
 
-// Toggle dropdown menu
-function toggleDropdown() {
-  document.getElementById('profileDropdown').classList.toggle('show');
-}
-window.onclick = (e) => {
-  if (!e.target.closest('.menu-container')) {
-    document.getElementById('profileDropdown').classList.remove('show');
-  }
-}
-
-// =================== CRUD Data ===================
-let items=[], orders=[], users=[], payments=[];
-
-// ---- Items ----
+// Items
+let items = [];
 function renderItems() {
   const container=document.getElementById('itemsTable');
   container.innerHTML='';
@@ -327,7 +390,8 @@ function saveItem() {
 }
 function closeItemForm() { document.getElementById('itemFormModal').style.display='none'; }
 
-// ---- Orders ----
+// Orders
+let orders = [];
 function renderOrders() {
   const container=document.getElementById('ordersTable');
   container.innerHTML='';
@@ -365,7 +429,8 @@ function editOrder(i) {
   if(newStatus){ o.status=newStatus; renderOrders(); }
 }
 
-// ---- Users ----
+// Users
+let users = [];
 function renderUsers() {
   const container=document.getElementById('usersTable');
   container.innerHTML='';
@@ -410,7 +475,8 @@ function saveUser() {
 }
 function closeUserForm() { document.getElementById('userFormModal').style.display='none'; }
 
-// ---- Payments ----
+// Payments
+let payments = [];
 function renderPayments() {
   const container=document.getElementById('paymentsTable');
   container.innerHTML='';
@@ -456,17 +522,8 @@ function savePayment() {
 }
 function closePaymentForm() { document.getElementById('paymentFormModal').style.display='none'; }
 
-// =================== UI handlers ===================
-// Show management section
-function showManagement(type) {
-  document.querySelectorAll('.section').forEach(s => s.style.display='none');
-  if(type==='items'){ document.getElementById('section-items').style.display='block'; renderItems(); }
-  else if(type==='orders'){ document.getElementById('section-orders').style.display='block'; renderOrders(); }
-  else if(type==='users'){ document.getElementById('section-users').style.display='block'; renderUsers(); }
-  else if(type==='payment'){ document.getElementById('section-payments').style.display='block'; renderPayments(); }
-}
+// ----------- Modal open/close functions for forms -----------
 
-// Modal open/close functions
 function openItemForm() {
   document.getElementById('itemFormTitle').innerText='Add Item';
   document.getElementById('itemVendor').value='';
@@ -477,26 +534,7 @@ function openItemForm() {
   document.getElementById('itemFormModal').style.display='flex';
 }
 function closeItemForm() { document.getElementById('itemFormModal').style.display='none'; }
-function editItem(i) {
-  const it=items[i];
-  document.getElementById('itemFormTitle').innerText='Edit Item';
-  document.getElementById('itemVendor').value=it.vendor;
-  document.getElementById('itemName').value=it.item;
-  document.getElementById('itemPrice').value=it.price;
-  document.getElementById('itemStock').value=it.stock;
-  document.getElementById('itemFormModal').dataset.editIndex=i;
-  document.getElementById('itemFormModal').style.display='flex';
-}
-function saveItem() {
-  const i=Number(document.getElementById('itemFormModal').dataset.editIndex);
-  const vendor=document.getElementById('itemVendor').value.trim();
-  const item=document.getElementById('itemName').value.trim();
-  const price=parseFloat(document.getElementById('itemPrice').value);
-  const stock=document.getElementById('itemStock').value;
-  if(!vendor || !item || isNaN(price)){ alert('Fill all fields'); return; }
-  if(i>=0){ items[i]={vendor,item,price,stock}; } else { items.push({vendor,item,price,stock}); }
-  closeItemForm(); renderItems();
-}
+
 function openUserForm() {
   document.getElementById('userFormTitle').innerText='Add User';
   document.getElementById('userEmail').value='';
@@ -505,22 +543,7 @@ function openUserForm() {
   document.getElementById('userFormModal').style.display='flex';
 }
 function closeUserForm() { document.getElementById('userFormModal').style.display='none'; }
-function editUser(i) {
-  const u=users[i];
-  document.getElementById('userFormTitle').innerText='Edit User';
-  document.getElementById('userEmail').value=u.email;
-  document.getElementById('userName').value=u.name;
-  document.getElementById('userFormModal').dataset.editIndex=i;
-  document.getElementById('userFormModal').style.display='flex';
-}
-function saveUser() {
-  const i=Number(document.getElementById('userFormModal').dataset.editIndex);
-  const email=document.getElementById('userEmail').value.trim();
-  const name=document.getElementById('userName').value.trim();
-  if(!email || !name){ alert('Fill all fields'); return; }
-  if(i>=0){ users[i]= {email, name}; } else { users.push({email, name}); }
-  closeUserForm(); renderUsers();
-}
+
 function openPaymentForm() {
   document.getElementById('paymentFormTitle').innerText='Add Payment';
   document.getElementById('paymentAmount').value='';
@@ -529,27 +552,7 @@ function openPaymentForm() {
   document.getElementById('paymentFormModal').style.display='flex';
 }
 function closePaymentForm() { document.getElementById('paymentFormModal').style.display='none'; }
-function editPayment(i) {
-  const p=payments[i];
-  document.getElementById('paymentFormTitle').innerText='Edit Payment';
-  document.getElementById('paymentAmount').value=p.amount;
-  document.getElementById('paymentMethod').value=p.method;
-  document.getElementById('paymentFormModal').dataset.editIndex=i;
-  document.getElementById('paymentFormModal').style.display='flex';
-}
 
-
-  // Example fetch request to localhost API of main.jsx
-    fetch('http://localhost:3000/api/your-endpoint_main.jsx_vendor_app')
-      .then(response => response.json())
-      .then(data => {
-        console.log('Data from your backend:', data);
-        // You can manipulate the DOM here based on response
-        document.getElementById('contentArea').innerHTML += '<p>Data loaded from backend!</p>';
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
 </script>
 </body>
 </html>
