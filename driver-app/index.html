@@ -180,27 +180,22 @@
 </head>
 <body>
 
-<!-- Welcome Image Modal -->
-<div id="welcomeImageModal" class="modal">
-  <div class="modal-content" style="width: 250px; text-align:center;">
-    <img src= "img/screenshot (250).jpg" alt="Welcome" style="width:100%; height:auto;"/>
-  </div>
-</div>
-
 <!-- Welcome Content (Centered) -->
 <div id="welcomeContent" class="centered-container" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; margin-top:50px;">
-  <h2 style="color:gray;">Welcome</h2>
-  <p style="margin-top:10px;">Before enjoying CrunchTime deliveries</p>
-  <p style="margin-top:10px;">Register now</p>
-  <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px; width:200px;">
-    <!-- Create account Button -->
-    <button id="createAccountBtn" style="background-color:red; color:#fff; padding:10px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Create account</button>
-    <!-- Login Button -->
-    <button id="loginBtnCenter" style="background-color:#fff; color:red; padding:10px; border:2px solid red; border-radius:4px; font-weight:bold; cursor:pointer;">Login</button>
-    <!-- Browser Menu Button -->
-    <button id="browserMenuBtn" style="background-color:red; color:#fff; padding:10px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Browser Menu</button>
-  </div>
-  <p style="margin-top:20px; max-width:400px;">By logging in or registering, you have agreed to the Terms and Conditions and Privacy Policy.</p>
+   <div class="modal-content" style="max-width: 300px; padding:20px; text-align:center; display:flex; flex-direction:column; align-items:center;">
+    <img src="img/screenshot (250).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+    <h2 style="color:gray;">Welcome</h2>
+    <p style="margin-top:10px;">Before enjoying CrunchTime deliveries</p>
+    <p style="margin-top:10px;">Register now</p>
+    <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px; width:200px;">
+      <!-- Create account Button -->
+      <button id="createAccountBtn" style="background-color:red; color:#fff; padding:10px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Create account</button>
+      <!-- Login Button -->
+      <button id="loginBtnCenter" style="background-color:#fff; color:red; padding:10px; border:2px solid red; border-radius:4px; font-weight:bold; cursor:pointer;">Login</button>
+      <!-- Browser Menu Button -->
+      <button id="browserMenuBtn" style="background-color:red; color:#fff; padding:10px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Browser Menu</button>
+    </div>
+    <p style="margin-top:20px; max-width:400px;">By logging in or registering, you have agreed to the <a href="dummy_terms.pdf" target="_blank" style="color:red; text-decoration:underline;">Terms and Conditions</a> and <a href="dummy_privacy.pdf" target="_blank" style="color:red; text-decoration:underline;">Privacy Policy</a>.</p>
 </div>
 
 <!-- Header with Driver label and menu -->
@@ -338,10 +333,6 @@
     }
 
     // Show welcome modal and content on load
-    showModal('welcomeImageModal');
-    setTimeout(() => {
-      hideModal('welcomeImageModal');
-    }, 3000);
   });
 
   // Load login page
@@ -424,20 +415,34 @@
 
     const content = document.getElementById('contentArea');
     content.innerHTML = `
-      <h1>Register as a Driver</h1>
-      <form id="driverForm">
+
+      <!-- Registration Form -->
+      <form id="driverForm" style="width:100%; max-width:400px; margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
+      <div class="modal-content" style="max-width: 300px; padding:20px; display:flex; flex-direction:column; align-items:center;">
+        <img src="img/screenshot (251).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+        <h2 style="color:gray;">Create Account</h2>
+        <p style="margin-top:10px;">Welcome to CrunchTime halaal food delivery. Signup to create a free account to start ordering</p>
+      </div>
+        
         <label>Upload Selfie (Driver Photo):</label>
         <input type="file" id="driverPhoto" accept="image/*" required />
+
         <label>Name:</label>
         <input type="text" id="driverName" required />
+
         <label>Email:</label>
         <input type="email" id="driverEmail" required />
+
         <label>Phone Number:</label>
         <input type="tel" id="driverPhone" placeholder="e.g., 0612345678" required />
+
         <label>ID Number:</label>
         <input type="text" id="driverID" required />
+
         <label>Bank Account Details:</label>
         <input type="text" id="bankDetails" placeholder="Account Number" required />
+
         <label>Bank Name:</label>
         <select id="bankName" required>
           <option value="">Select Bank</option>
@@ -451,19 +456,41 @@
           <label>Specify Bank:</label>
           <input type="text" id="otherBank" />
         </div>
+
         <label>Driver's License Upload:</label>
         <input type="file" id="driverLicense" accept="image/*" required />
+
         <label>Car Details:</label>
         <input type="text" id="carColor" placeholder="Car Color" required />
         <input type="text" id="carType" placeholder="Car Type" required />
+
         <label>Car Photo:</label>
         <input type="file" id="carPhoto" accept="image/*" required />
+
         <label>Car Registration Number:</label>
         <input type="text" id="carRegNumber" required />
-        <button type="submit" class="action-btn">Submit Registration</button>
+
+        <!-- Terms paragraph with checkbox -->
+        <div style="display:flex; align-items:center; justify-content:center; margin-top:10px;">
+          <input type="checkbox" id="termsCheckbox" required />
+          <label for="termsCheckbox" style="margin-left:8px;">
+            I agree to the 
+            <a href="http://127.0.0.1:5500/driver-app/terms-and-conditions.page.html" target="_blank" style="color:red; text-decoration:underline;">Terms and Conditions</a> and 
+            <a href="dummy_privacy.pdf" target="_blank" style="color:red; text-decoration:underline;">Privacy Policy</a>
+          </label>
+        </div>
+
+        <button type="submit" class="action-btn" style="margin-top:10px;">Create Account</button>
       </form>
+
+      <!-- Centered "Already have an account? Login" -->
+      <div style="margin-top:20px; text-align:center;">
+        <p style="margin:0;">Already have an account? <a href="#" id="loginLink" style="color:red; font-weight:bold; text-decoration:underline;">Login</a></p>
+      </div>
+    </div>
     `;
 
+    // Event Listeners
     document.getElementById('bankName').addEventListener('change', () => {
       const val = document.getElementById('bankName').value;
       document.getElementById('otherBankDiv').className = (val === 'Other') ? '' : 'hidden';
@@ -471,6 +498,11 @@
 
     document.getElementById('driverForm').addEventListener('submit', (e) => {
       e.preventDefault();
+      // Validate checkbox
+      if (!document.getElementById('termsCheckbox').checked) {
+        alert('You must agree to the Terms and Conditions and Privacy Policy.');
+        return;
+      }
       const driverPhotoFile = document.getElementById('driverPhoto').files[0];
       const driverLicenseFile = document.getElementById('driverLicense').files[0];
       const carPhotoFile = document.getElementById('carPhoto').files[0];
@@ -504,6 +536,11 @@
       generateAndSendOtp();
       showOtpModal();
     });
+
+    document.getElementById('loginLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      loadLoginPage();
+    });
   }
 
   function generateAndSendOtp() {
@@ -526,7 +563,7 @@
     if (enteredOtp === generatedOtp) {
       otpVerified = true;
       alert('OTP verified! Awaiting admin approval...');
-      hideOtpModal();
+      hideModal('otpModal');
       simulateAdminApproval();
     } else {
       alert('Incorrect OTP. Please try again.');
