@@ -215,11 +215,13 @@
 <!-- OTP Modal -->
 <div id="otpModal" class="modal">
   <div class="modal-content">
-    <h3>Enter OTP</h3>
-    <p>We've sent a 4-digit OTP to your email and phone.</p>
+    <h3>Verity Account</h3>
+    <p>Please enter the OTP number  sent to  your email to reset your password</p>
+    <p>Enter  your  OTP code here</p>
     <input type="text" id="otpInput" maxlength="4" placeholder="Enter OTP" />
     <div style="margin-top:10px;">
-      <button id="verifyOtpBtn">Verify</button>
+      <p>Didn’t recieve code? Request again</p>
+      <button id="verifyOtpBtn">Confirm</button>
       <button id="resendOtpBtn">Resend OTP</button>
     </div>
   </div>
@@ -228,10 +230,15 @@
 <!-- Login Modal -->
 <div id="loginModal" class="modal">
   <div class="modal-content">
+    <div class="modal-content" style="max-width: 300px; padding:20px; text-align:center; display:flex; flex-direction:column; align-items:center;">
+    <img src="img/screenshot (251).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+    <h2 style="color:gray;">Welcome</h2>
     <h3>Login</h3>
+    <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
     <input type="email" id="loginEmail" placeholder="Email" />
     <input type="password" id="loginPassword" placeholder="Password" />
     <button id="loginBtn">Login</button>
+    <p>Dont have an account? Register here</p>
     <p style="margin-top:10px;"><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>
   </div>
 </div>
