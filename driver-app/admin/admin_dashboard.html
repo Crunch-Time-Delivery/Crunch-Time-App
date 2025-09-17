@@ -66,8 +66,17 @@
 
   /* Modal overlays for login, credential change, add admin, role view */
   .modal {
-    display:flex; align-items:center; justify-content:center;
-    position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;
+    /* Center the modal overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
   }
   .modal-box {
     background:#fff; padding:30px; border-radius:8px; width:400px; max-height:80%; overflow-y:auto;
@@ -120,7 +129,7 @@
 <body>
 
 <!-- Login modal -->
-<div id="loginModal" class="modal" style="display:flex;">
+<div id="loginModal" class="modal">
   <div class="modal-box">
      <div class="modal-content" style="max-width: 300px; padding:20px; text-align:center; display:flex; flex-direction:column; align-items:center;">
     <img src="img/screenshot (254).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
@@ -138,7 +147,7 @@
 <!-- Credential change & add admin popup -->
 <div id="adminPopup" class="modal" style="display:none;">
   <div class="modal-box" style="width:400px;">
-    <h3>Admin Settings</h3>
+    <h3>Admin </h3>
     <div>
       <label>Change Username:</label>
       <input type="text" id="newUsername" style="width:100%; margin-bottom:10px;"/>
@@ -176,7 +185,7 @@
       
       <button onclick="showSection('dashboard')">Dashboard</button> <!-- this code is within http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html -->
       <button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/estabilshment.html'">Establishment</button>
-<button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/restaurant_menu.html'">Restaurant Menu</button>
+      <button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/restaurant_menu.html'">Restaurant Menu</button>
       <button onclick="showSection('Driver')">Driver</button> <!-- this code is within http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html -->
       <button onclick="showSection('Vendor')">Vendor</button> <!-- this code is within http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html -->
     </div>
@@ -531,7 +540,7 @@
 </div>
 
 <!-- Role Info Popup -->
-<div id="roleInfoPopup" class="modal" style="display:none; flex-direction:column;">
+<div id="roleInfoPopup" class="modal" style="display:none;">
   <div class="modal-box" style="width:90%; max-height:90%; overflow-y:auto;">
     <h3>Role Information</h3>
     <div id="roleInfoContent" style="margin-bottom:20px;">
@@ -871,21 +880,21 @@
   function closeRoleInfo() {
     document.getElementById('roleInfoPopup').style.display='none';
   }
-
   function sendNotification() {
     const email=window.currentRoleEmail;
     if(email){
       sendEmail(email, 'Notification from Admin', 'You have a new notification from admin.');
     }
   }
-// Inside admin_dashboard.html script
-const locationData = localStorage.getItem('userLocation');
-if (locationData) {
-  const { latitude, longitude, address } = JSON.parse(locationData);
-  document.getElementById('locationDisplay').innerText = `Latitude: ${latitude}, Longitude: ${longitude}, Address: ${address}`;
-} else {
-  document.getElementById('locationDisplay').innerText = 'No location data captured yet.';
-}
+
+  // Inside admin_dashboard.html script
+  const locationData = localStorage.getItem('userLocation');
+  if (locationData) {
+    const { latitude, longitude, address } = JSON.parse(locationData);
+    document.getElementById('locationDisplay').innerText = `Latitude: ${latitude}, Longitude: ${longitude}, Address: ${address}`;
+  } else {
+    document.getElementById('locationDisplay').innerText = 'No location data captured yet.';
+  }
 </script>
 </body>
 </html>
