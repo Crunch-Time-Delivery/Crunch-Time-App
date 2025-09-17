@@ -11,7 +11,7 @@
     padding: 0;
     background-color: #f4f4f4;
   }
-  /* Centered welcome container styles */
+  /* Centered container styles for welcome page */
   .centered-container {
     display: flex;
     flex-direction: column;
@@ -21,7 +21,7 @@
     margin-top: 50px;
     padding: 20px;
   }
-  /* Header style */
+  /* Header styles */
   .header {
     display: flex;
     justify-content: space-between;
@@ -78,7 +78,7 @@
     display: block;
   }
 
-  /* Main content styling */
+  /* Main container */
   .container {
     max-width: 900px;
     margin: 20px auto;
@@ -88,6 +88,7 @@
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
   }
 
+  /* Heading styles */
   h1 {
     text-align: center;
     color: #333;
@@ -125,29 +126,7 @@
     display: none;
   }
 
-  /* Order details styles */
-  .order-details {
-    margin-top: 20px;
-  }
-  .order-details p {
-    margin: 8px 0;
-  }
-
-  /* Order items table styles */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-  }
-  th {
-    background: #f2f2f2;
-  }
-
-  /* OTP Modal Styles */
+  /* OTP Modal Styles - centered all elements */
   .modal {
     display: none; 
     position: fixed; 
@@ -166,22 +145,83 @@
     border-radius: 8px;
     width: 300px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
-  .modal input {
-    width: 80%;
-    padding: 8px;
+
+  /* OTP Input boxes styled with borders and red outline on focus/filled */
+  #otpInput {
+    width: 150px;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    letter-spacing: 10px;
+    text-align: center;
+  }
+  #otpInput:focus {
+    border-color: #333;
+  }
+  /* Add style for individual boxes if needed (here just one input) */
+
+  /* "Request again" text style (red) */
+  #resendOtpBtn {
+    background: none;
+    border: none;
+    color: red;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  /* "Request again" text paragraph */
+  .resend-text {
     margin-top: 10px;
   }
-  .modal button {
-    margin-top: 15px;
-    padding: 8px 12px;
+
+  /* Login Modal - centered all elements */
+  #loginModal {
+    display: none; 
+    position: fixed; 
+    z-index: 2000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.4);
   }
+  #loginModal .modal-content {
+    background-color: #fff;
+    margin: 15% auto; 
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  /* Make "Welcome" text gray */
+  #loginModal h2 {
+    color: gray;
+  }
+
+  /* Style the "Register here" link to be red and underline */
+  #registerHere {
+    color: red;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
 </style>
 </head>
 <body>
 
-<!-- Welcome Content (Centered) -->
-<div id="welcomeContent" class="centered-container" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; margin-top:50px;">
+<!-- Welcome Content (Initially visible) -->
+<div id="welcomeContent" class="centered-container" style="display:flex;">
    <div class="modal-content" style="max-width: 300px; padding:20px; text-align:center; display:flex; flex-direction:column; align-items:center;">
     <img src="img/screenshot (250).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
     <h2 style="color:gray;">Welcome</h2>
@@ -215,30 +255,29 @@
 <!-- OTP Modal -->
 <div id="otpModal" class="modal">
   <div class="modal-content">
-    <h3>Verity Account</h3>
-    <p>Please enter the OTP number  sent to  your email to reset your password</p>
-    <p>Enter  your  OTP code here</p>
+    <h3>Verify Account</h3>
+    <p>Please enter the OTP number sent to your email to reset your password</p>
+    <p>Enter your OTP code here</p>
     <input type="text" id="otpInput" maxlength="4" placeholder="Enter OTP" />
     <div style="margin-top:10px;">
-      <p>Didn’t recieve code? Request again</p>
+      <p>Didn’t receive code? <button id="resendOtpBtn">Request again</button></p>
+    </div>
+    <div style="margin-top:10px;">
       <button id="verifyOtpBtn">Confirm</button>
-      <button id="resendOtpBtn">Resend OTP</button>
     </div>
   </div>
 </div>
 
 <!-- Login Modal -->
-<div id="loginModal" class="modal">
+<div id="loginModal">
   <div class="modal-content">
-    <div class="modal-content" style="max-width: 300px; padding:20px; text-align:center; display:flex; flex-direction:column; align-items:center;">
-    <img src="img/screenshot (251).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
-    <h2 style="color:gray;">Welcome</h2>
+    <h2>Welcome</h2>
     <h3>Login</h3>
     <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
     <input type="email" id="loginEmail" placeholder="Email" />
     <input type="password" id="loginPassword" placeholder="Password" />
     <button id="loginBtn">Login</button>
-    <p>Dont have an account? Register here</p>
+    <p>Don't have an account? <span id="registerHere">Register here</span></p>
     <p style="margin-top:10px;"><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>
   </div>
 </div>
@@ -262,7 +301,6 @@
 </div>
 
 <script>
-  // Variables
   let driverRegistered = false;
   let driverApproved = false;
   let driverData = {}; 
@@ -275,21 +313,21 @@
 
   // Helper to toggle modal
   function showModal(id) {
-    document.getElementById(id).style.display = 'block';
+    document.getElementById(id).style.display = 'flex';
   }
   function hideModal(id) {
     document.getElementById(id).style.display = 'none';
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Setup menu toggle
+    // Toggle menu
     const menuContainer = document.getElementById('menuContainer');
     const menuButton = document.getElementById('menuButton');
     menuButton.addEventListener('click', () => {
       menuContainer.classList.toggle('show');
     });
     document.addEventListener('click', (e) => {
-      if (!menuContainer.contains(e.target)) {
+      if (!menuContainer.contains(e.target) && !e.target.closest('#menuButton')) {
         menuContainer.classList.remove('show');
       }
     });
@@ -305,8 +343,8 @@
       loadDriverAccount();
     });
     document.getElementById('logoutLink').addEventListener('click', () => {
-      if (driverData.email) localStorage.setItem('driverEmail', driverData.email);
-      if (driverData.password) localStorage.setItem('driverPassword', driverData.password);
+      localStorage.removeItem('driverEmail');
+      localStorage.removeItem('driverPassword');
       driverRegistered = false;
       driverApproved = false;
       driverData = {};
@@ -314,9 +352,8 @@
       loadLoginPage();
     });
 
-    // Forgot password link
-    document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
-      e.preventDefault();
+    // Forgot password
+    document.getElementById('forgotPasswordLink').addEventListener('click', () => {
       showModal('forgotPasswordModal');
     });
     document.getElementById('cancelResetBtn').addEventListener('click', () => {
@@ -332,19 +369,15 @@
       hideModal('forgotPasswordModal');
     });
 
-    // Check for existing credentials
+    // Initial load
     if (!driverRegistered) {
       loadLoginPage();
-    } else {
-      loadLoginPage();
     }
-
-    // Show welcome modal and content on load
   });
 
   // Load login page
   function loadLoginPage() {
-    currentPage = 'login';
+    currentPage='login';
     const content = document.getElementById('contentArea');
     const savedEmail = localStorage.getItem('driverEmail') || '';
     const savedPassword = localStorage.getItem('driverPassword') || '';
@@ -354,14 +387,11 @@
       <button id="openLoginModal" class="action-btn">Login</button>
     `;
     document.getElementById('openLoginModal').addEventListener('click', () => {
-      showModal('loginModal');
-      document.getElementById('loginEmail').value = savedEmail;
-      document.getElementById('loginPassword').value = savedPassword;
+      showLoginModal(savedEmail, savedPassword);
     });
   }
 
-  // Show login modal
-  function showLoginModal(email = '', password = '') {
+  function showLoginModal(email='', password='') {
     showModal('loginModal');
     document.getElementById('loginEmail').value = email;
     document.getElementById('loginPassword').value = password;
@@ -371,28 +401,27 @@
     hideModal('loginModal');
   }
 
-  // Login button
-  document.getElementById('loginBtn').addEventListener('click', () => {
-    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-    const password = document.getElementById('loginPassword').value.trim();
+  // Login button handler
+document.getElementById('loginBtn').addEventListener('click', () => {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value.trim();
 
-    if (driverData.email && email === driverData.email.toLowerCase()) {
-      // Save credentials
-      localStorage.setItem('driverEmail', email);
-      localStorage.setItem('driverPassword', password);
-      if (driverApproved) {
-        alert('Login successful! Accessing order view.');
-        loadOrderView();
-      } else {
-        alert('Waiting for admin approval...');
-        simulateAdminApproval();
-        showWaitingApproval();
-        hideLoginModal();
-      }
+  if (driverData.email && email === driverData.email.toLowerCase()) {
+    localStorage.setItem('driverEmail', email);
+    localStorage.setItem('driverPassword', password);
+    if (driverApproved) {
+      alert('Login successful! Accessing order view.');
+      loadOrderView();
     } else {
-      alert('Invalid email.');
+      alert('Waiting for admin approval...');
+      simulateAdminApproval();
+      showWaitingApproval();
+      hideModal('loginModal');
     }
-  });
+  } else {
+    alert('Invalid email.');
+  }
+});
 
   function simulateAdminApproval() {
     if (!adminApprovalTimeout) {
@@ -402,36 +431,32 @@
       }, 3000);
     }
   }
-
   function clearAdminApprovalTimeout() {
     if (adminApprovalTimeout) {
       clearTimeout(adminApprovalTimeout);
       adminApprovalTimeout = null;
     }
   }
-
   function showWaitingApproval() {
     document.getElementById('contentArea').innerHTML = `
       <h2 style="text-align:center;">Waiting for admin approval...</h2>
     `;
   }
 
-  // Registration
-  function loadNewDriverPage() {
-    currentPage = 'newDriver';
+  // Register new driver
+function loadNewDriverPage() {
+  currentPage='newDriver';
 
-    const content = document.getElementById('contentArea');
-    content.innerHTML = `
-
-      <!-- Registration Form -->
-      <form id="driverForm" style="width:100%; max-width:400px; margin-top:20px; display:flex; flex-direction:column; gap:10px;">
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
-      <div class="modal-content" style="max-width: 300px; padding:20px; display:flex; flex-direction:column; align-items:center;">
-        <img src="img/screenshot (251).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
-        <h2 style="color:gray;">Create Account</h2>
-        <p style="margin-top:10px;">Welcome to CrunchTime halaal food delivery. Signup to create a free account to start ordering</p>
-      </div>
-        
+  const content = document.getElementById('contentArea');
+  content.innerHTML = `
+    <!-- Registration Form -->
+    <form id="driverForm" style="width:100%; max-width:400px; margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
+        <div class="modal-content" style="max-width: 300px; padding:20px; display:flex; flex-direction:column; align-items:center;">
+          <img src="img/screenshot (251).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+          <h2 style="color:gray;">Create Account</h2>
+          <p style="margin-top:10px;">Welcome to CrunchTime halaal food delivery. Signup to create a free account to start ordering</p>
+        </div>
         <label>Upload Selfie (Driver Photo):</label>
         <input type="file" id="driverPhoto" accept="image/*" required />
 
@@ -495,259 +520,417 @@
         <p style="margin:0;">Already have an account? <a href="#" id="loginLink" style="color:red; font-weight:bold; text-decoration:underline;">Login</a></p>
       </div>
     </div>
-    `;
+  `;
 
-    // Event Listeners
-    document.getElementById('bankName').addEventListener('change', () => {
-      const val = document.getElementById('bankName').value;
-      document.getElementById('otherBankDiv').className = (val === 'Other') ? '' : 'hidden';
-    });
-
-    document.getElementById('driverForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      // Validate checkbox
-      if (!document.getElementById('termsCheckbox').checked) {
-        alert('You must agree to the Terms and Conditions and Privacy Policy.');
-        return;
-      }
-      const driverPhotoFile = document.getElementById('driverPhoto').files[0];
-      const driverLicenseFile = document.getElementById('driverLicense').files[0];
-      const carPhotoFile = document.getElementById('carPhoto').files[0];
-      const phoneNumber = document.getElementById('driverPhone').value.trim();
-
-      if (!driverPhotoFile || !driverLicenseFile || !carPhotoFile) {
-        alert('Please upload all required images.');
-        return;
-      }
-
-      driverData = {
-        name: document.getElementById('driverName').value,
-        email: document.getElementById('driverEmail').value,
-        idNumber: document.getElementById('driverID').value,
-        phoneNumber: phoneNumber,
-        bankDetails: document.getElementById('bankDetails').value,
-        bankName: document.getElementById('bankName').value,
-        otherBank: document.getElementById('otherBank').value,
-        carColor: document.getElementById('carColor').value,
-        carType: document.getElementById('carType').value,
-        carRegNumber: document.getElementById('carRegNumber').value,
-        driverPhoto: URL.createObjectURL(driverPhotoFile),
-        driverLicense: URL.createObjectURL(driverLicenseFile),
-        carPhoto: URL.createObjectURL(carPhotoFile),
-        approved: false,
-        email: document.getElementById('driverEmail').value,
-        password: 'password123' // For demo purposes
-      };
-      driverRegistered = true;
-
-      generateAndSendOtp();
-      showOtpModal();
-    });
-
-    document.getElementById('loginLink').addEventListener('click', (e) => {
-      e.preventDefault();
-      loadLoginPage();
-    });
-  }
-
-  function generateAndSendOtp() {
-    generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    alert(`OTP sent to Phone: ${driverData.phoneNumber} and Email: ${driverData.email}. (OTP: ${generatedOtp})`);
-  }
-
-  function showOtpModal() {
-    document.getElementById('otpModal').style.display = 'block';
-    document.getElementById('otpInput').value = '';
-    otpVerified = false;
-  }
-
-  function hideOtpModal() {
-    document.getElementById('otpModal').style.display = 'none';
-  }
-
-  document.getElementById('verifyOtpBtn').addEventListener('click', () => {
-    const enteredOtp = document.getElementById('otpInput').value.trim();
-    if (enteredOtp === generatedOtp) {
-      otpVerified = true;
-      alert('OTP verified! Awaiting admin approval...');
-      hideModal('otpModal');
-      simulateAdminApproval();
-    } else {
-      alert('Incorrect OTP. Please try again.');
-    }
+  // Event Listeners for registration form
+  document.getElementById('bankName').addEventListener('change', () => {
+    document.getElementById('otherBankDiv').className = (document.getElementById('bankName').value==='Other') ? '' : 'hidden';
   });
 
-  document.getElementById('resendOtpBtn').addEventListener('click', () => {
+  document.getElementById('driverForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!document.getElementById('termsCheckbox').checked) {
+      alert('You must agree to the Terms and Conditions and Privacy Policy.');
+      return;
+    }
+    const driverPhotoFile = document.getElementById('driverPhoto').files[0];
+    const driverLicenseFile = document.getElementById('driverLicense').files[0];
+    const carPhotoFile = document.getElementById('carPhoto').files[0];
+    const phoneNumber = document.getElementById('driverPhone').value.trim();
+
+    if (!driverPhotoFile || !driverLicenseFile || !carPhotoFile) {
+      alert('Please upload all required images.');
+      return;
+    }
+
+    driverData = {
+      name: document.getElementById('driverName').value,
+      email: document.getElementById('driverEmail').value,
+      idNumber: document.getElementById('driverID').value,
+      phoneNumber: phoneNumber,
+      bankDetails: document.getElementById('bankDetails').value,
+      bankName: document.getElementById('bankName').value,
+      otherBank: document.getElementById('otherBank').value,
+      carColor: document.getElementById('carColor').value,
+      carType: document.getElementById('carType').value,
+      carRegNumber: document.getElementById('carRegNumber').value,
+      driverPhoto: URL.createObjectURL(driverPhotoFile),
+      driverLicense: URL.createObjectURL(driverLicenseFile),
+      carPhoto: URL.createObjectURL(carPhotoFile),
+      approved: false,
+      email: document.getElementById('driverEmail').value,
+      password: 'password123' // for demo
+    };
+    driverRegistered = true;
     generateAndSendOtp();
-    alert('OTP resent.');
+    showOtpModal();
   });
 
-  function loadOrderView() {
-    if (!driverRegistered || !driverApproved) {
-      alert('You are not approved yet or not registered.');
-      loadLoginPage();
-      return;
-    }
-    currentPage = 'orderView';
+  document.getElementById('loginLink').addEventListener('click', () => {
+    loadLoginPage();
+  });
+}
 
-    const content = document.getElementById('contentArea');
-    content.innerHTML = `
-      <h1>Order Details</h1>
-      <div class="order-details">
-        <p><strong>Order ID:</strong> #12345</p>
-        <p><strong>Customer Name:</strong> John Doe</p>
-        <p><strong>Order Date:</strong> August 15, 2025</p>
-        <p><strong>Status:</strong> Processing</p>
-        <p><strong>Order within your area:</strong> Yes (simulated GPS location)</p>
-        <p><strong>Order Address:</strong> 123 Main St, Cape Town</p>
-        <p><strong>Total Amount:</strong> R99.99</p>
-      </div>
-      <div class="order-items">
-        <h2>Order Items</h2>
-        <table>
-          <thead>
-            <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Product A</td><td>2</td><td>R29.99</td><td>R59.98</td></tr>
-            <tr><td>Product B</td><td>1</td><td>R40.01</td><td>R40.01</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <a href="#" class="back-button" id="backToMain">Back</a>
-    `;
-    document.getElementById('backToMain').addEventListener('click', (e) => {
-      e.preventDefault();
-      loadAppropriatePage();
-    });
+// Generate OTP
+function generateAndSendOtp() {
+  generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  alert(`OTP sent to Phone: ${driverData.phoneNumber} and Email: ${driverData.email}. (OTP: ${generatedOtp})`);
+}
+
+// Show OTP modal
+function showOtpModal() {
+  document.getElementById('otpModal').style.display = 'flex';
+  document.getElementById('otpInput').value = '';
+  otpVerified = false;
+}
+
+// Hide OTP modal
+function hideOtpModal() {
+  document.getElementById('otpModal').style.display = 'none';
+}
+
+// Verify OTP
+document.getElementById('verifyOtpBtn').addEventListener('click', () => {
+  const enteredOtp = document.getElementById('otpInput').value.trim();
+  if (enteredOtp === generatedOtp) {
+    otpVerified = true;
+    alert('OTP verified! Awaiting admin approval...');
+    hideModal('otpModal');
+    simulateAdminApproval();
+  } else {
+    alert('Incorrect OTP. Please try again.');
   }
+});
 
-  function loadDriverAccount() {
-    if (!driverRegistered) {
-      alert('Please register first.');
-      loadNewDriverPage();
-      return;
-    }
-    currentPage='driverAccount';
+// Resend OTP
+document.getElementById('resendOtpBtn').addEventListener('click', () => {
+  generateAndSendOtp();
+  alert('OTP resent.');
+});
 
-    const content = document.getElementById('contentArea');
-    // Show editable profile
-    content.innerHTML = `
-      <h1>Driver Profile</h1>
-      <form id="driverProfileForm">
-        <label>Selfie:</label>
-        <input type="file" accept="image/*" id="profilePhoto" />
-        ${driverData.driverPhoto ? `<img src="${driverData.driverPhoto}" width="100" />` : ''}
-        <label>Name:</label>
-        <input type="text" id="profileName" value="${driverData.name}" />
-        <label>Email:</label>
-        <input type="email" id="profileEmail" value="${driverData.email}" />
-        <label>ID Number:</label>
-        <input type="text" id="profileID" value="${driverData.idNumber}" />
-        <label>Bank Details:</label>
-        <input type="text" id="profileBankDetails" value="${driverData.bankDetails}" />
-        <label>Bank Name:</label>
-        <select id="profileBankName">
-          <option value="FNB" ${driverData.bankName==='FNB'?'selected':''}>FNB</option>
-          <option value="Standard Bank" ${driverData.bankName==='Standard Bank'?'selected':''}>Standard Bank</option>
-          <option value="Capitec" ${driverData.bankName==='Capitec'?'selected':''}>Capitec</option>
-          <option value="NedBank" ${driverData.bankName==='NedBank'?'selected':''}>NedBank</option>
-          <option value="Other" ${driverData.bankName==='Other'?'selected':''}>Other</option>
-        </select>
-        <div id="editOtherBankDiv" class="${driverData.bankName==='Other'?'':'hidden'}">
-          <label>Specify Bank:</label>
-          <input type="text" id="editOtherBank" value="${driverData.otherBank || ''}" />
-        </div>
-        <label>Driver License:</label>
-        <input type="file" accept="image/*" id="profileLicense" />
-        <label>Car Color:</label>
-        <input type="text" id="profileCarColor" value="${driverData.carColor}" />
-        <label>Car Type:</label>
-        <input type="text" id="profileCarType" value="${driverData.carType}" />
-        <label>Car Photo:</label>
-        <input type="file" accept="image/*" id="profileCarPhoto" />
-        <label>Car Registration Number:</label>
-        <input type="text" id="profileCarReg" value="${driverData.carRegNumber}" />
-        <button type="submit" class="action-btn">Save</button>
-      </form>
-      <button id="terminateBtn" style="margin-top:10px; background-color:red;">Terminate Driver</button>
-      <a href="#" class="back-button" id="backToMain">Back</a>
-    `;
-    document.getElementById('profileBankName').addEventListener('change', () => {
-      document.getElementById('editOtherBankDiv').className = (document.getElementById('profileBankName').value==='Other')?'':'hidden';
-    });
-    document.getElementById('driverProfileForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      driverData.name = document.getElementById('profileName').value;
-      driverData.email = document.getElementById('profileEmail').value;
-      driverData.idNumber = document.getElementById('profileID').value;
-      driverData.bankDetails = document.getElementById('profileBankDetails').value;
-      driverData.bankName = document.getElementById('profileBankName').value;
-      driverData.carColor = document.getElementById('profileCarColor').value;
-      driverData.carType = document.getElementById('profileCarType').value;
-      driverData.carRegNumber = document.getElementById('profileCarReg').value;
-      alert('Profile saved and sent to admin.');
-    });
-    document.getElementById('terminateBtn').addEventListener('click', () => {
-      if (confirm('Are you sure you want to terminate your driver account? Admin will be notified.')) {
-        alert('Termination request sent to admin.');
-        driverRegistered=false;
-        driverApproved=false;
-        driverData={};
-        loadNewDriverPage();
-      }
-    });
+// Load order view
+function loadOrderView() {
+  if (!driverRegistered || !driverApproved) {
+    alert('You are not approved yet or not registered.');
+    loadLoginPage();
+    return;
   }
+  currentPage='orderView';
+  document.getElementById('contentArea').innerHTML = `
+    <h1>Order Details</h1>
+    <div class="order-details">
+      <p><strong>Order ID:</strong> #12345</p>
+      <p><strong>Customer Name:</strong> John Doe</p>
+      <p><strong>Order Date:</strong> August 15, 2025</p>
+      <p><strong>Status:</strong> Processing</p>
+      <p><strong>Order within your area:</strong> Yes (simulated GPS location)</p>
+      <p><strong>Order Address:</strong> 123 Main St, Cape Town</p>
+      <p><strong>Total Amount:</strong> R99.99</p>
+    </div>
+    <div class="order-items">
+      <h2>Order Items</h2>
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Product A</td><td>2</td><td>R29.99</td><td>R59.98</td></tr>
+          <tr><td>Product B</td><td>1</td><td>R40.01</td><td>R40.01</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <a href="#" class="back-button" id="backToMain">Back</a>
+  `;
+  document.getElementById('backToMain').addEventListener('click', (e) => {
+    loadAppropriatePage();
+  });
+}
 
-  function loadAppropriatePage() {
-    if (!driverRegistered) {
-      loadNewDriverPage();
-    } else if (driverApproved) {
-      loadOrderView();
-    } else {
-      showWaitingApproval();
-    }
-  }
-
-  // Example fetch request to localhost API of main.jsx
-  fetch('http://localhost:3000/api/your-endpoint_main.jsx_driver_app')
-    .then(response => response.json())
-    .then(data => {
-      console.log('Data from your backend:', data);
-      // You can manipulate the DOM here based on response
-      document.getElementById('contentArea').innerHTML += '<p>Data loaded from backend!</p>';
-    }) 
-    .catch(error => {
-      console.error('Error fetching data:', error);
-    });
-
-  // Button event handlers outside DOMContentLoaded
-  document.getElementById('createAccountBtn').addEventListener('click', () => {
+// Load driver account
+function loadDriverAccount() {
+  if (!driverRegistered) {
+    alert('Please register first.');
     loadNewDriverPage();
-  });
-  document.getElementById('loginBtnCenter').addEventListener('click', () => {
-    showModal('loginModal');
-  });
-  document.getElementById('browserMenuBtn').addEventListener('click', () => {
-    window.location.href = 'your-dummy.html'; // replace with your dummy page URL
-  });
+    return;
+  }
+  currentPage='driverAccount';
 
-  // OTP verification handlers
-  document.getElementById('verifyOtpBtn').addEventListener('click', () => {
-    const enteredOtp = document.getElementById('otpInput').value.trim();
-    if (enteredOtp === generatedOtp) {
-      otpVerified = true;
-      alert('OTP verified! Awaiting admin approval...');
-      hideModal('otpModal');
-      simulateAdminApproval();
-    } else {
-      alert('Incorrect OTP. Please try again.');
+  document.getElementById('contentArea').innerHTML = `
+    <h1>Driver Profile</h1>
+    <form id="driverProfileForm">
+      <label>Selfie:</label>
+      <input type="file" accept="image/*" id="profilePhoto" />
+      ${driverData.driverPhoto ? `<img src="${driverData.driverPhoto}" width="100" />` : ''}
+      <label>Name:</label>
+      <input type="text" id="profileName" value="${driverData.name}" />
+      <label>Email:</label>
+      <input type="email" id="profileEmail" value="${driverData.email}" />
+      <label>ID Number:</label>
+      <input type="text" id="profileID" value="${driverData.idNumber}" />
+      <label>Bank Details:</label>
+      <input type="text" id="profileBankDetails" value="${driverData.bankDetails}" />
+      <label>Bank Name:</label>
+      <select id="profileBankName">
+        <option value="FNB" ${driverData.bankName==='FNB'?'selected':''}>FNB</option>
+        <option value="Standard Bank" ${driverData.bankName==='Standard Bank'?'selected':''}>Standard Bank</option>
+        <option value="Capitec" ${driverData.bankName==='Capitec'?'selected':''}>Capitec</option>
+        <option value="NedBank" ${driverData.bankName==='NedBank'?'selected':''}>NedBank</option>
+        <option value="Other" ${driverData.bankName==='Other'?'selected':''}>Other</option>
+      </select>
+      <div id="editOtherBankDiv" class="${driverData.bankName==='Other'?'':'hidden'}">
+        <label>Specify Bank:</label>
+        <input type="text" id="editOtherBank" value="${driverData.otherBank || ''}" />
+      </div>
+      <label>Driver License:</label>
+      <input type="file" accept="image/*" id="profileLicense" />
+      <label>Car Color:</label>
+      <input type="text" id="profileCarColor" value="${driverData.carColor}" />
+      <label>Car Type:</label>
+      <input type="text" id="profileCarType" value="${driverData.carType}" />
+      <label>Car Photo:</label>
+      <input type="file" accept="image/*" id="profileCarPhoto" />
+      <label>Car Registration Number:</label>
+      <input type="text" id="profileCarReg" value="${driverData.carRegNumber}" />
+      <button type="submit" class="action-btn">Save</button>
+    </form>
+    <button id="terminateBtn" style="margin-top:10px; background-color:red;">Terminate Driver</button>
+    <a href="#" class="back-button" id="backToMain">Back</a>
+  `;
+  document.getElementById('profileBankName').addEventListener('change', () => {
+    document.getElementById('editOtherBankDiv').className = (document.getElementById('profileBankName').value==='Other')?'':'hidden';
+  });
+  document.getElementById('driverProfileForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    driverData.name = document.getElementById('profileName').value;
+    driverData.email = document.getElementById('profileEmail').value;
+    driverData.idNumber = document.getElementById('profileID').value;
+    driverData.bankDetails = document.getElementById('profileBankDetails').value;
+    driverData.bankName = document.getElementById('profileBankName').value;
+    driverData.carColor = document.getElementById('profileCarColor').value;
+    driverData.carType = document.getElementById('profileCarType').value;
+    driverData.carRegNumber = document.getElementById('profileCarReg').value;
+    alert('Profile saved and sent to admin.');
+  });
+  document.getElementById('terminateBtn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to terminate your driver account? Admin will be notified.')) {
+      alert('Termination request sent to admin.');
+      driverRegistered=false;
+      driverApproved=false;
+      driverData={};
+      loadNewDriverPage();
     }
   });
-  document.getElementById('resendOtpBtn').addEventListener('click', () => {
-    generateAndSendOtp();
-    alert('OTP resent.');
+}
+
+function loadAppropriatePage() {
+  if (!driverRegistered) {
+    loadNewDriverPage();
+  } else if (driverApproved) {
+    loadOrderView();
+  } else {
+    showWaitingApproval();
+  }
+}
+
+// Dummy fetch call
+fetch('http://localhost:3000/api/your-endpoint_main.jsx_driver_app')
+  .then(response => response.json())
+  .then(data => {
+    console.log('Data from your backend:', data);
+    document.getElementById('contentArea').innerHTML += '<p>Data loaded from backend!</p>';
+  }) 
+  .catch(error => {
+    console.error('Error fetching data:', error);
   });
+
+// Button event handlers outside DOMContentLoaded
+document.getElementById('createAccountBtn').addEventListener('click', () => {
+  loadNewDriverPage();
+});
+document.getElementById('loginBtnCenter').addEventListener('click', () => {
+  showModal('loginModal');
+});
+document.getElementById('browserMenuBtn').addEventListener('click', () => {
+  window.location.href='your-dummy.html'; // Replace with your dummy page URL
+});
+
+// OTP verification handlers
+document.getElementById('verifyOtpBtn').addEventListener('click', () => {
+  const enteredOtp = document.getElementById('otpInput').value.trim();
+  if (enteredOtp === generatedOtp) {
+    otpVerified=true;
+    alert('OTP verified! Awaiting admin approval...');
+    hideModal('otpModal');
+    simulateAdminApproval();
+  } else {
+    alert('Incorrect OTP. Please try again.');
+  }
+});
+document.getElementById('resendOtpBtn').addEventListener('click', () => {
+  generateAndSendOtp();
+  alert('OTP resent.');
+});
+
+// Register link in login modal
+document.getElementById('registerHere').addEventListener('click', () => {
+  loadNewDriverPage();
+});
+
+// Functions
+function generateAndSendOtp() {
+  generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  alert(`OTP sent to Phone: ${driverData.phoneNumber} and Email: ${driverData.email}. (OTP: ${generatedOtp})`);
+}
+
+function showOtpModal() {
+  document.getElementById('otpModal').style.display='flex';
+  document.getElementById('otpInput').value='';
+  otpVerified=false;
+}
+
+function hideModal(id) {
+  document.getElementById(id).style.display='none';
+}
+function showModal(id) {
+  document.getElementById(id).style.display='flex';
+}
+
+function simulateAdminApproval() {
+  if (!adminApprovalTimeout) {
+    adminApprovalTimeout=setTimeout(() => {
+      driverApproved=true;
+      alert('Admin approved your registration! You can now access order view.');
+    }, 3000);
+  }
+}
+function clearAdminApprovalTimeout() {
+  if (adminApprovalTimeout) {
+    clearTimeout(adminApprovalTimeout);
+    adminApprovalTimeout=null;
+  }
+}
+function loadOrderView() {
+  if (!driverRegistered || !driverApproved) {
+    alert('You are not approved yet or not registered.');
+    loadLoginPage();
+    return;
+  }
+  currentPage='orderView';
+  document.getElementById('contentArea').innerHTML=`
+    <h1>Order Details</h1>
+    <div class="order-details">
+      <p><strong>Order ID:</strong> #12345</p>
+      <p><strong>Customer Name:</strong> John Doe</p>
+      <p><strong>Order Date:</strong> August 15, 2025</p>
+      <p><strong>Status:</strong> Processing</p>
+      <p><strong>Order within your area:</strong> Yes (simulated GPS location)</p>
+      <p><strong>Order Address:</strong> 123 Main St, Cape Town</p>
+      <p><strong>Total Amount:</strong> R99.99</p>
+    </div>
+    <div class="order-items">
+      <h2>Order Items</h2>
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Product A</td><td>2</td><td>R29.99</td><td>R59.98</td></tr>
+          <tr><td>Product B</td><td>1</td><td>R40.01</td><td>R40.01</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <a href="#" id="backToMain">Back</a>
+  `;
+  document.getElementById('backToMain').addEventListener('click', (e) => {
+    e.preventDefault();
+    loadAppropriatePage();
+  });
+}
+
+function loadDriverAccount() {
+  if (!driverRegistered) {
+    alert('Please register first.');
+    loadNewDriverPage();
+    return;
+  }
+  currentPage='driverAccount';
+
+  document.getElementById('contentArea').innerHTML= `
+    <h1>Driver Profile</h1>
+    <form id="driverProfileForm">
+      <label>Selfie:</label>
+      <input type="file" accept="image/*" id="profilePhoto" />
+      ${driverData.driverPhoto ? `<img src="${driverData.driverPhoto}" width="100" />` : ''}
+      <label>Name:</label>
+      <input type="text" id="profileName" value="${driverData.name}" />
+      <label>Email:</label>
+      <input type="email" id="profileEmail" value="${driverData.email}" />
+      <label>ID Number:</label>
+      <input type="text" id="profileID" value="${driverData.idNumber}" />
+      <label>Bank Details:</label>
+      <input type="text" id="profileBankDetails" value="${driverData.bankDetails}" />
+      <label>Bank Name:</label>
+      <select id="profileBankName">
+        <option value="FNB" ${driverData.bankName==='FNB'?'selected':''}>FNB</option>
+        <option value="Standard Bank" ${driverData.bankName==='Standard Bank'?'selected':''}>Standard Bank</option>
+        <option value="Capitec" ${driverData.bankName==='Capitec'?'selected':''}>Capitec</option>
+        <option value="NedBank" ${driverData.bankName==='NedBank'?'selected':''}>NedBank</option>
+        <option value="Other" ${driverData.bankName==='Other'?'selected':''}>Other</option>
+      </select>
+      <div id="editOtherBankDiv" class="${driverData.bankName==='Other'?'':'hidden'}">
+        <label>Specify Bank:</label>
+        <input type="text" id="editOtherBank" value="${driverData.otherBank || ''}" />
+      </div>
+      <label>Driver License:</label>
+      <input type="file" accept="image/*" id="profileLicense" />
+      <label>Car Color:</label>
+      <input type="text" id="profileCarColor" value="${driverData.carColor}" />
+      <label>Car Type:</label>
+      <input type="text" id="profileCarType" value="${driverData.carType}" />
+      <label>Car Photo:</label>
+      <input type="file" accept="image/*" id="profileCarPhoto" />
+      <label>Car Registration Number:</label>
+      <input type="text" id="profileCarReg" value="${driverData.carRegNumber}" />
+      <button type="submit" class="action-btn">Save</button>
+    </form>
+    <button id="terminateBtn" style="margin-top:10px; background-color:red;">Terminate Driver</button>
+    <a href="#" id="backToMain">Back</a>
+  `;
+  document.getElementById('profileBankName').addEventListener('change', () => {
+    document.getElementById('editOtherBankDiv').className = (document.getElementById('profileBankName').value==='Other')?'':'hidden';
+  });
+  document.getElementById('driverProfileForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    driverData.name = document.getElementById('profileName').value;
+    driverData.email = document.getElementById('profileEmail').value;
+    driverData.idNumber = document.getElementById('profileID').value;
+    driverData.bankDetails = document.getElementById('profileBankDetails').value;
+    driverData.bankName = document.getElementById('profileBankName').value;
+    driverData.carColor = document.getElementById('profileCarColor').value;
+    driverData.carType = document.getElementById('profileCarType').value;
+    driverData.carRegNumber = document.getElementById('profileCarReg').value;
+    alert('Profile saved and sent to admin.');
+  });
+  document.getElementById('terminateBtn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to terminate your driver account? Admin will be notified.')) {
+      alert('Termination request sent to admin.');
+      driverRegistered=false;
+      driverApproved=false;
+      driverData={};
+      loadNewDriverPage();
+    }
+  });
+}
+
+function loadAppropriatePage() {
+  if (!driverRegistered) {
+    loadNewDriverPage();
+  } else if (driverApproved) {
+    loadOrderView();
+  } else {
+    showWaitingApproval();
+  }
+}
 </script>
 </body>
 </html>

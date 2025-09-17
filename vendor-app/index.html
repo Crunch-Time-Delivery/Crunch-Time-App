@@ -107,7 +107,7 @@
 
 <!-- Welcome Overlay on page load -->
 <div id="welcomeOverlay">
-  <img src="img/screenshot (250).jpg" alt="Screenshot" />
+  <img src="img/screenshot (253).jpg" alt="Screenshot" />
   <h2>Welcome</h2>
   <p>Before enjoying CrunchTime deliveries</p>
   <p>Register now</p>
@@ -124,6 +124,8 @@
 <!-- Register Modal -->
 <div id="registerModal" class="modal" style="display:none;">
   <div class="modal-box">
+     <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+            <h2 style="color:gray;">Welcome</h2>
     <h3>Register New Vendor</h3>
     <input type="email" id="regEmail" placeholder="Invitation Email" />
     <input type="text" id="regName" placeholder="Full Name" />
@@ -135,19 +137,26 @@
 <!-- OTP Modal -->
 <div id="otpModal" class="modal" style="display:none;">
   <div class="modal-box">
-    <h3>Enter OTP</h3>
+      <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+     <h3>Verity Account</h3>
+    <p>Please enter the OTP number  sent to  your email to reset your password</p>
+    <p>Enter  your  OTP code here</p>
     <input id="otpInput" placeholder="OTP" />
-    <button style="width:100%; background:#f80202; color:#fff;" onclick="verifyOTP()">Verify OTP</button>
+    <p>Didn’t recieve code? Request again</p>
+    <button style="width:100%; background:#f80202; color:#fff;" onclick="verifyOTP()">Confirm</button>
   </div>
 </div>
 
 <!-- Login Modal -->
 <div id="loginModal" class="modal" style="display:none;">
   <div class="modal-box">
-    <h3>Vendor Login</h3>
+      <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+    <h3>Welcome</h3>
+    <p>For vendors Manage your orders in real time. </p>
     <input id="username" placeholder="Username" />
     <input id="password" placeholder="Password" type="password" />
     <button style="width:100%; background:#f40101; color:#fff;" onclick="verifyLogin()">Login</button>
+    <p>Dont have an account? Register here</p>
   </div>
 </div>
 
