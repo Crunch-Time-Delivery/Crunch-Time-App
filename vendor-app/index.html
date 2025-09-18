@@ -105,62 +105,6 @@
 </head>
 <body>
 
-<!-- Welcome Overlay on page load -->
-<div id="welcomeOverlay">
-  <img src="img/screenshot (253).jpg" alt="Screenshot" />
-  <h2>Welcome</h2>
-  <p>Before enjoying CrunchTime deliveries</p>
-  <p>Register now</p>
-  <div class="centered-buttons">
-    <button class="btn-create" onclick="handleCreateAccount()">Create account</button>
-    <button class="btn-login" onclick="handleLogin()">Login</button>
-    <button class="btn-browser" onclick="window.location.href='dummy.html';">Browser Menu</button>
-  </div>
-  <div id="termsText">
-    By logging in or registering, you have agreed to the Terms and Conditions and Privacy Policy.
-  </div>
-</div>
-
-<!-- Register Modal -->
-<div id="registerModal" class="modal" style="display:none;">
-  <div class="modal-box">
-     <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
-            <h2 style="color:gray;">Welcome</h2>
-    <h3>Register New Vendor</h3>
-    <input type="email" id="regEmail" placeholder="Invitation Email" />
-    <input type="text" id="regName" placeholder="Full Name" />
-    <input type="password" id="regPassword" placeholder="Password" />
-    <button style="width:100%; background:#fa0202; color:#fff;" onclick="startRegistration()">Create Account</button>
-  </div>
-</div>
-
-<!-- OTP Modal -->
-<div id="otpModal" class="modal" style="display:none;">
-  <div class="modal-box">
-      <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
-     <h3>Verify Account</h3>
-    <p>Please enter the OTP sent to your email to verify your account</p>
-    <p>Enter your OTP code here</p>
-    <input id="otpInput" placeholder="OTP" />
-    <p>Didn’t receive code? Request again</p>
-    <button style="width:100%; background:#f80202; color:#fff;" onclick="verifyOTP()">Confirm</button>
-  </div>
-</div>
-
-<!-- Login Modal -->
-<div id="loginModal" class="modal" style="display:none;">
-  <div class="modal-box">
-      <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
-    <h3>Welcome</h3>
-    <p>For vendors Manage your orders in real time. </p>
-    <label>Email Address</label>
-    <input id="username" placeholder="Username" />
-    <label>Password</label>
-    <input id="password" placeholder="Password" type="password" />
-    <button style="width:100%; background:#f40101; color:#fff;" onclick="verifyLogin()">Login</button>
-    <p>Don't have an account? Register here</p>
-  </div>
-</div>
 
 <!-- Header -->
 <div class="header">
