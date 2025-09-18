@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="rtl"> <!-- Set to right-to-left if needed -->
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -315,13 +315,19 @@ button {
    <label>Password</label>
     <input type="password" id="loginPassword" placeholder="Password" style="width:100%; padding:8px; margin-top:10px; border:1px solid #ccc; border-radius:4px;">
     <button style="margin-top:20px; background-color:red; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" onclick="submitLogin()">Login</button>
-  <p>Dont have an account? Register here</p>
+  <p>Don't have an account? <span style="color:red;">Register here</span></p>
   </div>
 </div>
 
 <!-- Your existing content goes here (header, filters, restaurant list, modals, scripts, etc.) -->
 
 <!-- Rest of your code remains unchanged, just keep the existing code below this point -->
+
+<!-- Example OTP to Menu page link -->
+<!-- You can place this in your OTP page or where appropriate -->
+<!--
+<a href="menu.html">Go to Menu</a>
+-->
 
 <!-- Modal for Restaurant Menu -->
 <div id="menuModal" class="modal">
@@ -879,6 +885,7 @@ function showFoodAndOrder() {
    Utility: Generate a random PIN
 ========================= */
 </script>
+
 <!-- Handle the page load for welcome modal and register credentials -->
 <script>
 // Variables to store registered user credentials (for demo purposes)

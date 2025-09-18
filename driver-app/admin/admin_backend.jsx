@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import './supabaseClient.js';
+import Superbase from './supabaseClient.js';
 import '.src/main.jsx';
 import '.src/app.jsx';
 import '.index.html';

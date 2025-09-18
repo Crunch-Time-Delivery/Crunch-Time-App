@@ -83,7 +83,7 @@
   }
   /* Specific overlay buttons */
   .btn-create {
-    background:#f60202; /* white text, red background */
+    background:#f60202; /* red background */
     color:#fff;
   }
   .btn-login {
@@ -112,8 +112,8 @@
   <p>Before enjoying CrunchTime deliveries</p>
   <p>Register now</p>
   <div class="centered-buttons">
-    <button class="btn-create" onclick="showRegistration(); document.getElementById('welcomeOverlay').style.display='none';">Create account</button>
-    <button class="btn-login" onclick="showLogin(); document.getElementById('welcomeOverlay').style.display='none';">Login</button>
+    <button class="btn-create" onclick="handleCreateAccount()">Create account</button>
+    <button class="btn-login" onclick="handleLogin()">Login</button>
     <button class="btn-browser" onclick="window.location.href='dummy.html';">Browser Menu</button>
   </div>
   <div id="termsText">
@@ -138,11 +138,11 @@
 <div id="otpModal" class="modal" style="display:none;">
   <div class="modal-box">
       <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
-     <h3>Verity Account</h3>
-    <p>Please enter the OTP number  sent to  your email to reset your password</p>
-    <p>Enter  your  OTP code here</p>
+     <h3>Verify Account</h3>
+    <p>Please enter the OTP sent to your email to verify your account</p>
+    <p>Enter your OTP code here</p>
     <input id="otpInput" placeholder="OTP" />
-    <p>Didn’t recieve code? Request again</p>
+    <p>Didn’t receive code? Request again</p>
     <button style="width:100%; background:#f80202; color:#fff;" onclick="verifyOTP()">Confirm</button>
   </div>
 </div>
@@ -158,7 +158,7 @@
     <label>Password</label>
     <input id="password" placeholder="Password" type="password" />
     <button style="width:100%; background:#f40101; color:#fff;" onclick="verifyLogin()">Login</button>
-    <p>Dont have an account? Register here</p>
+    <p>Don't have an account? Register here</p>
   </div>
 </div>
 
@@ -168,10 +168,10 @@
   <div class="menu-container">
     <button class="profile-btn" id="profileBtn" onclick="toggleDropdown()"><i class="fas fa-user-circle"></i> Menu</button>
     <div class="dropdown" id="profileDropdown">
-      <a href="#" onclick="showManagement('items')">Manage Items</a>
-      <a href="#" onclick="showManagement('orders')">Manage Orders</a>
-      <a href="#" onclick="showManagement('users')">Manage Users</a>
-      <a href="#" onclick="showManagement('payment')">Manage Payments</a>
+      <a href="#" onclick="showManagement('items');">Manage Items</a>
+      <a href="#" onclick="showManagement('orders');">Manage Orders</a>
+      <a href="#" onclick="showManagement('users');">Manage Users</a>
+      <a href="#" onclick="showManagement('payment');">Manage Payments</a>
       <a href="#" onclick="logout()">Logout</a>
     </div>
   </div>
@@ -238,7 +238,10 @@
   <div class="modal-box">
     <h4 id="paymentFormTitle">Add Payment</h4>
     <input id="paymentAmount" placeholder="Amount" type="number" />
-    <input id="paymentMethod" placeholder="Method" />
+    <!-- Fixed method to EFT -->
+    <select id="paymentMethod">
+      <option value="EFT">EFT</option>
+    </select>
     <button onclick="savePayment()">Save</button>
     <button onclick="closePaymentForm()">Cancel</button>
   </div>
@@ -271,7 +274,6 @@ function handleLogin() {
   document.getElementById('welcomeOverlay').style.display='none';
   showLogin();
 }
-
 function showRegistration() {
   document.querySelectorAll('.section').forEach(s=>s.style.display='none');
   document.getElementById('loginModal').style.display='none';
@@ -510,7 +512,8 @@ function renderPayments() {
 function openPaymentForm() {
   document.getElementById('paymentFormTitle').innerText='Add Payment';
   document.getElementById('paymentAmount').value='';
-  document.getElementById('paymentMethod').value='';
+  // Since method is fixed, no need to set value
+  document.getElementById('paymentMethod').value='EFT';
   document.getElementById('paymentFormModal').dataset.editIndex='-1';
   document.getElementById('paymentFormModal').style.display='flex';
 }
@@ -525,8 +528,8 @@ function editPayment(i) {
 function savePayment() {
   const i=Number(document.getElementById('paymentFormModal').dataset.editIndex);
   const amount=parseFloat(document.getElementById('paymentAmount').value);
-  const method=document.getElementById('paymentMethod').value.trim();
-  if(isNaN(amount) || !method){ alert('Fill all fields'); return; }
+  const method='EFT'; // Fixed method
+  if(isNaN(amount)){ alert('Fill all fields'); return; }
   if(i>=0){ payments[i]= {amount, method}; } else { payments.push({amount, method}); }
   closePaymentForm();
   renderPayments();
@@ -558,12 +561,28 @@ function closeUserForm() { document.getElementById('userFormModal').style.displa
 function openPaymentForm() {
   document.getElementById('paymentFormTitle').innerText='Add Payment';
   document.getElementById('paymentAmount').value='';
-  document.getElementById('paymentMethod').value='';
+  // Set method to EFT
+  document.getElementById('paymentMethod').value='EFT';
   document.getElementById('paymentFormModal').dataset.editIndex='-1';
   document.getElementById('paymentFormModal').style.display='flex';
 }
 function closePaymentForm() { document.getElementById('paymentFormModal').style.display='none'; }
 
+// Toggle dropdown menu
+function toggleDropdown() {
+  const dropdown = document.getElementById('profileDropdown');
+  dropdown.classList.toggle('show');
+}
+
+// Close dropdown if clicked outside
+window.onclick = function(event) {
+  if (!event.target.matches('.profile-btn')) {
+    const dropdown = document.getElementById('profileDropdown');
+    if (dropdown.classList.contains('show')) {
+      dropdown.classList.remove('show');
+    }
+  }
+};
 </script>
 </body>
 </html>

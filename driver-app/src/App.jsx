@@ -7,7 +7,7 @@ import  './mapAPI.jsx'; // map display
 import  './PayfastAPI.jsx'; // payment process
 import './smsAndEmailAPI.jsx'; // SMS & email
 import React, { useState, useEffect } from 'react';
-import './supabaseClient.js';
+import  './supabaseClient.js';
 import './createPayFastPayment.js';
 import LiveTracking from './.live_tracking.jsx';
 import CaptureLocation from './capture_location.jsx'
