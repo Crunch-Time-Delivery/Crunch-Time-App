@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>User App</title>
+<title>Combined User App</title>
 
-<!-- Your existing CSS & libraries -->
+<!-- Common CSS & Libraries -->
 <link rel="stylesheet" href="assets/index.css" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/js-sha256/dist/sha256.min.js"></script>
@@ -13,13 +13,14 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-/* --- Styles for inline welcome container --- */
+/* --- General Styles --- */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   background-color: #f9f9f9;
 }
-/* Welcome inline container styles */
+
+/* Welcome Inline Container Styles */
 #welcomeInline {
   display: flex;
   justify-content: center;
@@ -39,11 +40,230 @@ body {
   height: auto;
   margin-bottom: 20px;
 }
+
+/* Main Content Styles (hidden initially) */
+#mainContent {
+  display: none;
+}
+
+/* Header Styles */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+}
+.header button {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+.search-bar {
+  flex: 1;
+  min-width: 200px;
+  margin: 10px;
+}
+.search-bar input {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+/* Filters Styles */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #ffb4b4;
+  border-bottom: 1px solid #ddd;
+}
+.filters button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 5px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.filters button img {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 5px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* Restaurant Cards */
+.restaurant-list {
+  padding: 10px 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.restaurant-card {
+  display: flex;
+  background: #fff;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  cursor: pointer;
+  position: relative;
+  align-items: center;
+}
+.restaurant-card img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin-right: 10px;
+}
+.restaurant-card .details {
+  flex: 1;
+}
+.restaurant-card .rating { color: #666; font-weight: bold; }
+.restaurant-card .promo { color: red; font-weight: bold; }
+.fav {
+  position: absolute; top: 10px; right: 10px; font-size: 20px; background:none; border:none; cursor:pointer;
+}
+
+/* Modal overlay styles */
+.modal {
+  display: none; position: fixed; z-index: 999; left:0; top:0; width:100%; height:100%;
+  background: rgba(0,0,0,0.5);
+}
+.modal-content {
+  background:#fff; margin:50px auto; padding:20px; border-radius:10px; max-width:600px; position:relative;
+}
+.close-btn {
+  position:absolute; top:10px; right:15px; font-size:24px; cursor:pointer; font-weight:bold;
+}
+#restaurantImage {
+  width:100%; max-height:200px; object-fit:cover; border-radius:5px; margin-bottom:10px; cursor:pointer;
+}
+
+/* Specific modal sizes for opinion & food detail modals */
+#foodOpinionModal, #restaurantMenuModal, #foodDetailModal {
+  max-width:400px;
+}
+
+/* Order & Receipt styles */
+#orderSummary {
+  padding: 10px 20px;
+  background: #fff;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 10px;
+  border-radius: 4px;
+}
+#orderItems {
+  list-style: none;
+  padding: 0;
+}
+#orderItems li {
+  margin-bottom: 8px;
+}
+#checkoutPage {
+  display: none;
+  padding: 20px;
+  background: #fff;
+  max-width: 600px;
+  margin: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  margin-top: 20px;
+}
+#checkoutPage h2, #checkoutPage h3 {
+  margin-top: 0;
+}
+#checkoutItems {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+#checkoutItems li {
+  margin-bottom: 8px;
+}
+
+/* Buttons styling */
+button {
+  padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; margin-top:10px;
+}
+#checkoutBtn {
+  width:100%; padding:15px; background:#f00; color:#fff; font-size:16px; border-radius:8px; margin-top:10px;
+}
+#checkoutBtn:hover { background:#b00; }
+.pay-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 20px;
+}
+.confirm-btn {
+  background-color: #f90404;
+  color: white;
+}
+.cancel-btn {
+  background-color: #f40505;
+  color: white;
+  margin-left: 10px;
+}
+
+/* Voucher & QR code styles */
+#qrCodeContainer {
+  margin-top:10px; padding:10px; border:1px solid #ddd; display:inline-block; border-radius:4px;
+}
+
+/* Additional modals for order history & voucher */
+#orderHistoryModal {
+  display: none;
+}
+#orderHistoryModal .modal-content {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+#orderHistoryList div {
+  border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius:4px;
+}
+#orderHistoryList button {
+  margin-top: 10px;
+}
+
+/* Order History Button Style */
+#orderHistoryBtn {
+  background-color: red;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  margin-top: 10px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
+}
+/* Voucher modal styles similar to other popups */
+#voucherModal {
+  display: none;
+}
+#voucherModal .modal-content {
+  max-width: 400px;
+}
 </style>
 </head>
 <body>
 
-<!-- Inline Welcome Page -->
+<!-- =========================
+     Welcome Inline Page
+========================= -->
 <div id="welcomeInline">
   <div id="welcomeContent">
     <img src="img/screenshot (250).jpg" alt="Welcome Image" />
@@ -57,105 +277,187 @@ body {
   </div>
 </div>
 
-<!-- Main Content (hidden initially) -->
-<div id="mainContent" style="display:none;">
-  <!-- Your existing header, filters, restaurant list, modals, scripts, etc. -->
-  <!-- Example Header -->
-  <div class="header" style="display:flex; justify-content:space-between; align-items:center; padding:10px 20px; background:#fff; border-bottom:1px solid #ddd;">
-    <div class="header">
-      <div class="driver-label" style="font-weight:bold; color:red; font-size:20px;">User</div>
+<!-- =========================
+     Main Content (hidden initially)
+========================= -->
+<div id="mainContent">
+
+  <!-- Header -->
+  <div class="header">
+    <button>&#9776;</button>
+    <div>Crunch Time</div>
+    <button>Delivery</button>
+    <button>Pickup</button>
+    <div class="search-bar">
+      <input type="text" placeholder="Search Crunch Time" />
     </div>
-    <div class="menu-container" style="position:relative;">
-      <button class="menu-button" id="menuButton" style="background-color:red; color:#fff; padding:8px 12px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Menu ▼</button>
-      <div class="dropdown-content" id="dropdownContent" style="display:none; position:absolute; right:0; top:100%; background:#fff; min-width:200px; box-shadow:0 2px 8px rgba(0,0,0,0.2); border-radius:4px; overflow:hidden; z-index:1000;">
-        <a href="#" id="orderViewLink" style="display:block; padding:10px 15px; text-decoration:none; color:#333;">Order View</a>
-        <a href="#" id="newDriverLink" style="display:block; padding:10px 15px; text-decoration:none; color:#333;">New Driver</a>
-        <a href="#" id="driverAccountLink" style="display:block; padding:10px 15px; text-decoration:none; color:#333;">User View Account</a>
-        <a href="#" id="logoutLink" style="display:block; padding:10px 15px; text-decoration:none; color:#333;">Logout</a>
+    <button onclick="openMapLocation()">Map Location - Pick up now</button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <button><img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food" /><span>Fast Food</span></button>
+    <button><img src="Images/CR7 Veg .jpg" alt="Healthy" /><span>Healthy</span></button>
+    <button><img src="Images/CR7.jpg" alt="Burgers" /><span>Burgers</span></button>
+    <button><img src="Images/CR7 SUCCI.jpg" alt="Chinese" /><span>Chinese</span></button>
+    <button><img src="Images/CR7 WINGS.jpg" alt="Wings" /><span>Wings</span></button>
+    <button><img src="Images/CR7 PIZZA.webp" alt="Pizza" /><span>Pizza</span></button>
+    <button><img src="Images/CR7 SUCCI .webp" alt="Halal" /><span>Halal</span></button>
+    <button><img src="Images/CR7 KOREA .jpeg" alt="Korean" /><span>Korean</span></button>
+    <button>&rarr;</button>
+  </div>
+
+  <!-- Restaurant list -->
+  <div class="restaurant-list" id="restaurantList">
+    <!-- Sample restaurants; add more as needed -->
+    <div class="restaurant-card" onclick="showMenu('KFC Parow')">
+      <img src="Images/RS KFC .jpeg" alt="KFC Parow" />
+      <div class="details">
+        <div>KFC, Parow</div>
+        <div class="rating">4.4 ★</div>
+        <div>Sponsored - 5 min - 4.4 km</div>
       </div>
+      <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+    </div>
+    <div class="restaurant-card" onclick="showMenu('Sannes Palace')">
+      <img src="Images/RS PALACE .jpg" alt="Sannes Palace" />
+      <div class="details">
+        <div>Sannes Palace</div>
+        <div class="rating">4.5 ★</div>
+        <div class="promo">Spend ZAR 100, Save ZAR 15</div>
+        <div>20 min - 0.5 km</div>
+      </div>
+      <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+    </div>
+    <div class="restaurant-card" onclick="showMenu('DK Spot & Kota')">
+      <img src="Images/RS KOTA .jpg" alt="DK Spot & Kota" />
+      <div class="details">
+        <div>DK Spot & Kota Restaurant</div>
+        <div class="rating">4.0 ★</div>
+        <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
+      </div>
+      <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+    </div>
+    <div class="restaurant-card" onclick="showMenu('Nondyebo Eatery')">
+      <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery" />
+      <div class="details">
+        <div>Nondyebo Eatery</div>
+        <div class="rating">3.3 ★</div>
+        <div>10 min - 0.6 km</div>
+      </div>
+      <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
     </div>
   </div>
 
-  <!-- OTP Modal -->
-  <div id="otpModal" class="modal" style="display:none;">
+  <!-- Modal for Restaurant Menu -->
+  <div id="menuModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <!-- Image for restaurant -->
+      <img id="restaurantImage" src="" alt="Restaurant Image" />
+      <h2 id="restaurantName">Restaurant Menu</h2>
+      <div id="menuItems"></div>
+      <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
+    </div>
+  </div>
+
+  <!-- Food Modal for selecting options before adding -->
+  <div id="foodOpinionModal" class="modal">
     <div class="modal-content" style="max-width:400px;">
-      <h3>Verify Account</h3>
-      <p>Please enter the OTP number sent to your email to reset your password</p>
-      <p>Enter your OTP code here</p>
-      <input type="text" id="otpInput" maxlength="4" placeholder="Enter OTP" style="width:100%; padding:8px;"/>
-      <div style="margin-top:10px;">
-        <p>Didn’t receive code? <button id="resendOtpBtn">Request again</button></p>
-      </div>
-      <div style="margin-top:10px;">
-        <button id="verifyOtpBtn" style="background:#007bff; color:#fff; padding:8px 16px; border:none; border-radius:4px;">Confirm</button>
+      <span class="close-btn" onclick="closeFoodOpinionModal()">&times;</span>
+      <h3>Tell us your preference</h3>
+      <select id="opinionChoice" style="width:100%; padding:8px;">
+        <option>No preference</option>
+        <option>Spicy</option>
+        <option>Less Salt</option>
+        <option>Extra cheese</option>
+        <option>No onions</option>
+        <option>Less Sugar</option>
+        <option>Extra Ice</option>
+      </select>
+      <div style="margin-top:20px; display:flex; justify-content:center;">
+        <button class="add-more-btn" onclick="confirmFoodOpinion()">Next</button>
       </div>
     </div>
   </div>
 
-  <!-- Login Modal -->
-  <div id="loginModal" class="modal" style="display:none;">
+  <!-- Food item modal for adding food -->
+  <div id="foodModal" class="food-modal">
+    <div class="food-modal-content">
+      <span class="food-close-btn" onclick="closeFoodModal()">&times;</span>
+      <h3 id="foodItemName">Food Item</h3>
+      <div style="display:flex; align-items:center; justify-content:space-around; margin-top:10px;">
+        <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+        <span id="foodQuantity">1</span>
+        <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+      </div>
+      <div style="margin-top:20px; display:flex; justify-content:center;">
+        <button class="add-more-btn" onclick="addItemToOrder()">Add to Order</button>
+        <button class="exit-btn" onclick="closeFoodModal()">Exit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Summary -->
+  <div id="orderSummary" style="padding:10px 20px; background:#fff; max-height:200px; overflow-y:auto; margin:10px;">
+    <h4>Order Summary</h4>
+    <ul id="orderItems"></ul>
+    <!-- Buttons below order summary -->
+    <button id="checkoutBtn" class="checkout-btn" onclick="goToCheckout()">Go to Checkout</button>
+    <button id="orderHistoryBtn" style="background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showOrderHistory()">Order History</button>
+    <button id="voucherBtn" style="background-color:#f80505; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showVoucherInput()">Input Voucher Coupon</button>
+  </div>
+
+  <!-- Checkout page (hidden initially) -->
+  <div id="checkoutPage">
+    <h2>Checkout</h2>
+    <h3>Order Summary</h3>
+    <ul id="checkoutItems"></ul>
+    <h3>Total: <span id="totalAmount">R0</span></h3>
+    <h3>Payment Method</h3>
+    <div style="margin-bottom:20px;">
+      <input type="radio" id="eft" name="payment" value="EFT" checked>
+      <label for="eft">EFT Bank Transfer</label>
+    </div>
+    <button class="pay-btn confirm-btn" onclick="confirmEFT()">Confirm EFT Payment</button>
+    <button class="pay-btn cancel-btn" onclick="cancelCheckout()">Cancel</button>
+  </div>
+
+  <!-- Order History Popup -->
+  <div id="orderHistoryModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeOrderHistory()">&times;</span>
+      <h2>Order History</h2>
+      <div id="orderHistoryList"></div>
+    </div>
+  </div>
+
+  <!-- Voucher input popup -->
+  <div id="voucherModal" class="modal">
     <div class="modal-content" style="max-width:400px;">
-      <h2>Welcome</h2>
-      <h3>Login</h3>
-      <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
-      <label>Email Address</label>
-      <input type="text" id="loginEmail" placeholder="Email" style="width:100%; padding:8px; margin-top:10px; border:1px solid #ccc; border-radius:4px;"/>
-      <label>Password</label>
-      <input type="password" id="loginPassword" placeholder="Password" style="width:100%; padding:8px; margin-top:10px; border:1px solid #ccc; border-radius:4px;"/>
-      <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" onclick="submitLogin()">Login</button>
+      <span class="close-btn" onclick="closeVoucherModal()">&times;</span>
+      <h3>Enter Voucher Code</h3>
+      <input type="text" id="voucherCode" placeholder="Voucher Code" style="width:100%; padding:8px;">
+      <button style="margin-top:10px; width:100%; background:#ff0202; color:#fff; padding:8px; border:none; border-radius:5px;" onclick="applyVoucher()">Apply</button>
     </div>
   </div>
 
-  <!-- Your existing modals for menu, food, order summary, checkout, order history, voucher, pin, driver map -->
-  <!-- Keep your existing code here as in your original post -->
-</div>
+</div> <!-- End of mainContent -->
 
 <script>
-// Your existing scripts, with minor adjustments for the welcome flow
-let registeredEmail='';
-let registeredPassword='';
-let userPIN='';
-
-// Utility functions
-function showElement(id){ document.getElementById(id).style.display='block'; }
-function hideElement(id){ document.getElementById(id).style.display='none'; }
-
-// Toggle dropdown menu
-const menuButton = document.getElementById('menuButton');
-const menuContainer = document.getElementById('menuContainer');
-if (menuButton) {
-  menuButton.addEventListener('click', ()=> {
-    const dropdown = document.getElementById('dropdownContent');
-    dropdown.style.display = (dropdown.style.display==='block')?'none':'block';
-  });
-}
-window.onclick = function(e) {
-  if (!e.target.closest('#menuContainer')) {
-    document.getElementById('dropdownContent').style.display='none';
-  }
-}
-
-// When page loads
-window.onload = function() {
-  // Show welcome inline first
-  document.getElementById('welcomeInline').style.display='flex';
-  document.getElementById('mainContent').style.display='none';
-
-  // When user clicks continue
-  document.getElementById('continueBtn').onclick = () => {
-    document.getElementById('welcomeInline').style.display='none';
-    showMainContent();
-  };
+// =========================
+// Welcome Page Logic
+// =========================
+document.getElementById('createAccountBtn').onclick = () => {
+  alert('Create account functionality not implemented.');
+};
+document.getElementById('loginBtn').onclick = () => {
+  showLoginModal();
+};
+document.getElementById('browserMenuBtn').onclick = () => {
+  alert('Browser menu functionality not implemented.');
 };
 
-// Show main content
-function showMainContent() {
-  document.getElementById('welcomeInline').style.display='none';
-  document.getElementById('mainContent').style.display='block';
-  initializeApp(); // your existing init
-}
-
-// Login modal functions
 function showLoginModal() {
   document.getElementById('loginEmail').value='';
   document.getElementById('loginPassword').value='';
@@ -167,8 +469,6 @@ function closeLoginModal() {
 function submitLogin() {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value.trim();
-
-  // For demo: Accept any email/password, or implement your validation
   if (email && password) {
     registeredEmail = email;
     registeredPassword = password;
@@ -179,6 +479,324 @@ function submitLogin() {
     alert('Please enter email and password.');
   }
 }
+function showElement(id){ document.getElementById(id).style.display='block'; }
+function hideElement(id){ document.getElementById(id).style.display='none'; }
+
+// Transition from welcome to main content
+function showMainContent() {
+  document.getElementById('welcomeInline').style.display='none';
+  document.getElementById('mainContent').style.display='block';
+  initApp(); // initialize your app if needed
+}
+
+// =========================
+// Main App Logic
+// =========================
+let registeredEmail='';
+let registeredPassword='';
+let userPIN='';
+// Utility functions
+function showModal(id){ document.getElementById(id).style.display='block'; }
+function hideModal(id){ document.getElementById(id).style.display='none'; }
+
+// Map Location
+function openMapLocation() { window.open('http://127.0.0.1:5500/user-app/search_location.html','_blank'); }
+
+// =========================
+// Restaurant & Menu Data
+// =========================
+const restaurantMenus={
+  'KFC Parow':[ {name:'Zinger Burger',price:'R50'}, {name:'Fries',price:'R20'}, {name:'Cola',price:'R15'} ],
+  'Sannes Palace':[ {name:'Chicken Curry',price:'R80'}, {name:'Veggie Plate',price:'R60'}, {name:'Lemonade',price:'R10'} ],
+  'DK Spot & Kota':[ {name:'Kota Special',price:'R25'}, {name:'Fries',price:'R20'}, {name:'Soda',price:'R15'} ],
+  'Nondyebo Eatery':[ {name:'Wrap',price:'R40'}, {name:'Salad',price:'R35'}, {name:'Juice',price:'R12'} ]
+};
+
+// =========================
+// Show Menu Modal
+// =========================
+function showMenu(restName) {
+  currentRestaurant=restName;
+
+  document.getElementById('restaurantName').innerText=restName+' Menu';
+
+  const imgEl=document.getElementById('restaurantImage');
+  switch(restName){
+    case 'KFC Parow': imgEl.src='Images/RS KFC .jpeg'; break;
+    case 'Sannes Palace': imgEl.src='Images/RS PALACE .jpg'; break;
+    case 'DK Spot & Kota': imgEl.src='Images/RS KOTA .jpg'; break;
+    case 'Nondyebo Eatery': imgEl.src='Images/RS NONDYEBO.jpg'; break;
+    default: imgEl.src='';
+  }
+
+  const menuDiv=document.getElementById('menuItems');
+  menuDiv.innerHTML='';
+  (restaurantMenus[restName]||[]).forEach(itm => {
+    const div=document.createElement('div');
+    div.className='menu-item';
+    div.innerHTML=`<strong>${itm.name}</strong> - ${itm.price}`;
+    div.onclick=()=>{ openFoodOptionModal(itm); };
+    menuDiv.appendChild(div);
+  });
+  showModal('menuModal');
+}
+function closeModal() { hideModal('menuModal'); }
+function viewMap() {
+  let url='';
+  switch(currentRestaurant){
+    case 'KFC Parow': url='https://www.google.com/maps/search/?api=1&query=KFC+Parow'; break;
+    case 'Sannes Palace': url='https://www.google.com/maps/search/?api=1&query=Sannes+Palace'; break;
+    case 'DK Spot & Kota': url='https://www.google.com/maps/search/?api=1&query=DK+Spot+Kota'; break;
+    case 'Nondyebo Eatery': url='https://www.google.com/maps/search/?api=1&query=Nondyebo+Eatery'; break;
+    default: url='https://www.google.com/maps'; break;
+  }
+  window.open(url,'_blank');
+}
+function toggleFavorite(btn) {
+  if (btn.innerText==='♥') { btn.innerText='♡'; }
+  else { btn.innerText='♥'; }
+}
+
+// =========================
+// Food Options & Adding Food
+// =========================
+let pendingFoodItem=null;
+let currentQty=1;
+
+function openFoodOptionModal(itm) {
+  pendingFoodItem=itm;
+  currentQty=1;
+  document.getElementById('opinionChoice').value='No preference';
+  showModal('foodOpinionModal');
+}
+function closeFoodOptionModal() { hideModal('foodOpinionModal'); }
+function confirmFoodOpinion() {
+  const opinion=document.getElementById('opinionChoice').value;
+  if(pendingFoodItem){
+    orderItems.push({name:pendingFoodItem.name, price:pendingFoodItem.price, quantity:currentQty, opinion: opinion});
+    updateOrderSummary();
+  }
+  closeFoodOptionModal();
+}
+
+// Direct add without opinion
+function openFoodModal(itm) {
+  pendingFoodItem=itm;
+  currentQty=1;
+  document.getElementById('foodItemName').innerText=itm.name;
+  document.getElementById('foodQuantity').innerText=currentQty;
+  showModal('foodModal');
+}
+function closeFoodModal() { hideModal('foodModal'); }
+function changeQuantity(delta) {
+  currentQty+=delta;
+  if(currentQty<1) currentQty=1;
+  document.getElementById('foodQuantity').innerText=currentQty;
+}
+function addItemToOrder() {
+  if(pendingFoodItem){
+    orderItems.push({name:pendingFoodItem.name, price:pendingFoodItem.price, quantity:currentQty});
+    updateOrderSummary();
+  }
+  closeFoodModal();
+}
+
+// =========================
+// Order Summary & Management
+// =========================
+let orderItems=[]; // cart items
+function updateOrderSummary() {
+  const ul=document.getElementById('orderItems');
+  ul.innerHTML='';
+  orderItems.forEach((it,idx) => {
+    const li=document.createElement('li');
+    li.innerHTML=`${it.name} x${it.quantity} @ ${it.price}`;
+    const removeBtn=document.createElement('button');
+    removeBtn.innerText='Remove';
+    removeBtn.style.marginLeft='10px';
+    removeBtn.onclick=()=>{ orderItems.splice(idx,1); updateOrderSummary(); };
+    li.appendChild(removeBtn);
+    ul.appendChild(li);
+  });
+}
+
+// Save order to history
+function saveOrder() {
+  if (orderItems.length>0) {
+    orderHistory.push({restaurant:currentRestaurant, items:[...orderItems], date: new Date()});
+  }
+}
+
+// =========================
+// Checkout & Payment
+// =========================
+let orderHistory=[]; // past orders
+let discountAmount=0;
+
+function goToCheckout() {
+  if (orderItems.length===0){ alert("Your cart is empty!"); return; }
+  saveOrder();
+  // Calculate total
+  let total=0;
+  orderItems.forEach(i => {
+    const p=parseFloat(i.price.replace('R',''));
+    total+=p*i.quantity;
+  });
+  total-=discountAmount;
+  if (total<0) total=0;
+  document.getElementById('checkoutItems').innerHTML='';
+  orderItems.forEach(i => {
+    const li=document.createElement('li');
+    li.innerHTML=`${i.name} x${i.quantity} @ ${i.price}`;
+    if(i.opinion && i.opinion!=='No preference') {
+      li.innerHTML+=`<br>Pref: ${i.opinion}`;
+    }
+    document.getElementById('checkoutItems').appendChild(li);
+  });
+  document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
+  document.getElementById('checkoutPage').style.display='block';
+  document.getElementById('orderSummary').style.display='none';
+}
+function cancelCheckout() {
+  document.getElementById('checkoutPage').style.display='none';
+  document.getElementById('orderSummary').style.display='block';
+}
+
+// =========================
+// Voucher & QR Code
+// =========================
+function showVoucherInput() {
+  showModal('voucherModal');
+}
+function closeVoucherModal() {
+  hideModal('voucherModal');
+}
+function applyVoucher() {
+  const code=document.getElementById('voucherCode').value.trim();
+  if (code==='DISCOUNT10') {
+    discountAmount=10;
+    alert('Voucher applied! R10 off.');
+    generateQRCode(code);
+    updateTotalWithDiscount();
+  } else {
+    alert('Invalid code');
+    discountAmount=0;
+    generateQRCode('');
+    updateTotalWithDiscount();
+  }
+}
+function generateQRCode(text) {
+  const container=document.getElementById('qrCodeContainer');
+  container.innerHTML='';
+  if (text) { new QRCode(container, {text:text, width:128, height:128}); }
+}
+function updateTotalWithDiscount() {
+  const t=document.getElementById('totalAmount').innerText;
+  let total=parseFloat(t.replace('R',''));
+  total-=discountAmount;
+  if (total<0) total=0;
+  document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
+}
+
+// =========================
+// Order History functions
+// =========================
+function showOrderHistory() {
+  const listDiv=document.getElementById('orderHistoryList');
+  listDiv.innerHTML='';
+  if(orderHistory.length===0){ 
+    listDiv.innerHTML="<p>No history</p>"; 
+    showModal('orderHistoryModal'); 
+    return;
+  }
+  orderHistory.forEach((o,i) => {
+    const d=document.createElement('div');
+    d.style.border='1px solid #ccc'; d.style.padding='10px'; d.style.marginBottom='10px'; d.style.borderRadius='4px';
+    const dateStr=new Date(o.date).toLocaleString();
+    d.innerHTML=`
+      <strong>Restaurant:</strong> ${o.restaurant}<br>
+      <strong>Date:</strong> ${dateStr}<br>
+      <img src="${getRestaurantImage(o.restaurant)}" style="width:50px; height:50px; object-fit:cover; border-radius:4px;">
+      <button style="margin-top:10px; background:#007bff; color:#fff; border:none; padding:8px; border-radius:4px; cursor:pointer;" onclick='viewOrderDetails(${i})'>View</button>
+    `;
+    listDiv.appendChild(d);
+  });
+  showModal('orderHistoryModal');
+}
+function closeOrderHistory() { hideModal('orderHistoryModal'); }
+function viewOrderDetails(index) {
+  const o=orderHistory[index];
+  let txt='';
+  o.items.forEach(it => {
+    txt+=`${it.name} x${it.quantity} @ ${it.price}`;
+    if(it.opinion && it.opinion!=='No preference') {
+      txt+=`\nOpinion: ${it.opinion}`;
+    }
+    txt+='\n';
+  });
+  alert(`Order from ${o.restaurant}:\n${txt}`);
+}
+function getRestaurantImage(restName) {
+  switch(restName){
+    case 'KFC Parow': return 'Images/RS KFC .jpeg';
+    case 'Sannes Palace': return 'Images/RS PALACE .jpg';
+    case 'DK Spot & Kota': return 'Images/RS KOTA .jpg';
+    case 'Nondyebo Eatery': return 'Images/RS NONDYEBO.jpg';
+    default: return '';
+  }
+}
+
+// =========================
+// Map Location
+// =========================
+function openMapLocation() { window.open('http://127.0.0.1:5500/user-app/search_location.html','_blank'); }
+
+// =========================
+// Confirm EFT Payment
+// =========================
+function confirmEFT() {
+  alert("Your EFT payment has been processed successfully. Thank you for your order!");
+  orderItems=[]; updateOrderSummary();
+  cancelCheckout();
+}
+
+// =========================
+// Initialize App
+// =========================
+function initApp() {
+  // Any initialization if needed
+  console.log('App initialized.');
+}
+
+// =========================
+// Fetch example
+// =========================
+fetch('http://localhost:3000/api/your-endpoint_main.jsx_user_app')
+  .then(response => response.json())
+  .then(data => {
+    console.log('Data from your backend:', data);
+    // You can manipulate the DOM here based on response
+    // For example:
+    // document.getElementById('contentArea').innerHTML += '<p>Data loaded from backend!</p>';
+  })
+  .catch(error => {
+    console.error('Error fetching data:', error);
+  });
 </script>
+
+<!-- Modal for login -->
+<div id="loginModal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:400px;">
+    <h2>Welcome</h2>
+    <h3>Login</h3>
+    <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
+    <label>Email Address</label>
+    <input type="text" id="loginEmail" placeholder="Email" style="width:100%; padding:8px; margin-top:10px; border:1px solid #ccc; border-radius:4px;"/>
+    <label>Password</label>
+    <input type="password" id="loginPassword" placeholder="Password" style="width:100%; padding:8px; margin-top:10px; border:1px solid #ccc; border-radius:4px;"/>
+    <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" onclick="submitLogin()">Login</button>
+  </div>
+</div>
+
 </body>
 </html>
