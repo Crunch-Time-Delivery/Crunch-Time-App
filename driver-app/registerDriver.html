@@ -1,0 +1,161 @@
+<!-- registerDriver.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Register Driver</title>
+<style>
+  /* Include styles relevant for registration page */
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+  }
+  /* Style for hidden elements */
+  .hidden {
+    display: none;
+  }
+  /* Optional: styles for form elements */
+  form {
+    max-width: 600px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  input, select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    box-sizing: border-box;
+  }
+  .action-btn {
+    margin-top: 20px;
+    padding: 10px 15px;
+    background-color: #ff0000;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .action-btn:hover {
+    background-color: #b30000;
+  }
+</style>
+</head>
+<body>
+
+<div id="registerContent"></div>
+
+<script>
+  // Function to load the registration form into a container
+  function loadNewDriverPage() {
+    const container = document.getElementById('registerContent');
+
+    // Create and append the image element
+    const img = document.createElement('img');
+    img.src = "img/screenshot (251).jpg"; // Ensure this path is correct
+    img.alt = "Welcome Image";
+    img.style.width = "250px";
+    img.style.height = "auto";
+    img.style.marginBottom = "20px";
+    container.appendChild(img);
+
+    // Set the innerHTML for the rest of the form
+    container.innerHTML += `
+      <h1>Register as a Driver</h1>
+      <form id="driverForm">
+        <label>Upload Selfie (Driver Photo):</label>
+        <input type="file" id="driverPhoto" accept="image/*" required />
+        <label>Name:</label>
+        <input type="text" id="driverName" required />
+        <label>Email:</label>
+        <input type="email" id="driverEmail" required />
+        <label>Phone Number:</label>
+        <input type="tel" id="driverPhone" placeholder="e.g., 0612345678" required />
+        <label>ID Number:</label>
+        <input type="text" id="driverID" required />
+        <label>Bank Account Details:</label>
+        <input type="text" id="bankDetails" placeholder="Account Number" required />
+        <label>Bank Name:</label>
+        <select id="bankName" required>
+          <option value="">Select Bank</option>
+          <option value="FNB">FNB</option>
+          <option value="Standard Bank">Standard Bank</option>
+          <option value="Capitec">Capitec</option>
+          <option value="NedBank">NedBank</option>
+          <option value="Other">Other</option>
+        </select>
+        <div id="otherBankDiv" class="hidden">
+          <label>Specify Bank:</label>
+          <input type="text" id="otherBank" />
+        </div>
+        <label>Driver's License Upload:</label>
+        <input type="file" id="driverLicense" accept="image/*" required />
+        <label>Car Details:</label>
+        <input type="text" id="carColor" placeholder="Car Color" required />
+        <input type="text" id="carType" placeholder="Car Type" required />
+        <label>Car Photo:</label>
+        <input type="file" id="carPhoto" accept="image/*" required />
+        <label>Car Registration Number:</label>
+        <input type="text" id="carRegNumber" required />
+        <button type="submit" class="action-btn">Submit Registration</button>
+      </form>
+    `;
+
+    // Add event listener for bank selection
+    document.getElementById('bankName').addEventListener('change', () => {
+      const val = document.getElementById('bankName').value;
+      document.getElementById('otherBankDiv').className = (val==='Other')?'hidden':'';
+    });
+
+    // Handle form submission
+    document.getElementById('driverForm').onsubmit = (e) => {
+      e.preventDefault();
+      // Collect files
+      const driverPhotoFile = document.getElementById('driverPhoto').files[0];
+      const driverLicenseFile = document.getElementById('driverLicense').files[0];
+      const carPhotoFile = document.getElementById('carPhoto').files[0];
+      const phoneNumber = document.getElementById('driverPhone').value.trim();
+
+      if (!driverPhotoFile || !driverLicenseFile || !carPhotoFile) {
+        alert('Please upload all required images.');
+        return;
+      }
+
+      // Save driver data (example)
+      const driverData = {
+        name: document.getElementById('driverName').value,
+        email: document.getElementById('driverEmail').value,
+        idNumber: document.getElementById('driverID').value,
+        phoneNumber: phoneNumber,
+        bankDetails: document.getElementById('bankDetails').value,
+        bankName: document.getElementById('bankName').value,
+        otherBank: document.getElementById('otherBank').value,
+        carColor: document.getElementById('carColor').value,
+        carType: document.getElementById('carType').value,
+        carRegNumber: document.getElementById('carRegNumber').value,
+        driverPhoto: URL.createObjectURL(driverPhotoFile),
+        driverLicense: URL.createObjectURL(driverLicenseFile),
+        carPhoto: URL.createObjectURL(carPhotoFile),
+        approved: false,
+        email: document.getElementById('driverEmail').value,
+        password: 'password123' // For demo purposes
+      };
+      // Redirect to login page
+      window.location.href = "http://127.0.0.1:5500/driver-app/loginDriver.html";
+    };
+  }
+
+  // Call the function to load the page content
+  loadNewDriverPage();
+</script>
+</body>
+</html>
