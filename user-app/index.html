@@ -271,7 +271,7 @@ button {
     <p>Before enjoying CrunchTime deliveries</p>
     <p>Register now</p>
     <button id="createAccountBtn" style="background-color:red; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer; width:80%; margin-top:10px;">Create account</button>
-    <button id="loginBtn" style="background-color:white; color:red; padding:10px; border:2px solid red; border-radius:5px; cursor:pointer; width:80%; margin-top:10px;">Login</button>
+    <button id="loginModal" style="background-color:white; color:red; padding:10px; border:2px solid red; border-radius:5px; cursor:pointer; width:80%; margin-top:10px;">Login</button>
     <button id="browserMenuBtn" style="background-color:red; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer; width:80%; margin-top:10px;">Browser Menu</button>
     <p style="margin-top:20px; font-size:12px; color:gray;">By logging in or registering, you have agreed to the Terms and Conditions and Privacy Policy.</p>
   </div>
@@ -782,9 +782,14 @@ fetch('http://localhost:3000/api/your-endpoint_main.jsx_user_app')
   .catch(error => {
     console.error('Error fetching data:', error);
   });
+
+  // Attach event to "Create account" button
+  document.querySelector('.createAccountBtn').onclick = () => {
+    // Replace the URL with your registration page URL
+    window.location.href = ' http://127.0.0.1:5500/user-app/register_home.html'; // or another page
 </script>
 
-<!-- Modal for login -->
+
 <div id="loginModal" class="modal" style="display:none;">
   <div class="modal-content" style="max-width:400px;">
     <h2>Welcome</h2>

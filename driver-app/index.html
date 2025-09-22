@@ -32,6 +32,7 @@
     height: auto;
     margin-bottom: 20px;
   }
+
   /* Header style */
   .header {
     display: flex;
@@ -41,6 +42,7 @@
     background: #fff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     position: relative;
+    display: none; /* hidden initially */
   }
   .driver-label {
     font-weight: bold;
@@ -148,6 +150,7 @@
   th {
     background: #f2f2f2;
   }
+
   /* OTP Modal Styles */
   .modal {
     display: none; 
@@ -200,7 +203,7 @@
 <!-- Main Content (hidden initially) -->
 <div id="contentArea">
   <!-- Header with Driver label and menu -->
-  <div class="header" style="display:none;" id="mainHeader">
+  <div class="header" id="mainHeader">
     <div class="driver-label">Driver</div>
     <div class="menu-container" id="menuContainer">
       <button class="menu-button" id="menuButton">Menu ▼</button>
@@ -244,403 +247,431 @@
 </div>
 
 <script>
-// Variables
-let driverRegistered = false;
-let driverApproved = false;
-let driverData = {}; 
-let currentPage = 'welcome';
+document.addEventListener('DOMContentLoaded', () => {
+  // Variables
+  let driverRegistered = false;
+  let driverApproved = false;
+  let driverData = {}; 
+  let currentPage = '';
+  let generatedOtp = '';
+  let otpVerified = false;
+  let adminApprovalTimeout = null;
 
-let generatedOtp = '';
-let otpVerified = false;
+  // Helper functions
+  function showModal(id) { document.getElementById(id).style.display='block'; }
+  function hideModal(id) { document.getElementById(id).style.display='none'; }
 
-let adminApprovalTimeout = null;
-
-// Utility functions
-function showElement(id){ document.getElementById(id).style.display='block'; }
-function hideElement(id){ document.getElementById(id).style.display='none'; }
-
-// Toggle dropdown menu
-const menuButton = document.getElementById('menuButton');
-const menuContainer = document.getElementById('menuContainer');
-if (menuButton) {
-  menuButton.addEventListener('click', ()=> {
+  // Setup menu toggle
+  const menuContainer = document.getElementById('menuContainer');
+  const menuButton = document.getElementById('menuButton');
+  menuButton.addEventListener('click', () => {
     menuContainer.classList.toggle('show');
   });
-}
-window.onclick = function(e) {
-  if (!e.target.closest('#menuContainer')) {
-    document.getElementById('menuContainer').classList.remove('show');
-  }
-}
+  document.addEventListener('click', (e) => {
+    if (!menuContainer.contains(e.target)) {
+      menuContainer.classList.remove('show');
+    }
+  });
 
-// Welcome Continue Button
-document.getElementById('continueBtn').onclick = () => {
-  localStorage.setItem('welcomeShown','true');
-  document.getElementById('welcomeInline').style.display='none';
-  document.getElementById('contentArea').style.display='block';
-  initializeMain();
-};
-
-// Initialize main app after welcome
-function initializeMain() {
-  document.querySelector('#mainHeader').style.display='flex';
-
-  // Setup menu links
-  document.getElementById('newDriverLink').onclick = () => {
+  // Menu links
+  document.getElementById('newDriverLink').addEventListener('click', () => {
     loadNewDriverPage();
-  };
-  document.getElementById('orderViewLink').onclick = () => {
+  });
+  document.getElementById('orderViewLink').addEventListener('click', () => {
     loadOrderView();
-  };
-  document.getElementById('driverAccountLink').onclick = () => {
+  });
+  document.getElementById('driverAccountLink').addEventListener('click', () => {
     loadDriverAccount();
-  };
-  document.getElementById('logoutLink').onclick = () => {
+  });
+  document.getElementById('logoutLink').addEventListener('click', () => {
     if (driverData.email) localStorage.setItem('driverEmail', driverData.email);
     if (driverData.password) localStorage.setItem('driverPassword', driverData.password);
-    driverRegistered=false; driverApproved=false; driverData={};
+    driverRegistered = false;
+    driverApproved = false;
+    driverData = {};
     clearAdminApprovalTimeout();
     loadLoginPage();
-  };
-
-  // Load login or registration based on localStorage
-  const emailStored = localStorage.getItem('driverEmail') || '';
-  const passStored = localStorage.getItem('driverPassword') || '';
-  // For demo, always show login page first
-  loadLoginPage();
-}
-
-// Load login page
-function loadLoginPage() {
-  currentPage='login';
-  const contentDiv = document.getElementById('innerContent');
-  contentDiv.innerHTML = `
-    <h1>Driver Login</h1>
-    <button id="openLoginModal" class="action-btn">Login</button>
-  `;
-  document.getElementById('openLoginModal').onclick = () => {
-    showModal('loginModal');
-    document.getElementById('loginEmail').value=localStorage.getItem('driverEmail')||'';
-    document.getElementById('loginPassword').value=localStorage.getItem('driverPassword')||'';
-  };
-}
-
-// Show login modal
-function showModal(id) {
-  document.getElementById(id).style.display='block';
-}
-function hideModal(id) {
-  document.getElementById(id).style.display='none';
-}
-
-// Login button
-document.getElementById('loginBtn').onclick = () => {
-  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const password = document.getElementById('loginPassword').value.trim();
-  if (driverData.email && email===driverData.email.toLowerCase()) {
-    localStorage.setItem('driverEmail', email);
-    localStorage.setItem('driverPassword', password);
-    if (driverApproved) {
-      alert('Login successful! Accessing order view.');
-      loadOrderView();
-    } else {
-      alert('Waiting for admin approval...');
-      simulateAdminApproval();
-      showWaitingApproval();
-      hideModal('loginModal');
-    }
-  } else {
-    alert('Invalid email.');
-  }
-};
-
-// Simulate admin approval
-function simulateAdminApproval() {
-  if (!adminApprovalTimeout) {
-    adminApprovalTimeout = setTimeout(() => {
-      driverApproved=true;
-      alert('Admin approved your registration! You can now access order view.');
-    }, 3000);
-  }
-}
-function clearAdminApprovalTimeout() {
-  if (adminApprovalTimeout) {
-    clearTimeout(adminApprovalTimeout);
-    adminApprovalTimeout=null;
-  }
-}
-
-function showWaitingApproval() {
-  document.getElementById('innerContent').innerHTML=`
-    <h2 style="text-align:center;">Waiting for admin approval...</h2>
-  `;
-}
-
-// Registration page
-function loadNewDriverPage() {
-  currentPage='newDriver';
-  const contentDiv = document.getElementById('innerContent');
-  contentDiv.innerHTML= `
-    <h1>Register as a Driver</h1>
-    <form id="driverForm">
-      <label>Upload Selfie (Driver Photo):</label>
-      <input type="file" id="driverPhoto" accept="image/*" required />
-      <label>Name:</label>
-      <input type="text" id="driverName" required />
-      <label>Email:</label>
-      <input type="email" id="driverEmail" required />
-      <label>Phone Number:</label>
-      <input type="tel" id="driverPhone" placeholder="e.g., 0612345678" required />
-      <label>ID Number:</label>
-      <input type="text" id="driverID" required />
-      <label>Bank Account Details:</label>
-      <input type="text" id="bankDetails" placeholder="Account Number" required />
-      <label>Bank Name:</label>
-      <select id="bankName" required>
-        <option value="">Select Bank</option>
-        <option value="FNB">FNB</option>
-        <option value="Standard Bank">Standard Bank</option>
-        <option value="Capitec">Capitec</option>
-        <option value="NedBank">NedBank</option>
-        <option value="Other">Other</option>
-      </select>
-      <div id="otherBankDiv" class="hidden">
-        <label>Specify Bank:</label>
-        <input type="text" id="otherBank" />
-      </div>
-      <label>Driver's License Upload:</label>
-      <input type="file" id="driverLicense" accept="image/*" required />
-      <label>Car Details:</label>
-      <input type="text" id="carColor" placeholder="Car Color" required />
-      <input type="text" id="carType" placeholder="Car Type" required />
-      <label>Car Photo:</label>
-      <input type="file" id="carPhoto" accept="image/*" required />
-      <label>Car Registration Number:</label>
-      <input type="text" id="carRegNumber" required />
-      <button type="submit" class="action-btn">Submit Registration</button>
-    </form>
-  `;
-  document.getElementById('bankName').addEventListener('change', () => {
-    const val = document.getElementById('bankName').value;
-    document.getElementById('otherBankDiv').className = (val==='Other')?'':'hidden';
   });
-  document.getElementById('driverForm').onsubmit = (e) => {
-    e.preventDefault();
-    const driverPhotoFile = document.getElementById('driverPhoto').files[0];
-    const driverLicenseFile = document.getElementById('driverLicense').files[0];
-    const carPhotoFile = document.getElementById('carPhoto').files[0];
-    const phoneNumber = document.getElementById('driverPhone').value.trim();
-
-    if (!driverPhotoFile || !driverLicenseFile || !carPhotoFile) {
-      alert('Please upload all required images.');
-      return;
+  // Forgot Password
+  document.getElementById('forgotPasswordLink').addEventListener('click', () => {
+    showModal('forgotPasswordModal');
+  });
+  document.getElementById('cancelResetBtn').addEventListener('click', () => {
+    hideModal('forgotPasswordModal');
+  });
+  document.getElementById('sendResetBtn').addEventListener('click', () => {
+    const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+    if (driverData.email && email === driverData.email.toLowerCase()) {
+      alert('Password reset link sent to your email (simulated).');
+    } else {
+      alert('Email not found.');
     }
+    hideModal('forgotPasswordModal');
+  });
 
-    // Save driver data
-    driverData = {
-      name: document.getElementById('driverName').value,
-      email: document.getElementById('driverEmail').value,
-      idNumber: document.getElementById('driverID').value,
-      phoneNumber: phoneNumber,
-      bankDetails: document.getElementById('bankDetails').value,
-      bankName: document.getElementById('bankName').value,
-      otherBank: document.getElementById('otherBank').value,
-      carColor: document.getElementById('carColor').value,
-      carType: document.getElementById('carType').value,
-      carRegNumber: document.getElementById('carRegNumber').value,
-      driverPhoto: URL.createObjectURL(driverPhotoFile),
-      driverLicense: URL.createObjectURL(driverLicenseFile),
-      carPhoto: URL.createObjectURL(carPhotoFile),
-      approved: false,
-      email: document.getElementById('driverEmail').value,
-      password: 'password123' // demo
-    };
-    driverRegistered=true;
-    generateAndSendOtp();
-    showOtpModal();
-  };
-}
-
-// Generate OTP
-function generateAndSendOtp() {
-  generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-  alert(`OTP sent to Phone: ${driverData.phoneNumber} and Email: ${driverData.email}. (OTP: ${generatedOtp})`);
-}
-
-// OTP modal functions
-function showOtpModal() {
-  showElement('otpModal');
-  document.getElementById('otpInput').value='';
-  otpVerified=false;
-}
-function hideOtpModal() {
-  hideElement('otpModal');
-}
-document.getElementById('verifyOtpBtn').onclick = () => {
-  const enteredOtp = document.getElementById('otpInput').value.trim();
-  if (enteredOtp===generatedOtp) {
-    otpVerified=true;
-    alert('OTP verified! Awaiting admin approval...');
-    hideElement('otpModal');
-    simulateAdminApproval();
+  // Show welcome inline or proceed
+  if (!localStorage.getItem('welcomeShown')) {
+    document.getElementById('welcomeInline').style.display='flex';
+    document.getElementById('contentArea').style.display='none';
   } else {
-    alert('Incorrect OTP. Please try again.');
+    document.getElementById('welcomeInline').style.display='none';
+    document.getElementById('contentArea').style.display='block';
+    initializeMain();
   }
-};
-document.getElementById('resendOtpBtn').onclick=()=>{
-  generateAndSendOtp();
-  alert('OTP resent.');
-};
 
-// Load order view
-function loadOrderView() {
-  if (!driverRegistered || !driverApproved) {
-    alert('You are not approved yet or not registered.');
-    loadLoginPage();
-    return;
-  }
-  currentPage='orderView';
-  const contentDiv = document.getElementById('innerContent');
-  contentDiv.innerHTML= `
-    <h1>Order Details</h1>
-    <div class="order-details">
-      <p><strong>Order ID:</strong> #12345</p>
-      <p><strong>Customer Name:</strong> John Doe</p>
-      <p><strong>Order Date:</strong> August 15, 2025</p>
-      <p><strong>Status:</strong> Processing</p>
-      <p><strong>Order within your area:</strong> Yes (simulated GPS location)</p>
-      <p><strong>Order Address:</strong> 123 Main St, Cape Town</p>
-      <p><strong>Total Amount:</strong> R99.99</p>
-    </div>
-    <div class="order-items">
-      <h2>Order Items</h2>
-      <table>
-        <thead>
-          <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Product A</td><td>2</td><td>R29.99</td><td>R59.98</td></tr>
-          <tr><td>Product B</td><td>1</td><td>R40.01</td><td>R40.01</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <a href="#" class="back-button" id="backToMain">Back</a>
-  `;
-  document.getElementById('backToMain').onclick = (e) => {
-    e.preventDefault(); loadAppropriatePage();
-  };
-}
-
-// Load driver account
-function loadDriverAccount() {
-  if (!driverRegistered) {
-    alert('Please register first.');
-    loadNewDriverPage();
-    return;
-  }
-  currentPage='driverAccount';
-  const contentDiv = document.getElementById('innerContent');
-  contentDiv.innerHTML= `
-    <h1>Driver Profile</h1>
-    <form id="driverProfileForm">
-      <label>Selfie:</label>
-      <input type="file" accept="image/*" id="profilePhoto" />
-      ${driverData.driverPhoto?`<img src="${driverData.driverPhoto}" width="100" />`:''}
-      <label>Name:</label>
-      <input type="text" id="profileName" value="${driverData.name || ''}" />
-      <label>Email:</label>
-      <input type="email" id="profileEmail" value="${driverData.email || ''}" />
-      <label>ID Number:</label>
-      <input type="text" id="profileID" value="${driverData.idNumber || ''}" />
-      <label>Bank Details:</label>
-      <input type="text" id="profileBankDetails" value="${driverData.bankDetails || ''}" />
-      <label>Bank Name:</label>
-      <select id="profileBankName">
-        <option value="FNB" ${driverData.bankName==='FNB'?'selected':''}>FNB</option>
-        <option value="Standard Bank" ${driverData.bankName==='Standard Bank'?'selected':''}>Standard Bank</option>
-        <option value="Capitec" ${driverData.bankName==='Capitec'?'selected':''}>Capitec</option>
-        <option value="NedBank" ${driverData.bankName==='NedBank'?'selected':''}>NedBank</option>
-        <option value="Other" ${driverData.bankName==='Other'?'selected':''}>Other</option>
-      </select>
-      <div id="editOtherBankDiv" class="${driverData.bankName==='Other'?'':'hidden'}">
-        <label>Specify Bank:</label>
-        <input type="text" id="editOtherBank" value="${driverData.otherBank || ''}" />
-      </div>
-      <label>Driver License:</label>
-      <input type="file" accept="image/*" id="profileLicense" />
-      <label>Car Color:</label>
-      <input type="text" id="profileCarColor" value="${driverData.carColor || ''}" />
-      <label>Car Type:</label>
-      <input type="text" id="profileCarType" value="${driverData.carType || ''}" />
-      <label>Car Photo:</label>
-      <input type="file" accept="image/*" id="profileCarPhoto" />
-      <label>Car Registration Number:</label>
-      <input type="text" id="profileCarReg" value="${driverData.carRegNumber || ''}" />
-      <button type="submit" class="action-btn">Save</button>
-    </form>
-    <button id="terminateBtn" style="margin-top:10px; background-color:red;">Terminate Driver</button>
-    <a href="#" id="backToMain">Back</a>
-  `;
-  document.getElementById('profileBankName').onchange=()=> {
-    document.getElementById('editOtherBankDiv').className= (document.getElementById('profileBankName').value==='Other')?'':'hidden';
-  };
-  document.getElementById('driverProfileForm').onsubmit=(e) => {
-    e.preventDefault();
-    driverData.name=document.getElementById('profileName').value;
-    driverData.email=document.getElementById('profileEmail').value;
-    driverData.idNumber=document.getElementById('profileID').value;
-    driverData.bankDetails=document.getElementById('profileBankDetails').value;
-    driverData.bankName=document.getElementById('profileBankName').value;
-    driverData.carColor=document.getElementById('profileCarColor').value;
-    driverData.carType=document.getElementById('profileCarType').value;
-    driverData.carRegNumber=document.getElementById('profileCarReg').value;
-    alert('Profile saved and sent to admin.');
-  };
-  document.getElementById('terminateBtn').onclick=()=>{
-    if (confirm('Are you sure you want to terminate your driver account? Admin will be notified.')) {
-      alert('Termination request sent to admin.');
-      driverRegistered=false; driverApproved=false; driverData={};
-      loadNewDriverPage();
-    }
-  };
-}
-
-// Load Appropriately
-function loadAppropriatePage() {
-  if (!driverRegistered) {
-    loadNewDriverPage();
-  } else if (driverApproved) {
-    loadOrderView();
-  } else {
-    showWaitingApproval();
-  }
-}
-
-// Fetch example (simulate)
-fetch('http://localhost:3000/api/your-endpoint_main.jsx_driver_app')
-  .then(res=>res.json())
-  .then(data=> {
-    console.log('Backend data:', data);
-    // optional: manipulate DOM
-  })
-  .catch(e=>console.error('Error fetching', e));
-
-// On first load, check if welcomeShown
-if (localStorage.getItem('welcomeShown')) {
-  document.getElementById('welcomeInline').style.display='none';
-  document.getElementById('contentArea').style.display='block';
-  initializeMain();
-} else {
-  // Show welcome inline
-  document.getElementById('welcomeInline').style.display='flex';
-  document.getElementById('contentArea').style.display='none';
-  document.getElementById('continueBtn').onclick=() => {
+  // Continue button
+  document.getElementById('continueBtn').addEventListener('click', () => {
     localStorage.setItem('welcomeShown','true');
     document.getElementById('welcomeInline').style.display='none';
     document.getElementById('contentArea').style.display='block';
     initializeMain();
-  };
-}
+  });
+
+  // Create account button
+  document.getElementById('createAccountBtn')?.addEventListener('click', () => {
+    loadNewDriverPage();
+  });
+  // Login modal button
+  document.getElementById('loginModalBtn')?.addEventListener('click', () => {
+    showLoginModal(localStorage.getItem('driverEmail')||'', localStorage.getItem('driverPassword')||'');
+  });
+
+  // Initialize main page
+  function initializeMain() {
+    document.getElementById('mainHeader').style.display='flex';
+    // Setup menu link handlers
+    document.getElementById('newDriverLink').onclick = () => { loadNewDriverPage(); };
+    document.getElementById('orderViewLink').onclick = () => { loadOrderView(); };
+    document.getElementById('driverAccountLink').onclick = () => { loadDriverAccount(); };
+    // Logout link
+    document.getElementById('logoutLink').onclick = () => {
+      if (driverData.email) localStorage.setItem('driverEmail', driverData.email);
+      if (driverData.password) localStorage.setItem('driverPassword', driverData.password);
+      driverRegistered=false; driverApproved=false; driverData={};
+      clearAdminApprovalTimeout();
+      loadLoginPage();
+    };
+  }
+
+  // Load login page
+  function loadLoginPage() {
+    currentPage='login';
+    const contentDiv = document.getElementById('innerContent');
+    const savedEmail = localStorage.getItem('driverEmail') || '';
+    const savedPassword = localStorage.getItem('driverPassword') || '';
+    contentDiv.innerHTML= `
+      <h1>Driver Login</h1>
+      <button id="openLoginModal" class="action-btn">Login</button>
+    `;
+    document.getElementById('openLoginModal').onclick=()=> {
+      showLoginModal(savedEmail,savedPassword);
+    };
+  }
+
+  function showLoginModal(email='', password='') {
+    showModal('loginModal');
+    document.getElementById('loginEmail').value=email;
+    document.getElementById('loginPassword').value=password;
+  }
+
+  function hideLoginModal() {
+    hideModal('loginModal');
+  }
+
+  // Login button
+  document.getElementById('loginBtn')?.addEventListener('click', () => {
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password = document.getElementById('loginPassword').value.trim();
+    if (driverData.email && email===driverData.email.toLowerCase()) {
+      localStorage.setItem('driverEmail', email);
+      localStorage.setItem('driverPassword', password);
+      if (driverApproved) {
+        alert('Login successful! Accessing order view.');
+        loadOrderView();
+      } else {
+        alert('Waiting for admin approval...');
+        simulateAdminApproval();
+        showWaitingApproval();
+        hideModal('loginModal');
+      }
+    } else {
+      alert('Invalid email.');
+    }
+  });
+
+  function simulateAdminApproval() {
+    if (!adminApprovalTimeout) {
+      adminApprovalTimeout=setTimeout(() => {
+        driverApproved=true;
+        alert('Admin approved your registration! You can now access order view.');
+      }, 3000);
+    }
+  }
+  function clearAdminApprovalTimeout() {
+    if (adminApprovalTimeout) {
+      clearTimeout(adminApprovalTimeout);
+      adminApprovalTimeout=null;
+    }
+  }
+  function showWaitingApproval() {
+    document.getElementById('innerContent').innerHTML=`
+      <h2 style="text-align:center;">Waiting for admin approval...</h2>
+    `;
+  }
+
+  // Load New Driver / Registration Page
+  function loadNewDriverPage() {
+    currentPage='newDriver';
+    const content = document.getElementById('innerContent');
+    content.innerHTML= `
+      <h1>Register as a Driver</h1>
+      <form id="driverForm">
+        <label>Upload Selfie (Driver Photo):</label>
+        <input type="file" id="driverPhoto" accept="image/*" required />
+        <label>Name:</label>
+        <input type="text" id="driverName" required />
+        <label>Email:</label>
+        <input type="email" id="driverEmail" required />
+        <label>Phone Number:</label>
+        <input type="tel" id="driverPhone" placeholder="e.g., 0612345678" required />
+        <label>ID Number:</label>
+        <input type="text" id="driverID" required />
+        <label>Bank Account Details:</label>
+        <input type="text" id="bankDetails" placeholder="Account Number" required />
+        <label>Bank Name:</label>
+        <select id="bankName" required>
+          <option value="">Select Bank</option>
+          <option value="FNB">FNB</option>
+          <option value="Standard Bank">Standard Bank</option>
+          <option value="Capitec">Capitec</option>
+          <option value="NedBank">NedBank</option>
+          <option value="Other">Other</option>
+        </select>
+        <div id="otherBankDiv" class="hidden">
+          <label>Specify Bank:</label>
+          <input type="text" id="otherBank" />
+        </div>
+        <label>Driver's License Upload:</label>
+        <input type="file" id="driverLicense" accept="image/*" required />
+        <label>Car Details:</label>
+        <input type="text" id="carColor" placeholder="Car Color" required />
+        <input type="text" id="carType" placeholder="Car Type" required />
+        <label>Car Photo:</label>
+        <input type="file" id="carPhoto" accept="image/*" required />
+        <label>Car Registration Number:</label>
+        <input type="text" id="carRegNumber" required />
+        <button type="submit" class="action-btn">Submit Registration</button>
+      </form>
+    `;
+    document.getElementById('bankName').addEventListener('change', () => {
+      const val = document.getElementById('bankName').value;
+      document.getElementById('otherBankDiv').className = (val==='Other')?'':'hidden';
+    });
+    document.getElementById('driverForm').onsubmit = (e) => {
+      e.preventDefault();
+      const driverPhotoFile = document.getElementById('driverPhoto').files[0];
+      const driverLicenseFile = document.getElementById('driverLicense').files[0];
+      const carPhotoFile = document.getElementById('carPhoto').files[0];
+      const phoneNumber = document.getElementById('driverPhone').value.trim();
+
+      if (!driverPhotoFile || !driverLicenseFile || !carPhotoFile) {
+        alert('Please upload all required images.');
+        return;
+      }
+
+      // Save driver data
+      driverData = {
+        name: document.getElementById('driverName').value,
+        email: document.getElementById('driverEmail').value,
+        idNumber: document.getElementById('driverID').value,
+        phoneNumber: phoneNumber,
+        bankDetails: document.getElementById('bankDetails').value,
+        bankName: document.getElementById('bankName').value,
+        otherBank: document.getElementById('otherBank').value,
+        carColor: document.getElementById('carColor').value,
+        carType: document.getElementById('carType').value,
+        carRegNumber: document.getElementById('carRegNumber').value,
+        driverPhoto: URL.createObjectURL(driverPhotoFile),
+        driverLicense: URL.createObjectURL(driverLicenseFile),
+        carPhoto: URL.createObjectURL(carPhotoFile),
+        approved: false,
+        email: document.getElementById('driverEmail').value,
+        password: 'password123' // For demo
+      };
+      driverRegistered=true;
+      generateAndSendOtp();
+      showOtpModal();
+    };
+  }
+
+  function generateAndSendOtp() {
+    generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+    alert(`OTP sent to Phone: ${driverData.phoneNumber} and Email: ${driverData.email}. (OTP: ${generatedOtp})`);
+  }
+  function showOtpModal() {
+    document.getElementById('otpModal').style.display='block';
+    document.getElementById('otpInput').value='';
+    otpVerified=false;
+  }
+  function hideOtpModal() {
+    document.getElementById('otpModal').style.display='none';
+  }
+  document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
+    const enteredOtp = document.getElementById('otpInput').value.trim();
+    if (enteredOtp===generatedOtp) {
+      otpVerified=true;
+      alert('OTP verified! Awaiting admin approval...');
+      hideOtpModal();
+      simulateAdminApproval();
+    } else {
+      alert('Incorrect OTP. Please try again.');
+    }
+  });
+  document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
+    generateAndSendOtp();
+    alert('OTP resent.');
+  });
+
+  function loadOrderView() {
+    if (!driverRegistered || !driverApproved) {
+      alert('You are not approved yet or not registered.');
+      loadLoginPage();
+      return;
+    }
+    currentPage='orderView';
+    const content = document.getElementById('innerContent');
+    content.innerHTML= `
+      <h1>Order Details</h1>
+      <div class="order-details">
+        <p><strong>Order ID:</strong> #12345</p>
+        <p><strong>Customer Name:</strong> John Doe</p>
+        <p><strong>Order Date:</strong> August 15, 2025</p>
+        <p><strong>Status:</strong> Processing</p>
+        <p><strong>Order within your area:</strong> Yes (simulated GPS location)</p>
+        <p><strong>Order Address:</strong> 123 Main St, Cape Town</p>
+        <p><strong>Total Amount:</strong> R99.99</p>
+      </div>
+      <div class="order-items">
+        <h2>Order Items</h2>
+        <table>
+          <thead>
+            <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Product A</td><td>2</td><td>R29.99</td><td>R59.98</td></tr>
+            <tr><td>Product B</td><td>1</td><td>R40.01</td><td>R40.01</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <a href="#" class="back-button" id="backToMain">Back</a>
+    `;
+    document.getElementById('backToMain').onclick = (e) => {
+      e.preventDefault();
+      loadAppropriatePage();
+    };
+  }
+
+  function loadDriverAccount() {
+    if (!driverRegistered) {
+      alert('Please register first.');
+      loadNewDriverPage();
+      return;
+    }
+    currentPage='driverAccount';
+
+    const content = document.getElementById('innerContent');
+    // Show editable profile
+    content.innerHTML= `
+      <h1>Driver Profile</h1>
+      <form id="driverProfileForm">
+        <label>Selfie:</label>
+        <input type="file" accept="image/*" id="profilePhoto" />
+        ${driverData.driverPhoto ? `<img src="${driverData.driverPhoto}" width="100" />` : ''}
+        <label>Name:</label>
+        <input type="text" id="profileName" value="${driverData.name}" />
+        <label>Email:</label>
+        <input type="email" id="profileEmail" value="${driverData.email}" />
+        <label>ID Number:</label>
+        <input type="text" id="profileID" value="${driverData.idNumber}" />
+        <label>Bank Details:</label>
+        <input type="text" id="profileBankDetails" value="${driverData.bankDetails}" />
+        <label>Bank Name:</label>
+        <select id="profileBankName">
+          <option value="FNB" ${driverData.bankName==='FNB'?'selected':''}>FNB</option>
+          <option value="Standard Bank" ${driverData.bankName==='Standard Bank'?'selected':''}>Standard Bank</option>
+          <option value="Capitec" ${driverData.bankName==='Capitec'?'selected':''}>Capitec</option>
+          <option value="NedBank" ${driverData.bankName==='NedBank'?'selected':''}>NedBank</option>
+          <option value="Other" ${driverData.bankName==='Other'?'selected':''}>Other</option>
+        </select>
+        <div id="editOtherBankDiv" class="${driverData.bankName==='Other'?'':'hidden'}">
+          <label>Specify Bank:</label>
+          <input type="text" id="editOtherBank" value="${driverData.otherBank || ''}" />
+        </div>
+        <label>Driver License:</label>
+        <input type="file" accept="image/*" id="profileLicense" />
+        <label>Car Color:</label>
+        <input type="text" id="profileCarColor" value="${driverData.carColor || ''}" />
+        <label>Car Type:</label>
+        <input type="text" id="profileCarType" value="${driverData.carType || ''}" />
+        <label>Car Photo:</label>
+        <input type="file" accept="image/*" id="profileCarPhoto" />
+        <label>Car Registration Number:</label>
+        <input type="text" id="profileCarReg" value="${driverData.carRegNumber || ''}" />
+        <button type="submit" class="action-btn">Save</button>
+      </form>
+      <button id="terminateBtn" style="margin-top:10px; background-color:red;">Terminate Driver</button>
+      <a href="#" id="backToMain">Back</a>
+    `;
+    document.getElementById('profileBankName').onchange=()=> {
+      document.getElementById('editOtherBankDiv').className= (document.getElementById('profileBankName').value==='Other')?'':'hidden';
+    };
+    // Attach submit handler after content is loaded
+    setTimeout(() => {
+      document.getElementById('driverProfileForm').onsubmit=(e) => {
+        e.preventDefault();
+        driverData.name=document.getElementById('profileName').value;
+        driverData.email=document.getElementById('profileEmail').value;
+        driverData.idNumber=document.getElementById('profileID').value;
+        driverData.bankDetails=document.getElementById('profileBankDetails').value;
+        driverData.bankName=document.getElementById('profileBankName').value;
+        driverData.carColor=document.getElementById('profileCarColor').value;
+        driverData.carType=document.getElementById('profileCarType').value;
+        driverData.carRegNumber=document.getElementById('profileCarReg').value;
+        alert('Profile saved and sent to admin.');
+      };
+      document.getElementById('terminateBtn').onclick=()=>{
+        if (confirm('Are you sure you want to terminate your driver account? Admin will be notified.')) {
+          alert('Termination request sent to admin.');
+          driverRegistered=false; driverApproved=false; driverData={};
+          loadNewDriverPage();
+        }
+      };
+      document.getElementById('backToMain')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        loadAppropriatePage();
+      });
+    }, 100);
+  }
+
+  function loadAppropriatePage() {
+    if (!driverRegistered) {
+      loadNewDriverPage();
+    } else if (driverApproved) {
+      loadOrderView();
+    } else {
+      showWaitingApproval();
+    }
+  }
+
+  // Fetch example (simulate)
+  fetch('http://localhost:3000/api/your-endpoint_main.jsx_driver_app')
+    .then(res=>res.json())
+    .then(data=> {
+      console.log('Backend data:', data);
+      // optional: manipulate DOM
+    })
+    .catch(e=>console.error('Error fetching', e));
+});
 </script>
 </body>
 </html>
