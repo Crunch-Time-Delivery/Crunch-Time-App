@@ -1,52 +1,28 @@
 <!DOCTYPE html>
-<html lang="en" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>User App</title>
-
-<!-- Common CSS & Libraries -->
+<title>Home Dashboard</title>
+<!-- Your bundled CSS (if using a build tool) -->
 <link rel="stylesheet" href="assets/index.css" />
+<!-- QRCode & sha256 libraries -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/js-sha256/dist/sha256.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <style>
-/* --- General Styles --- */
+/* --- Combined Styles --- */
+
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   background-color: #f9f9f9;
 }
+ <!-- React root element --!>
+  <div id="root"></div>
 
-/* Welcome Inline Container Styles */
-#welcomeInline {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-#welcomeContent {
-  max-width: 350px;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
-  background: #fff;
-  text-align: center;
-}
-#welcomeContent img {
-  width: 250px;
-  height: auto;
-  margin-bottom: 20px;
-}
-
-/* Main Content Styles (hidden initially) */
-#mainContent {
-  display: none;
-}
-
-/* Header Styles */
+  <!-- Your React app bundle -->
+  <script src="assets/main.jsx" type="module"></script>
+/* Header styles */
 .header {
   display: flex;
   flex-wrap: wrap;
@@ -75,7 +51,7 @@ body {
   border-radius: 5px;
 }
 
-/* Filters Styles */
+/* Filters styles */
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -102,7 +78,7 @@ body {
   border-radius: 4px;
 }
 
-/* Restaurant Cards */
+/* Restaurant cards */
 .restaurant-list {
   padding: 10px 20px;
   max-height: 70vh;
@@ -237,7 +213,6 @@ button {
 #orderHistoryList button {
   margin-top: 10px;
 }
-
 /* Order History Button Style */
 #orderHistoryBtn {
   background-color: red;
@@ -261,265 +236,234 @@ button {
 </head>
 <body>
 
-<!-- =========================
-     Welcome Inline Page
-========================= -->
-<div id="welcomeInline">
-  <div id="welcomeContent">
-    <img src="img/screenshot (250).jpg" alt="Welcome Image" />
-    <h2 style="color:gray;">Welcome</h2>
-    <p>Before enjoying CrunchTime deliveries</p>
-    <p>Register now</p>
-    <button id="createAccountBtn" style="background-color:red; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer; width:80%; margin-top:10px;">Create account</button>
-    <button id="loginModal" style="background-color:white; color:red; padding:10px; border:2px solid red; border-radius:5px; cursor:pointer; width:80%; margin-top:10px;">Login</button>
-    <button id="browserMenuBtn" style="background-color:red; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer; width:80%; margin-top:10px;">Browser Menu</button>
-    <p style="margin-top:20px; font-size:12px; color:gray;">By logging in or registering, you have agreed to the Terms and Conditions and Privacy Policy.</p>
+<!-- Header -->
+<div class="header">
+  <button>&#9776;</button>
+  <div>Crunch Time</div>
+  <button>Delivery</button>
+  <button>Pickup</button>
+  <div class="search-bar">
+    <input type="text" placeholder="Search Crunch Time" />
+  </div>
+  <button onclick="openMapLocation()">Map Location - Pick up now</button>
+</div>
+
+<!-- Filters -->
+<div class="filters">
+  <button><img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food" /><span>Fast Food</span></button>
+  <button><img src="Images/CR7 Veg .jpg" alt="Healthy" /><span>Healthy</span></button>
+  <button><img src="Images/CR7.jpg" alt="Burgers" /><span>Burgers</span></button>
+  <button><img src="Images/CR7 SUCCI.jpg" alt="Chinese" /><span>Chinese</span></button>
+  <button><img src="Images/CR7 WINGS.jpg" alt="Wings" /><span>Wings</span></button>
+  <button><img src="Images/CR7 PIZZA.webp" alt="Pizza" /><span>Pizza</span></button>
+  <button><img src="Images/CR7 SUCCI .webp" alt="Halal" /><span>Halal</span></button>
+  <button><img src="Images/CR7 KOREA .jpeg" alt="Korean" /><span>Korean</span></button>
+  <button>&rarr;</button>
+</div>
+
+<!-- Restaurant list -->
+<div class="restaurant-list" id="restaurantList">
+  <!-- Sample restaurants; add more as needed -->
+  <div class="restaurant-card" onclick="showMenu('KFC Parow')">
+    <img src="Images/RS KFC .jpeg" alt="KFC Parow" />
+    <div class="details">
+      <div>KFC, Parow</div>
+      <div class="rating">4.4 ★</div>
+      <div>Sponsored - 5 min - 4.4 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+  <div class="restaurant-card" onclick="showMenu('Sannes Palace')">
+    <img src="Images/RS PALACE .jpg" alt="Sannes Palace" />
+    <div class="details">
+      <div>Sannes Palace</div>
+      <div class="rating">4.5 ★</div>
+      <div class="promo">Spend ZAR 100, Save ZAR 15</div>
+      <div>20 min - 0.5 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+  <div class="restaurant-card" onclick="showMenu('DK Spot & Kota')">
+    <img src="Images/RS KOTA .jpg" alt="DK Spot & Kota" />
+    <div class="details">
+      <div>DK Spot & Kota Restaurant</div>
+      <div class="rating">4.0 ★</div>
+      <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+  <div class="restaurant-card" onclick="showMenu('Nondyebo Eatery')">
+    <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery" />
+    <div class="details">
+      <div>Nondyebo Eatery</div>
+      <div class="rating">3.3 ★</div>
+      <div>10 min - 0.6 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
   </div>
 </div>
 
-<!-- =========================
-     Main Content (hidden initially)
-========================= -->
-<div id="mainContent">
-
-  <!-- Header -->
-  <div class="header">
-    <button>&#9776;</button>
-    <div>Crunch Time</div>
-    <button>Delivery</button>
-    <button>Pickup</button>
-    <div class="search-bar">
-      <input type="text" placeholder="Search Crunch Time" />
-    </div>
-    <button onclick="openMapLocation()">Map Location - Pick up now</button>
+<!-- Modal for Restaurant Menu -->
+<div id="menuModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <!-- Image for restaurant -->
+    <img id="restaurantImage" src="" alt="Restaurant Image" />
+    <h2 id="restaurantName">Restaurant Menu</h2>
+    <div id="menuItems"></div>
+    <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
   </div>
+</div>
 
-  <!-- Filters -->
-  <div class="filters">
-    <button><img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food" /><span>Fast Food</span></button>
-    <button><img src="Images/CR7 Veg .jpg" alt="Healthy" /><span>Healthy</span></button>
-    <button><img src="Images/CR7.jpg" alt="Burgers" /><span>Burgers</span></button>
-    <button><img src="Images/CR7 SUCCI.jpg" alt="Chinese" /><span>Chinese</span></button>
-    <button><img src="Images/CR7 WINGS.jpg" alt="Wings" /><span>Wings</span></button>
-    <button><img src="Images/CR7 PIZZA.webp" alt="Pizza" /><span>Pizza</span></button>
-    <button><img src="Images/CR7 SUCCI .webp" alt="Halal" /><span>Halal</span></button>
-    <button><img src="Images/CR7 KOREA .jpeg" alt="Korean" /><span>Korean</span></button>
-    <button>&rarr;</button>
-  </div>
-
-  <!-- Restaurant list -->
-  <div class="restaurant-list" id="restaurantList">
-    <!-- Sample restaurants; add more as needed -->
-    <div class="restaurant-card" onclick="showMenu('KFC Parow')">
-      <img src="Images/RS KFC .jpeg" alt="KFC Parow" />
-      <div class="details">
-        <div>KFC, Parow</div>
-        <div class="rating">4.4 ★</div>
-        <div>Sponsored - 5 min - 4.4 km</div>
-      </div>
-      <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
-    </div>
-    <div class="restaurant-card" onclick="showMenu('Sannes Palace')">
-      <img src="Images/RS PALACE .jpg" alt="Sannes Palace" />
-      <div class="details">
-        <div>Sannes Palace</div>
-        <div class="rating">4.5 ★</div>
-        <div class="promo">Spend ZAR 100, Save ZAR 15</div>
-        <div>20 min - 0.5 km</div>
-      </div>
-      <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
-    </div>
-    <div class="restaurant-card" onclick="showMenu('DK Spot & Kota')">
-      <img src="Images/RS KOTA .jpg" alt="DK Spot & Kota" />
-      <div class="details">
-        <div>DK Spot & Kota Restaurant</div>
-        <div class="rating">4.0 ★</div>
-        <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
-      </div>
-      <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
-    </div>
-    <div class="restaurant-card" onclick="showMenu('Nondyebo Eatery')">
-      <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery" />
-      <div class="details">
-        <div>Nondyebo Eatery</div>
-        <div class="rating">3.3 ★</div>
-        <div>10 min - 0.6 km</div>
-      </div>
-      <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+<!-- Food Modal for selecting options before adding -->
+<div id="foodOpinionModal" class="modal">
+  <div class="modal-content" style="max-width:400px;">
+    <span class="close-btn" onclick="closeFoodOpinionModal()">&times;</span>
+    <h3>Tell us your preference</h3>
+    <select id="opinionChoice" style="width:100%; padding:8px;">
+      <option>No preference</option>
+      <option>Spicy</option>
+      <option>Less Salt</option>
+      <option>Extra cheese</option>
+      <option>No onions</option>
+      <option>Less Sugar</option>
+      <option>Extra Ice</option>
+    </select>
+    <div style="margin-top:20px; display:flex; justify-content:center;">
+      <button class="add-more-btn" onclick="confirmFoodOpinion()">Next</button>
     </div>
   </div>
+</div>
 
-  <!-- Modal for Restaurant Menu -->
-  <div id="menuModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeModal()">&times;</span>
-      <!-- Image for restaurant -->
-      <img id="restaurantImage" src="" alt="Restaurant Image" />
-      <h2 id="restaurantName">Restaurant Menu</h2>
-      <div id="menuItems"></div>
-      <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
+<!-- Food item modal for adding food -->
+<div id="foodModal" class="food-modal">
+  <div class="food-modal-content">
+    <span class="food-close-btn" onclick="closeFoodModal()">&times;</span>
+    <h3 id="foodItemName">Food Item</h3>
+    <div style="display:flex; align-items:center; justify-content:space-around; margin-top:10px;">
+      <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+      <span id="foodQuantity">1</span>
+      <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+    </div>
+    <div style="margin-top:20px; display:flex; justify-content:center;">
+      <button class="add-more-btn" onclick="addItemToOrder()">Add to Order</button>
+      <button class="exit-btn" onclick="closeFoodModal()">Exit</button>
     </div>
   </div>
+</div>
 
-  <!-- Food Modal for selecting options before adding -->
-  <div id="foodOpinionModal" class="modal">
-    <div class="modal-content" style="max-width:400px;">
-      <span class="close-btn" onclick="closeFoodOpinionModal()">&times;</span>
-      <h3>Tell us your preference</h3>
-      <select id="opinionChoice" style="width:100%; padding:8px;">
-        <option>No preference</option>
-        <option>Spicy</option>
-        <option>Less Salt</option>
-        <option>Extra cheese</option>
-        <option>No onions</option>
-        <option>Less Sugar</option>
-        <option>Extra Ice</option>
-      </select>
-      <div style="margin-top:20px; display:flex; justify-content:center;">
-        <button class="add-more-btn" onclick="confirmFoodOpinion()">Next</button>
-      </div>
-    </div>
+<!-- Order Summary -->
+<div id="orderSummary" style="padding:10px 20px; background:#fff; max-height:200px; overflow-y:auto; margin:10px;">
+  <h4>Order Summary</h4>
+  <ul id="orderItems"></ul>
+  <!-- Buttons below order summary -->
+  <button id="checkoutBtn" class="checkout-btn" onclick="goToCheckout()">Go to Checkout</button>
+  <button id="orderHistoryBtn" style="background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showOrderHistory()">Order History</button>
+  <button id="voucherBtn" style="background-color:#f80505; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showVoucherInput()">Input Voucher Coupon</button>
+</div>
+
+<!-- Checkout page (hidden initially) -->
+<div id="checkoutPage">
+  <h2>Checkout</h2>
+  <h3>Order Summary</h3>
+  <ul id="checkoutItems"></ul>
+  <h3>Total: <span id="totalAmount">R0</span></h3>
+  <h3>Payment Method</h3>
+  <div style="margin-bottom:20px;">
+    <input type="radio" id="eft" name="payment" value="EFT" checked>
+    <label for="eft">EFT Bank Transfer</label>
   </div>
+  <button class="pay-btn confirm-btn" onclick="confirmEFT()">Confirm EFT Payment</button>
+  <button class="pay-btn cancel-btn" onclick="cancelCheckout()">Cancel</button>
+</div>
 
-  <!-- Food item modal for adding food -->
-  <div id="foodModal" class="food-modal">
-    <div class="food-modal-content">
-      <span class="food-close-btn" onclick="closeFoodModal()">&times;</span>
-      <h3 id="foodItemName">Food Item</h3>
-      <div style="display:flex; align-items:center; justify-content:space-around; margin-top:10px;">
-        <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
-        <span id="foodQuantity">1</span>
-        <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
-      </div>
-      <div style="margin-top:20px; display:flex; justify-content:center;">
-        <button class="add-more-btn" onclick="addItemToOrder()">Add to Order</button>
-        <button class="exit-btn" onclick="closeFoodModal()">Exit</button>
-      </div>
-    </div>
+<!-- Order History Popup -->
+<div id="orderHistoryModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeOrderHistory()">&times;</span>
+    <h2>Order History</h2>
+    <div id="orderHistoryList"></div>
   </div>
+</div>
 
-  <!-- Order Summary -->
-  <div id="orderSummary" style="padding:10px 20px; background:#fff; max-height:200px; overflow-y:auto; margin:10px;">
-    <h4>Order Summary</h4>
-    <ul id="orderItems"></ul>
-    <!-- Buttons below order summary -->
-    <button id="checkoutBtn" class="checkout-btn" onclick="goToCheckout()">Go to Checkout</button>
-    <button id="orderHistoryBtn" style="background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showOrderHistory()">Order History</button>
-    <button id="voucherBtn" style="background-color:#f80505; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showVoucherInput()">Input Voucher Coupon</button>
+<!-- Voucher input popup -->
+<div id="voucherModal" class="modal">
+  <div class="modal-content" style="max-width:400px;">
+    <span class="close-btn" onclick="closeVoucherModal()">&times;</span>
+    <h3>Enter Voucher Code</h3>
+    <input type="text" id="voucherCode" placeholder="Voucher Code" style="width:100%; padding:8px;">
+    <button style="margin-top:10px; width:100%; background:#ff0202; color:#fff; padding:8px; border:none; border-radius:5px;" onclick="applyVoucher()">Apply</button>
   </div>
-
-  <!-- Checkout page (hidden initially) -->
-  <div id="checkoutPage">
-    <h2>Checkout</h2>
-    <h3>Order Summary</h3>
-    <ul id="checkoutItems"></ul>
-    <h3>Total: <span id="totalAmount">R0</span></h3>
-    <h3>Payment Method</h3>
-    <div style="margin-bottom:20px;">
-      <input type="radio" id="eft" name="payment" value="EFT" checked>
-      <label for="eft">EFT Bank Transfer</label>
-    </div>
-    <button class="pay-btn confirm-btn" onclick="confirmEFT()">Confirm EFT Payment</button>
-    <button class="pay-btn cancel-btn" onclick="cancelCheckout()">Cancel</button>
-  </div>
-
-  <!-- Order History Popup -->
-  <div id="orderHistoryModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeOrderHistory()">&times;</span>
-      <h2>Order History</h2>
-      <div id="orderHistoryList"></div>
-    </div>
-  </div>
-
-  <!-- Voucher input popup -->
-  <div id="voucherModal" class="modal">
-    <div class="modal-content" style="max-width:400px;">
-      <span class="close-btn" onclick="closeVoucherModal()">&times;</span>
-      <h3>Enter Voucher Code</h3>
-      <input type="text" id="voucherCode" placeholder="Voucher Code" style="width:100%; padding:8px;">
-      <button style="margin-top:10px; width:100%; background:#ff0202; color:#fff; padding:8px; border:none; border-radius:5px;" onclick="applyVoucher()">Apply</button>
-    </div>
-  </div>
-
-</div> <!-- End of mainContent -->
+</div>
 
 <script>
-// =========================
-// Welcome Page Logic
-// =========================
-document.getElementById('createAccountBtn').onclick = () => {
-  alert('Create account functionality not implemented.');
+/* =========================
+   GLOBAL VARIABLES
+========================= */
+let pendingFoodItem = null;
+let currentRestaurant = '';
+let currentQty = 1;
+let selectedFood = null;
+let orderItems = [];
+let orderHistory = [];
+let discountAmount = 0;
+
+/* =========================
+   UTILITY FUNCTIONS
+========================= */
+function showModal(id) { document.getElementById(id).style.display='block'; }
+function hideModal(id) { document.getElementById(id).style.display='none'; }
+
+// Close modals on outside click
+window.onclick = function(e) {
+  const modalIds=['menuModal','foodModal','orderHistoryModal','voucherModal','searchDriverPopup','driverContact'];
+  modalIds.forEach(id => {
+    if (e.target===document.getElementById(id)) hideModal(id);
+  });
 };
-document.getElementById('loginBtn').onclick = () => {
-  showLoginModal();
-};
-document.getElementById('browserMenuBtn').onclick = () => {
-  alert('Browser menu functionality not implemented.');
-};
 
-function showLoginModal() {
-  document.getElementById('loginEmail').value='';
-  document.getElementById('loginPassword').value='';
-  showElement('loginModal');
-}
-function closeLoginModal() {
-  hideElement('loginModal');
-}
-function submitLogin() {
-  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const password = document.getElementById('loginPassword').value.trim();
-  if (email && password) {
-    registeredEmail = email;
-    registeredPassword = password;
-    alert('Login successful!');
-    closeLoginModal();
-    showMainContent();
-  } else {
-    alert('Please enter email and password.');
-  }
-}
-function showElement(id){ document.getElementById(id).style.display='block'; }
-function hideElement(id){ document.getElementById(id).style.display='none'; }
-
-// Transition from welcome to main content
-function showMainContent() {
-  document.getElementById('welcomeInline').style.display='none';
-  document.getElementById('mainContent').style.display='block';
-  initApp(); // initialize your app if needed
-}
-
-// =========================
-// Main App Logic
-// =========================
-let registeredEmail='';
-let registeredPassword='';
-let userPIN='';
-// Utility functions
-function showModal(id){ document.getElementById(id).style.display='block'; }
-function hideModal(id){ document.getElementById(id).style.display='none'; }
-
-// Map Location
-function openMapLocation() { window.open('http://127.0.0.1:5500/user-app/search_location.html','_blank'); }
-
-// =========================
-// Restaurant & Menu Data
-// =========================
+/* =========================
+   DATA & FUNCTIONS
+========================= */
 const restaurantMenus={
-  'KFC Parow':[ {name:'Zinger Burger',price:'R50'}, {name:'Fries',price:'R20'}, {name:'Cola',price:'R15'} ],
-  'Sannes Palace':[ {name:'Chicken Curry',price:'R80'}, {name:'Veggie Plate',price:'R60'}, {name:'Lemonade',price:'R10'} ],
-  'DK Spot & Kota':[ {name:'Kota Special',price:'R25'}, {name:'Fries',price:'R20'}, {name:'Soda',price:'R15'} ],
-  'Nondyebo Eatery':[ {name:'Wrap',price:'R40'}, {name:'Salad',price:'R35'}, {name:'Juice',price:'R12'} ]
+  'KFC Parow':[
+    {name:'Zinger Burger',price:'R50'},
+    {name:'Fries',price:'R20'},
+    {name:'Cola',price:'R15'}
+  ],
+  'Sannes Palace':[
+    {name:'Chicken Curry',price:'R80'},
+    {name:'Veggie Plate',price:'R60'},
+    {name:'Lemonade',price:'R10'}
+  ],
+  'DK Spot & Kota':[
+    {name:'Kota Special',price:'R25'},
+    {name:'Fries',price:'R20'},
+    {name:'Soda',price:'R15'}
+  ],
+  'Nondyebo Eatery':[
+    {name:'Wrap',price:'R40'},
+    {name:'Salad',price:'R35'},
+    {name:'Juice',price:'R12'}
+  ]
 };
 
-// =========================
-// Show Menu Modal
-// =========================
+/* =========================
+   SHOW/HIDE MODALS
+========================= */
+function showModal(id) { document.getElementById(id).style.display='block'; }
+function hideModal(id) { document.getElementById(id).style.display='none'; }
+
+/* =========================
+   RESTAURANT & MENU
+========================= */
 function showMenu(restName) {
   currentRestaurant=restName;
 
+  // Set the restaurant name
   document.getElementById('restaurantName').innerText=restName+' Menu';
 
+  // Set the image based on the restaurant
   const imgEl=document.getElementById('restaurantImage');
   switch(restName){
     case 'KFC Parow': imgEl.src='Images/RS KFC .jpeg'; break;
@@ -529,13 +473,14 @@ function showMenu(restName) {
     default: imgEl.src='';
   }
 
+  // Populate menu
   const menuDiv=document.getElementById('menuItems');
   menuDiv.innerHTML='';
   (restaurantMenus[restName]||[]).forEach(itm => {
     const div=document.createElement('div');
     div.className='menu-item';
     div.innerHTML=`<strong>${itm.name}</strong> - ${itm.price}`;
-    div.onclick=()=>{ openFoodOptionModal(itm); };
+    div.onclick=()=>{ openFoodOptionModal(itm); }; // Open opinion select before adding
     menuDiv.appendChild(div);
   });
   showModal('menuModal');
@@ -557,21 +502,20 @@ function toggleFavorite(btn) {
   else { btn.innerText='♥'; }
 }
 
-// =========================
-// Food Options & Adding Food
-// =========================
-let pendingFoodItem=null;
-let currentQty=1;
-
+/* =========================
+   Food Option Selection
+========================= */
 function openFoodOptionModal(itm) {
   pendingFoodItem=itm;
   currentQty=1;
+  // Reset opinion selection
   document.getElementById('opinionChoice').value='No preference';
   showModal('foodOpinionModal');
 }
 function closeFoodOptionModal() { hideModal('foodOpinionModal'); }
 function confirmFoodOpinion() {
   const opinion=document.getElementById('opinionChoice').value;
+  // Add to order with opinion
   if(pendingFoodItem){
     orderItems.push({name:pendingFoodItem.name, price:pendingFoodItem.price, quantity:currentQty, opinion: opinion});
     updateOrderSummary();
@@ -579,9 +523,12 @@ function confirmFoodOpinion() {
   closeFoodOptionModal();
 }
 
-// Direct add without opinion
+/* =========================
+   Food Modal for adding items
+========================= */
 function openFoodModal(itm) {
-  pendingFoodItem=itm;
+  // For direct add without opinion
+  pendingFoodItem = itm;
   currentQty=1;
   document.getElementById('foodItemName').innerText=itm.name;
   document.getElementById('foodQuantity').innerText=currentQty;
@@ -601,16 +548,17 @@ function addItemToOrder() {
   closeFoodModal();
 }
 
-// =========================
-// Order Summary & Management
-// =========================
-let orderItems=[]; // cart items
+/* =========================
+   UPDATE & DISPLAY ORDER
+========================= */
 function updateOrderSummary() {
   const ul=document.getElementById('orderItems');
   ul.innerHTML='';
   orderItems.forEach((it,idx) => {
     const li=document.createElement('li');
+    // Removed "x1" and "@" for simplicity
     li.innerHTML=`${it.name} x${it.quantity} @ ${it.price}`;
+    // Add Remove button
     const removeBtn=document.createElement('button');
     removeBtn.innerText='Remove';
     removeBtn.style.marginLeft='10px';
@@ -627,14 +575,9 @@ function saveOrder() {
   }
 }
 
-// =========================
-// Checkout & Payment
-// =========================
-let orderHistory=[]; // past orders
-let discountAmount=0;
-
+// Go to checkout
 function goToCheckout() {
-  if (orderItems.length===0){ alert("Your cart is empty!"); return; }
+  if (orderItems.length===0) { alert("Your cart is empty!"); return; }
   saveOrder();
   // Calculate total
   let total=0;
@@ -662,9 +605,15 @@ function cancelCheckout() {
   document.getElementById('orderSummary').style.display='block';
 }
 
-// =========================
-// Voucher & QR Code
-// =========================
+/* =========================
+   PAYMENT & VOUCHER
+========================= */
+function confirmEFT() {
+  alert("Your EFT payment has been processed successfully. Thank you for your order!");
+  orderItems=[];
+  updateOrderSummary();
+  cancelCheckout();
+}
 function showVoucherInput() {
   showModal('voucherModal');
 }
@@ -698,9 +647,9 @@ function updateTotalWithDiscount() {
   document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
 }
 
-// =========================
-// Order History functions
-// =========================
+/* =========================
+   Order History Functions
+========================= */
 function showOrderHistory() {
   const listDiv=document.getElementById('orderHistoryList');
   listDiv.innerHTML='';
@@ -712,7 +661,8 @@ function showOrderHistory() {
   orderHistory.forEach((o,i) => {
     const d=document.createElement('div');
     d.style.border='1px solid #ccc'; d.style.padding='10px'; d.style.marginBottom='10px'; d.style.borderRadius='4px';
-    const dateStr=new Date(o.date).toLocaleString();
+    // Format date
+    const dateStr = new Date(o.date).toLocaleString();
     d.innerHTML=`
       <strong>Restaurant:</strong> ${o.restaurant}<br>
       <strong>Date:</strong> ${dateStr}<br>
@@ -746,62 +696,39 @@ function getRestaurantImage(restName) {
   }
 }
 
-// =========================
-// Map Location
-// =========================
+/* =========================
+   Voucher Button
+========================= */
+function showVoucherInput() {
+  showModal('voucherModal');
+}
+
+/* =========================
+   Map Location
+========================= */
 function openMapLocation() { window.open('http://127.0.0.1:5500/user-app/search_location.html','_blank'); }
 
-// =========================
-// Confirm EFT Payment
-// =========================
+// Confirm Payment
 function confirmEFT() {
   alert("Your EFT payment has been processed successfully. Thank you for your order!");
-  orderItems=[]; updateOrderSummary();
+  orderItems=[];
+  updateOrderSummary();
   cancelCheckout();
 }
 
-// =========================
-// Initialize App
-// =========================
-function initApp() {
-  // Any initialization if needed
-  console.log('App initialized.');
-}
 
-// =========================
-// Fetch example
-// =========================
-fetch('http://localhost:3000/api/your-endpoint_main.jsx_user_app')
-  .then(response => response.json())
-  .then(data => {
-    console.log('Data from your backend:', data);
-    // You can manipulate the DOM here based on response
-    // For example:
-    // document.getElementById('contentArea').innerHTML += '<p>Data loaded from backend!</p>';
-  })
-  .catch(error => {
-    console.error('Error fetching data:', error);
-  });
+  // Example fetch request to localhost API of main.jsx
+    fetch('http://localhost:3000/api/your-endpoint_main.jsx_user_app')
+      .then(response => response.json())
+      .then(data => {
+        console.log('Data from your backend:', data);
+        // You can manipulate the DOM here based on response
+        document.getElementById('contentArea').innerHTML += '<p>Data loaded from backend!</p>';
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
 
-  // Attach event to "Create account" button
-  document.querySelector('.createAccountBtn').onclick = () => {
-    // Replace the URL with your registration page URL
-    window.location.href = ' http://127.0.0.1:5500/user-app/register_home.html'; // or another page
 </script>
-
-
-<div id="loginModal" class="modal" style="display:none;">
-  <div class="modal-content" style="max-width:400px;">
-    <h2>Welcome</h2>
-    <h3>Login</h3>
-    <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
-    <label>Email Address</label>
-    <input type="text" id="loginEmail" placeholder="Email" style="width:100%; padding:8px; margin-top:10px; border:1px solid #ccc; border-radius:4px;"/>
-    <label>Password</label>
-    <input type="password" id="loginPassword" placeholder="Password" style="width:100%; padding:8px; margin-top:10px; border:1px solid #ccc; border-radius:4px;"/>
-    <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" onclick="submitLogin()">Login</button>
-  </div>
-</div>
-
 </body>
 </html>

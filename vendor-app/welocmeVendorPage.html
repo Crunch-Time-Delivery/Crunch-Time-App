@@ -79,9 +79,9 @@
   <p>Before enjoying CrunchTime deliveries</p>
   <p>Register now</p>
   <div class="centered-buttons">
-    <button id="registerModal " class="btn-create" onclick="handleCreateAccount()">Create account</button>
-    <button id="loginModal " class="btn-login" onclick="handleLogin()">Login</button>
-    <button id="browserModal "  class="btn-browser" onclick="window.location.href='dummy.html';">Browser Menu</button>
+    <button id="registerBtn" class="btn-create" onclick="handleCreateAccount()">Create account</button>
+    <button id="loginBtn" class="btn-login" onclick="handleLogin()">Login</button>
+    <button id="browserBtn" class="btn-browser" onclick="window.location.href='dummy.html';">Browser Menu</button>
   </div>
   <div id="termsText">
     By logging in or registering, you have agreed to the Terms and Conditions and Privacy Policy.
@@ -101,105 +101,14 @@
   </div>
 </div>
 
-<!-- OTP Modal -->
-<div id="otpModal" class="modal" style="display:none;">
-  <div class="modal-box">
-    <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
-    <h3>Verify Account</h3>
-    <p>Please enter the OTP sent to your email to verify your account</p>
-    <p>Enter your OTP code here</p>
-    <input id="otpInput" placeholder="OTP" />
-    <p>Didn’t receive code? Request again</p>
-    <button style="width:100%; background:#f80202; color:#fff;" onclick="verifyOTP()">Confirm</button>
-  </div>
-</div>
-
-<!-- Login Modal -->
-<div id="loginModal" class="modal" style="display:none;">
-  <div class="modal-box">
-    <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
-    <h3>Welcome</h3>
-    <p>For vendors Manage your orders in real time. </p>
-    <label>Email Address</label>
-    <input id="username" placeholder="Username" />
-    <label>Password</label>
-    <input id="password" placeholder="Password" type="password" />
-    <button style="width:100%; background:#f40101; color:#fff;" onclick="verifyLogin()">Login</button>
-    <p>Don't have an account? Register here</p>
-  </div>
-</div>
-
 <script>
-let tempAdminData = {};
-let generatedOTP = '';
-
 function handleCreateAccount() {
-  document.getElementById('welcomeOverlay').style.display='none';
-  showRegistration();
+  window.location.href='http://127.0.0.1:5500/vendor-app/registerVendor.html';
 }
 function handleLogin() {
-  document.getElementById('welcomeOverlay').style.display='none';
-  showLogin();
-}
-function showRegistration() {
-  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  document.getElementById('loginModal').style.display='none';
-  document.getElementById('registerModal').style.display='none';
-  document.getElementById('otpModal').style.display='none';
-}
-function showLogin() {
-  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  document.getElementById('loginModal').style.display='flex';
-  document.getElementById('username').value='';
-  document.getElementById('password').value='';
-}
-
-function startRegistration() {
-  const email = document.getElementById('regEmail').value.trim();
-  const name = document.getElementById('regName').value.trim();
-  const pass = document.getElementById('regPassword').value.trim();
-  if (!email || !name || !pass) { alert('Fill all fields'); return; }
-  tempAdminData = { email, name, pass };
-  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-  alert('Your OTP: ' + generatedOTP);
-  document.getElementById('registerModal').style.display='none';
-  document.getElementById('otpModal').style.display='flex';
-  document.getElementById('otpInput').value = '';
-}
-
-function verifyOTP() {
-  const inputOTP = document.getElementById('otpInput').value.trim();
-  if (inputOTP === generatedOTP) {
-    alert('OTP verified! Registration complete.');
-    localStorage.setItem('vendorEmail', tempAdminData.email);
-    localStorage.setItem('vendorPassword', tempAdminData.pass);
-    localStorage.setItem('vendorLoggedIn', 'true');
-    document.getElementById('otpModal').style.display='none';
-
-    // Redirect to your app page
-    window.location.href = "http://127.0.0.1:5500/vendor-app/index.html";
-  } else {
-    alert('Incorrect OTP');
-  }
-}
-
-function verifyLogin() {
-  const username = document.getElementById('username').value.trim();
-  const pass = document.getElementById('password').value.trim();
-  const storedEmail = localStorage.getItem('vendorEmail');
-  const storedPass = localStorage.getItem('vendorPassword');
-  if (!storedEmail || !storedPass) { alert('Register first'); return; }
-  if (username === storedEmail && pass === storedPass) {
-    alert('Logged in');
-    localStorage.setItem('vendorLoggedIn', 'true');
-    document.getElementById('loginModal').style.display='none';
-
-    // Redirect after login
-    window.location.href = "http://127.0.0.1:5500/vendor-app/index.html";
-  } else {
-    alert('Invalid');
-  }
+  window.location.href='http://127.0.0.1:5500/vendor-app/loginVendor.html';
 }
 </script>
+
 </body>
 </html>

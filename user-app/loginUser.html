@@ -1,0 +1,177 @@
+<!-- loginDriver.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Login Modal</title>
+<style>
+  /* Modal styles */
+  .modal {
+    display: none; 
+    position: fixed; 
+    z-index: 2000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.4);
+  }
+  .modal-content {
+    background-color: #fff;
+    margin: 15% auto; 
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+  }
+  .modal input {
+    width: 80%;
+    padding: 8px;
+    margin-top: 10px;
+  }
+  .modal button {
+    margin-top: 15px;
+    padding: 8px 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Container for dynamic content -->
+<div id="innerContent"></div>
+
+<!-- Login Modal Structure -->
+<div id="loginModal" class="modal">
+  <div class="modal-content">
+    <img src="img/screenshot (251).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+    <h2>Welcome</h2>
+    <h3>Login</h3>
+    <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
+    <label>Email Address</label>
+    <input type="email" id="loginEmail" placeholder="Email" />
+    <label>Password</label>
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" id="loginBtn">Login</button>
+  </div>
+</div>
+
+<!-- OTP Modal -->
+<div id="otpModal" class="modal">
+  <div class="modal-content">
+    <h3>Verify Account</h3>
+    <p>Please enter the OTP number sent to your email to reset your password</p>
+    <input type="text" id="otpInput" maxlength="4" placeholder="Enter OTP" />
+    <div style="margin-top:10px;">
+      <button id="verifyOtpBtn">Confirm</button>
+      <button id="resendOtpBtn">Resend OTP</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Placeholder driver data and variables
+  const driverData = {
+    email: 'driver@example.com',
+    phoneNumber: '1234567890'
+  };
+  let driverApproved = true; // set to false to test waiting state
+  let generatedOtp = '';
+  let otpVerified = false;
+
+  // Utility functions to show/hide modals
+  function showModal(modalId) {
+    document.getElementById(modalId).style.display='block';
+  }
+
+  function hideModal(modalId) {
+    document.getElementById(modalId).style.display='none';
+  }
+
+  // Functions to show/hide login modal
+  function showLoginModal(email='', password='') {
+    showModal('loginModal');
+    document.getElementById('loginEmail').value=email;
+    document.getElementById('loginPassword').value=password;
+  }
+
+  function hideLoginModal() {
+    hideModal('loginModal');
+  }
+
+  // Load initial login page
+function loadLoginPage() {
+  const contentDiv = document.getElementById('innerContent');
+  // Optional: clear or hide innerContent
+  contentDiv.innerHTML= ''; // Keep empty as login modal appears immediately
+  // Show login modal immediately
+  showLoginModal();
+}
+
+// Generate and send OTP
+function generateAndSendOtp() {
+  generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  alert(`OTP sent to Phone: ${driverData.phoneNumber} and Email: ${driverData.email}. (OTP: ${generatedOtp})`);
+}
+
+// Show OTP modal
+function showOtpModal() {
+  document.getElementById('otpModal').style.display='block';
+  document.getElementById('otpInput').value='';
+  otpVerified=false;
+}
+
+function hideOtpModal() {
+  document.getElementById('otpModal').style.display='none';
+}
+
+// Event handlers for OTP verification
+document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
+  const enteredOtp = document.getElementById('otpInput').value.trim();
+  if (enteredOtp===generatedOtp) {
+    otpVerified=true;
+    alert('OTP verified! Awaiting admin approval...');
+    hideOtpModal();
+    // Proceed to main app or redirect
+    window.location.href='http://127.0.0.1:5500/user-app/index.html';
+  } else {
+    alert('Incorrect OTP. Please try again.');
+  }
+});
+
+document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
+  generateAndSendOtp();
+  alert('OTP resent.');
+});
+
+// Login button event
+document.getElementById('loginBtn')?.addEventListener('click', () => {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value.trim();
+
+  if (email === driverData.email.toLowerCase()) {
+    localStorage.setItem('driverEmail', email);
+    localStorage.setItem('driverPassword', password);
+    if (driverApproved) {
+      alert('Login successful! Accessing order view.');
+      hideLoginModal();
+      // Load order view or main page here
+      document.getElementById('innerContent').innerHTML = '<h2>Welcome to the Driver Dashboard</h2>';
+    } else {
+      alert('Waiting for admin approval...');
+      generateAndSendOtp();
+      showOtpModal();
+    }
+  } else {
+    alert('Invalid email.');
+  }
+});
+
+// Initialize page on load
+window.onload = () => {
+  loadLoginPage();
+};
+</script>
+</body>
+</html>

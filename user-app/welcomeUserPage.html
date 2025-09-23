@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Welcome - Driver App</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+  }
+
+  /* Center the welcome content vertically and horizontally */
+  #welcomeInline {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  #welcomeContent {
+    max-width: 350px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    background: #fff;
+    text-align: center;
+  }
+
+  #welcomeContent img {
+    width: 250px;
+    height: auto;
+    margin-bottom: 20px;
+  }
+
+  /* Buttons styled as links */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    font-weight: bold;
+    border-radius: 4px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  /* Specific styles for each button */
+  #createAccountBtn {
+     background-color: #fff;
+    color: red;
+    border: 1px solid red;
+  }
+
+  #loginBtn {
+    background-color: #fff;
+    color: red;
+    border: 1px solid red;
+  }
+
+  #browserMenuBtn {
+  */
+    background-color: #fff;
+    color: red;
+    border: 1px solid red;
+  }
+
+  /* Terms and Privacy links */
+  #welcomeContent p {
+    margin-top: 20px;
+    font-size: 14px;
+  }
+  #welcomeContent a {
+    color: red;
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<div id="welcomeInline">
+  <div id="welcomeContent">
+    <img src="img/screenshot (250).jpg" alt="Welcome Image" />
+    <h2 style="color:gray;">Welcome</h2>
+    <p>Before enjoying CrunchTime deliveries</p>
+    <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+      <a href="http://127.0.0.1:5500/user-app/register_home.html " class="btn" id="createAccountBtn">Create account</a>
+      <a href="http://127.0.0.1:5500/user-app/loginUser.html " class="btn" id="loginBtn">Login</a>
+      <a href="#" class="btn" id="browserMenuBtn">Browser Menu</a>
+    </div>
+    <p>
+      By logging in or registering, you have agreed to the
+      <a href="http://127.0.0.1:5500/driver-app/terms-and-conditions.page.html" target="_blank">Terms and Conditions</a>
+      and
+      <a href="dummy_privacy.pdf" target="_blank">Privacy Policy</a>.
+    </p>
+  </div>
+</div>
+
+<script>
+  // Example: you can add event listeners here if needed
+  document.getElementById('browserMenuBtn').addEventListener('click', () => {
+    // Define behavior for Browser Menu button if it doesn't navigate directly
+    // For example, open a menu or navigate somewhere
+    // window.location.href = 'desired-url.html';
+  });
+</script>
+
+</body>
+</html>

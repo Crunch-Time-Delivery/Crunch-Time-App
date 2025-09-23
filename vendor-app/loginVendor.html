@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Welcome Page</title>
+<!-- Font Awesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<style>
+  body { font-family: sans-serif; background:#f0f0f0; margin:0; }
+
+  /* Welcome overlay styles */
+  #welcomeOverlay {
+    position: fixed;
+    top:0; left:0; width:100%; height:100%;
+    background: rgba(255, 255, 255, 0.8);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    z-index:10000;
+    text-align: center;
+    padding:20px;
+  }
+  #welcomeOverlay img {
+    max-width:250px;
+    margin-bottom:20px;
+  }
+  #welcomeOverlay h2 {
+    color: gray;
+    margin: 10px 0;
+  }
+  #welcomeOverlay p {
+    margin:10px 0;
+  }
+  /* Buttons in overlay */
+  .centered-buttons {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .centered-buttons button {
+    width:200px;
+    padding:12px;
+    margin:10px 0;
+    font-size:1em;
+    cursor:pointer;
+    border-radius:4px;
+    border:none;
+  }
+  /* Specific overlay buttons */
+  .btn-create {
+    background:#f60202; /* red background */
+    color:#fff;
+  }
+  .btn-login {
+    background:#fff; /* white background */
+    color:#f60202; /* red text */
+  }
+  .btn-browser {
+    background:#f60202; /* red background */
+    color:#fff; /* white text */
+  }
+  /* Terms text */
+  #termsText {
+    margin-top:20px;
+    text-align:center;
+    font-size:0.9em;
+    color: #555;
+  }
+
+  /* Modal styles */
+  .modal {
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: rgba(0,0,0,0.5);
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  .modal-box {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+  .modal-box img {
+    max-width:250px;
+    height:auto;
+    margin-bottom:20px;
+  }
+  input {
+    width: 100%;
+    padding:8px;
+    margin:8px 0;
+    border-radius:4px;
+    border:1px solid #ccc;
+    box-sizing: border-box;
+  }
+  button {
+    width: 100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- Welcome overlay (if needed) -->
+<!--
+<div id="welcomeOverlay">
+  <!-- Your welcome overlay content here -->
+</div>
+-->
+
+<!-- OTP Modal -->
+<div id="otpModal" class="modal" style="display:none;">
+  <div class="modal-box">
+    <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+    <h3>Verify Account</h3>
+    <p>Please enter the OTP sent to your email to verify your account</p>
+    <p>Enter your OTP code here</p>
+    <input id="otpInput" placeholder="OTP" />
+    <p>Didn’t receive code? Request again</p>
+    <button style="background:#f80202; color:#fff;" onclick="verifyOTP()">Confirm</button>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal" style="display:none;">
+  <div class="modal-box">
+    <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+    <h3>Welcome</h3>
+    <p>For vendors Manage your orders in real time. </p>
+    <label>Email Address</label>
+    <input id="username" placeholder="Username" />
+    <label>Password</label>
+    <input id="password" placeholder="Password" type="password" />
+    <button style="background:#f40101; color:#fff;" onclick="verifyLogin()">Login</button>
+    <p>Don't have an account? Register here</p>
+  </div>
+</div>
+
+<!-- Optional: Registration or other sections can go here -->
+
+<script>
+  // Initialize variables
+  let tempAdminData = {};
+  let generatedOTP = '';
+
+  // Show login modal on page load
+  window.onload = function() {
+    showLogin();
+  };
+
+  function showLogin() {
+    // Hide other sections if any
+    document.querySelectorAll('.section').forEach(s => s.style.display='none');
+    document.getElementById('loginModal').style.display='flex';
+  }
+
+  function verifyLogin() {
+    const username = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    const storedEmail = localStorage.getItem('vendorEmail');
+    const storedPass = localStorage.getItem('vendorPassword');
+    if (!storedEmail || !storedPass) {
+      alert('Please register first.');
+      return;
+    }
+    if (username === storedEmail && pass === storedPass) {
+      alert('Logged in successfully.');
+      localStorage.setItem('vendorLoggedIn', 'true');
+      // Close login modal
+      document.getElementById('loginModal').style.display='none';
+      // Proceed to OTP verification
+      showOTP();
+    } else {
+      alert('Invalid credentials. Please try again.');
+    }
+  }
+
+  function showOTP() {
+    document.getElementById('otpModal').style.display='flex';
+  }
+
+  function verifyOTP() {
+    const inputOTP = document.getElementById('otpInput').value.trim();
+    if (inputOTP === generatedOTP) {
+      alert('OTP verified! Registration complete.');
+      // Save user data if needed
+      localStorage.setItem('vendorEmail', tempAdminData.email);
+      localStorage.setItem('vendorPassword', tempAdminData.pass);
+      localStorage.setItem('vendorLoggedIn', 'true');
+      // Hide OTP modal
+      document.getElementById('otpModal').style.display='none';
+      // Redirect to app
+      window.location.href = "http://127.0.0.1:5500/vendor-app/index.html";
+    } else {
+      alert('Incorrect OTP. Please try again.');
+    }
+  }
+
+  // For demonstration, let's generate a dummy OTP and set some dummy user data
+  // In real scenario, you'd send OTP via email/SMS and set user data accordingly
+  window.onload = function() {
+    showLogin();
+
+    // Example: prepopulate user data
+    localStorage.setItem('vendorEmail', 'user@example.com');
+    localStorage.setItem('vendorPassword', 'password123');
+
+    // Generate OTP for testing
+    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('Generated OTP:', generatedOTP);
+  };
+</script>
+
+</body>
+</html>
