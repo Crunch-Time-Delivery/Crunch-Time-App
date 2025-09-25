@@ -34,6 +34,24 @@
   .modal button {
     margin-top: 15px;
     padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  /* Style for user/admin buttons */
+  .nav-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+  .nav-buttons button {
+    background-color: red;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
   }
 </style>
 </head>
@@ -54,6 +72,11 @@
     <label>Password</label>
     <input type="password" id="loginPassword" placeholder="Password" />
     <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" id="loginBtn">Login</button>
+    <!-- Navigation Buttons for User and Admin -->
+    <div class="nav-buttons">
+      <button id="userBtn">User</button>
+      <button id="adminBtn">Admin</button>
+    </div>
   </div>
 </div>
 
@@ -103,8 +126,8 @@
   // Load initial login page
 function loadLoginPage() {
   const contentDiv = document.getElementById('innerContent');
-  // Optional: clear or hide innerContent
-  contentDiv.innerHTML= ''; // Keep empty as login modal appears immediately
+  // Clear content if any
+  contentDiv.innerHTML= ''; 
   // Show login modal immediately
   showLoginModal();
 }
@@ -133,7 +156,7 @@ document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
     otpVerified=true;
     alert('OTP verified! Awaiting admin approval...');
     hideOtpModal();
-    // Proceed to main app or redirect
+    // Redirect to user app after OTP verification
     window.location.href='http://127.0.0.1:5500/user-app/index.html';
   } else {
     alert('Incorrect OTP. Please try again.');
@@ -166,6 +189,16 @@ document.getElementById('loginBtn')?.addEventListener('click', () => {
   } else {
     alert('Invalid email.');
   }
+});
+
+// Event handler for User button
+document.getElementById('userBtn')?.addEventListener('click', () => {
+  window.location.href='http://127.0.0.1:5500/user-app/index.html';
+});
+
+// Event handler for Admin button
+document.getElementById('adminBtn')?.addEventListener('click', () => {
+  window.location.href='http://127.0.0.1:5500/user-app/admin/admin_dashboard.html';
 });
 
 // Initialize page on load

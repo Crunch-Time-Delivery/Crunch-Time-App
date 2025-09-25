@@ -34,6 +34,27 @@
   .modal button {
     margin-top: 15px;
     padding: 8px 12px;
+    cursor: pointer;
+  }
+  /* Buttons styling for Driver and Admin */
+  #buttonContainer {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  .redirectBtn {
+    background-color: red;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  /* Optional: hover effect */
+  .redirectBtn:hover {
+    opacity: 0.8;
   }
 </style>
 </head>
@@ -54,6 +75,11 @@
     <label>Password</label>
     <input type="password" id="loginPassword" placeholder="Password" />
     <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" id="loginBtn">Login</button>
+    <!-- Buttons for Driver and Admin -->
+    <div id="buttonContainer">
+      <button class="redirectBtn" id="driverBtn">Driver</button>
+      <button class="redirectBtn" id="adminBtn">Admin</button>
+    </div>
   </div>
 </div>
 
@@ -133,8 +159,9 @@ document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
     otpVerified=true;
     alert('OTP verified! Awaiting admin approval...');
     hideOtpModal();
-    // Proceed to main app or redirect
-    window.location.href='http://127.0.0.1:5500/driver-app/index.html';
+    // Redirect based on user clicking Driver or Admin buttons
+    // For demonstration, default redirect is Driver
+    document.getElementById('driverBtn').click();
   } else {
     alert('Incorrect OTP. Please try again.');
   }
@@ -166,6 +193,15 @@ document.getElementById('loginBtn')?.addEventListener('click', () => {
   } else {
     alert('Invalid email.');
   }
+});
+
+// Redirect buttons event listeners
+document.getElementById('driverBtn')?.addEventListener('click', () => {
+  window.location.href='http://127.0.0.1:5500/driver-app/index.html';
+});
+
+document.getElementById('adminBtn')?.addEventListener('click', () => {
+  window.location.href='http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html';
 });
 
 // Initialize page on load

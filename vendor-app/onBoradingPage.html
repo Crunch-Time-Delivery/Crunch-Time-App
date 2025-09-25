@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Full Red Page</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: red;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      position: relative;
+    }
+    /* Style for the middle image */
+    .middle-image {
+      max-width: 80%;
+      height: auto;
+    }
+    /* Style for the bottom image link */
+    .bottom-link {
+      position: absolute;
+      bottom: 20px; /* spacing from bottom */
+    }
+    .bottom-link img {
+      max-width: 150px;
+      height: auto;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Centered image -->
+  <img src="img/converted-image.jpg" alt="Middle Image" class="middle-image" />
+
+  <!-- Clickable bottom image -->
+  <a href="http://127.0.0.1:5500/vendor-app/welocmeVendorPage.html" class="bottom-link">
+    <img src="img/Screenshot (265).jpg" alt="Bottom Image" />
+  </a>
+</body>
+</html>

@@ -214,6 +214,24 @@
             <div class="performance-title" style="font-size:20px;font-weight:bold;">Performance</div>
             <div class="performance-icon" title="Performance" style="font-size:24px;">📈</div>
           </div>
+  <!-- Icon below the word "Performance" -->
+  <div style="margin-top:10px; font-size:24px;">📈</div>
+</div>
+ <!-- Inside your Performance section, replace or add this block -->
+<div style="display:flex; flex-direction:column; align-items:center; margin-top:20px;">
+  <!-- Circular Battery-like Display -->
+  <div style="position: relative; width: 150px; height: 150px;">
+    <svg viewBox="0 0 100 100" width="150" height="150" style="transform: rotate(-90deg);">
+      <!-- Background Circle -->
+      <circle cx="50" cy="50" r="45" stroke="#eee" stroke-width="10" fill="none"/>
+      <!-- Progress Circle -->
+      <circle cx="50" cy="50" r="45" stroke="yellow" stroke-width="10"
+        stroke-linecap="round"
+        stroke-dasharray="282.6" stroke-dashoffset="84.78" fill="none"/>
+    </svg>
+    <!-- Text in the middle -->
+    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:24px; font-weight:bold;">70%</div>
+  </div>
           <!-- Year Dropdown -->
           <div class="year-dropdown" style="position:relative;">
             <button class="year-button" onclick="toggleYearDropdown()">January ▼</button>
@@ -282,6 +300,45 @@
             <canvas id="waveGraphLastYear" width="400" height="200"></canvas>
           </div>
         </div>
+    <!-- Four rows with icons and labels below the graphs -->
+<div style="margin-top:30px; display:flex; flex-direction:column; gap:15px; padding:0 20px;">
+ 
+  
+<div style="margin-top:30px; display:flex; flex-direction:column; gap:15px; padding:0 20px;">
+  <!-- Row 1 -->
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div style="font-size:24px;">
+      <img src="Screenshot (262).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+    </div>
+    <div style="font-weight:bold;">Total orders complete </div>
+    <div style="margin-left:auto;">2687</div>
+  </div>
+  <!-- Row 2 -->
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div style="font-size:24px;">
+      <img src="Screenshot (262).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+    </div>
+    <div style="font-weight:bold;">Total orders delivered</div>
+    <div style="margin-left:auto;">1784</div>
+  </div>
+  <!-- Row 3 -->
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div style="font-size:24px;">
+      <img src="Screenshot (261).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+    </div>
+    <div style="font-weight:bold;">Total orders canceled</div>
+    <div style="margin-left:auto;">86</div>
+  </div>
+  <!-- Row 4 -->
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div style="font-size:24px;">
+      <img src="Screenshot (260).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+    </div>
+    <div style="font-weight:bold;">Orders pending</div>
+    <div style="margin-left:auto;">467</div>
+  </div>
+</div>
+
         <!-- Popular Food -->
         <div class="popular-food" style="margin-top:30px;">
           <div class="food-header" style="font-size:20px; font-weight:bold; margin-bottom:10px;">Popular Food</div>
@@ -778,3 +835,21 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

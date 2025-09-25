@@ -110,6 +110,29 @@
     border-radius:4px;
     cursor:pointer;
   }
+
+  /* Style for the new buttons container */
+  #buttonsContainer {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  /* Style for the new buttons */
+  .redirect-btn {
+    background: #f60202; /* red background */
+    color: #fff; /* white text */
+    border: none;
+    padding: 12px 24px;
+    margin: 10px 0;
+    border-radius: 4px;
+    font-size: 1em;
+    cursor: pointer;
+    text-decoration: none; /* if using <a> */
+    display: inline-block;
+    width: 200px;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -151,6 +174,12 @@
 
 <!-- Optional: Registration or other sections can go here -->
 
+<!-- Buttons for User and Admin -->
+<div id="buttonsContainer">
+  <button class="redirect-btn" id="userBtn">User</button>
+  <button class="redirect-btn" id="adminBtn">Admin</button>
+</div>
+
 <script>
   // Initialize variables
   let tempAdminData = {};
@@ -159,6 +188,14 @@
   // Show login modal on page load
   window.onload = function() {
     showLogin();
+
+    // Example: prepopulate user data
+    localStorage.setItem('vendorEmail', 'user@example.com');
+    localStorage.setItem('vendorPassword', 'password123');
+
+    // Generate OTP for testing
+    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('Generated OTP:', generatedOTP);
   };
 
   function showLogin() {
@@ -197,31 +234,27 @@
     if (inputOTP === generatedOTP) {
       alert('OTP verified! Registration complete.');
       // Save user data if needed
-      localStorage.setItem('vendorEmail', tempAdminData.email);
-      localStorage.setItem('vendorPassword', tempAdminData.pass);
+      localStorage.setItem('vendorEmail', 'user@example.com');
+      localStorage.setItem('vendorPassword', 'password123');
       localStorage.setItem('vendorLoggedIn', 'true');
       // Hide OTP modal
       document.getElementById('otpModal').style.display='none';
-      // Redirect to app
-      window.location.href = "http://127.0.0.1:5500/vendor-app/index.html";
+      // Redirect to user page
+      document.getElementById('userBtn').click(); // Trigger user button click
     } else {
       alert('Incorrect OTP. Please try again.');
     }
   }
 
-  // For demonstration, let's generate a dummy OTP and set some dummy user data
-  // In real scenario, you'd send OTP via email/SMS and set user data accordingly
-  window.onload = function() {
-    showLogin();
+  // Event listener for User button
+  document.getElementById('userBtn')?.addEventListener('click', () => {
+    window.location.href='http://127.0.0.1:5500/vendor-app/index.html';
+  });
 
-    // Example: prepopulate user data
-    localStorage.setItem('vendorEmail', 'user@example.com');
-    localStorage.setItem('vendorPassword', 'password123');
-
-    // Generate OTP for testing
-    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('Generated OTP:', generatedOTP);
-  };
+  // Event listener for Admin button
+  document.getElementById('adminBtn')?.addEventListener('click', () => {
+    window.location.href='http://127.0.0.1:5500/vendor-app/admin/admin_dashboard.html';
+  });
 </script>
 
 </body>
