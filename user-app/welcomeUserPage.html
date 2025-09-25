@@ -35,46 +35,51 @@
     margin-bottom: 20px;
   }
 
-  /* Buttons styled as links */
+  /* Buttons styled as links, matching overlay button styles */
   .btn {
     display: block;
     width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    font-weight: bold;
-    border-radius: 4px;
-    text-align: center;
-    text-decoration: none;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 1em;
     cursor: pointer;
+    border-radius: 4px;
+    border: none;
+    text-align: center;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
   }
 
-  /* Specific styles for each button */
-  #createAccountBtn {
-     background-color: #fff;
-    color: red;
-    border: 1px solid red;
+  /* Style for Create Account and Browser Menu buttons to match overlay buttons */
+  .btn-create, .btn-browser {
+    background: #f60202; /* red background */
+    color: #fff; /* white text */
   }
 
+  /* Optional: hover effects for these buttons */
+  .btn-create:hover, .btn-browser:hover {
+    background: #c00101;
+  }
+
+  /* Style for Login button to match overlay login button styles if needed */
   #loginBtn {
-    background-color: #fff;
-    color: red;
-    border: 1px solid red;
+    background: #fff; /* white background */
+    color: #f60202; /* red text */
+    border: 1px solid #f60202;
   }
 
-  #browserMenuBtn {
-  */
-    background-color: #fff;
-    color: red;
-    border: 1px solid red;
+  #loginBtn:hover {
+    background: #f60202;
+    color: #fff;
   }
 
-  /* Terms and Privacy links */
+  /* Terms and Privacy links within paragraph */
   #welcomeContent p {
     margin-top: 20px;
     font-size: 14px;
   }
   #welcomeContent a {
-    color: red;
+    color: #f60202;
     text-decoration: underline;
   }
 </style>
@@ -87,9 +92,10 @@
     <h2 style="color:gray;">Welcome</h2>
     <p>Before enjoying CrunchTime deliveries</p>
     <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
-      <a href="http://127.0.0.1:5500/user-app/register_home.html " class="btn" id="createAccountBtn">Create account</a>
-      <a href="http://127.0.0.1:5500/user-app/loginUser.html " class="btn" id="loginBtn">Login</a>
-      <a href="#" class="btn" id="browserMenuBtn">Browser Menu</a>
+      <!-- Buttons with shared class to get styled as overlay buttons -->
+      <button id="createAccountBtn" class="btn btn-create" onclick="handleCreateAccount()">Create account</button>
+      <button id="loginBtn" class="btn" onclick="handleLogin()">Login</button>
+      <button id="browserMenuBtn" class="btn btn-browser" onclick="window.location.href='dummy.html';">Browser Menu</button>
     </div>
     <p>
       By logging in or registering, you have agreed to the
@@ -101,12 +107,12 @@
 </div>
 
 <script>
-  // Example: you can add event listeners here if needed
-  document.getElementById('browserMenuBtn').addEventListener('click', () => {
-    // Define behavior for Browser Menu button if it doesn't navigate directly
-    // For example, open a menu or navigate somewhere
-    // window.location.href = 'desired-url.html';
-  });
+  function handleCreateAccount() {
+    window.location.href='http://127.0.0.1:5500/user-app/register_home.html  ';
+  }
+  function handleLogin() {
+    window.location.href='http://127.0.0.1:5500/user-app/loginUser.html   ';
+  }
 </script>
 
 </body>
