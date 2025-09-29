@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Welcome Page</title>
+<title>Vendor Login</title>
 <!-- Font Awesome -->
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 <style>
@@ -137,13 +137,6 @@
 </head>
 <body>
 
-<!-- Welcome overlay (if needed) -->
-<!--
-<div id="welcomeOverlay">
-  <!-- Your welcome overlay content here -->
-</div>
--->
-
 <!-- OTP Modal -->
 <div id="otpModal" class="modal" style="display:none;">
   <div class="modal-box">
@@ -164,15 +157,13 @@
     <h3>Welcome</h3>
     <p>For vendors Manage your orders in real time. </p>
     <label>Email Address</label>
-    <input id="username" placeholder="Username" />
+    <input id="username" placeholder="Email" />
     <label>Password</label>
     <input id="password" placeholder="Password" type="password" />
     <button style="background:#f40101; color:#fff;" onclick="verifyLogin()">Login</button>
     <p>Don't have an account? Register here</p>
   </div>
 </div>
-
-<!-- Optional: Registration or other sections can go here -->
 
 <!-- Buttons for User and Admin -->
 <div id="buttonsContainer">
@@ -181,17 +172,11 @@
 </div>
 
 <script>
-  // Initialize variables
-  let tempAdminData = {};
   let generatedOTP = '';
 
-  // Show login modal on page load
+  // For demo, generate OTP on page load
   window.onload = function() {
     showLogin();
-
-    // Example: prepopulate user data
-    localStorage.setItem('vendorEmail', 'user@example.com');
-    localStorage.setItem('vendorPassword', 'password123');
 
     // Generate OTP for testing
     generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
@@ -199,26 +184,21 @@
   };
 
   function showLogin() {
-    // Hide other sections if any
-    document.querySelectorAll('.section').forEach(s => s.style.display='none');
     document.getElementById('loginModal').style.display='flex';
   }
 
   function verifyLogin() {
-    const username = document.getElementById('username').value.trim();
+    const username = document.getElementById('username').value.trim(); // email
     const pass = document.getElementById('password').value.trim();
-    const storedEmail = localStorage.getItem('vendorEmail');
-    const storedPass = localStorage.getItem('vendorPassword');
-    if (!storedEmail || !storedPass) {
-      alert('Please register first.');
-      return;
-    }
-    if (username === storedEmail && pass === storedPass) {
+
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+
+    // Find user with matching email
+    const user = users.find(u => u.email === username);
+
+    if (user && user.pass === pass) {
       alert('Logged in successfully.');
       localStorage.setItem('vendorLoggedIn', 'true');
-      // Close login modal
-      document.getElementById('loginModal').style.display='none';
-      // Proceed to OTP verification
       showOTP();
     } else {
       alert('Invalid credentials. Please try again.');
@@ -233,26 +213,23 @@
     const inputOTP = document.getElementById('otpInput').value.trim();
     if (inputOTP === generatedOTP) {
       alert('OTP verified! Registration complete.');
-      // Save user data if needed
-      localStorage.setItem('vendorEmail', 'user@example.com');
-      localStorage.setItem('vendorPassword', 'password123');
+      // Here, you might set login state or redirect
       localStorage.setItem('vendorLoggedIn', 'true');
-      // Hide OTP modal
+      // Close modal
       document.getElementById('otpModal').style.display='none';
-      // Redirect to user page
-      document.getElementById('userBtn').click(); // Trigger user button click
+
+      // For demo, redirect to user page
+      document.getElementById('userBtn').click(); // or just alert
     } else {
       alert('Incorrect OTP. Please try again.');
     }
   }
 
-  // Event listener for User button
-  document.getElementById('userBtn')?.addEventListener('click', () => {
+  // Optional: redirect buttons
+  document.getElementById('userBtn').addEventListener('click', () => {
     window.location.href='http://127.0.0.1:5500/vendor-app/index.html';
   });
-
-  // Event listener for Admin button
-  document.getElementById('adminBtn')?.addEventListener('click', () => {
+  document.getElementById('adminBtn').addEventListener('click', () => {
     window.location.href='http://127.0.0.1:5500/vendor-app/admin/admin_dashboard.html';
   });
 </script>

@@ -1,4 +1,3 @@
-<!-- loginDriver.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,48 +96,34 @@
 </div>
 
 <script>
-  // Placeholder driver data and variables
-  const driverData = {
-    email: 'driver@example.com',
-    phoneNumber: '1234567890'
-  };
-  let driverApproved = true; // set to false to test waiting state
-  let generatedOtp = '';
-  let otpVerified = false;
-
-  // Utility functions to show/hide modals
-  function showModal(modalId) {
-    document.getElementById(modalId).style.display='block';
-  }
-
-  function hideModal(modalId) {
-    document.getElementById(modalId).style.display='none';
-  }
-
-  // Functions to show/hide login modal
-  function showLoginModal(email='', password='') {
-    showModal('loginModal');
-    document.getElementById('loginEmail').value=email;
-    document.getElementById('loginPassword').value=password;
-  }
-
-  function hideLoginModal() {
-    hideModal('loginModal');
-  }
-
-  // Load initial login page
+  // Load user data from localStorage
 function loadLoginPage() {
   const contentDiv = document.getElementById('innerContent');
-  // Optional: clear or hide innerContent
-  contentDiv.innerHTML= ''; // Keep empty as login modal appears immediately
-  // Show login modal immediately
-  showLoginModal();
+  contentDiv.innerHTML=''; // Clear previous content if any
+
+  // Show login modal
+  showModal('loginModal');
 }
+
+// Utility functions to show/hide modals
+function showModal(modalId) {
+  document.getElementById(modalId).style.display='block';
+}
+
+function hideModal(modalId) {
+  document.getElementById(modalId).style.display='none';
+}
+
+// For demonstration, simulating driver data and approval
+const driverData = JSON.parse(localStorage.getItem('registeredUser')) || {};
+let driverApproved = false; // Set to true if approved
+let generatedOtp = '';
+let otpVerified = false;
 
 // Generate and send OTP
 function generateAndSendOtp() {
   generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-  alert(`OTP sent to Phone: ${driverData.phoneNumber} and Email: ${driverData.email}. (OTP: ${generatedOtp})`);
+  alert(`OTP sent to Email: ${driverData.email}. (OTP: ${generatedOtp})`);
 }
 
 // Show OTP modal
@@ -148,6 +133,7 @@ function showOtpModal() {
   otpVerified=false;
 }
 
+// Hide OTP modal
 function hideOtpModal() {
   document.getElementById('otpModal').style.display='none';
 }
@@ -159,9 +145,7 @@ document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
     otpVerified=true;
     alert('OTP verified! Awaiting admin approval...');
     hideOtpModal();
-    // Redirect based on user clicking Driver or Admin buttons
-    // For demonstration, default redirect is Driver
-    document.getElementById('driverBtn').click();
+    // After verification, user can choose to login as driver or admin
   } else {
     alert('Incorrect OTP. Please try again.');
   }
@@ -172,18 +156,21 @@ document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
   alert('OTP resent.');
 });
 
-// Login button event
-document.getElementById('loginBtn')?.addEventListener('click', () => {
+// Login button handler
+document.getElementById('loginBtn').addEventListener('click', () => {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value.trim();
 
-  if (email === driverData.email.toLowerCase()) {
-    localStorage.setItem('driverEmail', email);
-    localStorage.setItem('driverPassword', password);
+  if (!driverData.email) {
+    alert('No registered user found. Please register first.');
+    return;
+  }
+
+  if (driverData.email.toLowerCase() === email && driverData.password === password) {
+    localStorage.setItem('currentUser', JSON.stringify(driverData));
     if (driverApproved) {
-      alert('Login successful! Accessing order view.');
-      hideLoginModal();
-      // Load order view or main page here
+      alert('Login successful! Accessing driver dashboard...');
+      // Show dashboard or redirect
       document.getElementById('innerContent').innerHTML = '<h2>Welcome to the Driver Dashboard</h2>';
     } else {
       alert('Waiting for admin approval...');
@@ -191,20 +178,21 @@ document.getElementById('loginBtn')?.addEventListener('click', () => {
       showOtpModal();
     }
   } else {
-    alert('Invalid email.');
+    alert('Invalid email or password.');
   }
 });
 
-// Redirect buttons event listeners
+// Buttons for Driver and Admin
 document.getElementById('driverBtn')?.addEventListener('click', () => {
-  window.location.href='http://127.0.0.1:5500/driver-app/index.html';
+  // Redirect to driver dashboard or page
+  window.location.href='driver_dashboard.html'; // create this page or update as needed
 });
 
 document.getElementById('adminBtn')?.addEventListener('click', () => {
-  window.location.href='http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html';
+  window.location.href='admin_dashboard.html'; // create this page or update as needed
 });
 
-// Initialize page on load
+// Initialize
 window.onload = () => {
   loadLoginPage();
 };

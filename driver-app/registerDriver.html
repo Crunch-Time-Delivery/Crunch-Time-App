@@ -1,4 +1,3 @@
-<!-- registerDriver.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,7 +60,7 @@
 
     // Create and append the image element
     const img = document.createElement('img');
-    img.src = "img/screenshot (251).jpg"; // Ensure this path is correct
+    img.src = "img/screenshot (251).jpg"; // Make sure this path is correct
     img.alt = "Welcome Image";
     img.style.width = "250px";
     img.style.height = "auto";
@@ -78,6 +77,8 @@
         <input type="text" id="driverName" required />
         <label>Email:</label>
         <input type="email" id="driverEmail" required />
+        <label>Password:</label>
+        <input type="password" id="driverPassword" required />
         <label>Phone Number:</label>
         <input type="tel" id="driverPhone" placeholder="e.g., 0612345678" required />
         <label>ID Number:</label>
@@ -113,29 +114,33 @@
     // Add event listener for bank selection
     document.getElementById('bankName').addEventListener('change', () => {
       const val = document.getElementById('bankName').value;
-      document.getElementById('otherBankDiv').className = (val==='Other')?'hidden':'';
+      document.getElementById('otherBankDiv').className = (val==='Other')?'':'hidden';
     });
 
     // Handle form submission
     document.getElementById('driverForm').onsubmit = (e) => {
       e.preventDefault();
+
       // Collect files
       const driverPhotoFile = document.getElementById('driverPhoto').files[0];
       const driverLicenseFile = document.getElementById('driverLicense').files[0];
       const carPhotoFile = document.getElementById('carPhoto').files[0];
-      const phoneNumber = document.getElementById('driverPhone').value.trim();
 
       if (!driverPhotoFile || !driverLicenseFile || !carPhotoFile) {
         alert('Please upload all required images.');
         return;
       }
 
-      // Save driver data (example)
+      // Save driver data including email and password
+      const email = document.getElementById('driverEmail').value.trim();
+      const password = document.getElementById('driverPassword').value.trim();
+
       const driverData = {
         name: document.getElementById('driverName').value,
-        email: document.getElementById('driverEmail').value,
+        email: email,
+        password: password,
         idNumber: document.getElementById('driverID').value,
-        phoneNumber: phoneNumber,
+        phoneNumber: document.getElementById('driverPhone').value.trim(),
         bankDetails: document.getElementById('bankDetails').value,
         bankName: document.getElementById('bankName').value,
         otherBank: document.getElementById('otherBank').value,
@@ -145,16 +150,19 @@
         driverPhoto: URL.createObjectURL(driverPhotoFile),
         driverLicense: URL.createObjectURL(driverLicenseFile),
         carPhoto: URL.createObjectURL(carPhotoFile),
-        approved: false,
-        email: document.getElementById('driverEmail').value,
-        password: 'password123' // For demo purposes
+        approved: false
       };
+
+      // Save to localStorage
+      localStorage.setItem('registeredUser', JSON.stringify(driverData));
+
+      alert('Registration successful! You can now login.');
+
       // Redirect to login page
-      window.location.href = "http://127.0.0.1:5500/driver-app/index.html";
+      window.location.href = "driver_login.html"; // change to your login page filename
     };
   }
 
-  // Call the function to load the page content
   loadNewDriverPage();
 </script>
 </body>

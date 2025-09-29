@@ -59,7 +59,7 @@
 </head>
 <body>
 
-<!-- Register Modal (visible by default) -->
+<!-- Register Modal -->
 <div id="registerModal" class="modal" style="display:flex;">
   <div class="modal-box">
     <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
@@ -73,7 +73,6 @@
 </div>
 
 <script>
-  let tempAdminData = {};
   let generatedOTP = '';
 
   function startRegistration() {
@@ -86,14 +85,22 @@
       return;
     }
 
-    // Save data temporarily
-    tempAdminData = { email, name, pass };
+    // Retrieve existing users from localStorage or initialize
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+
+    // Check if email already exists
+    if (users.some(user => user.email === email)) {
+      alert('Email already registered.');
+      return;
+    }
+
+    // Save new user
+    users.push({ email: email, name: name, pass: pass });
+    localStorage.setItem('users', JSON.stringify(users));
 
     // Generate OTP
     generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
     alert('Your OTP: ' + generatedOTP);
-
-    // You can add further logic here, e.g., redirect or close modal
   }
 </script>
 

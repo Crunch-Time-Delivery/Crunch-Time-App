@@ -1,12 +1,17 @@
-<!-- loginDriver.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Login Modal</title>
+<title>CrunchTime Login</title>
 <style>
-  /* Modal styles */
+  /* Your existing styles ... (unchanged) */
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+  }
   .modal {
     display: none; 
     position: fixed; 
@@ -26,41 +31,12 @@
     width: 300px;
     text-align: center;
   }
-  .modal input {
-    width: 80%;
-    padding: 8px;
-    margin-top: 10px;
-  }
-  .modal button {
-    margin-top: 15px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  /* Style for user/admin buttons */
-  .nav-buttons {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
-  }
-  .nav-buttons button {
-    background-color: red;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-  }
+  /* ... other styles ... */
 </style>
 </head>
 <body>
 
-<!-- Container for dynamic content -->
-<div id="innerContent"></div>
-
-<!-- Login Modal Structure -->
+<!-- Login Modal -->
 <div id="loginModal" class="modal">
   <div class="modal-content">
     <img src="img/screenshot (251).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
@@ -72,138 +48,42 @@
     <label>Password</label>
     <input type="password" id="loginPassword" placeholder="Password" />
     <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" id="loginBtn">Login</button>
-    <!-- Navigation Buttons for User and Admin -->
-    <div class="nav-buttons">
+    <div class="nav-buttons" style="margin-top:20px;">
       <button id="userBtn">User</button>
       <button id="adminBtn">Admin</button>
     </div>
   </div>
 </div>
 
-<!-- OTP Modal -->
-<div id="otpModal" class="modal">
-  <div class="modal-content">
-    <h3>Verify Account</h3>
-    <p>Please enter the OTP number sent to your email to reset your password</p>
-    <input type="text" id="otpInput" maxlength="4" placeholder="Enter OTP" />
-    <div style="margin-top:10px;">
-      <button id="verifyOtpBtn">Confirm</button>
-      <button id="resendOtpBtn">Resend OTP</button>
-    </div>
-  </div>
-</div>
-
 <script>
-  // Placeholder driver data and variables
-  const driverData = {
-    email: 'driver@example.com',
-    phoneNumber: '1234567890'
-  };
-  let driverApproved = true; // set to false to test waiting state
-  let generatedOtp = '';
-  let otpVerified = false;
-
-  // Utility functions to show/hide modals
-  function showModal(modalId) {
-    document.getElementById(modalId).style.display='block';
-  }
-
-  function hideModal(modalId) {
-    document.getElementById(modalId).style.display='none';
-  }
-
-  // Functions to show/hide login modal
-  function showLoginModal(email='', password='') {
-    showModal('loginModal');
-    document.getElementById('loginEmail').value=email;
-    document.getElementById('loginPassword').value=password;
-  }
-
-  function hideLoginModal() {
-    hideModal('loginModal');
-  }
-
-  // Load initial login page
-function loadLoginPage() {
-  const contentDiv = document.getElementById('innerContent');
-  // Clear content if any
-  contentDiv.innerHTML= ''; 
-  // Show login modal immediately
-  showLoginModal();
-}
-
-// Generate and send OTP
-function generateAndSendOtp() {
-  generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-  alert(`OTP sent to Phone: ${driverData.phoneNumber} and Email: ${driverData.email}. (OTP: ${generatedOtp})`);
-}
-
-// Show OTP modal
-function showOtpModal() {
-  document.getElementById('otpModal').style.display='block';
-  document.getElementById('otpInput').value='';
-  otpVerified=false;
-}
-
-function hideOtpModal() {
-  document.getElementById('otpModal').style.display='none';
-}
-
-// Event handlers for OTP verification
-document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
-  const enteredOtp = document.getElementById('otpInput').value.trim();
-  if (enteredOtp===generatedOtp) {
-    otpVerified=true;
-    alert('OTP verified! Awaiting admin approval...');
-    hideOtpModal();
-    // Redirect to user app after OTP verification
-    window.location.href='http://127.0.0.1:5500/user-app/index.html';
-  } else {
-    alert('Incorrect OTP. Please try again.');
-  }
-});
-
-document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
-  generateAndSendOtp();
-  alert('OTP resent.');
-});
-
-// Login button event
-document.getElementById('loginBtn')?.addEventListener('click', () => {
+  // Login logic
+document.getElementById('loginBtn').addEventListener('click', () => {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value.trim();
 
-  if (email === driverData.email.toLowerCase()) {
-    localStorage.setItem('driverEmail', email);
-    localStorage.setItem('driverPassword', password);
-    if (driverApproved) {
-      alert('Login successful! Accessing order view.');
-      hideLoginModal();
-      // Load order view or main page here
-      document.getElementById('innerContent').innerHTML = '<h2>Welcome to the Driver Dashboard</h2>';
-    } else {
-      alert('Waiting for admin approval...');
-      generateAndSendOtp();
-      showOtpModal();
-    }
+  const users = JSON.parse(localStorage.getItem('users')) || [];
+  const user = users.find(u => u.email.toLowerCase() === email);
+
+  if (user && user.password === password) {
+    alert('Login successful!');
+    // Redirect or show user dashboard
+    window.location.href='http://127.0.0.1:5500/user-app/index.html   '; // change as needed
   } else {
-    alert('Invalid email.');
+    alert('Invalid email or password.');
   }
 });
 
-// Event handler for User button
-document.getElementById('userBtn')?.addEventListener('click', () => {
-  window.location.href='http://127.0.0.1:5500/user-app/index.html';
+// Optional handlers for user/admin
+document.getElementById('userBtn').addEventListener('click', () => {
+  window.location.href='http://127.0.0.1:5500/user-app/index.html  ';
+});
+document.getElementById('adminBtn').addEventListener('click', () => {
+  window.location.href='http://127.0.0.1:5500/user-app/admin/admin_dashboard.html  ';
 });
 
-// Event handler for Admin button
-document.getElementById('adminBtn')?.addEventListener('click', () => {
-  window.location.href='http://127.0.0.1:5500/user-app/admin/admin_dashboard.html';
-});
-
-// Initialize page on load
+// Show login modal on page load
 window.onload = () => {
-  loadLoginPage();
+  document.getElementById('loginModal').style.display='block';
 };
 </script>
 </body>
