@@ -7,24 +7,19 @@
 <!-- Font Awesome -->
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 <style>
-  /* Reset some default styles */
   * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
   }
-
-  /* Body styles to center everything */
   body {
     height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f0f0f0; /* optional background */
+    background-color: #f0f0f0;
     font-family: Arial, sans-serif;
   }
-
-  /* Container that looks like a window */
   .window-container {
     background-color: #fff;
     padding: 30px;
@@ -33,119 +28,77 @@
     max-width: 400px;
     width: 90%;
   }
-
-  /* Style for modals, overlays, etc. */
   .modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     background-color: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
+    display: flex; align-items: center; justify-content: center; z-index: 999;
   }
-
-  /* hide elements by default */
   .modal-box {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 350px;
-    width: 100%;
-    text-align: center;
+    background: #fff; padding: 20px; border-radius: 8px; max-width: 350px; width: 100%; text-align: center;
   }
-
-  /* Style inputs and buttons */
   input {
-    width: 100%;
-    padding: 8px 12px;
-    margin: 8px 0 16px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    width: 100%; padding: 8px 12px; margin: 8px 0 16px 0; border: 1px solid #ccc; border-radius: 4px;
   }
-
   button {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
+    width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;
   }
-
-  /* Additional styles for specific buttons */
   .redirect-btn {
-    margin: 10px 0;
-    padding: 10px;
+    background-color: #f80303;
+    color: #fff;
+    margin: 10px;
+    padding: 10px 20px;
+    border-radius: 5px;
   }
-
-  /* Labels styling */
+  .redirect-btn:hover {
+    opacity: 0.8;
+  }
   label {
-    display: block;
-    margin-top: 10px;
-    font-weight: bold;
-    text-align: left;
+    display: block; margin-top: 10px; font-weight: bold; text-align: left;
   }
-
-  /* Buttons container */
-  #buttonsContainer {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
+  #bottomButtons {
+    margin-top: 20px; display: flex; justify-content: center; gap: 10px;
   }
-
-  /* Optional: style for the images inside modals */
   .modal-box img {
-    max-width: 250px;
-    height: auto;
-    margin-bottom: 20px;
-    border-radius: 8px;
+    max-width: 250px; height: auto; margin-bottom: 20px; border-radius: 8px;
   }
 </style>
 </head>
 <body>
 
-<!-- Wrap all in a centered window-style container -->
 <div class="window-container">
+  <!-- OTP Modal -->
+  <div id="otpModal" class="modal" style="display:none;">
+    <div class="modal-box">
+      <img src="img/screenshot (253).jpg" alt="Welcome Image" />
+      <h3>Verify Account</h3>
+      <p>Please enter the OTP sent to your email to verify your account</p>
+      <p>Enter your OTP code here</p>
+      <input id="otpInput" placeholder="OTP" />
+      <p>Didn’t receive code? Request again</p>
+      <button style="background:#f80202; color:#fff;" onclick="verifyOTP()">Confirm</button>
+    </div>
+  </div>
 
-<!-- OTP Modal -->
-<div id="otpModal" class="modal" style="display:none;">
-  <div class="modal-box">
-    <img src="img/screenshot (253).jpg" alt="Welcome Image" />
-    <h3>Verify Account</h3>
-    <p>Please enter the OTP sent to your email to verify your account</p>
-    <p>Enter your OTP code here</p>
-    <input id="otpInput" placeholder="OTP" />
-    <p>Didn’t receive code? Request again</p>
-    <button style="background:#f80202; color:#fff;" onclick="verifyOTP()">Confirm</button>
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal" style="display:flex;">
+    <div class="modal-box">
+      <img src="img/screenshot (253).jpg" alt="Welcome Image" />
+      <h3>Welcome</h3>
+      <p>For vendors Manage your orders in real time. </p>
+      <label>Email Address</label>
+      <input id="username" placeholder="Email" />
+      <label>Password</label>
+      <input id="password" placeholder="Password" type="password" />
+      <button style="background:#f40101; color:#fff;" onclick="verifyLogin()">Login</button>
+      <p>Don't have an account? Register here</p>
+      <div id="bottomButtons">
+        <button class="redirect-btn" id="vendorBtn">Vendor</button>
+        <button class="redirect-btn" id="adminBtn">Admin</button>
+      </div>
+    </div>
   </div>
 </div>
-
-<!-- Login Modal -->
-<div id="loginModal" class="modal" style="display:flex;">
-  <div class="modal-box">
-    <img src="img/screenshot (253).jpg" alt="Welcome Image" />
-    <h3>Welcome</h3>
-    <p>For vendors Manage your orders in real time. </p>
-    <label>Email Address</label>
-    <input id="username" placeholder="Email" />
-    <label>Password</label>
-    <input id="password" placeholder="Password" type="password" />
-    <button style="background:#f40101; color:#fff;" onclick="verifyLogin()">Login</button>
-    <p>Don't have an account? Register here</p>
-  </div>
-</div>
-
-<!-- Buttons for User and Admin -->
-<div id="buttonsContainer">
-  <button class="redirect-btn" id="userBtn">User</button>
-  <button class="redirect-btn" id="adminBtn">Admin</button>
-</div>
-
-</div> <!-- end of window-container -->
 
 <script>
   const adminUsername = 'crunchtimeadmin';
@@ -153,31 +106,35 @@
 
   let currentOTP = '';
 
-  // Generate OTP for demo
+  // Generate OTP
   function generateOTP() {
     currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('Generated OTP:', currentOTP);
+    console.log('Generated OTP:', currentOTP); // For demo, show in console
   }
 
   window.onload = () => {
     showLogin();
-    generateOTP();
 
-    // Attach event listeners for buttons
-    document.getElementById('userBtn').addEventListener('click', () => {
-      window.location.href='http://127.0.0.1:5500/vendor-app/index.html';
+    // Vendor button
+    document.getElementById('vendorBtn').addEventListener('click', () => {
+      // Prompt login
+      showLogin();
     });
 
+    // Admin button
     document.getElementById('adminBtn').addEventListener('click', () => {
       const username = prompt('Enter admin username:');
       const pass = prompt('Enter admin password:');
-      if (username === 'crunchtimeadmin' && pass === 'crunchtimeadmin12') {
+      if (username === adminUsername && pass === adminPassword) {
         alert('Admin login success!');
         window.location.href='http://127.0.0.1:5500/vendor-app/admin/admin_dashboard.html';
       } else {
         alert('Invalid admin credentials.');
       }
     });
+
+    // Generate OTP initially
+    generateOTP();
   };
 
   function showLogin() {
@@ -185,18 +142,26 @@
   }
 
   function verifyLogin() {
-    const username = document.getElementById('username').value.trim(); // email
+    const username = document.getElementById('username').value.trim();
     const pass = document.getElementById('password').value.trim();
 
+    // For simplicity, admin login is handled separately
+    // Check if login matches admin credentials
+    if (username === adminUsername && pass === adminPassword) {
+      alert('Admin login success!');
+      window.location.href='http://127.0.0.1:5500/vendor-app/admin/admin_dashboard.html';
+      return;
+    }
+
+    // Assume shared credentials for vendor and admin
+    // For demo, check if username and password match stored user
     const users = JSON.parse(localStorage.getItem('users')) || [];
-    const user = users.find(u => u.email === username);
-
-    if (user && user.pass === pass) {
-      // Save login state
+    const user = users.find(u => u.email===username && u.pass===pass);
+    if (user) {
+      // Save user info if needed
       localStorage.setItem('vendorLoggedIn', 'true');
-
-      // Show OTP modal and store credentials temporarily
-      window._tempUser = { email: user.email, pass: user.pass };
+      // Show OTP modal for unapproved users
+      generateOTP();
       showOTP();
     } else {
       alert('Invalid credentials.');
@@ -210,23 +175,13 @@
   function verifyOTP() {
     const inputOTP = document.getElementById('otpInput').value.trim();
     if (inputOTP === currentOTP) {
-      // OTP verified
+      alert('OTP verified! Redirecting...');
       document.getElementById('otpModal').style.display='none';
 
-      // Check if admin credentials entered
-      const tempUser = window._tempUser;
-      if (tempUser) {
-        if (tempUser.email === 'crunchtimeadmin' && tempUser.pass === 'crunchtimeadmin12') {
-          // Admin credentials: redirect to driver app
-          alert('Login successful! Redirecting to driver app...');
-          window.location.href='http://127.0.0.1:5500/driver-app/index.html';
-        } else {
-          // Regular user: redirect to user dashboard
-          alert('Login successful!');
-          window.location.href='http://127.0.0.1:5500/vendor-app/index.html';
-        }
-        delete window._tempUser; // cleanup
-      }
+      // Assuming admin credentials are entered, redirect accordingly
+      // For demo, if OTP is verified, redirect to user dashboard
+      alert('Login successful!');
+      window.location.href='http://127.0.0.1:5500/vendor-app/index.html'; // user/vendor page
     } else {
       alert('Incorrect OTP.');
     }

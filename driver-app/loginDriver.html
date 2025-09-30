@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Login Modal</title>
+<title>Driver Login</title>
 <style>
   /* Modal styles */
   .modal {
@@ -100,17 +100,16 @@
   const adminUsername = 'crunchtimeadmin';
   const adminPassword = 'crunchtimeadmin12';
 
-  // Load user data from localStorage
+  // Load driver data
   const driverData = JSON.parse(localStorage.getItem('registeredUser')) || {};
   let driverApproved = false; // For demo, default false; set true when approved
   let generatedOtp = '';
   let otpVerified = false;
 
-  function loadLoginPage() {
-    const contentDiv = document.getElementById('innerContent');
-    contentDiv.innerHTML=''; // Clear previous content if any
+  // Variable to track login type
+  let userType = null;
 
-    // Show login modal
+  function loadLoginPage() {
     showModal('loginModal');
   }
 
@@ -141,7 +140,7 @@
     document.getElementById('otpModal').style.display='none';
   }
 
-  // Event handlers for OTP verification
+  // OTP verification handlers
   document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
     const enteredOtp = document.getElementById('otpInput').value.trim();
     if (enteredOtp===generatedOtp) {
@@ -149,8 +148,8 @@
       alert('OTP verified! Awaiting admin approval...');
       hideOtpModal();
 
-      // After OTP is verified, redirect if approved
       if (driverApproved) {
+        alert('Login successful! Accessing driver dashboard...');
         window.location.href='http://127.0.0.1:5500/driver-app/index.html';
       } else {
         alert('Your account is still pending approval. Please wait.');
@@ -165,59 +164,56 @@
     alert('OTP resent.');
   });
 
-  // Event handler for Login button
-  document.getElementById('loginBtn').addEventListener('click', () => {
-    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-    const password = document.getElementById('loginPassword').value.trim();
+  // Handle login button click
+document.getElementById('loginBtn').addEventListener('click', () => {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value.trim();
 
-    if (!driverData.email) {
-      alert('No registered user found. Please register first.');
-      return;
-    }
+  if (!userType) {
+    alert('Please select Driver or Admin login.');
+    return;
+  }
 
-    if (driverData.email.toLowerCase() === email && driverData.password === password) {
+  if (userType === 'driver') {
+    // Check driver credentials
+    if (driverData.email && driverData.email.toLowerCase() === email && driverData.password === password) {
       localStorage.setItem('currentUser', JSON.stringify(driverData));
-      
-      // Check if user is driver or admin based on login
-      // For simplicity, assume admin login is via prompt
-      // But here, we handle driver login
-      if (driverData.email === email && driverData.password === password) {
-        if (driverApproved) {
-          alert('Login successful! Accessing driver dashboard...');
-          window.location.href='http://127.0.0.1:5500/driver-app/index.html';
-        } else {
-          generateAndSendOtp();
-          showOtpModal();
-          // Redirect will happen after OTP verification
-        }
+      if (driverApproved) {
+        window.location.href='http://127.0.0.1:5500/driver-app/index.html';
+      } else {
+        generateAndSendOtp();
+        showOtpModal();
       }
     } else {
-      alert('Invalid email or password.');
+      alert('Invalid driver credentials.');
     }
-  });
-
-  // Buttons for Driver and Admin
-  document.getElementById('driverBtn')?.addEventListener('click', () => {
-    // Fixed: Directly redirect to driver page
-    window.location.href='http://127.0.0.1:5500/driver-app/index.html';
-  });
-
-  document.getElementById('adminBtn')?.addEventListener('click', () => {
-    // For admin login, prompt for credentials
-    const enteredEmail = prompt("Enter Admin Username:");
-    const enteredPassword = prompt("Enter Admin Password:");
-    if (enteredEmail === adminUsername && enteredPassword === adminPassword) {
-      // Only redirect if credentials match
+  } else if (userType === 'admin') {
+    // Check admin credentials
+    if (email === adminUsername && password === adminPassword) {
       window.location.href='http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html';
     } else {
-      alert("Invalid admin credentials.");
+      alert('Invalid admin credentials.');
     }
-  });
+  }
+  // Reset userType after login attempt
+  userType = null;
+});
 
-  // Initialize
-  window.onload = () => {
-    loadLoginPage();
-  };
+// Buttons for Driver and Admin
+document.getElementById('driverBtn')?.addEventListener('click', () => {
+  userType = 'driver';
+  showModal('loginModal');
+});
+
+document.getElementById('adminBtn')?.addEventListener('click', () => {
+  userType = 'admin';
+  showModal('loginModal');
+});
+
+// Initialize
+window.onload = () => {
+  loadLoginPage();
+};
 </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Login Modal</title>
+<title>User Login</title>
 <style>
   /* Modal styles */
   .modal {
@@ -14,15 +14,18 @@
     top: 0;
     width: 100%; 
     height: 100%; 
-    overflow: auto; 
     background-color: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .modal-content {
     background-color: #fff;
-    margin: 15% auto; 
     padding: 20px;
     border-radius: 8px;
     width: 300px;
+    max-width: 90%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     text-align: center;
   }
   .modal input {
@@ -35,7 +38,7 @@
     padding: 8px 12px;
     cursor: pointer;
   }
-  /* Buttons styling for Driver and Admin */
+  /* Buttons styling for User and Admin */
   #buttonContainer {
     margin-top: 20px;
     display: flex;
@@ -51,16 +54,12 @@
     font-weight: bold;
     cursor: pointer;
   }
-  /* Optional: hover effect */
   .redirectBtn:hover {
     opacity: 0.8;
   }
 </style>
 </head>
 <body>
-
-<!-- Container for dynamic content -->
-<div id="innerContent"></div>
 
 <!-- Login Modal Structure -->
 <div id="loginModal" class="modal">
@@ -74,9 +73,9 @@
     <label>Password</label>
     <input type="password" id="loginPassword" placeholder="Password" />
     <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" id="loginBtn">Login</button>
-    <!-- Buttons for Driver and Admin -->
+    <!-- Buttons for User and Admin -->
     <div id="buttonContainer">
-      <button class="redirectBtn" id="driverBtn">Driver</button>
+      <button class="redirectBtn" id="userBtn">User</button>
       <button class="redirectBtn" id="adminBtn">Admin</button>
     </div>
   </div>
@@ -96,118 +95,107 @@
 </div>
 
 <script>
-  // Admin credentials
   const adminUsername = 'crunchtimeadmin';
   const adminPassword = 'crunchtimeadmin12';
 
-  // Load user data from localStorage
   const driverData = JSON.parse(localStorage.getItem('registeredUser')) || {};
-  let driverApproved = false; // Change to true when admin approves
+  let driverApproved = false; // Set to true when admin approves
   let generatedOtp = '';
-  let otpVerified = false;
 
-  function loadLoginPage() {
-    const contentDiv = document.getElementById('innerContent');
-    contentDiv.innerHTML=''; // Clear previous content if any
-    showModal('loginModal');
-  }
+  let userType = null; // 'user' or 'admin'
 
-  // Utility functions to show/hide modals
-  function showModal(modalId) {
-    document.getElementById(modalId).style.display='block';
+  // Utility functions
+  function showModal(id) { 
+    document.getElementById(id).style.display='flex'; // Use flex for centering
   }
-  function hideModal(modalId) {
-    document.getElementById(modalId).style.display='none';
-  }
+  function hideModal(id) { document.getElementById(id).style.display='none'; }
 
-  // Generate OTP
+  // OTP functions
   function generateAndSendOtp() {
     generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
     alert(`OTP sent to Email: ${driverData.email}. (OTP: ${generatedOtp})`);
   }
-
-  // Show OTP modal
-  function showOtpModal() {
-    document.getElementById('otpModal').style.display='block';
+  function showOtp() {
+    document.getElementById('otpModal').style.display='flex';
     document.getElementById('otpInput').value='';
-    otpVerified=false;
   }
-  // Hide OTP modal
-  function hideOtpModal() {
+  function hideOtp() {
     document.getElementById('otpModal').style.display='none';
   }
 
-  // OTP verification
-  document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
+  document.getElementById('userBtn').addEventListener('click', () => {
+    userType='user';
+    showModal('loginModal');
+  });
+  document.getElementById('adminBtn').addEventListener('click', () => {
+    userType='admin';
+    showModal('loginModal');
+  });
+
+  document.getElementById('loginBtn').addEventListener('click', () => {
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password = document.getElementById('loginPassword').value.trim();
+
+    if (userType === 'user') {
+      // Check driver credentials
+      if (driverData.email && driverData.email.toLowerCase()===email && driverData.password===password) {
+        localStorage.setItem('currentUser', JSON.stringify(driverData));
+        if (driverApproved) {
+          window.location.href='http://127.0.0.1:5500/user-app/index.html';
+        } else {
+          generateAndSendOtp();
+          showOtp();
+        }
+      } else {
+        alert('Invalid driver credentials.');
+      }
+    } else if (userType==='admin') {
+      // Admin login
+      if (email===adminUsername && password===adminPassword) {
+        window.location.href='http://127.0.0.1:5500/user-app/admin/admin_dashboard.html';
+      } else {
+        alert('Invalid admin credentials.');
+      }
+    }
+    // Reset userType
+    userType=null;
+  });
+
+  document.getElementById('verifyOtpBtn').addEventListener('click', () => {
     const enteredOtp = document.getElementById('otpInput').value.trim();
     if (enteredOtp===generatedOtp) {
-      otpVerified=true;
-      alert('OTP verified! Awaiting admin approval...');
-      hideOtpModal();
-      // After OTP verification, redirect if approved
+      alert('OTP verified! Please wait for admin approval.');
+      hideOtp();
       if (driverApproved) {
-        alert('Login successful!');
         window.location.href='http://127.0.0.1:5500/user-app/index.html';
       } else {
-        alert('Your account is still pending approval. Please wait.');
+        alert('Your account is still pending approval.');
       }
     } else {
-      alert('Incorrect OTP. Please try again.');
+      alert('Incorrect OTP.');
     }
   });
-  document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
+  document.getElementById('resendOtpBtn').addEventListener('click', () => {
     generateAndSendOtp();
     alert('OTP resent.');
   });
 
-  // Login button event
-document.getElementById('loginBtn').addEventListener('click', () => {
-  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const password = document.getElementById('loginPassword').value.trim();
-  if (!driverData.email) {
-    alert('No registered user found. Please register first.');
-    return;
-  }
-  if (driverData.email.toLowerCase() === email && driverData.password === password) {
-    localStorage.setItem('currentUser', JSON.stringify(driverData));
-    // Check if approved
-    if (driverApproved) {
-      alert('Login successful!');
-      window.location.href='http://127.0.0.1:5500/user-app/index.html';
-    } else {
-      // Not approved: show OTP modal first
-      generateAndSendOtp();
-      showOtpModal();
-      // Redirect after OTP verification and approval
+  // Close modal when clicking outside modal content
+  window.onclick = function(event) {
+    const loginModal = document.getElementById('loginModal');
+    const otpModal = document.getElementById('otpModal');
+    if (event.target === loginModal) {
+      hideModal('loginModal');
     }
-  } else {
-    alert('Invalid email or password.');
-  }
-});
+    if (event.target === otpModal) {
+      hideModal('otpModal');
+    }
+  };
 
-// Driver button
-document.getElementById('driverBtn')?.addEventListener('click', () => {
-  alert('Please login as driver via the login form.');
-  loadLoginPage();
-});
-
-// Admin button
-document.getElementById('adminBtn')?.addEventListener('click', () => {
-  const enteredUser = prompt('Enter Admin Username:');
-  const enteredPass = prompt('Enter Admin Password:');
-  if (enteredUser === adminUsername && enteredPass === adminPassword) {
-    alert('Login successful!');
-    // Fix: Set the URL you want to navigate to
-    window.location.href='http://127.0.0.1:5500/user-app/admin/admin_dashboard.html';
-  } else {
-    alert('Invalid admin credentials.');
-  }
-});
-
-// On load
-window.onload = () => {
-  loadLoginPage();
-};
+  // Show the login modal automatically on page load
+  window.onload = function() {
+    showModal('loginModal');
+  };
 </script>
 </body>
 </html>
