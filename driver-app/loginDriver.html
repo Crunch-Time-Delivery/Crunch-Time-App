@@ -150,7 +150,12 @@
 
       if (driverApproved) {
         alert('Login successful! Accessing driver dashboard...');
-        window.location.href='http://127.0.0.1:5500/driver-app/index.html';
+        // Redirect based on userType
+        if (userType === 'driver') {
+          window.location.href='http://127.0.0.1:5500/driver-app/index.html';
+        } else if (userType === 'admin') {
+          window.location.href='http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html';
+        }
       } else {
         alert('Your account is still pending approval. Please wait.');
       }
@@ -179,6 +184,7 @@ document.getElementById('loginBtn').addEventListener('click', () => {
     if (driverData.email && driverData.email.toLowerCase() === email && driverData.password === password) {
       localStorage.setItem('currentUser', JSON.stringify(driverData));
       if (driverApproved) {
+        // Redirect directly if approved
         window.location.href='http://127.0.0.1:5500/driver-app/index.html';
       } else {
         generateAndSendOtp();
@@ -198,7 +204,6 @@ document.getElementById('loginBtn').addEventListener('click', () => {
   // Reset userType after login attempt
   userType = null;
 });
-
 // Buttons for Driver and Admin
 document.getElementById('driverBtn')?.addEventListener('click', () => {
   userType = 'driver';
