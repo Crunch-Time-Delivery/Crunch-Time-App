@@ -3,15 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>CrunchTime Login</title>
+<title>Login Modal</title>
 <style>
-  /* Your existing styles ... (unchanged) */
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f9f9f9;
-  }
+  /* Modal styles */
   .modal {
     display: none; 
     position: fixed; 
@@ -31,12 +25,44 @@
     width: 300px;
     text-align: center;
   }
-  /* ... other styles ... */
+  .modal input {
+    width: 80%;
+    padding: 8px;
+    margin-top: 10px;
+  }
+  .modal button {
+    margin-top: 15px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  /* Buttons styling for Driver and Admin */
+  #buttonContainer {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  .redirectBtn {
+    background-color: red;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  /* Optional: hover effect */
+  .redirectBtn:hover {
+    opacity: 0.8;
+  }
 </style>
 </head>
 <body>
 
-<!-- Login Modal -->
+<!-- Container for dynamic content -->
+<div id="innerContent"></div>
+
+<!-- Login Modal Structure -->
 <div id="loginModal" class="modal">
   <div class="modal-content">
     <img src="img/screenshot (251).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
@@ -48,42 +74,138 @@
     <label>Password</label>
     <input type="password" id="loginPassword" placeholder="Password" />
     <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" id="loginBtn">Login</button>
-    <div class="nav-buttons" style="margin-top:20px;">
-      <button id="userBtn">User</button>
-      <button id="adminBtn">Admin</button>
+    <!-- Buttons for Driver and Admin -->
+    <div id="buttonContainer">
+      <button class="redirectBtn" id="driverBtn">Driver</button>
+      <button class="redirectBtn" id="adminBtn">Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- OTP Modal -->
+<div id="otpModal" class="modal">
+  <div class="modal-content">
+    <h3>Verify Account</h3>
+    <p>Please enter the OTP number sent to your email to reset your password</p>
+    <input type="text" id="otpInput" maxlength="4" placeholder="Enter OTP" />
+    <div style="margin-top:10px;">
+      <button id="verifyOtpBtn">Confirm</button>
+      <button id="resendOtpBtn">Resend OTP</button>
     </div>
   </div>
 </div>
 
 <script>
-  // Login logic
+  // Admin credentials
+  const adminUsername = 'crunchtimeadmin';
+  const adminPassword = 'crunchtimeadmin12';
+
+  // Load user data from localStorage
+  const driverData = JSON.parse(localStorage.getItem('registeredUser')) || {};
+  let driverApproved = false; // Change to true when admin approves
+  let generatedOtp = '';
+  let otpVerified = false;
+
+  function loadLoginPage() {
+    const contentDiv = document.getElementById('innerContent');
+    contentDiv.innerHTML=''; // Clear previous content if any
+    showModal('loginModal');
+  }
+
+  // Utility functions to show/hide modals
+  function showModal(modalId) {
+    document.getElementById(modalId).style.display='block';
+  }
+  function hideModal(modalId) {
+    document.getElementById(modalId).style.display='none';
+  }
+
+  // Generate OTP
+  function generateAndSendOtp() {
+    generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+    alert(`OTP sent to Email: ${driverData.email}. (OTP: ${generatedOtp})`);
+  }
+
+  // Show OTP modal
+  function showOtpModal() {
+    document.getElementById('otpModal').style.display='block';
+    document.getElementById('otpInput').value='';
+    otpVerified=false;
+  }
+  // Hide OTP modal
+  function hideOtpModal() {
+    document.getElementById('otpModal').style.display='none';
+  }
+
+  // OTP verification
+  document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
+    const enteredOtp = document.getElementById('otpInput').value.trim();
+    if (enteredOtp===generatedOtp) {
+      otpVerified=true;
+      alert('OTP verified! Awaiting admin approval...');
+      hideOtpModal();
+      // After OTP verification, redirect if approved
+      if (driverApproved) {
+        alert('Login successful!');
+        window.location.href='http://127.0.0.1:5500/user-app/index.html';
+      } else {
+        alert('Your account is still pending approval. Please wait.');
+      }
+    } else {
+      alert('Incorrect OTP. Please try again.');
+    }
+  });
+  document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
+    generateAndSendOtp();
+    alert('OTP resent.');
+  });
+
+  // Login button event
 document.getElementById('loginBtn').addEventListener('click', () => {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value.trim();
-
-  const users = JSON.parse(localStorage.getItem('users')) || [];
-  const user = users.find(u => u.email.toLowerCase() === email);
-
-  if (user && user.password === password) {
-    alert('Login successful!');
-    // Redirect or show user dashboard
-    window.location.href='http://127.0.0.1:5500/user-app/index.html   '; // change as needed
+  if (!driverData.email) {
+    alert('No registered user found. Please register first.');
+    return;
+  }
+  if (driverData.email.toLowerCase() === email && driverData.password === password) {
+    localStorage.setItem('currentUser', JSON.stringify(driverData));
+    // Check if approved
+    if (driverApproved) {
+      alert('Login successful!');
+      window.location.href='http://127.0.0.1:5500/user-app/index.html';
+    } else {
+      // Not approved: show OTP modal first
+      generateAndSendOtp();
+      showOtpModal();
+      // Redirect after OTP verification and approval
+    }
   } else {
     alert('Invalid email or password.');
   }
 });
 
-// Optional handlers for user/admin
-document.getElementById('userBtn').addEventListener('click', () => {
-  window.location.href='http://127.0.0.1:5500/user-app/index.html  ';
-});
-document.getElementById('adminBtn').addEventListener('click', () => {
-  window.location.href='http://127.0.0.1:5500/user-app/admin/admin_dashboard.html  ';
+// Driver button
+document.getElementById('driverBtn')?.addEventListener('click', () => {
+  alert('Please login as driver via the login form.');
+  loadLoginPage();
 });
 
-// Show login modal on page load
+// Admin button
+document.getElementById('adminBtn')?.addEventListener('click', () => {
+  const enteredUser = prompt('Enter Admin Username:');
+  const enteredPass = prompt('Enter Admin Password:');
+  if (enteredUser === adminUsername && enteredPass === adminPassword) {
+    alert('Login successful!');
+    window.location.href='http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html';
+  } else {
+    alert('Invalid admin credentials.');
+  }
+});
+
+// On load
 window.onload = () => {
-  document.getElementById('loginModal').style.display='block';
+  loadLoginPage();
 };
 </script>
 </body>

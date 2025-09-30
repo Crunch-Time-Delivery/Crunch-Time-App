@@ -96,106 +96,131 @@
 </div>
 
 <script>
+  // Admin credentials
+  const adminUsername = 'crunchtimeadmin';
+  const adminPassword = 'crunchtimeadmin12';
+
   // Load user data from localStorage
-function loadLoginPage() {
-  const contentDiv = document.getElementById('innerContent');
-  contentDiv.innerHTML=''; // Clear previous content if any
+  const driverData = JSON.parse(localStorage.getItem('registeredUser')) || {};
+  let driverApproved = false; // For demo, default false; set true when approved
+  let generatedOtp = '';
+  let otpVerified = false;
 
-  // Show login modal
-  showModal('loginModal');
-}
+  function loadLoginPage() {
+    const contentDiv = document.getElementById('innerContent');
+    contentDiv.innerHTML=''; // Clear previous content if any
 
-// Utility functions to show/hide modals
-function showModal(modalId) {
-  document.getElementById(modalId).style.display='block';
-}
-
-function hideModal(modalId) {
-  document.getElementById(modalId).style.display='none';
-}
-
-// For demonstration, simulating driver data and approval
-const driverData = JSON.parse(localStorage.getItem('registeredUser')) || {};
-let driverApproved = false; // Set to true if approved
-let generatedOtp = '';
-let otpVerified = false;
-
-// Generate and send OTP
-function generateAndSendOtp() {
-  generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-  alert(`OTP sent to Email: ${driverData.email}. (OTP: ${generatedOtp})`);
-}
-
-// Show OTP modal
-function showOtpModal() {
-  document.getElementById('otpModal').style.display='block';
-  document.getElementById('otpInput').value='';
-  otpVerified=false;
-}
-
-// Hide OTP modal
-function hideOtpModal() {
-  document.getElementById('otpModal').style.display='none';
-}
-
-// Event handlers for OTP verification
-document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
-  const enteredOtp = document.getElementById('otpInput').value.trim();
-  if (enteredOtp===generatedOtp) {
-    otpVerified=true;
-    alert('OTP verified! Awaiting admin approval...');
-    hideOtpModal();
-    // After verification, user can choose to login as driver or admin
-  } else {
-    alert('Incorrect OTP. Please try again.');
-  }
-});
-
-document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
-  generateAndSendOtp();
-  alert('OTP resent.');
-});
-
-// Login button handler
-document.getElementById('loginBtn').addEventListener('click', () => {
-  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const password = document.getElementById('loginPassword').value.trim();
-
-  if (!driverData.email) {
-    alert('No registered user found. Please register first.');
-    return;
+    // Show login modal
+    showModal('loginModal');
   }
 
-  if (driverData.email.toLowerCase() === email && driverData.password === password) {
-    localStorage.setItem('currentUser', JSON.stringify(driverData));
-    if (driverApproved) {
-      alert('Login successful! Accessing driver dashboard...');
-      // Show dashboard or redirect
-      document.getElementById('innerContent').innerHTML = '<h2>Welcome to the Driver Dashboard</h2>';
+  // Utility functions to show/hide modals
+  function showModal(modalId) {
+    document.getElementById(modalId).style.display='block';
+  }
+
+  function hideModal(modalId) {
+    document.getElementById(modalId).style.display='none';
+  }
+
+  // Generate and send OTP
+  function generateAndSendOtp() {
+    generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+    alert(`OTP sent to Email: ${driverData.email}. (OTP: ${generatedOtp})`);
+  }
+
+  // Show OTP modal
+  function showOtpModal() {
+    document.getElementById('otpModal').style.display='block';
+    document.getElementById('otpInput').value='';
+    otpVerified=false;
+  }
+
+  // Hide OTP modal
+  function hideOtpModal() {
+    document.getElementById('otpModal').style.display='none';
+  }
+
+  // Event handlers for OTP verification
+  document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
+    const enteredOtp = document.getElementById('otpInput').value.trim();
+    if (enteredOtp===generatedOtp) {
+      otpVerified=true;
+      alert('OTP verified! Awaiting admin approval...');
+      hideOtpModal();
+
+      // After OTP is verified, redirect if approved
+      if (driverApproved) {
+        window.location.href='http://127.0.0.1:5500/driver-app/index.html';
+      } else {
+        alert('Your account is still pending approval. Please wait.');
+      }
     } else {
-      alert('Waiting for admin approval...');
-      generateAndSendOtp();
-      showOtpModal();
+      alert('Incorrect OTP. Please try again.');
     }
-  } else {
-    alert('Invalid email or password.');
-  }
-});
+  });
 
-// Buttons for Driver and Admin
-document.getElementById('driverBtn')?.addEventListener('click', () => {
-  // Redirect to driver dashboard or page
-  window.location.href='driver_dashboard.html'; // create this page or update as needed
-});
+  document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
+    generateAndSendOtp();
+    alert('OTP resent.');
+  });
 
-document.getElementById('adminBtn')?.addEventListener('click', () => {
-  window.location.href='admin_dashboard.html'; // create this page or update as needed
-});
+  // Event handler for Login button
+  document.getElementById('loginBtn').addEventListener('click', () => {
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password = document.getElementById('loginPassword').value.trim();
 
-// Initialize
-window.onload = () => {
-  loadLoginPage();
-};
+    if (!driverData.email) {
+      alert('No registered user found. Please register first.');
+      return;
+    }
+
+    if (driverData.email.toLowerCase() === email && driverData.password === password) {
+      localStorage.setItem('currentUser', JSON.stringify(driverData));
+      
+      // Check if user is driver or admin based on login
+      // For simplicity, assume admin login is via prompt
+      // But here, we handle driver login
+      if (driverData.email === email && driverData.password === password) {
+        if (driverApproved) {
+          alert('Login successful! Accessing driver dashboard...');
+          window.location.href='http://127.0.0.1:5500/driver-app/index.html';
+        } else {
+          generateAndSendOtp();
+          showOtpModal();
+          // Redirect will happen after OTP verification
+        }
+      }
+    } else {
+      alert('Invalid email or password.');
+    }
+  });
+
+  // Buttons for Driver and Admin
+  document.getElementById('driverBtn')?.addEventListener('click', () => {
+    // Optionally, you could implement a direct driver page link here
+    // For demonstration, perhaps open login modal or redirect
+    // For now, just alert
+    alert('Please login as driver via the login form.');
+    loadLoginPage();
+  });
+
+  document.getElementById('adminBtn')?.addEventListener('click', () => {
+    // For admin login, prompt for credentials
+    const enteredEmail = prompt("Enter Admin Username:");
+    const enteredPassword = prompt("Enter Admin Password:");
+    if (enteredEmail === adminUsername && enteredPassword === adminPassword) {
+      // Only redirect if credentials match
+      window.location.href='http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html';
+    } else {
+      alert("Invalid admin credentials.");
+    }
+  });
+
+  // Initialize
+  window.onload = () => {
+    loadLoginPage();
+  };
 </script>
 </body>
 </html>

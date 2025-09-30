@@ -98,9 +98,8 @@
     users.push({ email: email, name: name, pass: pass });
     localStorage.setItem('users', JSON.stringify(users));
 
-    // Generate OTP
-    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-    alert('Your OTP: ' + generatedOTP);
+    // Redirect to login page after successful registration
+    window.location.href = 'http://127.0.0.1:5500/vendor-app/loginVendor.html';
   }
 </script>
 
