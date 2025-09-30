@@ -162,6 +162,22 @@
   window.onload = () => {
     showLogin();
     generateOTP();
+
+    // Attach event listeners for buttons
+    document.getElementById('userBtn').addEventListener('click', () => {
+      window.location.href='http://127.0.0.1:5500/vendor-app/index.html';
+    });
+
+    document.getElementById('adminBtn').addEventListener('click', () => {
+      const username = prompt('Enter admin username:');
+      const pass = prompt('Enter admin password:');
+      if (username === 'crunchtimeadmin' && pass === 'crunchtimeadmin12') {
+        alert('Admin login success!');
+        window.location.href='http://127.0.0.1:5500/vendor-app/admin/admin_dashboard.html';
+      } else {
+        alert('Invalid admin credentials.');
+      }
+    });
   };
 
   function showLogin() {
@@ -215,22 +231,6 @@
       alert('Incorrect OTP.');
     }
   }
-
-  document.getElementById('userBtn').addEventListener('click', () => {
-    // Direct to user page
-    window.location.href='http://127.0.0.1:5500/vendor-app/index.html';
-  });
-
-  document.getElementById('adminBtn').addEventListener('click', () => {
-    const username = prompt('Enter admin username:');
-    const pass = prompt('Enter admin password:');
-    if (username === 'crunchtimeadmin' && pass === 'crunchtimeadmin12') {
-      alert('Admin login success!');
-      window.location.href='http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html';
-    } else {
-      alert('Invalid admin credentials.');
-    }
-  });
 </script>
 </body>
 </html>

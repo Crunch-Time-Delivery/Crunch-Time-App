@@ -198,11 +198,8 @@
 
   // Buttons for Driver and Admin
   document.getElementById('driverBtn')?.addEventListener('click', () => {
-    // Optionally, you could implement a direct driver page link here
-    // For demonstration, perhaps open login modal or redirect
-    // For now, just alert
-    alert('Please login as driver via the login form.');
-    loadLoginPage();
+    // Fixed: Directly redirect to driver page
+    window.location.href='http://127.0.0.1:5500/driver-app/index.html';
   });
 
   document.getElementById('adminBtn')?.addEventListener('click', () => {
