@@ -59,6 +59,11 @@ app.post('/create-payfast-payment', async (req, res) => {
 
   // Return the payment URL to the client
   res.json({ paymentUrl });
+
+  // Call the function to fetch Admin data
+fetchAdmin().then(admin => {
+  console.log(admin)
+})
 });
 
 app.listen(3001, () => {

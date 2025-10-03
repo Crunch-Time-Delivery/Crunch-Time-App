@@ -41,3 +41,7 @@ async function fetchDrivers() {
 fetchDrivers().then(drivers => {
   console.log(drivers)
 })
+// Call the function to fetch Admin data
+fetchAdmin().then(admin => {
+  console.log(admin)
+})

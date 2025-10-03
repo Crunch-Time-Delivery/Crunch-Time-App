@@ -66,3 +66,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
       console.log('Location saved:', data);
     }
   }
+// Call the function to fetch Admin data
+fetchAdmin().then(admin => {
+  console.log(admin)
+})
