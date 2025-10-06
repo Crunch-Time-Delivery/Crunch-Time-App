@@ -1,22 +1,21 @@
 // user-app/.live_tracking.jsx
 import React, { useEffect, useRef } from 'react';
-import './live-tracking.jsx';
 
-// Assuming you will pass props or import the capture_location component elsewhere
-function LiveTracking({ userLat, userLng }) {
+function LiveTracking({ userLat, userLng, onLocationChange }) {
   const mapRef = useRef(null);
   const markerRef = useRef(null);
-  const userLocationRef = useRef(null);
+  const userMarkerRef = useRef(null);
 
   const MAPBOX_ACCESS_TOKEN = 'YOUR_MAPBOX_ACCESS_TOKEN'; // Replace with your Mapbox token
 
   useEffect(() => {
-    // Initialize map with Mapbox styles
+    // Initialize the map
     mapRef.current = L.map('mapContainer', {
       center: [-33.9129, 18.4179],
       zoom: 14,
     });
 
+    // Add Mapbox tile layer
     L.tileLayer(`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${MAPBOX_ACCESS_TOKEN}`, {
       attribution:
         'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
@@ -36,61 +35,53 @@ function LiveTracking({ userLat, userLng }) {
     // Simulate driver movement
     const interval = setInterval(() => {
       if (markerRef.current && mapRef.current) {
-        let lat = markerRef.current.getLatLng().lat + (Math.random() - 0.5) * 0.01;
-        let lng = markerRef.current.getLatLng().lng + (Math.random() - 0.5) * 0.01;
-        markerRef.current.setLatLng([lat, lng]);
-        mapRef.current.setView([lat, lng], mapRef.current.getZoom());
+        const currentLatLng = markerRef.current.getLatLng();
+        const newLat = currentLatLng.lat + (Math.random() - 0.5) * 0.01;
+        const newLng = currentLatLng.lng + (Math.random() - 0.5) * 0.01;
+        markerRef.current.setLatLng([newLat, newLng]);
+        mapRef.current.setView([newLat, newLng], mapRef.current.getZoom());
       }
     }, 3000);
 
-    // Function to update user location from capture_location.jsx
-    const updateUserLocation = (lat, lng) => {
-      if (!mapRef.current.userMarker) {
-        mapRef.current.userMarker = L.marker([lat, lng], {
-          icon: L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png',
-            iconSize: [25, 25],
-          }),
-        }).addTo(mapRef.current).bindPopup('Your Location');
-      } else {
-        mapRef.current.userMarker.setLatLng([lat, lng]);
-      }
-      // Optional: Center map on user
-      // mapRef.current.setView([lat, lng], 14);
-    };
-
-    // For demonstration, simulate receiving location updates
-    // In real app, connect this to capture_location.jsx
-    // e.g., via context, callback, or event emitter
-
-    // Cleanup
+    // Cleanup on unmount
     return () => {
       clearInterval(interval);
     };
   }, []);
 
-  // Example callback to receive location updates from capture_location.jsx
-  // You can pass this function down or set up a state management solution
-  const handleLocationUpdate = (lat, lng) => {
-    if (mapRef.current) {
-      if (!mapRef.current.userMarker) {
-        mapRef.current.userMarker = L.marker([lat, lng], {
+  // Effect to update user location marker when props change
+  useEffect(() => {
+    if (
+      typeof userLat === 'number' &&
+      typeof userLng === 'number' &&
+      mapRef.current
+    ) {
+      if (!userMarkerRef.current) {
+        userMarkerRef.current = L.marker([userLat, userLng], {
           icon: L.icon({
             iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png',
             iconSize: [25, 25],
           }),
         }).addTo(mapRef.current).bindPopup('Your Location');
       } else {
-        mapRef.current.userMarker.setLatLng([lat, lng]);
+        userMarkerRef.current.setLatLng([userLat, userLng]);
       }
-      // Optional: Center map
-      // mapRef.current.setView([lat, lng], 14);
+      // Optional: center map on user location
+      // mapRef.current.setView([userLat, userLng], 14);
+
+      // Call callback if provided
+      if (onLocationChange) {
+        onLocationChange(userLat, userLng);
+      }
     }
-  };
+  }, [userLat, userLng, onLocationChange]);
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
-      <div id="mapContainer" style={{ height: '100%', width: '100%' }}></div>
+      <div
+        id="mapContainer"
+        style={{ height: '100%', width: '100%' }}
+      ></div>
     </div>
   );
 }
