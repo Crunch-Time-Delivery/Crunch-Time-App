@@ -16,8 +16,25 @@
       max-width: 600px;
       margin: 0 auto;
     }
+    /* Flex container for title and red column */
+    .title-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    /* Title styling */
     h1 {
-      text-align: center;
+      margin: 0;
+      font-size: 24px;
+      flex: 1;
+    }
+    /* Red column styling */
+    .red-column {
+      width: 20px;
+      height: 20px;
+      background-color: red;
+      margin-left: 10px;
+      border-radius: 3px;
     }
     form {
       display: flex;
@@ -54,7 +71,12 @@
 </head>
 <body>
   <div class="search-location-container">
-    <h1>Search Delivery Location</h1>
+    <!-- Title with red column -->
+    <div class="title-row">
+      <h1>Search Delivery Location</h1>
+    
+    </div>
+    <!-- Rest of the content -->
     <form id="locationForm">
       <input type="text" id="locationInput" placeholder="Enter address or city" />
       <button type="submit">Set Location</button>
@@ -126,6 +148,7 @@
             localStorage.setItem('deliveryCoords', JSON.stringify({ lat: latitude, lon: longitude }));
             localStorage.setItem('deliveryAddress', 'My Location');
             locationInput.value = 'My Location';
+            updateCoordinatesDisplay(latitude, longitude);
           },
           (err) => {
             alert('Unable to retrieve your location. Please allow location access.');
@@ -138,7 +161,7 @@
     });
 
     // Reset the map and clear stored data
-    document.getElementById('resetBtn').addEventListener('click', () => {
+    resetBtn.addEventListener('click', () => {
       map.setView([37.7749, -122.4194], 12);
       if (marker) {
         map.removeLayer(marker);
