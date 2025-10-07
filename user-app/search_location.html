@@ -21,6 +21,8 @@
     }
     form {
       display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
       margin-bottom: 10px;
     }
     input[type="text"] {
@@ -38,6 +40,16 @@
       width: 100%;
       margin-top: 20px;
     }
+    .buttons-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+    #coordinates {
+      margin-top: 10px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -47,13 +59,19 @@
       <input type="text" id="locationInput" placeholder="Enter address or city" />
       <button type="submit">Set Location</button>
     </form>
+    <div class="buttons-group">
+      <button id="locateBtn">Use My Location</button>
+      <button id="resetBtn">Reset Map</button>
+    </div>
+    <div id="coordinates"></div>
     <div id="map"></div>
   </div>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    let map = L.map('map').setView([37.7749, -122.4194], 12); // Default to San Francisco
+    // Initialize the map centered at a default location
+    let map = L.map('map').setView([37.7749, -122.4194], 12); // San Francisco
     let marker;
 
     // Add OpenStreetMap tiles
@@ -62,34 +80,93 @@
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
-    document.getElementById('locationForm').addEventListener('submit', function(e) {
+    const locationInput = document.getElementById('locationInput');
+    const locationForm = document.getElementById('locationForm');
+    const locateBtn = document.getElementById('locateBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const coordinatesDiv = document.getElementById('coordinates');
+
+    // Load saved location from localStorage if available
+    window.onload = () => {
+      const savedCoords = localStorage.getItem('deliveryCoords');
+      const savedAddress = localStorage.getItem('deliveryAddress');
+      if (savedCoords && savedAddress) {
+        const { lat, lon } = JSON.parse(savedCoords);
+        map.setView([lat, lon], 15);
+        if (marker) {
+          marker.setLatLng([lat, lon]);
+        } else {
+          marker = L.marker([lat, lon]).addTo(map);
+        }
+        updateCoordinatesDisplay(lat, lon);
+        // Populate input with saved address
+        if (savedAddress) {
+          locationInput.value = savedAddress;
+        }
+      }
+    };
+
+    // Handle form submission for address geocoding
+    locationForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      const address = document.getElementById('locationInput').value;
-      geocodeAddress(address);
+      const address = locationInput.value.trim();
+      if (address) {
+        geocodeAddress(address);
+      }
     });
 
+    // Use browser geolocation to get current user location
+    document.getElementById('locateBtn').addEventListener('click', () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            updateMapLocation(latitude, longitude);
+            // Save to localStorage
+            localStorage.setItem('deliveryCoords', JSON.stringify({ lat: latitude, lon: longitude }));
+            localStorage.setItem('deliveryAddress', 'My Location');
+            locationInput.value = 'My Location';
+          },
+          (err) => {
+            alert('Unable to retrieve your location. Please allow location access.');
+            console.error(err);
+          }
+        );
+      } else {
+        alert('Geolocation is not supported by this browser.');
+      }
+    });
+
+    // Reset the map and clear stored data
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      map.setView([37.7749, -122.4194], 12);
+      if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+      }
+      localStorage.removeItem('deliveryCoords');
+      localStorage.removeItem('deliveryAddress');
+      locationInput.value = '';
+      updateCoordinatesDisplay(null);
+    });
+
+    // Function to geocode address using Nominatim
     function geocodeAddress(address) {
-      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+      fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+      )
         .then((response) => response.json())
         .then((data) => {
           if (data && data.length > 0) {
             const firstResult = data[0];
             const lat = parseFloat(firstResult.lat);
             const lon = parseFloat(firstResult.lon);
-            // Center map
-            map.setView([lat, lon], 15);
-            // Add or move marker
-            if (marker) {
-              marker.setLatLng([lat, lon]);
-            } else {
-              marker = L.marker([lat, lon]).addTo(map);
-            }
-            // Save address and coords
-            localStorage.setItem('deliveryAddress', address);
+            updateMapLocation(lat, lon);
+            // Save to localStorage
             localStorage.setItem('deliveryCoords', JSON.stringify({ lat, lon }));
+            localStorage.setItem('deliveryAddress', address);
+            updateCoordinatesDisplay(lat, lon);
             alert('Location set successfully!');
-            // Optional: close the window or redirect back
-            // window.close();
           } else {
             alert('Location not found. Please try another address.');
           }
@@ -98,6 +175,25 @@
           console.error('Error during geocoding:', err);
           alert('Error fetching location data. Please try again.');
         });
+    }
+
+    // Function to update map and marker
+    function updateMapLocation(lat, lon) {
+      map.setView([lat, lon], 15);
+      if (marker) {
+        marker.setLatLng([lat, lon]);
+      } else {
+        marker = L.marker([lat, lon]).addTo(map);
+      }
+    }
+
+    // Function to display current coordinates
+    function updateCoordinatesDisplay(lat, lon) {
+      if (lat && lon) {
+        coordinatesDiv.innerHTML = `Current Coordinates: Latitude ${lat.toFixed(5)}, Longitude ${lon.toFixed(5)}`;
+      } else {
+        coordinatesDiv.innerHTML = 'No location selected.';
+      }
     }
   </script>
 </body>
