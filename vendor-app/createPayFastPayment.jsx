@@ -6,12 +6,12 @@ function PaymentButton() {
 
   const handlePay = async () => {
     try {
-      const { paymentUrl } = await createPayFastPayment({
+    const { paymentUrl } = await createPayFastPayment({
         amount: '100.00',
         item_name: 'Test Item',
       });
       window.location.href = paymentUrl; // redirect to PayFast
-    } catch (err) {
+    }catch (err) {
       alert('Error creating payment');
     }
   };

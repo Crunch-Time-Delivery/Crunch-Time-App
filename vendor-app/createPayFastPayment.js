@@ -1,52 +1,33 @@
-
 const express = require('express');
 const crypto = require('crypto');
+const axios = require('axios');
 
 const app = express();
 app.use(express.json());
 
-app.post('/create-payfast-payment.js', (req, res) => {
+const eftVendorApiUrl = 'https://vendor-api.com/eft/transactions'; // Replace with the actual API URL
+const eftVendorApiKey = 'YOUR_VENDOR_API_KEY'; // Replace with the actual API key
+
+app.post('/create-eft-payment', (req, res) => {
   const { amount, item_name } = req.body;
 
-  // Generate the necessary data for PayFast
-  const merchant_id = 'YOUR_MERCHANT_ID';
-  const merchant_key = 'YOUR_MERCHANT_KEY';
-  const return_url = 'https://yourdomain.com/return';
-  const cancel_url = 'https://yourdomain.com/cancel';
-
   const data = {
-    merchant_id,
-    merchant_key,
     amount,
     item_name,
-    return_url,
-    cancel_url,
     // Add other required fields
   };
 
-  // Generate a signature hash as per PayFast requirements
-  const pfData = {
-    merchant_id,
-    merchant_key,
-    amount,
-    item_name,
-    // other fields...
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${eftVendorApiKey}`,
   };
 
-  // Create the string to hash
-  const dataString = Object.keys(pfData)
-    .sort()
-    .map((key) => `${key}=${pfData[key]}`)
-    .join('&');
-
-  const signature = crypto.createHash('md5').update(dataString).digest('hex');
-
-  // Generate the payment URL (simplified)
-  const paymentUrl = `https://www.payfast.co.za/eng/process?${Object.entries(pfData).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&')}&signature=${signature}`;
-
-  res.json({ paymentUrl });
-});
-
-app.listen(3001, () => {
-  console.log('Server running on port 3001');
+  axios.post(eftVendorApiUrl, data, { headers })
+   .then(response => {
+      res.json(response.data);
+    })
+   .catch(error => {
+      console.error(error);
+      res.status(500).json({ message: 'Failed to create EFT payment' });
+    });
 });
