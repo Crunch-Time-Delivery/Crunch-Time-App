@@ -123,10 +123,11 @@
     document.getElementById('otpModal').style.display='none';
   }
 
+  // Fix for User button to redirect to the specified URL
   document.getElementById('userBtn').addEventListener('click', () => {
-    userType='user';
-    showModal('loginModal');
+    window.location.href='http://127.0.0.1:5500/user-app/index.html';
   });
+
   document.getElementById('adminBtn').addEventListener('click', () => {
     userType='admin';
     showModal('loginModal');

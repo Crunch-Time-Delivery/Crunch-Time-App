@@ -206,8 +206,8 @@ document.getElementById('loginBtn').addEventListener('click', () => {
 });
 // Buttons for Driver and Admin
 document.getElementById('driverBtn')?.addEventListener('click', () => {
-  userType = 'driver';
-  showModal('loginModal');
+  // Redirect directly to driver app page
+  window.location.href='http://127.0.0.1:5500/driver-app/index.html';
 });
 
 document.getElementById('adminBtn')?.addEventListener('click', () => {

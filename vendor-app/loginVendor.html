@@ -115,10 +115,9 @@
   window.onload = () => {
     showLogin();
 
-    // Vendor button
+    // Vendor button - fixed to redirect to specified URL
     document.getElementById('vendorBtn').addEventListener('click', () => {
-      // Prompt login
-      showLogin();
+      window.location.href = 'http://127.0.0.1:5500/vendor-app/index.html';
     });
 
     // Admin button
@@ -146,7 +145,6 @@
     const pass = document.getElementById('password').value.trim();
 
     // For simplicity, admin login is handled separately
-    // Check if login matches admin credentials
     if (username === adminUsername && pass === adminPassword) {
       alert('Admin login success!');
       window.location.href='http://127.0.0.1:5500/vendor-app/admin/admin_dashboard.html';
@@ -154,7 +152,6 @@
     }
 
     // Assume shared credentials for vendor and admin
-    // For demo, check if username and password match stored user
     const users = JSON.parse(localStorage.getItem('users')) || [];
     const user = users.find(u => u.email===username && u.pass===pass);
     if (user) {
@@ -178,8 +175,7 @@
       alert('OTP verified! Redirecting...');
       document.getElementById('otpModal').style.display='none';
 
-      // Assuming admin credentials are entered, redirect accordingly
-      // For demo, if OTP is verified, redirect to user dashboard
+      // Assuming OTP verification leads to user/vendor page
       alert('Login successful!');
       window.location.href='http://127.0.0.1:5500/vendor-app/index.html'; // user/vendor page
     } else {
