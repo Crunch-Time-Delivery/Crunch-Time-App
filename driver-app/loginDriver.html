@@ -201,7 +201,7 @@ document.getElementById('loginBtn').addEventListener('click', () => {
       alert('Invalid admin credentials.');
     }
   }
-  // Reset userType after login attempt
+  // Reset userType after login attemp
   userType = null;
 });
 // Buttons for Driver and Admin
@@ -209,7 +209,6 @@ document.getElementById('driverBtn')?.addEventListener('click', () => {
   // Redirect directly to driver app page
   window.location.href='http://127.0.0.1:5500/driver-app/index.html';
 });
-
 document.getElementById('adminBtn')?.addEventListener('click', () => {
   userType = 'admin';
   showModal('loginModal');
