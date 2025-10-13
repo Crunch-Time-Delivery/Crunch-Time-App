@@ -1,7 +1,4 @@
-// user-app/.live_tracking.jsx
 import React, { useEffect, useRef } from 'react';
-// Make sure to import Leaflet
-import L from 'leaflet';
 
 function LiveTracking({ userLat, userLng, onLocationChange }) {
   const mapContainerRef = useRef(null);
@@ -10,45 +7,30 @@ function LiveTracking({ userLat, userLng, onLocationChange }) {
   const userMarkerRef = useRef(null);
   const intervalRef = useRef(null);
 
-  const MAPBOX_ACCESS_TOKEN = 'YOUR_MAPBOX_ACCESS_TOKEN'; // Replace with your Mapbox token
-
   useEffect(() => {
-    if (!mapRef.current && mapContainerRef.current) {
-      // Initialize map
-      mapRef.current = L.map(mapContainerRef.current, {
-        center: [-33.9129, 18.4179],
+    if (!mapRef.current && window.google && mapContainerRef.current) {
+      // Initialize Google Map
+      mapRef.current = new window.google.maps.Map(mapContainerRef.current, {
+        center: { lat: -33.9129, lng: 18.4179 },
         zoom: 14,
       });
 
-      // Add Mapbox tile layer
-      L.tileLayer(
-        `https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${MAPBOX_ACCESS_TOKEN}`,
-        {
-          attribution:
-            'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
-            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-          id: 'mapbox/streets-v11',
-          tileSize: 512,
-          zoomOffset: -1,
-          accessToken: MAPBOX_ACCESS_TOKEN,
-        }
-      ).addTo(mapRef.current);
-
       // Add driver marker
-      driverMarkerRef.current = L.marker([-33.9129, 18.4179])
-        .addTo(mapRef.current)
-        .bindPopup('Driver Location');
+      driverMarkerRef.current = new window.google.maps.Marker({
+        position: { lat: -33.9129, lng: 18.4179 },
+        map: mapRef.current,
+        popup: 'Driver Location',
+      });
 
       // Simulate driver movement
       intervalRef.current = setInterval(() => {
         if (driverMarkerRef.current && mapRef.current) {
-          const currentLatLng = driverMarkerRef.current.getLatLng();
-          const newLat =
-            currentLatLng.lat + (Math.random() - 0.5) * 0.01;
-          const newLng =
-            currentLatLng.lng + (Math.random() - 0.5) * 0.01;
-          driverMarkerRef.current.setLatLng([newLat, newLng]);
-          mapRef.current.setView([newLat, newLng], mapRef.current.getZoom());
+          const currentPos = driverMarkerRef.current.getPosition();
+          const newLat = currentPos.lat() + (Math.random() - 0.5) * 0.01;
+          const newLng = currentPos.lng() + (Math.random() - 0.5) * 0.01;
+          const newLatLng = new window.google.maps.LatLng(newLat, newLng);
+          driverMarkerRef.current.setPosition(newLatLng);
+          mapRef.current.panTo(newLatLng);
         }
       }, 3000);
     }
@@ -66,22 +48,23 @@ function LiveTracking({ userLat, userLng, onLocationChange }) {
       mapRef.current
     ) {
       if (!userMarkerRef.current) {
-        // Add user location marker
-        userMarkerRef.current = L.marker([userLat, userLng], {
-          icon: L.icon({
-            iconUrl:
-              'https://cdn-icons-png.flaticon.com/512/64/64113.png',
-            iconSize: [25, 25],
-          }),
-        })
-          .addTo(mapRef.current)
-          .bindPopup('Your Location');
+        // Add user marker
+        userMarkerRef.current = new window.google.maps.Marker({
+          position: { lat: userLat, lng: userLng },
+          map: mapRef.current,
+          icon: {
+            url: 'https://cdn-icons-png.flaticon.com/512/64/64113.png',
+            scaledSize: new window.google.maps.Size(25, 25),
+          },
+          title: 'Your Location',
+        });
       } else {
-        // Update position
-        userMarkerRef.current.setLatLng([userLat, userLng]);
+        // Update user marker position
+        userMarkerRef.current.setPosition({ lat: userLat, lng: userLng });
       }
-      // Optional: center map on user
-      // mapRef.current.setView([userLat, userLng], 14);
+
+      // Optional: Center map on user
+      // mapRef.current.panTo({ lat: userLat, lng: userLng });
 
       // Trigger callback if provided
       if (onLocationChange) {
@@ -94,7 +77,8 @@ function LiveTracking({ userLat, userLng, onLocationChange }) {
   useEffect(() => {
     return () => {
       if (mapRef.current) {
-        mapRef.current.remove();
+        // Google Maps API doesn't have a direct 'remove' method for the map
+        // but you can set it to null or handle accordingly
         mapRef.current = null;
       }
     };
