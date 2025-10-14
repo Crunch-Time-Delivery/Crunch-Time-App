@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import App from './live_tracking.jsx';
 
 function UserMap({ userLat, userLng, onLocationChange }) {
   const mapContainerRef = useRef(null);
