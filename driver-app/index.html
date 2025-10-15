@@ -98,6 +98,7 @@
         <!-- Reordered so Order View appears first -->
         <a href="#" id="orderViewLink">Order View</a>
         <a href="#" id="driverAccountLink">Driver View Account</a>
+           <a href="#" id="driverHistoryPayment">Driver History Payment</a>
         <a href="#" id="logoutLink">Logout</a>
       </div>
     </div>
@@ -136,6 +137,7 @@
       // Menu links
       document.getElementById('orderViewLink').onclick = () => { loadOrderView(); };
       document.getElementById('driverAccountLink').onclick = () => { loadDriverAccount(); };
+      document.getElementById('driverHistoryPayment').onclick = () => { loadDriverHistoryPayment(); };
       document.getElementById('logoutLink').onclick = () => {
         // Clear driver data
         localStorage.removeItem('driverEmail');
@@ -252,7 +254,23 @@
         };
       }, 100);
     }
-
+function loadDriverHistoryPayment(){
+  document.getElementById('innerContent').innerHTML = `
+        <h1>Payment History</h1>
+        <div class="history-payemnt">
+          <p><strong> Amount Payment   :</strong> R 100 </p>
+          <p><strong>User Name:</strong> John Doe</p>
+          <p><strong>Dated Pick-up:</strong> August 10, 2025</p>
+          <p><strong>Location Pick-up:</strong> Park street, Cape Town </p>
+          <p><strong>Location Drop-off:</strong> Board street,Cape Town </p>
+         </div>
+        <a href="#" id="backToMain">Back</a>
+      `;
+      document.getElementById('backToMain').onclick = (e) => {
+        e.preventDefault();
+        loadMainPage();
+      };
+}
     function loadMainPage() {
       document.getElementById('contentArea').style.display = 'block';
       document.getElementById('mainHeader').style.display = 'flex';
