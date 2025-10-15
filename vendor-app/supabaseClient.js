@@ -6,9 +6,71 @@ const app = express();
 app.use(express.json());
 
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Make sure this is set securely
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this is set securely
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Function to fetch Vendor data
+async function fetchVendor() {
+  const { data: Vendor, error } = await supabase
+    .from('Vendor')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching vendor:', error);
+    return null;
+  }
+  return Vendor;
+}
+
+// Function to fetch Drivers data
+async function fetchDrivers() {
+  const { data: Drivers, error } = await supabase
+    .from('Drivers')
+    .select(`
+      id,
+      vendor,
+      item,
+      price,
+      stock,
+      email,
+      password,
+      manage_item,
+      manage_orders_Customer_name,
+      manage_order_total,
+      manage_order_status,
+      manage_users,
+      manage_payment
+    `);
+
+  if (error) {
+    console.error('Error fetching drivers:', error);
+    return null;
+  }
+  return Drivers;
+}
+
+// Function to fetch Admin data (assuming you have an Admin table)
+async function fetchAdmin() {
+  const { data: Admin, error } = await supabase
+    .from('Admin')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching admin:', error);
+    return null;
+  }
+  return Admin;
+}
+
+// Example usage
+fetchDrivers().then(drivers => {
+  console.log('Drivers:', drivers);
+});
+fetchAdmin().then(admin => {
+  console.log('Admin:', admin);
+});
+
+// Payment route
 app.post('/create-payfast-payment', async (req, res) => {
   const { amount, item_name } = req.body;
 
@@ -25,7 +87,7 @@ app.post('/create-payfast-payment', async (req, res) => {
     item_name,
     return_url,
     cancel_url,
-    // Add other required fields
+    // Add other required fields if necessary
   };
 
   // Create the string to hash
@@ -37,7 +99,9 @@ app.post('/create-payfast-payment', async (req, res) => {
   const signature = crypto.createHash('md5').update(dataString).digest('hex');
 
   // Generate the payment URL
-  const paymentUrl = `https://www.payfast.co.za/eng/process?${Object.entries(pfData).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&')}&signature=${signature}`;
+  const paymentUrl = `https://www.payfast.co.za/eng/process?${Object.entries(pfData)
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+    .join('&')}&signature=${signature}`;
 
   // Save the payment record in Supabase
   const { data: paymentRecord, error } = await supabase
@@ -59,13 +123,9 @@ app.post('/create-payfast-payment', async (req, res) => {
 
   // Return the payment URL to the client
   res.json({ paymentUrl });
-
-  // Call the function to fetch Admin data
-fetchAdmin().then(admin => {
-  console.log(admin)
-})
 });
 
+// Start server
 app.listen(3001, () => {
   console.log('Server running on port 3001');
 });

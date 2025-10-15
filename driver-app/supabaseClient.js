@@ -26,7 +26,9 @@ async function fetchDrivers() {
       Order_items,
       Order_items_Qty,
       Order_items_Price,
-      Order_items_Total
+      Order_items_Total,
+      pick_up_point,
+      drop_up_point
     `)
 
   if (error) {
