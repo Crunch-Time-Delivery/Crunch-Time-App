@@ -1,7 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your actual key
+const supabaseKey = process.env.SUPABASE_KEY; // Replace with your actual key
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function fetchUser() {
@@ -23,9 +23,7 @@ async function fetchUser() {
   if (error) {
     console.error('Error fetching user:', error);
     return null;
-  }
-
-  return User;
+  } return User;
 }
 
 // Call the function to fetch user data
