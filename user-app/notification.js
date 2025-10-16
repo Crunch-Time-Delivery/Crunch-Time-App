@@ -13,7 +13,7 @@ function showNotification(message, soundFile='notification.mp3') {
     if (!notifButton) {
       notifButton = document.createElement('button');
       notifButton.id='notificationButton';
-      notifButton.innerText='🔴'; // Red dot icon
+      notifButton.innerText=''; // Red dot icon
       notifButton.style.position='absolute';
       notifButton.style.top='10px';
       notifButton.style.right='10px';
