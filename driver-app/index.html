@@ -112,6 +112,34 @@
 <script type="text/babel" src="./src/index.jsx"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
 <script>
+  function showNotification(message, soundFile) {
+  // Play ringing sound
+  const audio = new Audio(soundFile);
+  audio.play();
+
+  // Display notification message
+  const container = document.getElementById('notificationContainer');
+  container.innerHTML = `<p>${message}</p>`;
+}
+  function loadNotificationPage() {
+  document.getElementById('innerContent').innerHTML = `
+    <h1>Notifications</h1>
+    <div id="notificationContainer" style="border:1px solid #ccc; padding:10px; border-radius:5px; min-height:100px;">
+      <p>No new notifications.</p>
+    </div>
+    <button id="simulateNotification">Simulate Notification</button>
+    <a href="#" id="backToMain">Back</a>
+  `;
+  document.getElementById('backToMain').onclick = (e) => {
+    e.preventDefault();
+    loadMainPage();
+  };
+  document.getElementById('simulateNotification').onclick = () => {
+    showNotification("This is a test notification!", "notification.mp3");
+  };
+}
+  // Inside initializeMenu() after other menu links
+document.getElementById('driverNotification').onclick = () => { loadNotificationPage(); };
   document.addEventListener('DOMContentLoaded', () => {
     // Since no welcome page, directly show main content
     document.getElementById('contentArea').style.display = 'block';
