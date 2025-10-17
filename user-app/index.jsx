@@ -5,7 +5,7 @@ import App from './app.jsx';
 import App from './UserMap.jsx';
 import App from './OrderSummary.jsx';
 import App from './Connection.jsx';
-
+import App from './LiveTrackingControls.jsx';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);

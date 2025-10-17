@@ -5,6 +5,7 @@ import App from './app.jsx';
 import App from './createPayFastPayment.jsx';
 import App from './ManagementSection.jsx';
 import App from './Connection.jsx';
+import App from './PaymentSuccess.jsx';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
