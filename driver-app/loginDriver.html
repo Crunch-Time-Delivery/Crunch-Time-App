@@ -55,6 +55,16 @@
   .redirectBtn:hover {
     opacity: 0.8;
   }
+  /* Style for the Forgot Password link */
+  #loginForgotPassword {
+    display: block;
+    text-align: center;
+    margin: 10px auto;
+    cursor: pointer;
+    color: blue;
+    text-decoration: underline;
+    font-size: 14px;
+  }
 </style>
 </head>
 <body>
@@ -73,7 +83,8 @@
     <input type="email" id="loginEmail" placeholder="Email" />
     <label>Password</label>
     <input type="password" id="loginPassword" placeholder="Password" />
-    <label id="loginForgotPassword">Forgot Password</label>
+    <!-- Updated Forgot Password link -->
+    <a id="loginForgotPassword" href="http://127.0.0.1:5500/driver-app/forgotpassword.html" target="_blank">Forgot Password</a>
     <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" id="loginBtn">Login</button>
     <!-- Buttons for Driver and Admin -->
     <div id="buttonContainer">
@@ -202,7 +213,7 @@ document.getElementById('loginBtn').addEventListener('click', () => {
       alert('Invalid admin credentials.');
     }
   }
-  // Reset userType after login attemp
+  // Reset userType after login attempt
   userType = null;
 });
 // Buttons for Driver and Admin
