@@ -1,0 +1,7 @@
+{
+  "apiKey": "YOUR_GOOGLE_MAPS_API_KEY",
+  "mapOptions": {
+    "center": { "lat": -33.9249, "lng": 18.4241 },
+    "zoom": 15
+  }
+}

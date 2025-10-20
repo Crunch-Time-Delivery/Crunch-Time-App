@@ -1,0 +1,7 @@
+{
+  "accountSid": "YOUR_TWILIO_ACCOUNT_SID",
+  "authToken": "YOUR_TWILIO_AUTH_TOKEN",
+  "fromNumber": "+1234567890",
+  "toNumber": "+0987654321",
+  "email": "your_email@example.com"
+}
