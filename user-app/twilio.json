@@ -1,0 +1,5 @@
+{
+  "accountSid": "YOUR_TWILIO_SID",
+  "authToken": "YOUR_TWILIO_AUTH_TOKEN",
+  "fromNumber": "YOUR_TWILIO_PHONE_NUMBER"
+}
