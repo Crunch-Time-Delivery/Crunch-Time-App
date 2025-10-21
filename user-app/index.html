@@ -9,23 +9,15 @@
 <!-- QRCode & sha256 libraries -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/js-sha256/dist/sha256.min.js"></script>
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet/dist/leaflet.css"
-/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <style>
 /* --- Combined Styles --- */
-
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   background-color: #f9f9f9;
 }
- <!-- React root element --!>
-  <div id="root"></div>
-
-  <!-- Your React app bundle -->
-  <script src="assets/main.jsx" type="module"></script>
+#root { display: none; }
 /* Header styles */
 .header {
   display: flex;
@@ -54,7 +46,6 @@ body {
   border: 1px solid #ddd;
   border-radius: 5px;
 }
-
 /* Filters styles */
 .filters {
   display: flex;
@@ -81,7 +72,6 @@ body {
   object-fit: cover;
   border-radius: 4px;
 }
-
 /* Restaurant cards */
 .restaurant-list {
   padding: 10px 20px;
@@ -113,7 +103,6 @@ body {
 .fav {
   position: absolute; top: 10px; right: 10px; font-size: 20px; background:none; border:none; cursor:pointer;
 }
-
 /* Modal overlay styles */
 .modal {
   display: none; position: fixed; z-index: 999; left:0; top:0; width:100%; height:100%;
@@ -128,12 +117,10 @@ body {
 #restaurantImage {
   width:100%; max-height:200px; object-fit:cover; border-radius:5px; margin-bottom:10px; cursor:pointer;
 }
-
 /* Specific modal sizes for opinion & food detail modals */
 #foodOpinionModal, #restaurantMenuModal, #foodDetailModal {
   max-width:400px;
 }
-
 /* Order & Receipt styles */
 #orderSummary {
   padding: 10px 20px;
@@ -171,7 +158,6 @@ body {
 #checkoutItems li {
   margin-bottom: 8px;
 }
-
 /* Buttons styling */
 button {
   padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; margin-top:10px;
@@ -197,12 +183,10 @@ button {
   color: white;
   margin-left: 10px;
 }
-
 /* Voucher & QR code styles */
 #qrCodeContainer {
   margin-top:10px; padding:10px; border:1px solid #ddd; display:inline-block; border-radius:4px;
 }
-
 /* Additional modals for order history & voucher */
 #orderHistoryModal {
   display: none;
@@ -214,10 +198,6 @@ button {
 #orderHistoryList div {
   border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius:4px;
 }
-#orderHistoryList button {
-  margin-top: 10px;
-}
-/* Order History Button Style */
 #orderHistoryBtn {
   background-color: red;
   color: white;
@@ -229,12 +209,75 @@ button {
   width: 100%;
   font-weight: bold;
 }
-/* Voucher modal styles similar to other popups */
 #voucherModal {
   display: none;
 }
 #voucherModal .modal-content {
   max-width: 400px;
+}
+/* Styles for payment popup */
+#paymentPopup {
+  display: none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center;
+}
+#paymentPopup .popup-content {
+  background:#fff; padding:20px; border-radius:10px; max-width:400px; width:90%;
+}
+#paymentPopup h3 {
+  margin-top: 0;
+  text-align: center;
+}
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 15px;
+}
+.payment-option {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.payment-option:hover {
+  background-color: #f0f0f0;
+}
+.payment-icons {
+  display: flex;
+  gap: 10px;
+}
+.payment-icons img {
+  width: 50px;
+  height: auto;
+}
+#eftDetails {
+  margin-top: 15px;
+  padding: 10px;
+  border: 1px dashed #aaa;
+  border-radius: 8px;
+  background: #f9f9f9;
+  font-family: monospace;
+  font-size: 14px;
+}
+.popup-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+.popup-buttons button {
+  padding: 10px 20px;
+}
+/* Bank Details Input Popup */
+#bankDetailsInput {
+  display: none; position: fixed; z-index: 1001; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;
+}
+#bankDetailsInput .popup-content {
+  background:#fff; padding:20px; border-radius:10px; max-width:400px; width:90%;
+}
+/* Add Red Button at Checkout */
+#payNowButton {
+  background-color: red; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px;
 }
 </style>
 </head>
@@ -267,7 +310,7 @@ button {
 
 <!-- Restaurant list -->
 <div class="restaurant-list" id="restaurantList">
-  <!-- Sample restaurants; add more as needed -->
+  <!-- Sample restaurants -->
   <div class="restaurant-card" onclick="showMenu('KFC Parow')">
     <img src="Images/RS KFC .jpeg" alt="KFC Parow" />
     <div class="details">
@@ -311,7 +354,6 @@ button {
 <div id="menuModal" class="modal">
   <div class="modal-content">
     <span class="close-btn" onclick="closeModal()">&times;</span>
-    <!-- Image for restaurant -->
     <img id="restaurantImage" src="" alt="Restaurant Image" />
     <h2 id="restaurantName">Restaurant Menu</h2>
     <div id="menuItems"></div>
@@ -319,7 +361,7 @@ button {
   </div>
 </div>
 
-<!-- Food Modal for selecting options before adding -->
+<!-- Food Opinion Modal -->
 <div id="foodOpinionModal" class="modal">
   <div class="modal-content" style="max-width:400px;">
     <span class="close-btn" onclick="closeFoodOpinionModal()">&times;</span>
@@ -339,7 +381,7 @@ button {
   </div>
 </div>
 
-<!-- Food item modal for adding food -->
+<!-- Food Item Modal -->
 <div id="foodModal" class="food-modal">
   <div class="food-modal-content">
     <span class="food-close-btn" onclick="closeFoodModal()">&times;</span>
@@ -364,114 +406,133 @@ button {
   <button id="checkoutBtn" class="checkout-btn" onclick="goToCheckout()">Go to Checkout</button>
   <button id="orderHistoryBtn" style="background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showOrderHistory()">Order History</button>
   <button id="voucherBtn" style="background-color:#f80505; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px; cursor:pointer; width:100%; font-weight:bold;" onclick="showVoucherInput()">Input Voucher Coupon</button>
+  <!-- "By Go to Checkout" payment button -->
+  <button id="payBtn" class="pay-btn" style="background:#007bff; margin-top:10px;" onclick="showPaymentPopup()">By Go to Checkout</button>
 </div>
 
-<!-- Checkout page (hidden initially) -->
+<!-- Checkout Page -->
 <div id="checkoutPage">
   <h2>Checkout</h2>
   <h3>Order Summary</h3>
   <ul id="checkoutItems"></ul>
   <h3>Total: <span id="totalAmount">R0</span></h3>
-  <h3>Payment Method</h3>
-  <div style="margin-bottom:20px;">
-    <input type="radio" id="eft" name="payment" value="EFT" checked>
-    <label for="eft">EFT Bank Transfer</label>
-  </div>
-  <button class="pay-btn confirm-btn" onclick="confirmEFT()">Confirm EFT Payment</button>
-  <button class="pay-btn cancel-btn" onclick="cancelCheckout()">Cancel</button>
+  <!-- Red "Pay" button that triggers payment options popup -->
+  <button id="payNowButton" onclick="showPaymentMethodPage()">Pay</button>
+  <!-- Remove the Confirm EFT button here -->
 </div>
 
-<!-- Order History Popup -->
-<div id="orderHistoryModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="closeOrderHistory()">&times;</span>
-    <h2>Order History</h2>
-    <div id="orderHistoryList"></div>
+<!-- Payment popup modal (for EFT, Card) -->
+<div id="paymentPopup" class="modal">
+  <div class="popup-content">
+    <h3>Select Payment Method</h3>
+    <div class="payment-options">
+      <div class="payment-option" onclick="selectPaymentMethod('Card')">
+        <div class="payment-icons">
+          <img src="https://img.icons8.com/color/48/000000/visa.png" alt="Visa" />
+          <img src="https://img.icons8.com/color/48/000000/mastercard-logo.png" alt="MasterCard" />
+          <img src="https://img.icons8.com/color/48/000000/amex.png" alt="Amex" />
+        </div>
+        <span style="margin-left:10px;">Pay by Card</span>
+      </div>
+      <div class="payment-option" onclick="selectPaymentMethod('EFT')">
+        <strong>EFT Bank Transfer</strong>
+      </div>
+    </div>
+    <div id="eftDetails" style="display:none; margin-top:15px;">
+      <h4>Banking Details</h4>
+      <p>Bank: ABC Bank</p>
+      <p>Account Number: 123456789</p>
+      <p>Branch Code: 000123</p>
+      <p>Account Name: CrunchTime</p>
+      <button style="margin-top:10px; padding:8px 12px; background:#007bff; color:#fff; border:none; border-radius:4px; cursor:pointer;" onclick="openBankDetailsInput()">Enter/Edit Banking Details</button>
+    </div>
+    <div class="popup-buttons" style="margin-top:20px;">
+      <button onclick="finalizePayment()">Pay Now</button>
+      <button onclick="closePaymentPopup()">Cancel</button>
+    </div>
   </div>
 </div>
 
-<!-- Voucher input popup -->
-<div id="voucherModal" class="modal">
-  <div class="modal-content" style="max-width:400px;">
-    <span class="close-btn" onclick="closeVoucherModal()">&times;</span>
-    <h3>Enter Voucher Code</h3>
-    <input type="text" id="voucherCode" placeholder="Voucher Code" style="width:100%; padding:8px;">
-    <button style="margin-top:10px; width:100%; background:#ff0202; color:#fff; padding:8px; border:none; border-radius:5px;" onclick="applyVoucher()">Apply</button>
+<!-- Remove the AI Payment System popup modal entirely -->
+<!--
+<div id="aiPaymentSystem" class="modal">
+  <div class="popup-content" style="max-width:400px;">
+    <span class="close-btn" onclick="closeAIPaymentSystem()">&times;</span>
+    <h3>AI Payment System</h3>
+    <p>Processing your payment securely with AI assistance...</p>
+    <button style="width:100%; background:#28a745; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px;" onclick="simulateAIPayment()">Pay Now</button>
   </div>
 </div>
-<script type="text/babel" src="./src/index.jsx"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+-->
 
-<!-- Add notification page / section with ringing sound -->
+<!-- Exception Notification -->
+<div id="exceptionNotification" style="display:none; position:fixed; top:20px; right:20px; background:#f44336; color:#fff; padding:15px; border-radius:5px; z-index:2000;">
+  <strong>Payment Error:</strong> There was an issue processing your payment. Please try again.
+</div>
+
+<!-- Bank Details Input Popup -->
+<div id="bankDetailsInput" class="modal">
+  <div class="popup-content" style="max-width:400px;">
+    <span class="close-btn" onclick="closeBankDetails()">&times;</span>
+    <h3>Enter Banking Details</h3>
+    <form id="bankDetailsForm">
+      <label>Bank Name:</label><br>
+      <input type="text" id="bankName" style="width:100%; padding:8px;"><br><br>
+      <label>Account Number:</label><br>
+      <input type="text" id="accountNumber" style="width:100%; padding:8px;"><br><br>
+      <label>Branch Code:</label><br>
+      <input type="text" id="branchCode" style="width:100%; padding:8px;"><br><br>
+      <label>Account Name:</label><br>
+      <input type="text" id="accountName" style="width:100%; padding:8px;"><br><br>
+      <button type="button" style="width:100%; background:#28a745; color:#fff; padding:10px; border:none; border-radius:5px;" onclick="saveBankDetails()">Save Details</button>
+    </form>
+  </div>
+</div>
 
 <script>
 /* =========================
    GLOBAL VARIABLES
 ========================= */
-let pendingFoodItem = null;
-let currentRestaurant = '';
-let currentQty = 1;
-let selectedFood = null;
 let orderItems = [];
 let orderHistory = [];
 let discountAmount = 0;
+let selectedPaymentMethod = null;
+let bankDetails = {}; // Save bank details here
 
 /* =========================
-   UTILITY FUNCTIONS
+   Utility Functions
 ========================= */
-function showModal(id) { document.getElementById(id).style.display='block'; }
+function showModal(id) { document.getElementById(id).style.display='flex'; }
 function hideModal(id) { document.getElementById(id).style.display='none'; }
 
-// Close modals on outside click
+// Show/Hide specific modals
 window.onclick = function(e) {
-  const modalIds=['menuModal','foodModal','orderHistoryModal','voucherModal','searchDriverPopup','driverContact'];
+  const modalIds=['menuModal','foodModal','orderHistoryModal','voucherModal','paymentPopup','bankDetailsInput'];
   modalIds.forEach(id => {
     if (e.target===document.getElementById(id)) hideModal(id);
   });
 };
 
 /* =========================
-   DATA & FUNCTIONS
+   Restaurant Menu Data & Functions
 ========================= */
 const restaurantMenus={
-  'KFC Parow':[
-    {name:'Zinger Burger',price:'R50'},
-    {name:'Fries',price:'R20'},
-    {name:'Cola',price:'R15'}
-  ],
-  'Sannes Palace':[
-    {name:'Chicken Curry',price:'R80'},
-    {name:'Veggie Plate',price:'R60'},
-    {name:'Lemonade',price:'R10'}
-  ],
-  'DK Spot & Kota':[
-    {name:'Kota Special',price:'R25'},
-    {name:'Fries',price:'R20'},
-    {name:'Soda',price:'R15'}
-  ],
-  'Nondyebo Eatery':[
-    {name:'Wrap',price:'R40'},
-    {name:'Salad',price:'R35'},
-    {name:'Juice',price:'R12'}
-  ]
+  'KFC Parow':[ {name:'Zinger Burger',price:'R50'}, {name:'Fries',price:'R20'}, {name:'Cola',price:'R15'} ],
+  'Sannes Palace':[ {name:'Chicken Curry',price:'R80'}, {name:'Veggie Plate',price:'R60'}, {name:'Lemonade',price:'R10'} ],
+  'DK Spot & Kota':[ {name:'Kota Special',price:'R25'}, {name:'Fries',price:'R20'}, {name:'Soda',price:'R15'} ],
+  'Nondyebo Eatery':[ {name:'Wrap',price:'R40'}, {name:'Salad',price:'R35'}, {name:'Juice',price:'R12'} ]
 };
 
 /* =========================
-   SHOW/HIDE MODALS
+   Show/Hide Modals
 ========================= */
-function showModal(id) { document.getElementById(id).style.display='block'; }
+function showModal(id) { document.getElementById(id).style.display='flex'; }
 function hideModal(id) { document.getElementById(id).style.display='none'; }
 
-/* =========================
-   RESTAURANT & MENU
-========================= */
+// Show Menu
 function showMenu(restName) {
   currentRestaurant=restName;
-
-  // Set the restaurant name
   document.getElementById('restaurantName').innerText=restName+' Menu';
-
-  // Set the image based on the restaurant
   const imgEl=document.getElementById('restaurantImage');
   switch(restName){
     case 'KFC Parow': imgEl.src='Images/RS KFC .jpeg'; break;
@@ -480,15 +541,13 @@ function showMenu(restName) {
     case 'Nondyebo Eatery': imgEl.src='Images/RS NONDYEBO.jpg'; break;
     default: imgEl.src='';
   }
-
-  // Populate menu
   const menuDiv=document.getElementById('menuItems');
   menuDiv.innerHTML='';
   (restaurantMenus[restName]||[]).forEach(itm => {
     const div=document.createElement('div');
     div.className='menu-item';
     div.innerHTML=`<strong>${itm.name}</strong> - ${itm.price}`;
-    div.onclick=()=>{ openFoodOptionModal(itm); }; // Open opinion select before adding
+    div.onclick=()=>{ openFoodOptionModal(itm); };
     menuDiv.appendChild(div);
   });
   showModal('menuModal');
@@ -516,14 +575,12 @@ function toggleFavorite(btn) {
 function openFoodOptionModal(itm) {
   pendingFoodItem=itm;
   currentQty=1;
-  // Reset opinion selection
   document.getElementById('opinionChoice').value='No preference';
   showModal('foodOpinionModal');
 }
 function closeFoodOptionModal() { hideModal('foodOpinionModal'); }
 function confirmFoodOpinion() {
   const opinion=document.getElementById('opinionChoice').value;
-  // Add to order with opinion
   if(pendingFoodItem){
     orderItems.push({name:pendingFoodItem.name, price:pendingFoodItem.price, quantity:currentQty, opinion: opinion});
     updateOrderSummary();
@@ -535,7 +592,6 @@ function confirmFoodOpinion() {
    Food Modal for adding items
 ========================= */
 function openFoodModal(itm) {
-  // For direct add without opinion
   pendingFoodItem = itm;
   currentQty=1;
   document.getElementById('foodItemName').innerText=itm.name;
@@ -557,16 +613,14 @@ function addItemToOrder() {
 }
 
 /* =========================
-   UPDATE & DISPLAY ORDER
+   Update & Display Order
 ========================= */
 function updateOrderSummary() {
   const ul=document.getElementById('orderItems');
   ul.innerHTML='';
   orderItems.forEach((it,idx) => {
     const li=document.createElement('li');
-    // Removed "x1" and "@" for simplicity
     li.innerHTML=`${it.name} x${it.quantity} @ ${it.price}`;
-    // Add Remove button
     const removeBtn=document.createElement('button');
     removeBtn.innerText='Remove';
     removeBtn.style.marginLeft='10px';
@@ -576,18 +630,18 @@ function updateOrderSummary() {
   });
 }
 
-// Save order to history
 function saveOrder() {
   if (orderItems.length>0) {
     orderHistory.push({restaurant:currentRestaurant, items:[...orderItems], date: new Date()});
   }
 }
 
-// Go to checkout
+/* =========================
+   Navigation & Checkout
+========================= */
 function goToCheckout() {
   if (orderItems.length===0) { alert("Your cart is empty!"); return; }
   saveOrder();
-  // Calculate total
   let total=0;
   orderItems.forEach(i => {
     const p=parseFloat(i.price.replace('R',''));
@@ -608,134 +662,66 @@ function goToCheckout() {
   document.getElementById('checkoutPage').style.display='block';
   document.getElementById('orderSummary').style.display='none';
 }
+
+// Remove the "Confirm EFT" button from checkout page
 function cancelCheckout() {
   document.getElementById('checkoutPage').style.display='none';
   document.getElementById('orderSummary').style.display='block';
 }
 
-/* =========================
-   PAYMENT & VOUCHER
-========================= */
-function confirmEFT() {
-  alert("Your EFT payment has been processed successfully. Thank you for your order!");
-  orderItems=[];
-  updateOrderSummary();
-  cancelCheckout();
-}
-function showVoucherInput() {
-  showModal('voucherModal');
-}
-function closeVoucherModal() {
-  hideModal('voucherModal');
-}
-function applyVoucher() {
-  const code=document.getElementById('voucherCode').value.trim();
-  if (code==='DISCOUNT10') {
-    discountAmount=10;
-    alert('Voucher applied! R10 off.');
-    generateQRCode(code);
-    updateTotalWithDiscount();
-  } else {
-    alert('Invalid code');
-    discountAmount=0;
-    generateQRCode('');
-    updateTotalWithDiscount();
-  }
-}
-function generateQRCode(text) {
-  const container=document.getElementById('qrCodeContainer');
-  container.innerHTML='';
-  if (text) { new QRCode(container, {text:text, width:128, height:128}); }
-}
-function updateTotalWithDiscount() {
-  const t=document.getElementById('totalAmount').innerText;
-  let total=parseFloat(t.replace('R',''));
-  total-=discountAmount;
-  if (total<0) total=0;
-  document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
+// Show payment method selection page
+function showPaymentMethodPage() {
+  document.getElementById('paymentPopup').style.display='flex';
 }
 
-/* =========================
-   Order History Functions
-========================= */
-function showOrderHistory() {
-  const listDiv=document.getElementById('orderHistoryList');
-  listDiv.innerHTML='';
-  if(orderHistory.length===0){ 
-    listDiv.innerHTML="<p>No history</p>"; 
-    showModal('orderHistoryModal'); 
+// Function to handle the final payment choice
+function finalizePayment() {
+  if (!selectedPaymentMethod) {
+    alert('Please select a payment method.');
     return;
   }
-  orderHistory.forEach((o,i) => {
-    const d=document.createElement('div');
-    d.style.border='1px solid #ccc'; d.style.padding='10px'; d.style.marginBottom='10px'; d.style.borderRadius='4px';
-    // Format date
-    const dateStr = new Date(o.date).toLocaleString();
-    d.innerHTML=`
-      <strong>Restaurant:</strong> ${o.restaurant}<br>
-      <strong>Date:</strong> ${dateStr}<br>
-      <img src="${getRestaurantImage(o.restaurant)}" style="width:50px; height:50px; object-fit:cover; border-radius:4px;">
-      <button style="margin-top:10px; background:#007bff; color:#fff; border:none; padding:8px; border-radius:4px; cursor:pointer;" onclick='viewOrderDetails(${i})'>View</button>
-    `;
-    listDiv.appendChild(d);
-  });
-  showModal('orderHistoryModal');
+  if (selectedPaymentMethod==='EFT') {
+    openBankDetailsInput();
+  } else if (selectedPaymentMethod==='Card') {
+    // No AI option anymore
+    alert('Please proceed with your card payment.');
+  }
+  closePaymentPopup();
 }
-function closeOrderHistory() { hideModal('orderHistoryModal'); }
-function viewOrderDetails(index) {
-  const o=orderHistory[index];
-  let txt='';
-  o.items.forEach(it => {
-    txt+=`${it.name} x${it.quantity} @ ${it.price}`;
-    if(it.opinion && it.opinion!=='No preference') {
-      txt+=`\nOpinion: ${it.opinion}`;
-    }
-    txt+='\n';
-  });
-  alert(`Order from ${o.restaurant}:\n${txt}`);
+
+// Show the main payment options popup
+function showPaymentPopup() {
+  // Validate cart
+  const totalText = document.getElementById('totalAmount').innerText;
+  const totalValue = parseFloat(totalText.replace('R',''));
+  if (totalValue <= 0) {
+    alert("Your cart is empty! Please add items before proceeding to payment.");
+    return;
+  }
+  selectedPaymentMethod=null;
+  document.getElementById('paymentPopup').style.display='flex';
+  document.getElementById('eftDetails').style.display='none';
 }
-function getRestaurantImage(restName) {
-  switch(restName){
-    case 'KFC Parow': return 'Images/RS KFC .jpeg';
-    case 'Sannes Palace': return 'Images/RS PALACE .jpg';
-    case 'DK Spot & Kota': return 'Images/RS KOTA .jpg';
-    case 'Nondyebo Eatery': return 'Images/RS NONDYEBO.jpg';
-    default: return '';
+
+// Close the payment popup
+function closePaymentPopup() {
+  document.getElementById('paymentPopup').style.display='none';
+}
+
+// Select payment method
+function selectPaymentMethod(method) {
+  selectedPaymentMethod=method;
+  if (method==='EFT') {
+    document.getElementById('eftDetails').style.display='block';
+  } else {
+    document.getElementById('eftDetails').style.display='none';
   }
 }
 
-/* =========================
-   Voucher Button
-========================= */
-function showVoucherInput() {
-  showModal('voucherModal');
-}
-
-/* =========================
-   Map Location
-========================= */
-function openMapLocation() { window.open('http://127.0.0.1:5500/user-app/search_location.html','_blank'); }
-
-// Confirm Payment
-function confirmEFT() {
-  alert("Your EFT payment has been processed successfully. Thank you for your order!");
-  orderItems=[];
-  updateOrderSummary();
-  cancelCheckout();
-}
-
-
-  // Example fetch request to localhost API of main.jsx
-    fetch('http://localhost:3000/api/your-endpoint_main.jsx_user_app')
-      .then(response => response.json())
-      .then(data => {
-        console.log('Data from your backend:', data);
-        // You can manipulate the DOM here based on response
-        document.getElementById('contentArea').innerHTML += '<p>Data loaded from backend!</p>';
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
+// No longer needed to show AI Payment System
+// function showAIPaymentSystem() { ... }
+// function closeAIPaymentSystem() { ... }
+// function simulateAIPayment() { ... }
 
 </script>
 </body>
