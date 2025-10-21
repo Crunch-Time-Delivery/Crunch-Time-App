@@ -18,3 +18,18 @@ function addMarker(lat, lng) {
 function receivePinpoint(lat, lng) {
   addMarker(lat, lng);
 }
+// pinpoint.js
+async function sendLocation(userId, latitude, longitude) {
+  const response = await fetch('/update-location', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ userId, latitude, longitude })
+  });
+  const data = await response.json();
+  console.log(data);
+}
+
+// Example usage: send user location
+// sendLocation('user123', 40.7128, -74.0060);

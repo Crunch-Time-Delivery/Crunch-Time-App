@@ -1,0 +1,4 @@
+{
+  "mapboxAccessToken": "YOUR_MAPBOX_ACCESS_TOKEN",
+  "serverPort": 3000
+}
