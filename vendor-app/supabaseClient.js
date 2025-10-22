@@ -39,7 +39,7 @@ async function fetchDrivers() {
       manage_order_total,
       manage_order_status,
       manage_users,
-      manage_payment
+      payment_history
     `);
 
   if (error) {

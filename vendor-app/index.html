@@ -33,6 +33,11 @@
   .btn-primary { background:#f90101; color:#fff; }
   .btn-secondary { background:#f60202; color:#fff; }
   .btn-danger { background:#fc1302; color:#fff; }
+  /* Red Payment History Button */
+  .btn-payment-history {
+    background:#fa0303; /* red */
+    color:#fff;
+  }
   /* Tables */
   table { width:100%; border-collapse:collapse; margin-top:10px; }
   th, td { border:1px solid #ccc; padding:8px; }
@@ -115,7 +120,7 @@
       <a href="#" onclick="showManagement('items');">Manage Items</a>
       <a href="#" onclick="showManagement('orders');">Manage Orders</a>
       <a href="#" onclick="showManagement('users');">Manage Users</a>
-      <a href="#" onclick="showManagement('payment');">Manage Payments</a>
+      <a href="#" onclick="showPaymentHistory()">Payment History</a>
       <a href="#" onclick="logout()">Logout</a>
     </div>
   </div>
@@ -127,8 +132,9 @@
   <div class="management-buttons">
     <button class="btn-primary" onclick="showManagement('items')">Manage Items</button>
     <button class="btn-primary" onclick="showManagement('orders')">Manage Orders</button>
+    <!-- Add Payment History Button next to Manage Users -->
     <button class="btn-primary" onclick="showManagement('users')">Manage Users</button>
-    <button class="btn-primary" onclick="showManagement('payment')">Manage Payments</button>
+    <button class="btn-payment-history" onclick="showPaymentHistory()">Payment History</button>
   </div>
 
   <!-- Management Sections -->
@@ -147,10 +153,10 @@
     <button class="btn-secondary" onclick="openUserForm()">Add User</button>
     <div id="usersTable"></div>
   </div>
-  <div id="section-payments" class="section">
-    <h3>Payments</h3>
-    <button class="btn-secondary" onclick="openPaymentForm()">Add Payment</button>
-    <div id="paymentsTable"></div>
+  <!-- Payment History Section -->
+  <div id="section-payment-history" class="section">
+    <h3>Payment History</h3>
+    <div id="paymentHistoryContainer"></div>
   </div>
 </div>
 
@@ -178,18 +184,7 @@
     <button onclick="closeUserForm()">Cancel</button>
   </div>
 </div>
-<div id="paymentFormModal" class="modal" style="display:none;">
-  <div class="modal-box">
-    <h4 id="paymentFormTitle">Add Payment</h4>
-    <input id="paymentAmount" placeholder="Amount" type="number" />
-    <!-- Fixed method to EFT -->
-    <select id="paymentMethod">
-      <option value="EFT">EFT</option>
-    </select>
-    <button onclick="savePayment()">Save</button>
-    <button onclick="closePaymentForm()">Cancel</button>
-  </div>
-</div>
+
 <script type="text/babel" src="./src/index.jsx"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
 
@@ -293,7 +288,6 @@ function showManagement(type) {
   if(type==='items'){ document.getElementById('section-items').style.display='block'; renderItems(); }
   else if(type==='orders'){ document.getElementById('section-orders').style.display='block'; renderOrders(); }
   else if(type==='users'){ document.getElementById('section-users').style.display='block'; renderUsers(); }
-  else if(type==='payment'){ document.getElementById('section-payments').style.display='block'; renderPayments(); }
 }
 
 // ----------- CRUD functions (your existing) -----------
@@ -437,55 +431,34 @@ function saveUser() {
 }
 function closeUserForm() { document.getElementById('userFormModal').style.display='none'; }
 
-// Payments
-let payments = [];
-function renderPayments() {
-  const container=document.getElementById('paymentsTable');
-  container.innerHTML='';
-  if(payments.length===0){ container.innerHTML='No payments'; return; }
-  const table=document.createElement('table');
-  table.innerHTML=`<thead><tr><th>Amount</th><th>Method</th><th>Actions</th></tr></thead>`;
-  const tbody=document.createElement('tbody');
-  payments.forEach((p,i)=>{
-    const r=tbody.insertRow();
-    r.insertCell().innerText=`R ${p.amount.toFixed(2)}`;
-    r.insertCell().innerText=p.method;
-    const act=r.insertCell();
-    const editBtn=document.createElement('button'); editBtn.innerText='Edit'; editBtn.onclick=()=>editPayment(i);
-    const delBtn=document.createElement('button'); delBtn.innerText='Delete'; delBtn.style.background='#f44336'; delBtn.onclick=()=>{ payments.splice(i,1); renderPayments(); };
-    act.appendChild(editBtn); act.appendChild(delBtn);
+// ----------- Payment History Functions -----------
+
+function showPaymentHistory() {
+  document.querySelectorAll('.section').forEach(s => s.style.display='none');
+  document.getElementById('section-payment-history').style.display='block';
+  renderPaymentHistory();
+}
+
+function renderPaymentHistory() {
+  const container = document.getElementById('paymentHistoryContainer');
+  container.innerHTML = '';
+  if (payments.length === 0) {
+    container.innerHTML = 'No payment history.';
+    return;
+  }
+  const table = document.createElement('table');
+  table.innerHTML = `<thead><tr><th>Amount</th><th>Method</th></tr></thead>`;
+  const tbody = document.createElement('tbody');
+  payments.forEach(p => {
+    const r = tbody.insertRow();
+    r.insertCell().innerText = `R ${p.amount.toFixed(2)}`;
+    r.insertCell().innerText = p.method;
   });
   table.appendChild(tbody);
-  container.innerHTML=''; container.appendChild(table);
+  container.appendChild(table);
 }
-function openPaymentForm() {
-  document.getElementById('paymentFormTitle').innerText='Add Payment';
-  document.getElementById('paymentAmount').value='';
-  // Since method is fixed, no need to set value
-  document.getElementById('paymentMethod').value='EFT';
-  document.getElementById('paymentFormModal').dataset.editIndex='-1';
-  document.getElementById('paymentFormModal').style.display='flex';
-}
-function editPayment(i) {
-  const p=payments[i];
-  document.getElementById('paymentFormTitle').innerText='Edit Payment';
-  document.getElementById('paymentAmount').value=p.amount;
-  document.getElementById('paymentMethod').value=p.method;
-  document.getElementById('paymentFormModal').dataset.editIndex=i;
-  document.getElementById('paymentFormModal').style.display='flex';
-}
-function savePayment() {
-  const i=Number(document.getElementById('paymentFormModal').dataset.editIndex);
-  const amount=parseFloat(document.getElementById('paymentAmount').value);
-  const method='EFT'; // Fixed method
-  if(isNaN(amount)){ alert('Fill all fields'); return; }
-  if(i>=0){ payments[i]= {amount, method}; } else { payments.push({amount, method}); }
-  closePaymentForm();
-  renderPayments();
-}
-function closePaymentForm() { document.getElementById('paymentFormModal').style.display='none'; }
 
-// ----------- Modal open/close functions for forms -----------
+// ----------- Existing modal functions for items and users -----------
 
 function openItemForm() {
   document.getElementById('itemFormTitle').innerText='Add Item';
@@ -507,31 +480,6 @@ function openUserForm() {
 }
 function closeUserForm() { document.getElementById('userFormModal').style.display='none'; }
 
-function openPaymentForm() {
-  document.getElementById('paymentFormTitle').innerText='Add Payment';
-  document.getElementById('paymentAmount').value='';
-  // Set method to EFT
-  document.getElementById('paymentMethod').value='EFT';
-  document.getElementById('paymentFormModal').dataset.editIndex='-1';
-  document.getElementById('paymentFormModal').style.display='flex';
-}
-function closePaymentForm() { document.getElementById('paymentFormModal').style.display='none'; }
-
-// Toggle dropdown menu
-function toggleDropdown() {
-  const dropdown = document.getElementById('profileDropdown');
-  dropdown.classList.toggle('show');
-}
-
-// Close dropdown if clicked outside
-window.onclick = function(event) {
-  if (!event.target.matches('.profile-btn')) {
-    const dropdown = document.getElementById('profileDropdown');
-    if (dropdown.classList.contains('show')) {
-      dropdown.classList.remove('show');
-    }
-  }
-};
 </script>
 </body>
 </html>
