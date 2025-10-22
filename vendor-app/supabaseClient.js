@@ -1,6 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
+const twilio = require('twilio');
 
 const app = express();
 app.use(express.json());
@@ -8,6 +9,13 @@ app.use(express.json());
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
 const supabaseKey = process.env.SUPABASE_KEY; // Ensure this is set securely
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Twilio credentials from environment variables
+const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER; // Your Twilio phone number
+
+const twilioClient = twilio(twilioAccountSid, twilioAuthToken);
 
 // Function to fetch Vendor data
 async function fetchVendor() {
@@ -49,7 +57,7 @@ async function fetchDrivers() {
   return Drivers;
 }
 
-// Function to fetch Admin data (assuming you have an Admin table)
+// Function to fetch Admin data
 async function fetchAdmin() {
   const { data: Admin, error } = await supabase
     .from('Admin')
@@ -62,7 +70,7 @@ async function fetchAdmin() {
   return Admin;
 }
 
-// Example usage
+// Example usage of fetch functions
 fetchDrivers().then(drivers => {
   console.log('Drivers:', drivers);
 });
@@ -70,11 +78,28 @@ fetchAdmin().then(admin => {
   console.log('Admin:', admin);
 });
 
-// Payment route
+// Endpoint to send SMS via Twilio
+app.post('/send-sms', async (req, res) => {
+  const { to, message } = req.body;
+
+  try {
+    const messageInstance = await twilioClient.messages.create({
+      body: message,
+      from: twilioPhoneNumber, // Your Twilio phone number
+      to: to,
+    });
+    res.json({ success: true, sid: messageInstance.sid });
+  } catch (error) {
+    console.error('Error sending SMS:', error);
+    res.status(500).json({ error: 'Failed to send SMS' });
+  }
+});
+
+// Route to create PayFast payment
 app.post('/create-payfast-payment', async (req, res) => {
   const { amount, item_name } = req.body;
 
-  // Generate the necessary data for PayFast
+  // Replace with your actual merchant details and URLs
   const merchant_id = 'YOUR_MERCHANT_ID';
   const merchant_key = 'YOUR_MERCHANT_KEY';
   const return_url = 'https://yourdomain.com/return';
@@ -87,7 +112,6 @@ app.post('/create-payfast-payment', async (req, res) => {
     item_name,
     return_url,
     cancel_url,
-    // Add other required fields if necessary
   };
 
   // Create the string to hash
