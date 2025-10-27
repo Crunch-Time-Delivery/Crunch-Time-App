@@ -161,7 +161,7 @@ return (
           <p>Please enter the OTP number sent to your email to reset your password</p>
           <input
             type="text"
-            maxlength={4}
+            maxLength={4}
             placeholder="Enter OTP"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
