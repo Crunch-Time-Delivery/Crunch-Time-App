@@ -1,7 +1,7 @@
-// notification.js
+// notification.ts
 
 // Function to show notification with sound
-function showNotification(message, soundFile) {
+function showNotification(message: string, soundFile: string): void {
   // Play ringing sound
   const audio = new Audio(soundFile);
   audio.play();
