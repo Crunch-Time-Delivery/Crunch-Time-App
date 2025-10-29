@@ -13,5 +13,6 @@ function showNotification(message: string, soundFile: string): void {
   }
 }
 
+
 // Example: automatically trigger a notification (for testing)
 // showNotification("You have a new notification!", "notification.mp3");
