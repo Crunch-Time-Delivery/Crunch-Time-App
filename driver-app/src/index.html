@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Driver App</title>
+<!-- Leaflet CSS (if needed for maps or other features) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+  /* Basic styling for the app */
+
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+  }
+
+  /* Header styles: contains Driver label and menu button */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+  }
+
+  /* Driver label styling */
+  .driver-label {
+    font-weight: bold;
+    color: red;
+    font-size: 20px;
+  }
+
+  /* Menu container and button styles */
+  .menu-container {
+    position: relative;
+  }
+
+  .menu-button {
+    background-color: red;
+    color: #fff;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  /* Hover effect for menu button */
+  .menu-button:hover {
+    background-color: darkred;
+  }
+
+  /* Dropdown menu styles */
+  .dropdown-content {
+    display: none; /* Hidden by default, toggled via JS */
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #fff;
+    min-width: 200px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  /* Links inside dropdown menu */
+  .dropdown-content a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+  }
+
+  /* Highlight on hover */
+  .dropdown-content a:hover {
+    background-color: #f2f2f2;
+  }
+
+  /* Show dropdown when active */
+  .menu-container.show .dropdown-content {
+    display: block;
+  }
+
+  /* Main content container, hidden initially */
+  #contentArea {
+    display: none; /* will be shown after page load */
+    max-width: 900px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+
+  /* Style for the 'Forgot Password' link to appear centered and look like a link */
+  #loginForgotPassword {
+    display: block;
+    text-align: center;
+    margin: 10px auto;
+    cursor: pointer;
+    color: blue;
+    text-decoration: underline;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Main content area that is shown after page load -->
+<div id="contentArea">
+  <!-- Header section: displays Driver label and Menu button -->
+  <div class="header" id="mainHeader">
+    <div class="driver-label">Driver</div>
+    <!-- Menu container with toggle button and dropdown links -->
+    <div class="menu-container" id="menuContainer">
+      <button class="menu-button" id="menuButton">Menu ▼</button>
+      <div class="dropdown-content" id="dropdownContent">
+        <!-- Navigation links in dropdown -->
+        <a href="#" id="orderViewLink">Order View</a>
+        <a href="#" id="driverAccountLink">Driver View Account</a>
+        <a href="#" id="driverHistoryPayment">Driver History Payment</a>
+        <a href="#" id="logoutLink">Logout</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic content will be injected here -->
+  <div id="innerContent"></div>
+</div>
+
+<!-- Notification page / section (script will handle content) -->
+<script type="text/babel" src="./src/index.jsx"></script>
+
+<!-- Google Maps API (replace 'YOUR_API_KEY' with your actual key) -->
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+
+<script>
+  // Function to show notifications with a sound
+  function showNotification(message, soundFile) {
+    const audio = new Audio(soundFile);
+    audio.play();
+
+    const container = document.getElementById('notificationContainer');
+    if (container) {
+      container.innerHTML = `<p>${message}</p>`;
+    }
+  }
+
+  // Function to load notification page content
+function loadNotificationPage() {
+  document.getElementById('innerContent').innerHTML = `
+    <h1>Notifications</h1>
+    <div id="notificationContainer" style="border:1px solid #ccc; padding:10px; border-radius:5px; min-height:100px;">
+      <p>No new notifications.</p>
+    </div>
+    <button id="simulateNotification">Simulate Notification</button>
+    <a href="#" id="backToMain">Back</a>
+  `;
+  document.getElementById('backToMain').onclick = (e) => {
+    e.preventDefault();
+    loadMainPage();
+  };
+  document.getElementById('simulateNotification').onclick = () => {
+    showNotification("This is a test notification!", "notification.mp3");
+  };
+}
+
+// Initialize menu and main content after DOM loads
+document.addEventListener('DOMContentLoaded', () => {
+  // Show main content container
+  document.getElementById('contentArea').style.display = 'block';
+
+  // Initialize menu toggle and links
+  initializeMenu();
+
+  function initializeMenu() {
+    const menuBtn = document.getElementById('menuButton');
+    const dropdown = document.getElementById('dropdownContent');
+
+    // Toggle dropdown menu on button click
+    menuBtn.addEventListener('click', () => {
+      dropdown.parentElement.classList.toggle('show');
+    });
+    // Close menu if clicking outside
+    document.addEventListener('click', (e) => {
+      if (!dropdown.parentElement.contains(e.target)) {
+        dropdown.parentElement.classList.remove('show');
+      }
+    });
+
+    // Assign functions to menu links
+    document.getElementById('orderViewLink').onclick = () => { loadOrderView(); };
+    document.getElementById('driverAccountLink').onclick = () => { loadDriverAccount(); };
+    document.getElementById('driverHistoryPayment').onclick = () => { loadDriverHistoryPayment(); };
+    document.getElementById('logoutLink').onclick = () => {
+      localStorage.removeItem('driverEmail');
+      localStorage.removeItem('driverPassword');
+      alert('Logged out.');
+      location.reload();
+    };
+  }
+
+  // Function to load Order View content
+function loadOrderView() {
+  document.getElementById('innerContent').innerHTML = `
+    <h1>Order Details</h1>
+    <div class="order-details">
+      <p><strong>Order ID:</strong> #12345</p>
+      <p><strong>Customer Name:</strong> John Doe</p>
+      <p><strong>Order Date:</strong> August 15, 2025</p>
+      <p><strong>Status:</strong> Processing</p>
+      <p><strong>Order within your area:</strong> Yes (simulated GPS location)</p>
+      <p><strong>Order Address:</strong> 123 Main St, Cape Town</p>
+      <p><strong>Total Amount:</strong> R99.99</p>
+    </div>
+    <div class="order-items">
+      <h2>Order Items</h2>
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Product A</td><td>2</td><td>R29.99</td><td>R59.98</td></tr>
+          <tr><td>Product B</td><td>1</td><td>R40.01</td><td>R40.01</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <a href="#" id="backToMain">Back</a>
+  `;
+  document.getElementById('backToMain').onclick = (e) => {
+    e.preventDefault();
+    loadMainPage();
+  };
+}
+
+// Function to load Driver Account details
+function loadDriverAccount() {
+  const driver = JSON.parse(localStorage.getItem('driverData')) || {};
+
+  document.getElementById('innerContent').innerHTML = `
+    <h1>Driver Profile</h1>
+    <form id="driverProfileForm">
+      <label>Name:</label>
+      <input type="text" id="profileName" value="${driver.name || ''}" />
+      <label>Email:</label>
+      <input type="email" id="profileEmail" value="${driver.email || ''}" />
+      <label>ID Number:</label>
+      <input type="text" id="profileID" value="${driver.idNumber || ''}" />
+      <label>Bank Details:</label>
+      <input type="text" id="profileBankDetails" value="${driver.bankDetails || ''}" />
+      <label>Bank Name:</label>
+      <select id="profileBankName">
+        <option value="FNB" ${driver.bankName==='FNB'?'selected':''}>FNB</option>
+        <option value="Standard Bank" ${driver.bankName==='Standard Bank'?'selected':''}>Standard Bank</option>
+        <option value="Capitec" ${driver.bankName==='Capitec'?'selected':''}>Capitec</option>
+        <option value="NedBank" ${driver.bankName==='NedBank'?'selected':''}>NedBank</option>
+        <option value="Other" ${driver.bankName==='Other'?'selected':''}>Other</option>
+      </select>
+      <div id="editOtherBankDiv" style="display:${driver.bankName==='Other'?'block':'none'};">
+        <label>Specify Bank:</label>
+        <input type="text" id="editOtherBank" value="${driver.otherBank || ''}" />
+      </div>
+      <label>Driver License:</label>
+      <input type="file" accept="image/*" id="profileLicense" />
+      <label>Car Color:</label>
+      <input type="text" id="profileCarColor" value="${driver.carColor || ''}" />
+      <label>Car Type:</label>
+      <input type="text" id="profileCarType" value="${driver.carType || ''}" />
+      <label>Car Photo:</label>
+      <input type="file" accept="image/*" id="profileCarPhoto" />
+      <label>Car Registration Number:</label>
+      <input type="text" id="profileCarReg" value="${driver.carRegNumber || ''}" />
+      <button type="submit" class="action-btn">Save</button>
+    </form>
+    <button id="terminateBtn" style="margin-top:10px; background-color:red;">Terminate Driver</button>
+    <a href="#" id="backToMain">Back</a>
+  `;
+  document.getElementById('profileBankName').onchange = () => {
+    document.getElementById('editOtherBankDiv').style.display = (document.getElementById('profileBankName').value==='Other')?'block':'none';
+  };
+  setTimeout(() => {
+    document.getElementById('driverProfileForm').onsubmit = (e) => {
+      e.preventDefault();
+      const updatedDriver = {
+        name: document.getElementById('profileName').value,
+        email: document.getElementById('profileEmail').value,
+        idNumber: document.getElementById('profileID').value,
+        bankDetails: document.getElementById('profileBankDetails').value,
+        bankName: document.getElementById('profileBankName').value,
+        carColor: document.getElementById('profileCarColor').value,
+        carType: document.getElementById('profileCarType').value,
+        carRegNumber: document.getElementById('profileCarReg').value,
+      };
+      alert('Profile saved and sent to admin.');
+      localStorage.setItem('driverData', JSON.stringify(updatedDriver));
+    };
+    document.getElementById('terminateBtn').onclick = () => {
+      if (confirm('Are you sure you want to terminate your driver account? Admin will be notified.')) {
+        alert('Termination request sent to admin.');
+        localStorage.removeItem('driverData');
+        loadMainPage();
+      }
+    };
+    document.getElementById('backToMain').onclick = (e) => {
+      e.preventDefault();
+      loadMainPage();
+    };
+  }, 100);
+}
+
+// Load Driver Payment History
+function loadDriverHistoryPayment() {
+  document.getElementById('innerContent').innerHTML = `
+    <h1>Payment History</h1>
+    <div class="history-payemnt">
+      <p><strong>Amount Payment :</strong> R 100</p>
+      <p><strong>User Name:</strong> John Doe</p>
+      <p><strong>Date Pick-up:</strong> August 10, 2025</p>
+      <p><strong>Location Pick-up:</strong> Park street, Cape Town</p>
+      <p><strong>Location Drop-off:</strong> Board street, Cape Town</p>
+    </div>
+    <a href="#" id="backToMain">Back</a>
+  `;
+  document.getElementById('backToMain').onclick = (e) => {
+    e.preventDefault();
+    loadMainPage();
+  };
+}
+
+// Function to show main page
+function loadMainPage() {
+  document.getElementById('contentArea').style.display = 'block';
+  document.getElementById('mainHeader').style.display = 'flex';
+  initializeMenu();
+}
+
+}); // End of DOMContentLoaded
+</script>
+</body>
+</html>
