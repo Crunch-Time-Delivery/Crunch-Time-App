@@ -3,10 +3,10 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import React, { useState } from 'react';
-import './database.jsx'; // your real-time notifications
-import  './mapAPI.jsx'; // map display
-import  './PayfastAPI.jsx'; // payment process
-import './smsAndEmailAPI.jsx'; // SMS & email
+import '../database.jsx'; // your real-time notifications
+import  '../mapAPI.jsx'; // map display
+import  '../PayfastAPI.jsx'; // payment process
+import '../smsAndEmailAPI.jsx'; // SMS & email
 import './supabaseClient.js';
 import './createPayFastPayment.js';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
