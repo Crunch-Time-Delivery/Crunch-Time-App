@@ -1,3 +1,5 @@
+
+
 useEffect(() => {
   const subscription = supabase
     .from('notifications')
