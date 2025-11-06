@@ -35,10 +35,8 @@ async function fetchDrivers() {
     console.error('Error fetching drivers:', error)
     return null
   }
-
-  return Drivers
+return Drivers
 }
-
 // Call the function to fetch data
 fetchDrivers().then(drivers => {
   console.log(drivers)
