@@ -1,5 +1,4 @@
 import React from 'react';
-
 const DriverHistory = ({ loadMain }) => (
   <div>
     <h1>Payment History</h1>
@@ -13,5 +12,4 @@ const DriverHistory = ({ loadMain }) => (
     <a href="#" onClick={(e) => { e.preventDefault(); loadMain(); }}>Back</a>
   </div>
 );
-
 export default DriverHistory;
