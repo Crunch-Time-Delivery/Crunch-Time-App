@@ -7,8 +7,8 @@ async function initiatePayment(amount, item_name) {
     });
     const data = await response.json();
     if (data.paymentUrl) {
-      // Optionally, save the payment ID or URL in your app
-      window.location.href = data.paymentUrl; // Redirect to PayFast
+      // Redirect to the payment URL
+      window.location.href = data.paymentUrl;
     } else {
       alert('Failed to create payment.');
     }
