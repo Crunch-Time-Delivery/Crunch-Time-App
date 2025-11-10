@@ -1,5 +1,3 @@
-// payfast/payfast.js
-
 // Function to load payment data from payfast.json
 async function loadPayments() {
   const response = await fetch('payfast/payfast.json');
