@@ -1,0 +1,6 @@
+        {
+          "compilerOptions": {
+            "typeRoots": ["./node_modules/@types"],
+            "types": ["google.maps"] // Only if you are explicitly listing types
+          }
+        }
