@@ -9,6 +9,5 @@ async function setupPinpoint() {
   // For demonstration:
   let markerRef = { current: new google.maps.Marker({ position: { lat: initialLat, lng: initialLng }, map: null }) };
 
-  // Example of updating marker
   // updateMarker(markerRef, newLat, newLng);
 }
