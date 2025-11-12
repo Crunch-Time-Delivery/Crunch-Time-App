@@ -65,4 +65,4 @@ function OrderSummary({ orderItems, total, removeItem, handleCheckout, handleOrd
   );
 }
 
-export default OrderSummary;
+export default OrderSummaryPage;
