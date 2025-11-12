@@ -1,3 +1,6 @@
+/**
+ * @type {google.maps.Map}
+ */
 var map;
 var mark;
 var initialize = function() {

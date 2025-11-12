@@ -24,6 +24,7 @@
       text-align: center;
       color: #d32f2f;
       margin-bottom: 20px;
+      font-size: 24px;
     }
     .input-group {
       display: flex;
@@ -36,6 +37,10 @@
       font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 8px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #d32f2f;
     }
     button {
       padding: 12px 20px;
@@ -45,6 +50,10 @@
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover:not(:disabled) {
+      background: #b71c1c;
     }
     button:disabled {
       background: #ccc;
@@ -75,144 +84,180 @@
 
 <div class="container">
   <h1>Track Your Driver</h1>
-
   <div class="input-group">
-    <input type="text" id="orderId" placeholder="Enter Order ID" />
+    <input type="text" id="orderId" placeholder="Enter Order ID (e.g. ORD123)" />
     <button id="trackBtn">Track</button>
   </div>
-
   <div id="map"></div>
-  <div id="status" class="status"></div>
+  <div id="status" class="status">No location selected.</div>
 </div>
 
+<!-- Google Maps API - Replace YOUR_API_KEY -->
 <script>
   // === CONFIG ===
-  const API_URL = 'https://your-api.example.com/location'; // CHANGE THIS!
-  // Example: https://your-api.com/location?order=ORD123
+  const API_URL = 'https://your-api.example.com/location'; // CHANGE THIS
+  const GOOGLE_MAPS_API_KEY = 'YOUR_API_KEY'; // CHANGE THIS
 
-  // === DOM ===
-  const orderInput = document.getElementById('orderId');
-  const trackBtn = document.getElementById('trackBtn');
-  const statusEl = document.getElementById('status');
-  const canvas = document.getElementById('map');
-  const ctx = canvas.getContext('2d');
-
+  // === Global Variables ===
+  let map, driverMarker, customerMarker;
   let tracking = false;
   let intervalId = null;
-  let driver = { x: 50, y: 50 }; // % of canvas
+  let customerLat = 37.7850, customerLng = -122.4383;
 
-  // Resize canvas
-  function resizeCanvas() {
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-  }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-
-  // Draw map + driver
-  function drawMap() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Simple road grid
-    ctx.strokeStyle = '#aaa';
-    ctx.lineWidth = 2;
-    for (let i = 0; i <= canvas.width; i += 60) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, canvas.height);
-      ctx.stroke();
-    }
-    for (let i = 0; i <= canvas.height; i += 60) {
-      ctx.beginPath();
-      ctx.moveTo(0, i);
-      ctx.lineTo(canvas.width, i);
-      ctx.stroke();
-    }
-
-    // Driver (red circle)
-    const dx = (driver.x / 100) * canvas.width;
-    const dy = (driver.y / 100) * canvas.height;
-    ctx.fillStyle = '#d32f2f';
-    ctx.beginPath();
-    ctx.arc(dx, dy, 12, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-  }
-
-  // Fetch driver location from your backend
-  async function fetchLocation(orderId) {
-    try {
-      const res = await fetch(`${API_URL}?order=${encodeURIComponent(orderId)}`);
-      if (!res.ok) throw new Error('Not found');
-      const data = await res.json();
-      if (data.lat !== undefined && data.lng !== undefined) {
-        // Simple mapping: lat/lng → % of canvas
-        driver.x = ((data.lng + 122.55) / 0.3) * 100; // adjust range
-        driver.y = ((37.85 - data.lat) / 0.15) * 100;
-        driver.x = Math.max(5, Math.min(95, driver.x));
-        driver.y = Math.max(5, Math.min(95, driver.y));
-      }
-      drawMap();
-    } catch (err) {
-      console.warn('Location fetch failed:', err);
-      // Keep last position
+  // === 1. Customer Location (Geolocation) ===
+  function updateCustomerLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          customerLat = pos.coords.latitude;
+          customerLng = pos.coords.longitude;
+          updateCustomerMarker();
+        },
+        () => console.warn("Geolocation denied")
+      );
     }
   }
 
-  // Start tracking
-  trackBtn.addEventListener('click', () => {
-    const orderId = orderInput.value.trim();
-    if (!orderId || tracking) return;
+  function currentCustomerLocation() {
+    return { lat: customerLat, lng: customerLng };
+  }
 
-    tracking = true;
-    trackBtn.disabled = true;
-    trackBtn.textContent = 'Tracking...';
-    statusEl.className = 'status connecting';
-    statusEl.textContent = 'Connecting...';
-    statusEl.style.display = 'block';
+  // Update every 15 seconds
+  setInterval(updateCustomerLocation, 15000);
+  updateCustomerLocation(); // Initial
 
-    drawMap(); // initial draw
+  // === 2. Google Maps Init ===
+  function initMap() {
+    const center = currentCustomerLocation();
 
-    // Poll every 3 seconds
-    intervalId = setInterval(() => {
-      fetchLocation(orderId);
-    }, 3000);
-
-    // First fetch immediately
-    fetchLocation(orderId).then(() => {
-      statusEl.className = 'status tracking';
-      statusEl.textContent = 'Driver is moving...';
-    }).catch(() => {
-      statusEl.className = 'status error';
-      statusEl.textContent = 'Order not found or no driver yet.';
-      stopTracking();
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 14,
+      center: center,
+      mapTypeId: 'roadmap',
+      disableDefaultUI: false,
+      zoomControl: true
     });
-  });
 
-  function stopTracking() {
-    clearInterval(intervalId);
-    tracking = false;
-    trackBtn.disabled = false;
-    trackBtn.textContent = 'Track';
+    // Customer Marker (You)
+    customerMarker = new google.maps.Marker({
+      map: map,
+      title: "You are here",
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 9,
+        fillColor: '#4285f4',
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 2
+      }
+    });
+
+    // Driver Marker
+    driverMarker = new google.maps.Marker({
+      map: map,
+      title: "Driver",
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 11,
+        fillColor: '#d32f2f',
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 3
+      }
+    });
+
+    updateCustomerMarker();
   }
 
-  // Press Enter to track
-  orderInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') trackBtn.click();
+  function updateCustomerMarker() {
+    if (customerMarker) {
+      customerMarker.setPosition(currentCustomerLocation());
+      map.panTo(currentCustomerLocation());
+    }
+  }
+
+  function updateDriverLocation(lat, lng) {
+    const pos = { lat: parseFloat(lat), lng: parseFloat(lng) };
+    driverMarker.setPosition(pos);
+    map.panTo(pos);
+    map.setZoom(15);
+  }
+
+  // === 3. Live Tracking Logic ===
+  document.addEventListener('DOMContentLoaded', () => {
+    const orderInput = document.getElementById('orderId');
+    const trackBtn = document.getElementById('trackBtn');
+    const statusEl = document.getElementById('status');
+
+    const startTracking = () => {
+      const orderId = orderInput.value.trim();
+      if (!orderId || tracking) return;
+
+      tracking = true;
+      trackBtn.disabled = true;
+      trackBtn.textContent = 'Tracking...';
+      statusEl.className = 'status connecting';
+      statusEl.textContent = 'Connecting to driver...';
+
+      // Initial fetch
+      pollDriverLocation(orderId);
+
+      // Poll every 3 seconds
+      intervalId = setInterval(() => pollDriverLocation(orderId), 3000);
+    };
+
+    const pollDriverLocation = async (orderId) => {
+      try {
+        const res = await fetch(`${API_URL}?order=${encodeURIComponent(orderId)}`, {
+          cache: 'no-cache'
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+
+        if (data.lat != null && data.lng != null) {
+          updateDriverLocation(data.lat, data.lng);
+          statusEl.className = 'status tracking';
+          statusEl.textContent = 'Driver is moving...';
+        } else {
+          throw new Error("Invalid data");
+        }
+      } catch (err) {
+        console.warn('Poll failed:', err);
+        if (!statusEl.classList.contains('error')) {
+          statusEl.className = 'status error';
+          statusEl.textContent = 'Driver not found or offline.';
+          stopTracking();
+        }
+      }
+    };
+
+    const stopTracking = () => {
+      clearInterval(intervalId);
+      tracking = false;
+      trackBtn.disabled = false;
+      trackBtn.textContent = 'Track';
+    };
+
+    trackBtn.addEventListener('click', startTracking);
+    orderInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') startTracking();
+    });
+
+    window.stopTracking = stopTracking;
   });
 
-  // Initial draw
-  drawMap();
-
-var map;
-var mark;
-var initialize = function() {
-  map  = new google.maps.Map(document.getElementById('map-canvas'), {center:{lat:lat,lng:lng},zoom:12});
-  mark = new google.maps.Marker({position:{lat:lat, lng:lng}, map:map});
-};
-window.initialize = initialize;
+  // === Load Google Maps ===
+  (function loadGoogleMaps() {
+    if (typeof google !== 'undefined') return;
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+    script.onerror = () => alert('Failed to load Google Maps. Check API key.');
+    document.head.appendChild(script);
+  })();
 </script>
 
 </body>

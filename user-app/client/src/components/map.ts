@@ -30,7 +30,7 @@ function initMap(): void {
  * @param position - new latitude and longitude
  */
 function updatePosition(position: { lat: number; lng: number }): void {
-  if (!marker || !map) {
+  if (!marker || !map ) {
     console.error("Map or marker not initialized");
     return;
   }
