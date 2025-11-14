@@ -135,6 +135,12 @@
   <div id="innerContent"></div>
 </div>
 
+
+<div id="notification" style="display:none; position:fixed; top:20px; width:100%; z-index:9999; text-align:center;">
+  <div style="background-color:#4CAF50; color:white; padding:10px; display:inline-block; border-radius:4px;">
+    Sending notification...
+  </div>
+</div>
 <!-- Notification page / section (script will handle content) -->
 <script type="text/babel" src="./src/index.jsx"></script>
 
@@ -142,6 +148,39 @@
 <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
 
 <script>
+function showNotificationMessage(message, color='#4CAF50') {
+  const notif = document.getElementById('notification');
+  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
+  notif.style.display = 'block';
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    notif.style.display = 'none';
+  }, 3000);
+}
+
+function sendTwilioNotification(to, message) {
+  // Show sending message
+  showNotificationMessage('Sending notification...');
+  
+  fetch('/notify/sms', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ to: to, message: message })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+    } else {
+      showNotificationMessage('Failed to send notification.', '#f44336');
+    }
+  })
+  .catch(() => {
+    showNotificationMessage('Error sending notification.', '#f44336');
+  });
+}
+
 // Assuming you have an API endpoint at /notify/sms
 function sendSms(to, message) {
   fetch('/notify/sms', {
