@@ -142,6 +142,25 @@
 <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
 
 <script>
+// Assuming you have an API endpoint at /notify/sms
+function sendSms(to, message) {
+  fetch('/notify/sms', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ to, message })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log('SMS sent:', data);
+  })
+  .catch(err => {
+    console.error('Error sending SMS:', err);
+  });
+}
+
+
   // Function to show notifications with a sound
   function showNotification(message, soundFile) {
     const audio = new Audio(soundFile);
