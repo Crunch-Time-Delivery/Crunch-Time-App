@@ -665,6 +665,10 @@ function goToCheckout() {
   document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
   document.getElementById('checkoutPage').style.display='block';
   document.getElementById('orderSummary').style.display='none';
+
+  src=".client/public/components/map.ts  ";
+  src=".client/public/functions/mapFunctions.js  ";
+  src=".server/ maps.client.js ";
 }
 
 // Remove the "Confirm EFT" button from checkout page
@@ -691,6 +695,10 @@ function finalizePayment() {
     alert('Please proceed with your card payment.');
   }
   closePaymentPopup();
+
+  src=".client/public/components/map.ts  ";
+  src=".client/public/functions/mapFunctions.js  ";
+  src=".server/ maps.client.js ";
 }
 
 // Show the main payment options popup
@@ -705,6 +713,11 @@ function showPaymentPopup() {
   selectedPaymentMethod=null;
   document.getElementById('paymentPopup').style.display='flex';
   document.getElementById('eftDetails').style.display='none';
+
+
+  src=".client/public/components/map.ts  ";
+  src=".client/public/functions/mapFunctions.js  ";
+  src=".server/ maps.client.js ";
 }
 
 // Close the payment popup
@@ -723,6 +736,10 @@ function selectPaymentMethod(method) {
   function openMapLocation(){
      window.location.href='http://127.0.0.1:5500/user-app/search_location.html  ';
   }
+
+  src=".client/public/components/map.ts  ";
+  src=".client/public/functions/mapFunctions.js  ";
+  src=".server/ maps.client.js ";
 }
 
 // No longer needed to show AI Payment System
