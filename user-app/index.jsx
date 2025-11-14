@@ -8,7 +8,7 @@ import App from './app.jsx';
 import App from './UserMap.jsx';
 import App from './OrderSummaryPage.jsx';
 import App from './Connection.jsx';
-import App from './LiveTrackingControls.jsx';
+import App from './client/src/pages/LiveTrackingControls.jsx';
 import ReactDOM from 'react-dom/client';
 
 function App() {
