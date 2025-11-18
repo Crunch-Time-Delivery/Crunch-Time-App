@@ -1,10 +1,10 @@
-let map: google.maps.Map | null = null;
-let marker: google.maps.Marker | null = null;
+let map = null;
+let marker = null;
 
 /**
  * Initialize the Google Map
  */
-function initMap(): void {
+function initMap() {
   const initialPosition = { lat: 40.7128, lng: -74.0060 }; // Example: New York City
 
   const mapElement = document.getElementById("map");
@@ -29,9 +29,11 @@ function initMap(): void {
 
 /**
  * Update marker position
- * @param position - new latitude and longitude
+ * @param {Object} position - new latitude and longitude
+ * @param {number} position.lat
+ * @param {number} position.lng
  */
-function updatePosition(position: { lat: number; lng: number }): void {
+function updatePosition(position) {
   if (!marker || !map) {
     console.error("Map or marker not initialized");
     return;
