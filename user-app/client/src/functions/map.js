@@ -1,23 +1,25 @@
-let map: google.maps.Map;
-let marker: google.maps.Marker;
+let map = null;
+let marker = null;
 
 /**
  * Initialize the Google Map
  */
-function initMap(): void {
+function initMap() {
   const initialPosition = { lat: 40.7128, lng: -74.0060 }; // Example: New York City
 
-  const mapElement = document.getElementById("map") as HTMLElement;
+  const mapElement = document.getElementById("map");
   if (!mapElement) {
     console.error("Map element not found");
     return;
   }
 
+  // Initialize the map
   map = new google.maps.Map(mapElement, {
     center: initialPosition,
     zoom: 14,
   });
 
+  // Initialize the marker
   marker = new google.maps.Marker({
     position: initialPosition,
     map: map,
@@ -27,14 +29,15 @@ function initMap(): void {
 
 /**
  * Update marker position
- * @param position - new latitude and longitude
+ * @param {Object} position - new latitude and longitude
+ * @param {number} position.lat
+ * @param {number} position.lng
  */
-function updatePosition(position: { lat: number; lng: number }): void {
-  if (!marker || !map ) {
+function updatePosition(position) {
+  if (!marker || !map) {
     console.error("Map or marker not initialized");
     return;
   }
-
   marker.setPosition(position);
   map.panTo(position);
 }
@@ -55,7 +58,7 @@ function simulateLiveTracking() {
 }
 
 // Initialize map when window loads
-window.onload = () => {
+window.addEventListener('load', () => {
   initMap();
   simulateLiveTracking(); // Remove or replace with real data source
-};
+});
