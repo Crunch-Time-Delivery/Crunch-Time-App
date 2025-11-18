@@ -1,10 +1,16 @@
+// payfast.js
+
+const express = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
 
-const PAYFAST_MERCHANT_ID = 'your-merchant-id'; // replace with your merchant ID
-const PAYFAST_MERCHANT_KEY = 'your-merchant-key'; // replace with your merchant key
-const PAYFAST_PASS_PHRASE = 'your-passphrase'; // optional, if used
-const PAYFAST_SANDBOX = true; // set to false for production
+const router = express.Router();
+
+// PayFast configuration - replace with your actual details
+const PAYFAST_MERCHANT_ID = 'your-merchant-id';
+const PAYFAST_MERCHANT_KEY = 'your-merchant-key';
+const PAYFAST_PASS_PHRASE = 'your-passphrase'; // Optional
+const PAYFAST_SANDBOX = true; // Set to false for production
 
 // Generate PayFast payment URL
 function generatePayFastUrl(data) {
@@ -21,79 +27,72 @@ function generatePayFastUrl(data) {
 
 // Generate signature for PayFast
 function generateSignature(data) {
-  const keys = Object.keys(data).sort();
-  const stringToSign = keys
+  const stringToSign = Object.keys(data)
+    .sort()
     .map(key => `${key}=${data[key]}`)
     .join('&');
 
-  // Append passphrase if available
-  const stringWithPassphrase = PAYFAST_PASS_PHRASE
-    ? `${stringToSign}&passphrase=${PAYFAST_PASS_PHRASE}`
-    : stringToSign;
-
-  const hash = crypto.createHash('md5').update(stringWithPassphrase).digest('hex');
+  const hash = crypto.createHash('md5').update(stringToSign).digest('hex');
   return hash;
 }
 
 // Route to create a payment request
-async function createPayment(req, res) {
+router.post('/pay', async (req, res) => {
   const { amount, itemName, itemDescription, customStr1 } = req.body;
 
+  // Basic validation
   if (!amount || !itemName) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
+  // Prepare data for PayFast
   const data = {
     merchant_id: PAYFAST_MERCHANT_ID,
     merchant_key: PAYFAST_MERCHANT_KEY,
-    return_url: 'https://yourdomain.com/payfast/return', // update as needed
-    cancel_url: 'https://yourdomain.com/payfast/cancel', // update as needed
-    notify_url: 'https://yourdomain.com/payfast/notify', // update as needed
+    return_url: 'https://yourdomain.com/payfast/return', // Your return URL
+    cancel_url: 'https://yourdomain.com/payfast/cancel', // Your cancel URL
+    notify_url: 'https://yourdomain.com/payfast/notify', // Your notify URL
     amount: amount.toString(),
     item_name: itemName,
     item_description: itemDescription || '',
-    custom_str1: customStr1 || '',
+    custom_str1: customStr1 || '', // Optional custom data
+    // Additional required fields...
   };
 
   // Generate signature
   data['signature'] = generateSignature(data);
 
-  // Generate payment URL
+  // Send user to PayFast payment page
   const paymentUrl = generatePayFastUrl(data);
   res.json({ paymentUrl });
-}
+});
 
-// Webhook for PayFast notifications
-async function handleNotify(req, res) {
+// Webhook endpoint for PayFast notifications
+router.post('/notify', async (req, res) => {
   const data = req.body;
 
+  // Verify signature
   const receivedSignature = data['signature'];
-  if (!receivedSignature) {
-    return res.status(400).send('Missing signature');
-  }
-
-  // Remove signature before verification
   delete data['signature'];
-
   const expectedSignature = generateSignature(data);
 
   if (receivedSignature !== expectedSignature) {
     return res.status(400).send('Invalid signature');
   }
 
+  // Process payment status
   const paymentStatus = data['payment_status'];
-  const customStr1 = data['custom_str1'];
+  const customStr1 = data['custom_str1']; // Your custom data, e.g., driver ID
 
   if (paymentStatus === 'COMPLETE') {
-    // TODO: Update driver income, mark payment as received, etc.
-    return res.status(200).send('Payment verified and processed');
-  } else {
-    // Handle other statuses if needed
-    return res.status(200).send('Payment not completed');
-  }
-}
+    // Update driver income, mark as paid, etc.
+    // Your logic here...
 
-module.exports = {
-  createPayment,
-  handleNotify,
-};
+    res.status(200).send('Payment verified and processed');
+  } else {
+    // Handle other statuses
+    res.status(200).send('Payment not completed');
+  }
+});
+
+module.exports = router;
