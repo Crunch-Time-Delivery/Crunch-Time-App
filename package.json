@@ -28,5 +28,8 @@
   "bugs": {
     "url": "https://github.com/Crunch-Time-Delivery/Crunch-Time-App/issues"
   },
-  "homepage": "https://github.com/Crunch-Time-Delivery/Crunch-Time-App#readme"
+  "homepage": "https://github.com/Crunch-Time-Delivery/Crunch-Time-App#readme",
+  "devDependencies": {
+    "supabase": "^2.58.5"
+  }
 }
