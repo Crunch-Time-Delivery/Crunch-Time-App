@@ -725,9 +725,6 @@ function goToCheckout() {
   document.getElementById('checkoutPage').style.display='block';
   document.getElementById('orderSummary').style.display='none';
 
-  src=".client/public/components/map.ts  ";
-  src=".client/public/functions/mapFunctions.js  ";
-  src=".server/ maps.client.js ";
 }
 
 // Remove the "Confirm EFT" button from checkout page
@@ -755,9 +752,6 @@ function finalizePayment() {
   }
   closePaymentPopup();
 
-  src=".client/public/components/map.ts  ";
-  src=".client/public/functions/mapFunctions.js  ";
-  src=".server/ maps.client.js ";
 }
 
 // Show the main payment options popup
@@ -773,10 +767,6 @@ function showPaymentPopup() {
   document.getElementById('paymentPopup').style.display='flex';
   document.getElementById('eftDetails').style.display='none';
 
-
-  src=".client/public/components/map.ts  ";
-  src=".client/public/functions/mapFunctions.js  ";
-  src=".server/ maps.client.js ";
 }
 
 // Close the payment popup
@@ -855,6 +845,6 @@ function selectPaymentMethod(method) {
 <script  src="server/payfast.client.js" async></script>
  <script src="server/twilioNotifiaction.js" async></script>
 
-<script  src="uti;s/payfastAPI.js" async></script>
+<script  src="utils/payfastAPI.js" async></script>
 </body>
 </html>
