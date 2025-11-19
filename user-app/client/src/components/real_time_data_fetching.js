@@ -1,5 +1,4 @@
 export class RealTimeDataFetcher {
-  socket: WebSocket | undefined;
   constructor() {
     this.connect();
   }
