@@ -1,7 +1,7 @@
 // server.js
 const express = require('express');
 const path = require('path');
-const config = require('./config');
+const config = require('../../../config');
 const setupRoutes = require('./routes');
 
 const app = express();
