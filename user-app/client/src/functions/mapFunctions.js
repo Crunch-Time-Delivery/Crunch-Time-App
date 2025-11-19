@@ -2,13 +2,36 @@ import { initMap, updateDriverPosition, updateUserPosition } from './functions/m
 
 function startTracking() {
   initMap(() => {
-    // Simulate driver movement
+    // Replace this with your actual live data source, e.g., WebSocket connection
+    const socket = new WebSocket('wss://your-websocket-url');
+
+    socket.onopen = () => {
+      console.log('WebSocket connected for live tracking');
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      // Expect data to have lat and lng
+      if (data.lat && data.lng) {
+        updateDriverPosition({ lat: data.lat, lng: data.lng });
+      }
+    };
+
+    socket.onclose = () => {
+      console.log('WebSocket disconnected. Reconnect in 5 seconds...');
+      setTimeout(() => startTracking(), 5000);
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    // Optionally, simulate user position updates
     setInterval(() => {
-      const newDriverLocation = {
-        lat: /* fetch or calculate new lat */,
-        lng: /* fetch or calculate new lng */,
-      };
-      updateDriverPosition(newDriverLocation);
+      // You can replace this with real user location fetching
+      navigator.geolocation.getCurrentPosition((pos) => {
+        updateUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      });
     }, 5000);
   });
 }
