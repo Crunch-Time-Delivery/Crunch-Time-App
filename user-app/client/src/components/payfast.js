@@ -8,30 +8,17 @@ const payfastConfig = {
   // Add other necessary configurations if needed
 };
 
-// Interface for payment data
-interface PaymentData {
-  amount: number;
-  item_name: string;
-  return_url?: string;
-  cancel_url?: string;
-  notify_url?: string;
-  // Add other fields as needed
-}
-
-// Response type (can be adjusted based on actual API response)
-interface PayFastResponse {
-  // Example properties; adjust as per actual API response
-  status: string;
-  message?: string;
-  data?: any;
-}
-
 /**
  * Initiates a payment request to PayFast
- * @param {PaymentData} data - Payment details
- * @returns {Promise<PayFastResponse>} - Response data from PayFast
+ * @param {Object} data - Payment details
+ * @param {number} data.amount
+ * @param {string} data.item_name
+ * @param {string} [data.return_url]
+ * @param {string} [data.cancel_url]
+ * @param {string} [data.notify_url]
+ * @returns {Promise<Object>} - Response data from PayFast
  */
-async function initiatePayment(data: PaymentData): Promise<PayFastResponse> {
+async function initiatePayment(data) {
   // Basic validation of required fields
   if (data.amount === undefined || !data.item_name) {
     throw new Error('Missing required payment data: amount and item_name');
@@ -52,7 +39,7 @@ async function initiatePayment(data: PaymentData): Promise<PayFastResponse> {
 
   try {
     // Send POST request to PayFast API endpoint
-    const response = await axios.post<PayFastResponse>('https://api.payfast.co.za/eng/process', payload);
+    const response = await axios.post('https://api.payfast.co.za/eng/process', payload);
     return response.data; // Return the response data for further processing
   } catch (error) {
     // Log detailed error and rethrow
@@ -69,9 +56,9 @@ async function initiatePayment(data: PaymentData): Promise<PayFastResponse> {
  * Optional: Function to verify payment status with PayFast
  * (Assuming PayFast provides a verification API)
  */
-async function verifyPayment(paymentId: string): Promise<PayFastResponse> {
+async function verifyPayment(paymentId) {
   try {
-    const response = await axios.get<PayFastResponse>(`https://api.payfast.co.za/eng/verify/${paymentId}`, {
+    const response = await axios.get(`https://api.payfast.co.za/eng/verify/${paymentId}`, {
       params: {
         merchant_id: payfastConfig.merchant_id,
         merchant_key: payfastConfig.merchant_key,
@@ -89,4 +76,4 @@ async function verifyPayment(paymentId: string): Promise<PayFastResponse> {
   }
 }
 
-export { initiatePayment, verifyPayment };
+module.exports = { initiatePayment, verifyPayment };

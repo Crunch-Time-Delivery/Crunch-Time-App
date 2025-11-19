@@ -1,13 +1,10 @@
-import { updatePosition } from './map.ts';
-
 export class RealTimeDataFetcher {
-  private socket!: WebSocket;
-
+  socket: WebSocket | undefined;
   constructor() {
     this.connect();
   }
 
-  private connect() {
+  connect() {
     // Example WebSocket URL - replace with your actual data source
     this.socket = new WebSocket('wss://your-websocket-url');
 
@@ -18,7 +15,7 @@ export class RealTimeDataFetcher {
     this.socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       // Expect data to have lat and lng
-      if(data.lat && data.lng) {
+      if (data.lat && data.lng) {
         updatePosition({ lat: data.lat, lng: data.lng });
       }
     };
