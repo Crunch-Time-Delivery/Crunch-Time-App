@@ -8,114 +8,56 @@
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 <style>
   body { font-family: sans-serif; background:#f0f0f0; margin:0; }
-  /* Header styles */
+  /* Header styling */
   .header {
     position: fixed; top:0; width:100%; height:60px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 20px; box-shadow:0 2px 4px rgba(0,0,0,0.1); z-index:999;
   }
   .vendor-text { font-weight:bold; color:red; font-size:1.2em; }
-  .menu-container { display:flex; align-items:center; position:relative; }
+.menu-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-left: -20px; /* move the whole button more to the left */
+}
   .profile-btn { background:#ff0000; color:#fff; padding:8px 12px; border:none; border-radius:50px; cursor:pointer; }
   .dropdown { display:none; position:absolute; right:20px; top:60px; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.2); min-width:200px; z-index:1000; }
   .dropdown.show { display:block; }
   .dropdown a { display:block; padding:10px 15px; text-decoration:none; color:#333; }
   .dropdown a:hover { background:#f0f0f0; }
-  /* Container */
+
+  /* Container styles */
   .container {
     margin-top:80px; padding:20px; max-width:1200px; margin-left:auto; margin-right:auto; background:#fff; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1);
   }
-  /* Management Buttons */
+  /* Management buttons */
   .management-buttons { margin-bottom:10px; }
-  .management-buttons button { margin-right:5px; }
-  /* Sections */
-  .section { display:none; }
-  /* Buttons in management */
-  button { padding:8px 12px; margin:5px; border:none; border-radius:4px; cursor:pointer; }
+  .management-buttons button { margin-right:5px; padding:8px 12px; border:none; border-radius:4px; cursor:pointer; }
   .btn-primary { background:#f90101; color:#fff; }
   .btn-secondary { background:#f60202; color:#fff; }
-  .btn-danger { background:#fc1302; color:#fff; }
-  /* Red Payment History Button */
-  .btn-payment-history {
-    background:#fa0303; /* red */
-    color:#fff;
-  }
-  /* Tables */
+  .btn-payment-history { background:#fa0303; color:#fff; }
+
+  /* Sections */
+  .section { display:none; }
+  /* Tables styling */
   table { width:100%; border-collapse:collapse; margin-top:10px; }
   th, td { border:1px solid #ccc; padding:8px; }
   th { background:#f0f0f0; }
-  /* Modal overlay for forms */
+  /* Modals styling */
   .modal {
     display:flex; align-items:center; justify-content:center; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;
   }
   .modal-box { background:#fff; padding:20px; border-radius:8px; width:400px; max-height:80%; overflow-y:auto; }
-  /* Welcome overlay style */
-  #welcomeOverlay {
-    position: fixed;
-    top:0; left:0; width:100%; height:100%;
-    background: rgba(0,0,0,0.8);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    z-index:10000;
-    text-align: center;
-    padding:20px;
-  }
-  #welcomeOverlay img {
-    max-width:250px;
-    margin-bottom:20px;
-  }
-  #welcomeOverlay h2 {
-    color: gray;
-    margin: 10px 0;
-  }
-  #welcomeOverlay p {
-    margin:10px 0;
-  }
-  /* Buttons in overlay */
-  .centered-buttons {
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-  }
-  .centered-buttons button {
-    width:200px;
-    padding:12px;
-    margin:10px 0;
-    font-size:1em;
-    cursor:pointer;
-    border-radius:4px;
-    border:none;
-  }
-  /* Specific overlay buttons */
-  .btn-create {
-    background:#f60202; /* red background */
-    color:#fff;
-  }
-  .btn-login {
-    background:#fff; /* white background */
-    color:#f60202; /* red text */
-  }
-  .btn-browser {
-    background:#f60202; /* red background */
-    color:#fff; /* white text */
-  }
-  /* Terms and conditions text */
-  #termsText {
-    margin-top:20px;
-    text-align:center;
-    font-size:0.9em;
-    color: #555;
-  }
 </style>
 </head>
 <body>
-
 
 <!-- Header -->
 <div class="header">
   <div class="vendor-text">Vendor</div>
   <div class="menu-container">
-    <button class="profile-btn" id="profileBtn" onclick="toggleDropdown()"><i class="fas fa-user-circle"></i> Menu</button>
+    <button class="profile-btn" id="profileBtn" onclick="toggleDropdown()" style="margin-left:-20px;">
+  <i class="fas fa-user-circle"></i> Menu
+</button>
     <div class="dropdown" id="profileDropdown">
       <a href="#" onclick="showManagement('items');">Manage Items</a>
       <a href="#" onclick="showManagement('orders');">Manage Orders</a>
@@ -132,12 +74,11 @@
   <div class="management-buttons">
     <button class="btn-primary" onclick="showManagement('items')">Manage Items</button>
     <button class="btn-primary" onclick="showManagement('orders')">Manage Orders</button>
-    <!-- Add Payment History Button next to Manage Users -->
     <button class="btn-primary" onclick="showManagement('users')">Manage Users</button>
     <button class="btn-payment-history" onclick="showPaymentHistory()">Payment History</button>
   </div>
 
-  <!-- Management Sections -->
+  <!-- Sections -->
   <div id="section-items" class="section">
     <h3>Items</h3>
     <button class="btn-secondary" onclick="openItemForm()">Add Item</button>
@@ -153,14 +94,14 @@
     <button class="btn-secondary" onclick="openUserForm()">Add User</button>
     <div id="usersTable"></div>
   </div>
-  <!-- Payment History Section -->
   <div id="section-payment-history" class="section">
     <h3>Payment History</h3>
+    <button onclick="showPaymentHistory()">Refresh</button>
     <div id="paymentHistoryContainer"></div>
   </div>
 </div>
 
-<!-- Modals for Add/Edit -->
+<!-- Add/Edit Item Modal -->
 <div id="itemFormModal" class="modal" style="display:none;">
   <div class="modal-box">
     <h4 id="itemFormTitle">Add Item</h4>
@@ -175,6 +116,8 @@
     <button onclick="closeItemForm()">Cancel</button>
   </div>
 </div>
+
+<!-- Add/Edit User Modal -->
 <div id="userFormModal" class="modal" style="display:none;">
   <div class="modal-box">
     <h4 id="userFormTitle">Add User</h4>
@@ -185,399 +128,349 @@
   </div>
 </div>
 
-<div id="notification" style="display:none; position:fixed; top:20px; width:100%; z-index:9999; text-align:center;">
-  <div style="background-color:#4CAF50; color:white; padding:10px; display:inline-block; border-radius:4px;">
-    Sending notification...
-  </div>
-</div>
+<!-- Notification -->
+<div id="notification"></div>
 
-<script type="text/babel" src="./src/index.jsx"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
-
-<!-- add a card method only by payment side -->
-<!-- Add notification page / section with ringing sound -->
-
+<!-- Scripts: core logic and src connections -->
 <script>
+  // Data arrays
+  let items = [];
+  let orders = [];
+  let users = [];
+  let payments = [];
 
-function showNotificationMessage(message, color='#4CAF50') {
-  const notif = document.getElementById('notification');
-  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
-  notif.style.display = 'block';
-
-  // Hide after 3 seconds
-  setTimeout(() => {
-    notif.style.display = 'none';
-  }, 3000);
-}
-
-function sendTwilioNotification(to, message) {
-  // Show sending message
-  showNotificationMessage('Sending notification...');
-  
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to: to, message: message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      showNotificationMessage('Notification sent successfully!', '#4CAF50');
-    } else {
-      showNotificationMessage('Failed to send notification.', '#f44336');
-    }
-  })
-  .catch(() => {
-    showNotificationMessage('Error sending notification.', '#f44336');
-  });
-}
-
-// Assuming you have an API endpoint at /notify/sms
-function sendSms(to, message) {
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to, message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('SMS sent:', data);
-  })
-  .catch(err => {
-    console.error('Error sending SMS:', err);
-  });
-}
-
-
-// =================== State & Utility ===================
-let tempAdminData={}, generatedOTP='';
-
-function init() {
-  // Show registration modal first
-  showRegistration();
-}
-window.onload = () => {
-  // Check if user is already logged in
-  if(localStorage.getItem('vendorLoggedIn')==='true'){
-    document.getElementById('welcomeOverlay').style.display='none';
-    showSection('section-items');
-  } else {
-    // stay on overlay until user clicks a button
+  // Toggle dropdown menu
+  function toggleDropdown() {
+    document.getElementById('profileDropdown').classList.toggle('show');
   }
-};
 
-// Functions for overlay buttons
-function handleCreateAccount() {
-  document.getElementById('welcomeOverlay').style.display='none';
-  showRegistration();
-}
-function handleLogin() {
-  document.getElementById('welcomeOverlay').style.display='none';
-  showLogin();
-}
-function showRegistration() {
-  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  document.getElementById('loginModal').style.display='none';
-  document.getElementById('registerModal').style.display='none';
-  document.getElementById('otpModal').style.display='none';
-}
-function showLogin() {
-  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  document.getElementById('loginModal').style.display='flex';
-  document.getElementById('username').value='';
-  document.getElementById('password').value='';
-}
-function showSection(id) {
-  document.querySelectorAll('.section').forEach(s => s.style.display='none');
-  document.getElementById(id).style.display='block';
-}
-function logout() {
-  localStorage.clear();
-  alert('Logged out');
-  showRegistration(); // restart overlay
-}
-
-// Registration process
-function startRegistration() {
-  const email=document.getElementById('regEmail').value.trim();
-  const name=document.getElementById('regName').value.trim();
-  const pass=document.getElementById('regPassword').value.trim();
-  if(!email || !name || !pass){ alert('Fill all fields'); return; }
-  tempAdminData={email, name, pass};
-  generatedOTP = Math.floor(100000 + Math.random()*900000).toString();
-  alert('Your OTP: '+generatedOTP);
-  document.getElementById('registerModal').style.display='none';
-  document.getElementById('otpModal').style.display='flex';
-  document.getElementById('otpInput').value='';
-}
-function verifyOTP() {
-  const inputOTP=document.getElementById('otpInput').value.trim();
-  if(inputOTP===generatedOTP){
-    alert('OTP verified! Registration complete.');
-    localStorage.setItem('vendorEmail', tempAdminData.email);
-    localStorage.setItem('vendorPassword', tempAdminData.pass);
-    localStorage.setItem('vendorLoggedIn','true');
-    document.getElementById('otpModal').style.display='none';
-    showSection('section-items');
-  } else {
-    alert('Incorrect OTP');
+  // Show management sections
+  function showManagement(type) {
+    document.querySelectorAll('.section').forEach(s => s.style.display='none');
+    if (type==='items') { document.getElementById('section-items').style.display='block'; renderItems(); }
+    if (type==='orders') { document.getElementById('section-orders').style.display='block'; renderOrders(); }
+    if (type==='users') { document.getElementById('section-users').style.display='block'; renderUsers(); }
   }
-}
-function verifyLogin() {
-  const username = document.getElementById('username').value.trim();
-  const pass = document.getElementById('password').value.trim();
-  const storedEmail = localStorage.getItem('vendorEmail');
-  const storedPass = localStorage.getItem('vendorPassword');
-  if (!storedEmail || !storedPass) { alert('Register first'); return; }
-  if (username === storedEmail && pass === storedPass) {
-    alert('Logged in');
-    localStorage.setItem('vendorLoggedIn', 'true');
-    document.getElementById('loginModal').style.display='none';
-    showSection('section-items');
-  } else {
-    alert('Invalid');
+
+  // Show payment history
+  function showPaymentHistory() {
+    document.querySelectorAll('.section').forEach(s => s.style.display='none');
+    document.getElementById('section-payment-history').style.display='block';
+    renderPaymentHistory();
   }
-}
 
-// Show management section
-function showManagement(type) {
-  document.querySelectorAll('.section').forEach(s => s.style.display='none');
-  if(type==='items'){ document.getElementById('section-items').style.display='block'; renderItems(); }
-  else if(type==='orders'){ document.getElementById('section-orders').style.display='block'; renderOrders(); }
-  else if(type==='users'){ document.getElementById('section-users').style.display='block'; renderUsers(); }
-}
-
-// ----------- CRUD functions (your existing) -----------
-
-// Items
-let items = [];
-function renderItems() {
-  const container=document.getElementById('itemsTable');
-  container.innerHTML='';
-  if(items.length===0){ container.innerHTML='No items'; return; }
-  const table=document.createElement('table');
-  table.innerHTML=`<thead><tr><th>Vendor</th><th>Item</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>`;
-  const tbody=document.createElement('tbody');
-  items.forEach((it,i)=>{
-    const r=tbody.insertRow();
-    r.insertCell().innerText=it.vendor;
-    r.insertCell().innerText=it.item;
-    r.insertCell().innerText=`R ${it.price.toFixed(2)}`;
-    r.insertCell().innerText=it.stock;
-    const act=r.insertCell();
-    const editBtn=document.createElement('button'); editBtn.innerText='Edit'; editBtn.onclick=()=>editItem(i);
-    const delBtn=document.createElement('button'); delBtn.innerText='Delete'; delBtn.style.background='#f44336'; delBtn.onclick=()=>{ items.splice(i,1); renderItems(); };
-    act.appendChild(editBtn); act.appendChild(delBtn);
-  });
-  table.appendChild(tbody);
-  container.appendChild(table);
-}
-function openItemForm() {
-  document.getElementById('itemFormTitle').innerText='Add Item';
-  document.getElementById('itemVendor').value='';
-  document.getElementById('itemName').value='';
-  document.getElementById('itemPrice').value='';
-  document.getElementById('itemStock').value='In Stock';
-  document.getElementById('itemFormModal').dataset.editIndex='-1';
-  document.getElementById('itemFormModal').style.display='flex';
-}
-function editItem(i) {
-  const it=items[i];
-  document.getElementById('itemFormTitle').innerText='Edit Item';
-  document.getElementById('itemVendor').value=it.vendor;
-  document.getElementById('itemName').value=it.item;
-  document.getElementById('itemPrice').value=it.price;
-  document.getElementById('itemStock').value=it.stock;
-  document.getElementById('itemFormModal').dataset.editIndex=i;
-  document.getElementById('itemFormModal').style.display='flex';
-}
-function saveItem() {
-  const i=Number(document.getElementById('itemFormModal').dataset.editIndex);
-  const vendor=document.getElementById('itemVendor').value.trim();
-  const item=document.getElementById('itemName').value.trim();
-  const price=parseFloat(document.getElementById('itemPrice').value);
-  const stock=document.getElementById('itemStock').value;
-  if(!vendor || !item || isNaN(price)){ alert('Fill all fields'); return; }
-  if(i>=0){ items[i]={vendor,item,price,stock}; } else { items.push({vendor,item,price,stock}); }
-  closeItemForm(); renderItems();
-}
-function closeItemForm() { document.getElementById('itemFormModal').style.display='none'; }
-
-// Orders
-let orders = [];
-function renderOrders() {
-  const container=document.getElementById('ordersTable');
-  container.innerHTML='';
-  if(orders.length===0){ container.innerHTML='No orders'; return; }
-  const table=document.createElement('table');
-  table.innerHTML=`<thead><tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>`;
-  const tbody=document.createElement('tbody');
-  orders.forEach((o,i)=>{
-    const r=tbody.insertRow();
-    r.insertCell().innerText=o.id;
-    r.insertCell().innerText=o.customer;
-    r.insertCell().innerText=`R ${o.total.toFixed(2)}`;
-    r.insertCell().innerText=o.status;
-    const act=r.insertCell();
-    const editBtn=document.createElement('button'); editBtn.innerText='Edit'; editBtn.onclick=()=>editOrder(i);
-    const delBtn=document.createElement('button'); delBtn.innerText='Delete'; delBtn.style.background='#f44336'; delBtn.onclick=()=>{ orders.splice(i,1); renderOrders(); };
-    act.appendChild(editBtn); act.appendChild(delBtn);
-  });
-  table.appendChild(tbody);
-  container.innerHTML=''; container.appendChild(table);
-}
-function promptAddOrder() {
-  const customer=prompt('Customer name:');
-  const totalStr=prompt('Total R:');
-  const status=prompt('Status (Pending/Delivered):');
-  const total=parseFloat(totalStr);
-  if(!customer || isNaN(total) || !status){ alert('Invalid input'); return; }
-  const newOrder={id:orders.length+1, customer, total, status};
-  orders.push(newOrder);
-  renderOrders();
-}
-function editOrder(i) {
-  const o=orders[i];
-  const newStatus=prompt('Set status:', o.status);
-  if(newStatus){ o.status=newStatus; renderOrders(); }
-}
-
-// Users
-let users = [];
-function renderUsers() {
-  const container=document.getElementById('usersTable');
-  container.innerHTML='';
-  if(users.length===0){ container.innerHTML='No users'; return; }
-  const table=document.createElement('table');
-  table.innerHTML=`<thead><tr><th>Email</th><th>Name</th><th>Actions</th></tr></thead>`;
-  const tbody=document.createElement('tbody');
-  users.forEach((u,i)=>{
-    const r=tbody.insertRow();
-    r.insertCell().innerText=u.email;
-    r.insertCell().innerText=u.name;
-    const act=r.insertCell();
-    const editBtn=document.createElement('button'); editBtn.innerText='Edit'; editBtn.onclick=()=>editUser(i);
-    const delBtn=document.createElement('button'); delBtn.innerText='Delete'; delBtn.style.background='#f44336'; delBtn.onclick=()=>{ users.splice(i,1); renderUsers(); };
-    act.appendChild(editBtn); act.appendChild(delBtn);
-  });
-  table.appendChild(tbody);
-  container.innerHTML=''; container.appendChild(table);
-}
-function openUserForm() {
-  document.getElementById('userFormTitle').innerText='Add User';
-  document.getElementById('userEmail').value='';
-  document.getElementById('userName').value='';
-  document.getElementById('userFormModal').dataset.editIndex='-1';
-  document.getElementById('userFormModal').style.display='flex';
-}
-function editUser(i) {
-  const u=users[i];
-  document.getElementById('userFormTitle').innerText='Edit User';
-  document.getElementById('userEmail').value=u.email;
-  document.getElementById('userName').value=u.name;
-  document.getElementById('userFormModal').dataset.editIndex=i;
-  document.getElementById('userFormModal').style.display='flex';
-}
-function saveUser() {
-  const i=Number(document.getElementById('userFormModal').dataset.editIndex);
-  const email=document.getElementById('userEmail').value.trim();
-  const name=document.getElementById('userName').value.trim();
-  if(!email || !name){ alert('Fill all fields'); return; }
-  if(i>=0){ users[i]= {email, name}; } else { users.push({email, name}); }
-  closeUserForm(); renderUsers();
-}
-function closeUserForm() { document.getElementById('userFormModal').style.display='none'; }
-
-// ----------- Payment History Functions -----------
-
-function showPaymentHistory() {
-  document.querySelectorAll('.section').forEach(s => s.style.display='none');
-  document.getElementById('section-payment-history').style.display='block';
-  renderPaymentHistory();
-}
-
-function renderPaymentHistory() {
-  const container = document.getElementById('paymentHistoryContainer');
-  container.innerHTML = '';
-  if (payments.length === 0) {
-    container.innerHTML = 'No payment history.';
-    return;
+  // Show specific section
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.style.display='none');
+    document.getElementById(id).style.display='block';
   }
-  const table = document.createElement('table');
-  table.innerHTML = `<thead><tr><th>Amount</th><th>Method</th></tr></thead>`;
-  const tbody = document.createElement('tbody');
-  payments.forEach(p => {
-    const r = tbody.insertRow();
-    r.insertCell().innerText = `R ${p.amount.toFixed(2)}`;
-    r.insertCell().innerText = p.method;
-  });
-  table.appendChild(tbody);
-  container.appendChild(table);
-}
 
-// ----------- Existing modal functions for items and users -----------
+  // Logout
+  function logout() {
+    localStorage.clear();
+    alert('Logged out');
+  }
 
-function openItemForm() {
-  document.getElementById('itemFormTitle').innerText='Add Item';
-  document.getElementById('itemVendor').value='';
-  document.getElementById('itemName').value='';
-  document.getElementById('itemPrice').value='';
-  document.getElementById('itemStock').value='In Stock';
-  document.getElementById('itemFormModal').dataset.editIndex='-1';
-  document.getElementById('itemFormModal').style.display='flex';
-}
-function closeItemForm() { document.getElementById('itemFormModal').style.display='none'; }
+  // =================== Item CRUD ===================
 
-function openUserForm() {
-  document.getElementById('userFormTitle').innerText='Add User';
-  document.getElementById('userEmail').value='';
-  document.getElementById('userName').value='';
-  document.getElementById('userFormModal').dataset.editIndex='-1';
-  document.getElementById('userFormModal').style.display='flex';
-}
-function closeUserForm() { document.getElementById('userFormModal').style.display='none'; }
+  function renderItems() {
+    const container = document.getElementById('itemsTable');
+    container.innerHTML='';
+    if (items.length===0) { container.innerHTML='No items'; return; }
+    const table = document.createElement('table');
+    table.innerHTML=`<thead><tr><th>Vendor</th><th>Item</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
+    items.forEach((it,i) => {
+      const row=tbody.insertRow();
+      row.insertCell().innerText=it.vendor;
+      row.insertCell().innerText=it.item;
+      row.insertCell().innerText=`R ${it.price.toFixed(2)}`;
+      row.insertCell().innerText=it.stock;
+      const cell=row.insertCell();
+      const editBtn=document.createElement('button');
+      editBtn.innerText='Edit';
+      editBtn.onclick=()=>editItem(i);
+      const deleteBtn=document.createElement('button');
+      deleteBtn.innerText='Delete';
+      deleteBtn.style.background='#f44336';
+      deleteBtn.onclick=()=>deleteItem(i);
+      cell.appendChild(editBtn);
+      cell.appendChild(deleteBtn);
+    });
+    table.appendChild(tbody);
+    container.innerHTML='';
+    container.appendChild(table);
+  }
+
+  function openItemForm() {
+    document.getElementById('itemFormTitle').innerText='Add Item';
+    document.getElementById('itemVendor').value='';
+    document.getElementById('itemName').value='';
+    document.getElementById('itemPrice').value='';
+    document.getElementById('itemStock').value='In Stock';
+    document.getElementById('itemFormModal').dataset.editIndex='-1';
+    document.getElementById('itemFormModal').style.display='flex';
+  }
+
+  function editItem(i) {
+    const it=items[i];
+    document.getElementById('itemFormTitle').innerText='Edit Item';
+    document.getElementById('itemVendor').value=it.vendor;
+    document.getElementById('itemName').value=it.item;
+    document.getElementById('itemPrice').value=it.price;
+    document.getElementById('itemStock').value=it.stock;
+    document.getElementById('itemFormModal').dataset.editIndex=i;
+    document.getElementById('itemFormModal').style.display='flex';
+  }
+
+  function saveItem() {
+    const i=Number(document.getElementById('itemFormModal').dataset.editIndex);
+    const vendor = document.getElementById('itemVendor').value.trim();
+    const item = document.getElementById('itemName').value.trim();
+    const price = parseFloat(document.getElementById('itemPrice').value);
+    const stock = document.getElementById('itemStock').value;
+    if (!vendor || !item || isNaN(price)) { alert('Fill all fields'); return; }
+    if (i>=0) { items[i]= {vendor, item, price, stock}; }
+    else { items.push({vendor, item, price, stock}); }
+    closeItemForm();
+    renderItems();
+  }
+
+  function deleteItem(i) {
+    if (confirm('Delete this item?')) { items.splice(i,1); renderItems(); }
+  }
+
+  function closeItemForm() {
+    document.getElementById('itemFormModal').style.display='none';
+  }
+
+  // =================== Orders CRUD ===================
+
+  function renderOrders() {
+    const container = document.getElementById('ordersTable');
+    container.innerHTML='';
+    if (orders.length===0) { container.innerHTML='No orders'; return; }
+    const table = document.createElement('table');
+    table.innerHTML=`<thead><tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
+    orders.forEach((o,i) => {
+      const row=tbody.insertRow();
+      row.insertCell().innerText=o.id;
+      row.insertCell().innerText=o.customer;
+      row.insertCell().innerText=`R ${o.total.toFixed(2)}`;
+      row.insertCell().innerText=o.status;
+      const cell=row.insertCell();
+      const editBtn=document.createElement('button');
+      editBtn.innerText='Edit';
+      editBtn.onclick=()=>editOrder(i);
+      const deleteBtn=document.createElement('button');
+      deleteBtn.innerText='Delete';
+      deleteBtn.style.background='#f44336';
+      deleteBtn.onclick=()=>deleteOrder(i);
+      cell.appendChild(editBtn);
+      cell.appendChild(deleteBtn);
+    });
+    table.appendChild(tbody);
+    document.getElementById('ordersTable').innerHTML='';
+    document.getElementById('ordersTable').appendChild(table);
+  }
+
+  function promptAddOrder() {
+    const customer=prompt('Customer name:');
+    const totalStr=prompt('Total R:');
+    const status=prompt('Status (Pending/Delivered):');
+    const total=parseFloat(totalStr);
+    if (!customer || isNaN(total) || !status) { alert('Invalid input'); return; }
+    const newOrder={id: orders.length+1, customer, total, status};
+    orders.push(newOrder);
+    renderOrders();
+  }
+
+  function editOrder(i) {
+    const o=orders[i];
+    const newStatus=prompt('Set status:', o.status);
+    if (newStatus) { o.status=newStatus; renderOrders(); }
+  }
+
+  function deleteOrder(i) {
+    if (confirm('Delete this order?')) { orders.splice(i,1); renderOrders(); }
+  }
+
+  // =================== Users CRUD ===================
+
+  function renderUsers() {
+    const container = document.getElementById('usersTable');
+    container.innerHTML='';
+    if (users.length===0) { container.innerHTML='No users'; return; }
+    const table = document.createElement('table');
+    table.innerHTML=`<thead><tr><th>Email</th><th>Name</th><th>Actions</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
+    users.forEach((u,i) => {
+      const row=tbody.insertRow();
+      row.insertCell().innerText=u.email;
+      row.insertCell().innerText=u.name;
+      const cell=row.insertCell();
+      const editBtn=document.createElement('button');
+      editBtn.innerText='Edit';
+      editBtn.onclick=()=>editUser(i);
+      const deleteBtn=document.createElement('button');
+      deleteBtn.innerText='Delete';
+      deleteBtn.style.background='#f44336';
+      deleteBtn.onclick=()=>deleteUser(i);
+      cell.appendChild(editBtn);
+      cell.appendChild(deleteBtn);
+    });
+    table.appendChild(tbody);
+    document.getElementById('usersTable').innerHTML='';
+    document.getElementById('usersTable').appendChild(table);
+  }
+
+  function openUserForm() {
+    document.getElementById('userFormTitle').innerText='Add User';
+    document.getElementById('userEmail').value='';
+    document.getElementById('userName').value='';
+    document.getElementById('userFormModal').dataset.editIndex='-1';
+    document.getElementById('userFormModal').style.display='flex';
+  }
+
+  function editUser(i) {
+    const u=users[i];
+    document.getElementById('userFormTitle').innerText='Edit User';
+    document.getElementById('userEmail').value=u.email;
+    document.getElementById('userName').value=u.name;
+    document.getElementById('userFormModal').dataset.editIndex=i;
+    document.getElementById('userFormModal').style.display='flex';
+  }
+
+  function saveUser() {
+    const i=Number(document.getElementById('userFormModal').dataset.editIndex);
+    const email=document.getElementById('userEmail').value.trim();
+    const name=document.getElementById('userName').value.trim();
+    if (!email || !name) { alert('Fill all fields'); return; }
+    if (i>=0) { users[i]= {email, name}; }
+    else { users.push({email, name}); }
+    closeUserForm();
+    renderUsers();
+  }
+
+  function deleteUser(i) {
+    if (confirm('Delete this user?')) { users.splice(i,1); renderUsers(); }
+  }
+
+  function closeUserForm() {
+    document.getElementById('userFormModal').style.display='none';
+  }
+
+  // =================== Payment History ===================
+
+  function showPaymentHistory() {
+    document.querySelectorAll('.section').forEach(s => s.style.display='none');
+    document.getElementById('section-payment-history').style.display='block';
+    renderPaymentHistory();
+  }
+
+  function renderPaymentHistory() {
+    const container = document.getElementById('paymentHistoryContainer');
+    container.innerHTML='';
+    if (payments.length===0) { container.innerHTML='No payment history.'; return; }
+    const table=document.createElement('table');
+    table.innerHTML=`<thead><tr><th>Amount</th><th>Method</th></tr></thead>`;
+    const tbody=document.createElement('tbody');
+    payments.forEach(p => {
+      const row=tbody.insertRow();
+      row.insertCell().innerText=`R ${p.amount.toFixed(2)}`;
+      row.insertCell().innerText=p.method;
+    });
+    table.appendChild(tbody);
+    container.innerHTML='';
+    container.appendChild(table);
+  }
+
+  // =================== Modal handlers ===================
+
+  function openItemForm() {
+    document.getElementById('itemFormTitle').innerText='Add Item';
+    document.getElementById('itemVendor').value='';
+    document.getElementById('itemName').value='';
+    document.getElementById('itemPrice').value='';
+    document.getElementById('itemStock').value='In Stock';
+    document.getElementById('itemFormModal').dataset.editIndex='-1';
+    document.getElementById('itemFormModal').style.display='flex';
+  }
+
+  function closeItemForm() { document.getElementById('itemFormModal').style.display='none'; }
+
+  function saveItem() {
+    const i=Number(document.getElementById('itemFormModal').dataset.editIndex);
+    const vendor = document.getElementById('itemVendor').value.trim();
+    const item = document.getElementById('itemName').value.trim();
+    const price = parseFloat(document.getElementById('itemPrice').value);
+    const stock = document.getElementById('itemStock').value;
+    if (!vendor || !item || isNaN(price)) { alert('Fill all fields'); return; }
+    if (i>=0) { items[i]= {vendor, item, price, stock}; }
+    else { items.push({vendor, item, price, stock}); }
+    closeItemForm();
+    renderItems();
+  }
+
+  function deleteItem(i) {
+    if (confirm('Delete this item?')) { items.splice(i,1); renderItems(); }
+  }
+
+  // =================== User Modal Handlers ===================
+
+  function openUserForm() {
+    document.getElementById('userFormTitle').innerText='Add User';
+    document.getElementById('userEmail').value='';
+    document.getElementById('userName').value='';
+    document.getElementById('userFormModal').dataset.editIndex='-1';
+    document.getElementById('userFormModal').style.display='flex';
+  }
+  function closeUserForm() { document.getElementById('userFormModal').style.display='none'; }
+
+  function saveUser() {
+    const i=Number(document.getElementById('userFormModal').dataset.editIndex);
+    const email=document.getElementById('userEmail').value.trim();
+    const name=document.getElementById('userName').value.trim();
+    if (!email || !name) { alert('Fill all fields'); return; }
+    if (i>=0) { users[i]= {email, name}; }
+    else { users.push({email, name}); }
+    closeUserForm();
+    renderUsers();
+  }
 
 </script>
 
-<script src="client/public/functions/createPayFastPayment.js" async></script> 
- <script  src="client/public/functions/mainTwilioFunction.js" async></script>
+<!-- External scripts for your project -->
+<script src="client/public/functions/createPayFastPayment.js" async></script>
+<script src="client/public/functions/mainTwilioFunction.js" async></script>
 <script src="client/public/functions/token.js" async></script>
-<script  src="client/public/functions/sendSMS.js" async></script>
-<script  src="client/public/functions/twilio.js" async></script>
-
-
-<script  src="client/public/components/client_side_payment.js" async></script>
-<script  src="client/public/components/save_payment.js" async></script>
-<script  src="client/public/components/real_time_data_fetching.js" async></script>
-
-<script  src="client/public/hooks/useAuth.js" async></script>
-<script  src="client/public/hooks/useDebounce.js" async></script>
-<script  src="client/public/hooks/useFetch.js" async></script>
-<script  src="client/public/hooks/LocalStorage.js" async></script>
-
-<script  src="client/public/pages/ManageItemsPage.jsx" async></script>
-<script  src="client/public/pages/MangementSection.js" async></script>
-<script  src="client/public/pages/ManageOrdersPage.jsx" async></script>
+<script src="client/public/functions/sendSMS.js" async></script>
+<script src="client/public/functions/twilio.js" async></script>
+<script src="client/public/components/client_side_payment.js" async></script>
+<script src="client/public/components/save_payment.js" async></script>
+<script src="client/public/components/real_time_data_fetching.js" async></script>
+<script src="client/public/hooks/useAuth.js" async></script>
+<script src="client/public/hooks/useDebounce.js" async></script>
+<script src="client/public/hooks/useFetch.js" async></script>
+<script src="client/public/hooks/LocalStorage.js" async></script>
+<script src="client/public/pages/ManageItemsPage.jsx" async></script>
+<script src="client/public/pages/MangementSection.js" async></script>
+<script src="client/public/pages/ManageOrdersPage.jsx" async></script>
 <script src="client/public/pages/ManageUsersPage.jsx" async></script>
-<script  src="client/public/pages/PaymentHistoryPage.jsx" async></script>
-<script  src="client/public/pages/PaymentSuccess.jsx" async></script>
-
-<script  src="server/supabase/.env.local" async></script>
-<script  src="server/supabase/supabaseClient.js" async></script>
-
-<script  src="server/.env.client" async></script>update
-<script  src="server/api.client.js" async></script>
-<script  src="server/map.js" async></script>
-<script  src="server/maps.client.js" async></script>
-<script  src="server/notification.client.js" async></script>
-<script  src="server/payfast.client.js" async></script>
- <script src="server/twilioNotifiaction.js" async></script>
+<script src="client/public/pages/PaymentHistoryPage.jsx" async></script>
+<script src="client/public/pages/PaymentSuccess.jsx" async></script>
+<script src="server/supabase/.env.local" async></script>
+<script src="server/supabase/supabaseClient.js" async></script>
+<script src="server/.env.client" async></script>
+<script src="server/api.client.js" async></script>
+<script src="server/map.js" async></script>
+<script src="server/maps.client.js" async></script>
+<script src="server/notification.client.js" async></script>
+<script src="server/payfast.client.js" async></script>
+<script src="server/twilioNotifiaction.js" async></script>
 <script src="server/routes.js" async></script>
 <script src="server/server.js" async></script>
-
-
-<script  src="utils/payfastAPI.js" async></script>
+<script src="utils/payfastAPI.js" async></script>
 </body>
 </html>
