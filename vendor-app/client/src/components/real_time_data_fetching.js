@@ -14,7 +14,9 @@ export class RealTimeDataFetcher {
     };
 
     this.socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+
+
+
       // Expect data to have lat and lng
       if (data.lat !== undefined && data.lng !== undefined) {
         updatePosition({ lat: data.lat, lng: data.lng });
