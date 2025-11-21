@@ -64,7 +64,7 @@
   .btn-primary { background:#4CAF50; color:#fff; }
   .btn-primary:hover { background:#45a049; }
 
-  /* Modal overlays for login, admin update, role view */
+  /* Modal overlays for login, admin update, role view, role info popup */
   .modal {
     display: flex; align-items: center; justify-content: center;
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -99,7 +99,7 @@
       <input type="text" id="username" placeholder="Username" style="width:100%; margin-bottom:10px; padding:8px;"/>
       <label>Password</label>
       <input type="password" id="password" placeholder="Password" style="width:100%; margin-bottom:10px; padding:8px;"/>
-      <button  style="width:100%;background-color:red" onclick="verifyLogin()">Login</button>
+      <button style="width:100%;background-color:red" onclick="verifyLogin()">Login</button>
     </div>
   </div>
 </div>
@@ -271,7 +271,6 @@
             </div>
             <div>Number: 80</div>
             <div class="wave-graph" style="height:50px; background:#e0e0e0; margin-top:10px; border-radius:4px; display:flex; align-items:center; justify-content:center;">Wave Graph</div>
-            <!-- Canvas for Wave Graph -->
             <canvas id="waveGraphThisMonth" width="400" height="200"></canvas>
           </div>
           <!-- Last Year -->
@@ -282,12 +281,13 @@
             </div>
             <div>Number: 70</div>
             <div class="wave-graph" style="height:50px; background:#e0e0e0; margin-top:10px; border-radius:4px; display:flex; align-items:center; justify-content:center;">Wave Graph</div>
-            <!-- Canvas for Wave Graph -->
             <canvas id="waveGraphLastYear" width="400" height="200"></canvas>
           </div>
         </div>
-    <!-- Additional dashboard content omitted for brevity -->
-    <!-- ... your existing dashboard content ... -->
+        <!-- Additional content omitted for brevity -->
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ================== Admin Credential Popup ================== -->
@@ -323,18 +323,96 @@
   </div>
 </div>
 
-<!-- Your existing scripts -->
+<!-- ================== Driver Section ================== -->
+<div id="Driver" class="section" style="padding-top:70px;">
+  <h2 style="margin-left:20px;">Driver Info & Orders</h2>
+  <div style="padding:20px;">
+    <!-- Driver 1 -->
+    <div class="driver-profile" style="display:flex; margin-bottom:20px;">
+      <img src="https://via.placeholder.com/80" class="driver-img" alt="Driver" />
+      <div class="driver-info" style="margin-left:10px;">
+        <h4>John Doe</h4>
+        <div class="driver-details">
+          <p>Contact: 123-456-7890</p>
+          <p>Plate: ABC-1234</p>
+          <p>Email: john@example.com</p>
+          <p>Ratings: 4.5 &#9733;</p>
+          <p>Comments: Very punctual.</p>
+        </div>
+        <button class="hyperlink-red" onclick="showPastDeliveries('John Doe')">Past Deliveries</button>
+        <button class="hyperlink-red" onclick="showDocuments('John Doe')">View Documents</button>
+      </div>
+    </div>
+    <!-- Driver 2 -->
+    <div class="driver-profile" style="display:flex; margin-bottom:20px;">
+      <img src="https://via.placeholder.com/80" class="driver-img" alt="Driver" />
+      <div class="driver-info" style="margin-left:10px;">
+        <h4>Jane Smith</h4>
+        <div class="driver-details">
+          <p>Contact: 987-654-3210</p>
+          <p>Plate: XYZ-5678</p>
+          <p>Email: jane@example.com</p>
+          <p>Ratings: 4.8 &#9733;</p>
+          <p>Comments: Great driver.</p>
+        </div>
+        <button class="hyperlink-red" onclick="showPastDeliveries('Jane Smith')">Past Deliveries</button>
+        <button class="hyperlink-red" onclick="showDocuments('Jane Smith')">View Documents</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================== Vendor Section ================== -->
+<div id="Vendor" class="section" style="padding-top:70px;">
+  <h2 style="margin-left:20px;">Vendor Management</h2>
+  <div style="padding:20px;">
+    <button onclick="showVendors()">Show All Vendors</button>
+  </div>
+</div>
+
+<!-- ================== Role Info Popup ================== -->
+<div id="roleInfoPopup" class="modal" style="display:none;">
+  <div class="modal-box" style="width:90%; max-height:90%; overflow-y:auto;">
+    <h3>Role Information</h3>
+    <div id="roleInfoContent" style="margin-bottom:20px;">
+      <!-- Role details will be injected here -->
+    </div>
+    <button style="margin-top:10px; background:rgb(255, 0, 0); color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="sendNotification()">Send Email/Notification</button>
+    <button style="margin-top:10px; background:red; color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="closeRoleInfo()">Close</button>
+  </div>
+</div>
+
 <script>
-// ***************** Variables *****************
+  // ================== VARIABLES ==================
   let adminUsername = 'crunchtimeadmin';
-  let adminPassword = 'crunchtimeadmin'; // same as login
+  let adminPassword = 'crunchtimeadmin'; // Use the same credentials for login
   let isAuthenticated = false;
 
-  // ***************** Login Verification *****************
+  // ================== UTILITIES ==================
+  function sendSms(to, message) {
+    fetch('/notify/sms', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ to, message })
+    })
+    .then(res => res.json())
+    .then(data => { console.log('SMS sent:', data); })
+    .catch(err => { console.error('Error sending SMS:', err); });
+  }
+
+  function sendEmail(to, subject, body) {
+    alert(`Simulated Email to ${to}:\nSubject: ${subject}\n${body}`);
+  }
+
+  function sendNotification(to, message) {
+    alert(`Simulated Notification to ${to}:\n${message}`);
+  }
+
+  // ================== LOGIN & AUTH ==================
   function verifyLogin() {
     const u = document.getElementById('username').value.trim();
     const p = document.getElementById('password').value.trim();
-    if (u === adminUsername && p === adminPassword) {
+    if (u === 'crunchtimeadmin' && p === 'crunchtimeadmin') {
       alert('Login successful!');
       document.getElementById('loginModal').style.display='none';
       isAuthenticated = true;
@@ -344,40 +422,13 @@
     }
   }
 
-
-
-function sendSms(to, message) {
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to, message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('SMS sent:', data);
-  })
-  .catch(err => {
-    console.error('Error sending SMS:', err);
-  });
-}
-
-  // ================== UTILITY FUNCTIONS ==================
-  function sendEmail(to, subject, body) {
-    alert(`Simulated Email to ${to}:\nSubject: ${subject}\n${body}`);
-  }
-  function sendNotification(to, message) {
-    alert(`Simulated Notification to ${to}:\n${message}`);
-  }
-
-  // Show section
+  // ================== SHOW SECTION ==================
   function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.style.display='none');
     document.getElementById(id).style.display='block';
   }
 
-  // ================== Menu & Profile ==================
+  // ================== MENU & PROFILE ==================
   function toggleMenuDropdown() {
     const dd = document.getElementById('menuDropdown');
     dd.style.display = (dd.style.display==='block') ? 'none' : 'block';
@@ -387,7 +438,6 @@ function sendSms(to, message) {
       document.getElementById('menuDropdown').style.display='none';
     }
   });
-
   function triggerProfileImageUpload() { document.getElementById('profileImageInput').click(); }
   function updateProfileImage(e) {
     const file = e.target.files[0];
@@ -433,7 +483,7 @@ function sendSms(to, message) {
     }
   }
 
-  // ================== Filter & Dropdowns ==================
+  // ================== FILTER & DROPDOWN ==================
   function toggleFilterDropdown() {
     const el = document.getElementById('filterDropdown');
     el.style.display = (el.style.display==='block') ? 'none' : 'block';
@@ -452,18 +502,107 @@ function sendSms(to, message) {
     document.getElementById('yearOptions').style.display='none';
   }
 
-  // ================== Chart Initialization ==================
+  // ================== CHARTS ==================
   function initCharts() {
-    // Your chart code here (unchanged)
+    const ctxWaveThisMonth = document.getElementById('waveGraphThisMonth').getContext('2d');
+    new Chart(ctxWaveThisMonth, {
+      type:'line',
+      data:{
+        labels:['JAN','FEB','MAR','APR ','MAY ','JUN ','JUL ','AUG ','SEP ','OCT ','NOV ','DEC '],
+        datasets:[
+          {
+            label:'This Month Data',
+            data:[20,10,30,50,40,60,70,100,40,90],
+            backgroundColor:'rgba(255,159,64,0.2)',
+            borderColor:'rgba(255,159,64,1)',
+            borderWidth:2,
+            tension:0.4,
+            fill:true,
+          },
+          {
+            label:'Tracking Sales',
+            data:[25,15,35,55,45,65,75,110,50,100],
+            backgroundColor:'rgba(75,192,192,0.2)',
+            borderColor:'rgba(75,192,192,1)',
+            borderWidth:2,
+            tension:0.4,
+            fill:true,
+          },
+          {
+            label:'Menu Items',
+            data:[30,20,40,60,50,70,80,120,60,110],
+            backgroundColor:'rgba(153,102,255,0.2)',
+            borderColor:'rgba(153,102,255,1)',
+            borderWidth:2,
+            tension:0.4,
+            fill:true,
+          }
+        ]
+      },
+      options:{ responsive:true, plugins:{ legend:{ display:true } } }
+    });
+    const ctxWaveLastYear = document.getElementById('waveGraphLastYear').getContext('2d');
+    new Chart(ctxWaveLastYear, {
+      type:'line',
+      data:{
+        labels:['JAN','FEB','MAR','APR ','MAY ','JUN ','JUL ','AUG ','SEP ','OCT ','NOV ','DEC '],
+        datasets:[
+          {
+            label:'Last Year Data',
+            data:[20,10,30,50,40,60,70,100,20,50],
+            backgroundColor:'rgba(153,102,255,0.2)',
+            borderColor:'rgba(153,102,255,1)',
+            borderWidth:2,
+            tension:0.4,
+            fill:true,
+          },
+          {
+            label:'Tracking Sales',
+            data:[22,12,32,52,42,62,72,102,22,52],
+            backgroundColor:'rgba(255,99,132,0.2)',
+            borderColor:'rgba(255,99,132,1)',
+            borderWidth:2,
+            tension:0.4,
+            fill:true,
+          },
+          {
+            label:'Menu Items',
+            data:[28,18,38,58,48,68,78,118,28,58],
+            backgroundColor:'rgba(54,162,235,0.2)',
+            borderColor:'rgba(54,162,235,1)',
+            borderWidth:2,
+            tension:0.4,
+            fill:true,
+          }
+        ]
+      },
+      options:{ responsive:true, plugins:{ legend:{ display:true } } }
+    });
+    drawCircleGraph();
+  }
+  function drawCircleGraph() {
+    const ctx = document.getElementById('circleChart').getContext('2d');
+    new Chart(ctx, {
+      type:'doughnut',
+      data:{
+        labels:['Fast Food','Asian','Pasta','Mexican','Turkish','Desserts'],
+        datasets:[{
+          label:'Food Types',
+          data:[40,20,15,10,5,10],
+          backgroundColor:['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40'],
+          hoverOffset:4
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{ legend:{ position:'bottom' } }
+      }
+    });
   }
 
-  // ================== Role Popup Functions ==================
-  function showRolePopup() {
-    document.getElementById('rolePopup').style.display='flex';
-  }
-  function closeRolePopup() {
-    document.getElementById('rolePopup').style.display='none';
-  }
+  // ================== Role Popup ==================
+  function showRolePopup() { document.getElementById('rolePopup').style.display='flex'; }
+  function closeRolePopup() { document.getElementById('rolePopup').style.display='none'; }
   let currentRoleEmail='';
   let currentRoleType='';
   function viewRoleInfo(roleType, email) {
@@ -473,33 +612,28 @@ function sendSms(to, message) {
       <p>Role: ${roleType}</p>
       <p>Status: Active</p>
     `;
-    window.currentRoleEmail=email;
-    window.currentRoleType=roleType;
+    currentRoleEmail=email;
+    currentRoleType=roleType;
     showRoleInfo();
   }
   function deleteRole(roleType, email) {
     alert(`Are you sure you want to delete ${roleType} account: ${email}?`);
   }
-  function showRoleInfo() {
-    document.getElementById('roleInfoPopup').style.display='flex';
-  }
-  function closeRoleInfo() {
-    document.getElementById('roleInfoPopup').style.display='none';
-  }
+  function showRoleInfo() { document.getElementById('roleInfoPopup').style.display='flex'; }
+  function closeRoleInfo() { document.getElementById('roleInfoPopup').style.display='none'; }
   function sendNotification() {
-    if (window.currentRoleEmail) {
-      sendEmail(window.currentRoleEmail, 'Notification from Admin', 'You have a new notification from admin.');
+    if (currentRoleEmail) {
+      sendEmail(currentRoleEmail, 'Notification from Admin', 'You have a new notification from admin.');
     }
   }
 
-  // ================== Driver & Vendor Functions ==================
+  // ================== Driver & Vendor functions ==================
   function showVendors() { alert('Display all vendors with accept/reject options and history.'); }
   function showPastDeliveries(driverName) { alert('Showing past deliveries for ' + driverName); }
   function showDocuments(driverName) { alert('Showing documents for ' + driverName); }
 
-  // ================== Misc ==================
-  // Initialize charts on load
-   window.onload = () => {
+  // ================== Onload ==================
+  window.onload = () => {
     if (!isAuthenticated) {
       document.getElementById('loginModal').style.display='flex';
     } else {
