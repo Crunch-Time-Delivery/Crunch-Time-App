@@ -6,6 +6,7 @@ describe('Admin Dashboard', () => {
     // Set up the DOM with your HTML code
     document.body.innerHTML = `
       <div id="root"></div>
+      
       <!-- Insert your full HTML code here or assume the DOM is already set up -->
     `;
   });
