@@ -64,7 +64,7 @@
   .btn-primary { background:#4CAF50; color:#fff; }
   .btn-primary:hover { background:#45a049; }
 
-  /* Modal overlays for login, admin update, role view, role info popup */
+  /* Modal overlays for login, admin update, role view */
   .modal {
     display: flex; align-items: center; justify-content: center;
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -82,7 +82,20 @@
     display: none; position: absolute; top: 100%; left: 0; background: #fff; border: 1px solid #ccc; padding: 10px; z-index: 1002; width: 200px;
   }
   #filterDropdown button {
-    display: block; width: 100%; padding: 8px; border: none; background: none; cursor:pointer; text-align: left;
+    display: block; width: 100%; padding: 8px; border: none; background: none; cursor: pointer; text-align: left;
+  }
+
+  /* Chart container styles */
+  .chart-container {
+    display: flex; flex-direction: column; align-items: center; margin-top: 20px;
+  }
+  canvas {
+    max-width: 400px; margin: 20px 0;
+  }
+
+  /* Role Buttons */
+  .role-buttons {
+    display: flex; gap: 10px;
   }
 </style>
 </head>
@@ -99,7 +112,8 @@
       <input type="text" id="username" placeholder="Username" style="width:100%; margin-bottom:10px; padding:8px;"/>
       <label>Password</label>
       <input type="password" id="password" placeholder="Password" style="width:100%; margin-bottom:10px; padding:8px;"/>
-      <button style="width:100%;background-color:red" onclick="verifyLogin()">Login</button>
+      <button  style="width:100%;background-color:red" onclick="verifyLogin()">Login</button>
+    
     </div>
   </div>
 </div>
@@ -107,7 +121,7 @@
 <!-- ================== Admin Credential Popup ================== -->
 <div id="adminPopup" class="modal" style="display:none;">
   <div class="modal-box" style="width:400px;">
-    <img src="Screenshot (254).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+     <img src="Screenshot (254).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
     <h3>Admin Update</h3>
     <div>
       <label>Change Username:</label>
@@ -271,6 +285,7 @@
             </div>
             <div>Number: 80</div>
             <div class="wave-graph" style="height:50px; background:#e0e0e0; margin-top:10px; border-radius:4px; display:flex; align-items:center; justify-content:center;">Wave Graph</div>
+            <!-- Canvas for Wave Graph -->
             <canvas id="waveGraphThisMonth" width="400" height="200"></canvas>
           </div>
           <!-- Last Year -->
@@ -281,45 +296,217 @@
             </div>
             <div>Number: 70</div>
             <div class="wave-graph" style="height:50px; background:#e0e0e0; margin-top:10px; border-radius:4px; display:flex; align-items:center; justify-content:center;">Wave Graph</div>
+            <!-- Canvas for Wave Graph -->
             <canvas id="waveGraphLastYear" width="400" height="200"></canvas>
           </div>
         </div>
-        <!-- Additional content omitted for brevity -->
+    <!-- Four rows with icons and labels below the graphs -->
+<div style="margin-top:30px; display:flex; flex-direction:column; gap:15px; padding:0 20px;">
+ 
+  
+<div style="margin-top:30px; display:flex; flex-direction:column; gap:15px; padding:0 20px;">
+  <!-- Total orders complete display   -->
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div style="font-size:24px;">
+      <img src="Screenshot (262).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+    </div>
+    <div style="font-weight:bold;">Total orders complete </div>
+    <div style="margin-left:auto;">2687</div>
+  </div>
+  <!-- Total orders delivered display   -->
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div style="font-size:24px;">
+      <img src="Screenshot (262).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+    </div>
+    <div style="font-weight:bold;">Total orders delivered</div>
+    <div style="margin-left:auto;">1784</div>
+  </div>
+  <!-- Total orders canceled display  --> 
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div style="font-size:24px;">
+      <img src="Screenshot (261).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+    </div>
+    <div style="font-weight:bold;">Total orders canceled</div>
+    <div style="margin-left:auto;">86</div>
+  </div>
+  <!-- Orders pending display   -->
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div style="font-size:24px;">
+      <img src="Screenshot (260).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+    </div>
+    <div style="font-weight:bold;">Orders pending</div>
+    <div style="margin-left:auto;">467</div>
+  </div>
+</div>
+
+<!-- Popular Food -->
+<div class="popular-food" style="margin-top:30px;">
+  <!-- Header above the canvas -->
+  <div class="food-header" style="font-size:20px; font-weight:bold; margin-bottom:5px;">Popular Food</div>
+  
+  <!-- Canvas below the header -->
+  <canvas id="circleChart" width="400" height="400"></canvas>
+  
+  <!-- Food Types -->
+  <div class="food-types" style="display:flex; flex-wrap:wrap; gap:15px; margin-top:10px;">
+    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF6384;"></div>
+      <div>Fast Food - 40%</div>
+    </div>
+    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#36A2EB;"></div>
+      <div>Asian - 20%</div>
+    </div>
+    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FFCE56;"></div>
+      <div>Pasta - 15%</div>
+    </div>
+    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#4BC0C0;"></div>
+      <div>Mexican - 10%</div>
+    </div>
+    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#9966FF;"></div>
+      <div>Turkish - 5%</div>
+    </div>
+    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF9F40;"></div>
+      <div>Desserts - 10%</div>
+    </div>
+  </div>
+</div>
+  <!-- Order Delivered Bar -->
+  <div style="margin-top:20px; font-weight:bold;">Order Delivered</div>
+  <div style="margin-top:10px;">
+    <!-- Each food type bar -->
+    <div style="margin-bottom:8px;">
+      <div style="display:flex; justify-content:space-between;">
+        <div>Fast Food</div><div>40%</div>
+      </div>
+      <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+        <div style="width:40%; height:10px; background:#FF6384;"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px;">
+      <div style="display:flex; justify-content:space-between;">
+        <div>Asian</div><div>20%</div>
+      </div>
+      <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+        <div style="width:20%; height:10px; background:#36A2EB;"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px;">
+      <div style="display:flex; justify-content:space-between;">
+        <div>Pasta</div><div>15%</div>
+      </div>
+      <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+        <div style="width:15%; height:10px; background:#FFCE56;"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px;">
+      <div style="display:flex; justify-content:space-between;">
+        <div>Mexican</div><div>10%</div>
+      </div>
+      <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+        <div style="width:10%; height:10px; background:#4BC0C0;"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px;">
+      <div style="display:flex; justify-content:space-between;">
+        <div>Turkish</div><div>5%</div>
+      </div>
+      <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+        <div style="width:5%; height:10px; background:#9966FF;"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px;">
+      <div style="display:flex; justify-content:space-between;">
+        <div>Desserts</div><div>10%</div>
+      </div>
+      <div class="linear-bar" style="background:#ddd; height:10px; border-radius:5px; overflow:hidden;">
+        <div style="width:10%; height:10px; background:#FF9F40;"></div>
       </div>
     </div>
   </div>
 </div>
-
-<!-- ================== Admin Credential Popup ================== -->
-<div id="adminPopup" class="modal" style="display:none;">
-  <div class="modal-box" style="width:400px;">
-     <img src="Screenshot (254).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
-    <h3>Admin Update</h3>
-    <div>
-      <label>Change Username:</label>
-      <input type="text" id="newUsername" style="width:100%; margin-bottom:10px;"/>
+      
+      <!-- View Select Role Button -->
+      <div style="margin:30px 20px;">
+        <button style="background:red; color:#fff; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;" onclick="showRolePopup()">View Select Role</button>
+      </div>
+      
+      <!-- Role Management Popup -->
+      <div id="rolePopup" class="modal" style="display:none; flex-direction:column;">
+        <div class="modal-box" style="width:90%; max-height:90%; overflow-y:auto;">
+          <h3>Role Management</h3>
+          <!-- User, Vendor, Driver Tables -->
+          <h4>User Accounts</h4>
+          <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
+            <thead><tr><th>Email</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>user1@gmail.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('User', 'user1@example.com')">View</button>
+                  <button onclick="deleteRole('User', 'user1@example.com')">Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <td>user2@gmail.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('User', 'user2@example.com')">View</button>
+                  <button onclick="deleteRole('User', 'user2@example.com')">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <h4>Vendor Accounts</h4>
+          <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
+            <thead><tr><th>Email</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>vendor1@gmail.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('Vendor', 'vendor1@example.com')">View</button>
+                  <button onclick="deleteRole('Vendor', 'vendor1@example.com')">Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <td>vendor2@gmail.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('Vendor', 'vendor2@example.com')">View</button>
+                  <button onclick="deleteRole('Vendor', 'vendor2@example.com')">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <h4>Driver Accounts</h4>
+          <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
+            <thead><tr><th>Email</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>driver1@gmail.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('Driver', 'driver1@example.com')">View</button>
+                  <button onclick="deleteRole('Driver', 'driver1@example.com')">Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <td>driver2@gmail.com</td>
+                <td class="role-buttons">
+                  <button onclick="viewRoleInfo('Driver', 'driver2@example.com')">View</button>
+                  <button onclick="deleteRole('Driver', 'driver2@example.com')">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <button style="margin-top:15px; background:red; color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="closeRolePopup()">Close</button>
+        </div>
+      </div>
     </div>
-    <div>
-      <label>Change Password:</label>
-      <input type="password" id="newPassword" style="width:100%; margin-bottom:10px;"/>
-    </div>
-    <button onclick="saveAdminCredentials()">Save Credentials</button>
-    <hr style="margin:10px 0;"/>
-    <h4>Add New Admin</h4>
-    <div>
-      <label>Email:</label>
-      <input type="email" id="newAdminEmail" style="width:100%; margin-bottom:10px;"/>
-    </div>
-    <div>
-      <label>Username:</label>
-      <input type="text" id="newAdminUsername" style="width:100%; margin-bottom:10px;"/>
-    </div>
-    <div>
-      <label>Password:</label>
-      <input type="password" id="newAdminPassword" style="width:100%; margin-bottom:10px;"/>
-    </div>
-    <button onclick="addNewAdmin()">Add Admin</button>
-    <button style="margin-top:10px; background:red; color:#fff; width:100%;" onclick="closeAdminPopup()">Close</button>
   </div>
 </div>
 
@@ -335,7 +522,7 @@
         <div class="driver-details">
           <p>Contact: 123-456-7890</p>
           <p>Plate: ABC-1234</p>
-          <p>Email: john@example.com</p>
+          <p>Email: john@gmail.com</p>
           <p>Ratings: 4.5 &#9733;</p>
           <p>Comments: Very punctual.</p>
         </div>
@@ -351,7 +538,7 @@
         <div class="driver-details">
           <p>Contact: 987-654-3210</p>
           <p>Plate: XYZ-5678</p>
-          <p>Email: jane@example.com</p>
+          <p>Email: jane@gmail.com</p>
           <p>Ratings: 4.8 &#9733;</p>
           <p>Comments: Great driver.</p>
         </div>
@@ -375,35 +562,24 @@
   <div class="modal-box" style="width:90%; max-height:90%; overflow-y:auto;">
     <h3>Role Information</h3>
     <div id="roleInfoContent" style="margin-bottom:20px;">
-      <!-- Role details will be injected here -->
+      <!-- Role details inserted here -->
     </div>
     <button style="margin-top:10px; background:rgb(255, 0, 0); color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="sendNotification()">Send Email/Notification</button>
     <button style="margin-top:10px; background:red; color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="closeRoleInfo()">Close</button>
   </div>
 </div>
-
+<script src="supabaseClient.js" async></script> 
 <script>
-  // ================== VARIABLES ==================
+  // ================== INITIAL VARIABLES ==================
   let adminUsername = 'crunchtimeadmin';
-  let adminPassword = 'crunchtimeadmin'; // Use the same credentials for login
+  let adminPassword = 'crunchtimeadmin';
+
   let isAuthenticated = false;
 
-  // ================== UTILITIES ==================
-  function sendSms(to, message) {
-    fetch('/notify/sms', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ to, message })
-    })
-    .then(res => res.json())
-    .then(data => { console.log('SMS sent:', data); })
-    .catch(err => { console.error('Error sending SMS:', err); });
-  }
-
+  // ================== UTILITY FUNCTIONS ==================
   function sendEmail(to, subject, body) {
     alert(`Simulated Email to ${to}:\nSubject: ${subject}\n${body}`);
   }
-
   function sendNotification(to, message) {
     alert(`Simulated Notification to ${to}:\n${message}`);
   }
@@ -412,23 +588,23 @@
   function verifyLogin() {
     const u = document.getElementById('username').value.trim();
     const p = document.getElementById('password').value.trim();
-    if (u === 'crunchtimeadmin' && p === 'crunchtimeadmin') {
+    if (u===adminUsername && p===adminPassword) {
       alert('Login successful!');
       document.getElementById('loginModal').style.display='none';
       isAuthenticated = true;
-      showSection('dashboard');
+      showAdminPopup(); // Show admin update popup after login
     } else {
       alert('Invalid credentials.');
     }
   }
 
-  // ================== SHOW SECTION ==================
+  // Show section
   function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.style.display='none');
     document.getElementById(id).style.display='block';
   }
 
-  // ================== MENU & PROFILE ==================
+  // ================== Menu & Profile ==================
   function toggleMenuDropdown() {
     const dd = document.getElementById('menuDropdown');
     dd.style.display = (dd.style.display==='block') ? 'none' : 'block';
@@ -438,6 +614,7 @@
       document.getElementById('menuDropdown').style.display='none';
     }
   });
+
   function triggerProfileImageUpload() { document.getElementById('profileImageInput').click(); }
   function updateProfileImage(e) {
     const file = e.target.files[0];
@@ -483,7 +660,7 @@
     }
   }
 
-  // ================== FILTER & DROPDOWN ==================
+  // ================== Filter & Dropdowns ==================
   function toggleFilterDropdown() {
     const el = document.getElementById('filterDropdown');
     el.style.display = (el.style.display==='block') ? 'none' : 'block';
@@ -502,8 +679,9 @@
     document.getElementById('yearOptions').style.display='none';
   }
 
-  // ================== CHARTS ==================
+  // ================== Chart Initialization ==================
   function initCharts() {
+    // Wave Graphs
     const ctxWaveThisMonth = document.getElementById('waveGraphThisMonth').getContext('2d');
     new Chart(ctxWaveThisMonth, {
       type:'line',
@@ -541,6 +719,7 @@
       },
       options:{ responsive:true, plugins:{ legend:{ display:true } } }
     });
+    // Last Year Wave Graph
     const ctxWaveLastYear = document.getElementById('waveGraphLastYear').getContext('2d');
     new Chart(ctxWaveLastYear, {
       type:'line',
@@ -578,8 +757,10 @@
       },
       options:{ responsive:true, plugins:{ legend:{ display:true } } }
     });
+    // Draw circle graph
     drawCircleGraph();
   }
+
   function drawCircleGraph() {
     const ctx = document.getElementById('circleChart').getContext('2d');
     new Chart(ctx, {
@@ -600,9 +781,13 @@
     });
   }
 
-  // ================== Role Popup ==================
-  function showRolePopup() { document.getElementById('rolePopup').style.display='flex'; }
-  function closeRolePopup() { document.getElementById('rolePopup').style.display='none'; }
+  // ================== Role Popup Functions ==================
+  function showRolePopup() {
+    document.getElementById('rolePopup').style.display='flex';
+  }
+  function closeRolePopup() {
+    document.getElementById('rolePopup').style.display='none';
+  }
   let currentRoleEmail='';
   let currentRoleType='';
   function viewRoleInfo(roleType, email) {
@@ -612,27 +797,32 @@
       <p>Role: ${roleType}</p>
       <p>Status: Active</p>
     `;
-    currentRoleEmail=email;
-    currentRoleType=roleType;
+    window.currentRoleEmail=email;
+    window.currentRoleType=roleType;
     showRoleInfo();
   }
   function deleteRole(roleType, email) {
     alert(`Are you sure you want to delete ${roleType} account: ${email}?`);
   }
-  function showRoleInfo() { document.getElementById('roleInfoPopup').style.display='flex'; }
-  function closeRoleInfo() { document.getElementById('roleInfoPopup').style.display='none'; }
+  function showRoleInfo() {
+    document.getElementById('roleInfoPopup').style.display='flex';
+  }
+  function closeRoleInfo() {
+    document.getElementById('roleInfoPopup').style.display='none';
+  }
   function sendNotification() {
-    if (currentRoleEmail) {
-      sendEmail(currentRoleEmail, 'Notification from Admin', 'You have a new notification from admin.');
+    if (window.currentRoleEmail) {
+      sendEmail(window.currentRoleEmail, 'Notification from Admin', 'You have a new notification from admin.');
     }
   }
 
-  // ================== Driver & Vendor functions ==================
+  // ================== Driver & Vendor Functions ==================
   function showVendors() { alert('Display all vendors with accept/reject options and history.'); }
   function showPastDeliveries(driverName) { alert('Showing past deliveries for ' + driverName); }
   function showDocuments(driverName) { alert('Showing documents for ' + driverName); }
 
-  // ================== Onload ==================
+  // ================== Misc ==================
+  // Initialize charts on load
   window.onload = () => {
     if (!isAuthenticated) {
       document.getElementById('loginModal').style.display='flex';
@@ -641,6 +831,7 @@
     }
     initCharts();
   };
+
 </script>
 </body>
 </html>
