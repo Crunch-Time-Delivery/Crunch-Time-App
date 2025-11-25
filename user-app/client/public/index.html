@@ -312,7 +312,7 @@ button {
 <div class="restaurant-list" id="restaurantList">
   <!-- Sample restaurants -->
   <div class="restaurant-card" onclick="showMenu('KFC Parow')">
-    <img src="Images/RS KFC .jpeg" alt="KFC Parow" />
+    <img src="Images/RS KFC .jpeg" alt="KFC Parow" onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
     <div class="details">
       <div>KFC, Parow</div>
       <div class="rating">4.4 ★</div>
@@ -321,17 +321,17 @@ button {
     <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
   </div>
   <div class="restaurant-card" onclick="showMenu('Sannes Palace')">
-    <img src="Images/RS PALACE .jpg" alt="Sannes Palace" />
+    <img src="Images/RS PALACE .jpg" alt="Sannes Palace" onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
     <div class="details">
       <div>Sannes Palace</div>
       <div class="rating">4.5 ★</div>
-      <div class="promo">Spend ZAR 100, Save ZAR 15</div>
+      <div>Spend ZAR 100, Save ZAR 15</div>
       <div>20 min - 0.5 km</div>
     </div>
     <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
   </div>
   <div class="restaurant-card" onclick="showMenu('DK Spot & Kota')">
-    <img src="Images/RS KOTA .jpg" alt="DK Spot & Kota" />
+    <img src="Images/RS KOTA .jpg" alt="DK Spot & Kota" onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
     <div class="details">
       <div>DK Spot & Kota Restaurant</div>
       <div class="rating">4.0 ★</div>
@@ -340,7 +340,7 @@ button {
     <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
   </div>
   <div class="restaurant-card" onclick="showMenu('Nondyebo Eatery')">
-    <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery" />
+    <img src="Images/RS NONDYEBO.jpg" alt="Nondyebo Eatery" onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
     <div class="details">
       <div>Nondyebo Eatery</div>
       <div class="rating">3.3 ★</div>
@@ -350,148 +350,6 @@ button {
   </div>
 </div>
 
-<!-- Modal for Restaurant Menu -->
-<div id="menuModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="closeModal()">&times;</span>
-    <img id="restaurantImage" src="" alt="Restaurant Image" />
-    <h2 id="restaurantName">Restaurant Menu</h2>
-    <div id="menuItems"></div>
-    <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
-  </div>
-</div>
-
-<!-- Food Opinion Modal -->
-<div id="foodOpinionModal" class="modal">
-  <div class="modal-content" style="max-width:400px;">
-    <span class="close-btn" onclick="closeFoodOpinionModal()">&times;</span>
-    <h3>Tell us your preference</h3>
-    <select id="opinionChoice" style="width:100%; padding:8px;">
-      <option>No preference</option>
-      <option>Spicy</option>
-      <option>Less Salt</option>
-      <option>Extra cheese</option>
-      <option>No onions</option>
-      <option>Less Sugar</option>
-      <option>Extra Ice</option>
-    </select>
-    <div style="margin-top:20px; display:flex; justify-content:center;">
-      <button class="add-more-btn" onclick="confirmFoodOpinion()">Next</button>
-    </div>
-  </div>
-</div>
-
-<!-- Food Item Modal -->
-<div id="foodModal" class="food-modal">
-  <div class="food-modal-content">
-    <span class="food-close-btn" onclick="closeFoodModal()">&times;</span>
-    <h3 id="foodItemName">Food Item</h3>
-    <div style="display:flex; align-items:center; justify-content:space-around; margin-top:10px;">
-      <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
-      <span id="foodQuantity">1</span>
-      <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
-    </div>
-    <div style="margin-top:20px; display:flex; justify-content:center;">
-      <button class="add-more-btn" onclick="addItemToOrder()">Add to Order</button>
-      <button class="exit-btn" onclick="closeFoodModal()">Exit</button>
-    </div>
-  </div>
-</div>
-
-<!-- Order Summary -->
-<div id="orderSummary" style="padding:10px 20px; background:#fff; max-height:200px; overflow-y:auto; margin:10px;">
-  <h4 style="padding:10px; border:none; border-radius:5px; margin:9px auto 0; cursor:pointer; width:20%; font-weight:bold; display:block; text-align:center;">
-  Order Summary
-</h4>
-  <ul id="orderItems"></ul>
-  <!-- Buttons below order summary -->
-  <button id="checkoutBtn" style=" padding:10px; border:none; border-radius:5px; margin:9px auto 0; cursor:pointer; width:20%; font-weight:bold; display:block;" class="checkout-btn" onclick="goToCheckout()">Go to Checkout</button>
-  <button id="orderHistoryBtn" style="background-color:red; color:#fff;  padding:10px; border:none; border-radius:5px; margin:9px auto 0; cursor:pointer; width:20%; font-weight:bold; display:block;" onclick="showOrderHistory()">Order History</button>
-  <button id="voucherBtn" 
-        style="background-color:#f11111; color:#fff; padding:10px; border:none; border-radius:5px; margin:9px auto 0; cursor:pointer; width:20%; font-weight:bold; display:block;"
-        onclick="showVoucherInput()">
-  Input Voucher Coupon
-</button>
-</div>
-
-<!-- Checkout Page -->
-<div id="checkoutPage">
-  <h2>Checkout</h2>
-  <h3>Order Summary</h3>
-  <ul id="checkoutItems"></ul>
-  <h3>Total: <span id="totalAmount">R0</span></h3>
-  <!-- Red "Pay" button that triggers payment options popup -->
-  <button id="payNowButton" onclick="showPaymentMethodPage()">Pay</button>
-  <!-- Remove the Confirm EFT button here -->
-</div>
-
-<!-- Payment popup modal (for EFT, Card) -->
-<div id="paymentPopup" class="modal">
-  <div class="popup-content">
-    <h3>Select Payment Method</h3>
-    <div class="payment-options">
-      <div class="payment-option" onclick="selectPaymentMethod('Card')">
-        <div class="payment-icons">
-          <img src="https://img.icons8.com/color/48/000000/visa.png" alt="Visa" />
-          <img src="https://img.icons8.com/color/48/000000/mastercard-logo.png" alt="MasterCard" />
-          <img src="https://img.icons8.com/color/48/000000/amex.png" alt="Amex" />
-        </div>
-        <span style="margin-left:10px;">Pay by Card</span>
-      </div>
-      <div class="payment-option" onclick="selectPaymentMethod('EFT')">
-        <strong>EFT Bank Transfer</strong>
-      </div>
-    </div>
-    <div id="eftDetails" style="display:none; margin-top:15px;">
-      <h4>Banking Details</h4>
-      <p>Bank: ABC Bank</p>
-      <p>Account Number: 123456789</p>
-      <p>Branch Code: 000123</p>
-      <p>Account Name: CrunchTime</p>
-      <button style="margin-top:10px; padding:8px 12px; background:#007bff; color:#fff; border:none; border-radius:4px; cursor:pointer;" onclick="openBankDetailsInput()">Enter/Edit Banking Details</button>
-    </div>
-    <div class="popup-buttons" style="margin-top:20px;">
-      <button onclick="finalizePayment()">Pay Now</button>
-      <button onclick="closePaymentPopup()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Remove the AI Payment System popup modal entirely -->
-<!--
-<div id="aiPaymentSystem" class="modal">
-  <div class="popup-content" style="max-width:400px;">
-    <span class="close-btn" onclick="closeAIPaymentSystem()">&times;</span>
-    <h3>AI Payment System</h3>
-    <p>Processing your payment securely with AI assistance...</p>
-    <button style="width:100%; background:#28a745; color:#fff; padding:10px; border:none; border-radius:5px; margin-top:10px;" onclick="simulateAIPayment()">Pay Now</button>
-  </div>
-</div>
--->
-
-<!-- Exception Notification -->
-<div id="exceptionNotification" style="display:none; position:fixed; top:20px; right:20px; background:#f44336; color:#fff; padding:15px; border-radius:5px; z-index:2000;">
-  <strong>Payment Error:</strong> There was an issue processing your payment. Please try again.
-</div>
-
-<!-- Bank Details Input Popup -->
-<div id="bankDetailsInput" class="modal">
-  <div class="popup-content" style="max-width:400px;">
-    <span class="close-btn" onclick="closeBankDetails()">&times;</span>
-    <h3>Enter Banking Details</h3>
-    <form id="bankDetailsForm">
-      <label>Bank Name:</label><br>
-      <input type="text" id="bankName" style="width:100%; padding:8px;"><br><br>
-      <label>Account Number:</label><br>
-      <input type="text" id="accountNumber" style="width:100%; padding:8px;"><br><br>
-      <label>Branch Code:</label><br>
-      <input type="text" id="branchCode" style="width:100%; padding:8px;"><br><br>
-      <label>Account Name:</label><br>
-      <input type="text" id="accountName" style="width:100%; padding:8px;"><br><br>
-      <button type="button" style="width:100%; background:#28a745; color:#fff; padding:10px; border:none; border-radius:5px;" onclick="saveBankDetails()">Save Details</button>
-    </form>
-  </div>
-</div>
 
 <div id="notification" style="display:none; position:fixed; top:20px; width:100%; z-index:9999; text-align:center;">
   <div style="background-color:#4CAF50; color:white; padding:10px; display:inline-block; border-radius:4px;">
