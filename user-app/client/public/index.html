@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <style>
 /* --- Combined Styles --- */
+/* (Your existing styles here, omitted for brevity, assume they are unchanged) */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -350,7 +351,6 @@ button {
   </div>
 </div>
 
-
 <div id="notification" style="display:none; position:fixed; top:20px; width:100%; z-index:9999; text-align:center;">
   <div style="background-color:#4CAF50; color:white; padding:10px; display:inline-block; border-radius:4px;">
     Sending notification...
@@ -391,8 +391,6 @@ function sendTwilioNotification(to, message) {
   });
 }
 
-
-
 // Assuming you have an API endpoint at /notify/sms
 function sendSms(to, message) {
   fetch('/notify/sms', {
@@ -411,296 +409,20 @@ function sendSms(to, message) {
   });
 }
 
-/* =========================
-   GLOBAL VARIABLES
-========================= */
-let orderItems = [];
-let orderHistory = [];
-let discountAmount = 0;
-let selectedPaymentMethod = null;
-let bankDetails = {}; // Save bank details here
-
-/* =========================
-   Utility Functions
-========================= */
-function showModal(id) { document.getElementById(id).style.display='flex'; }
-function hideModal(id) { document.getElementById(id).style.display='none'; }
-
-// Show/Hide specific modals
-window.onclick = function(e) {
-  const modalIds=['menuModal','foodModal','orderHistoryModal','voucherModal','paymentPopup','bankDetailsInput'];
-  modalIds.forEach(id => {
-    if (e.target===document.getElementById(id)) hideModal(id);
-  });
-};
-
-/* =========================
-   Restaurant Menu Data & Functions
-========================= */
-const restaurantMenus={
-  'KFC Parow':[ {name:'Zinger Burger',price:'R50'}, {name:'Fries',price:'R20'}, {name:'Cola',price:'R15'} ],
-  'Sannes Palace':[ {name:'Chicken Curry',price:'R80'}, {name:'Veggie Plate',price:'R60'}, {name:'Lemonade',price:'R10'} ],
-  'DK Spot & Kota':[ {name:'Kota Special',price:'R25'}, {name:'Fries',price:'R20'}, {name:'Soda',price:'R15'} ],
-  'Nondyebo Eatery':[ {name:'Wrap',price:'R40'}, {name:'Salad',price:'R35'}, {name:'Juice',price:'R12'} ]
-};
-
-/* =========================
-   Show/Hide Modals
-========================= */
-function showModal(id) { document.getElementById(id).style.display='flex'; }
-function hideModal(id) { document.getElementById(id).style.display='none'; }
-
-// Show Menu
+// Replace the showMenu function
 function showMenu(restName) {
-  currentRestaurant=restName;
-  document.getElementById('restaurantName').innerText=restName+' Menu';
-  const imgEl=document.getElementById('restaurantImage');
-  switch(restName){
-    case 'KFC Parow': imgEl.src='Images/RS KFC .jpeg'; break;
-    case 'Sannes Palace': imgEl.src='Images/RS PALACE .jpg'; break;
-    case 'DK Spot & Kota': imgEl.src='Images/RS KOTA .jpg'; break;
-    case 'Nondyebo Eatery': imgEl.src='Images/RS NONDYEBO.jpg'; break;
-    default: imgEl.src='';
-  }
-  const menuDiv=document.getElementById('menuItems');
-  menuDiv.innerHTML='';
-  (restaurantMenus[restName]||[]).forEach(itm => {
-    const div=document.createElement('div');
-    div.className='menu-item';
-    div.innerHTML=`<strong>${itm.name}</strong> - ${itm.price}`;
-    div.onclick=()=>{ openFoodOptionModal(itm); };
-    menuDiv.appendChild(div);
-  });
-  showModal('menuModal');
-}
-function closeModal() { hideModal('menuModal'); }
-function viewMap() {
-  let url='';
-  switch(currentRestaurant){
-    case 'KFC Parow': url='https://www.google.com/maps/search/?api=1&query=KFC+Parow'; break;
-    case 'Sannes Palace': url='https://www.google.com/maps/search/?api=1&query=Sannes+Palace'; break;
-    case 'DK Spot & Kota': url='https://www.google.com/maps/search/?api=1&query=DK+Spot+Kota'; break;
-    case 'Nondyebo Eatery': url='https://www.google.com/maps/search/?api=1&query=Nondyebo+Eatery'; break;
-    default: url='https://www.google.com/maps'; break;
-  }
-  window.open(url,'_blank');
-}
-function toggleFavorite(btn) {
-  if (btn.innerText==='♥') { btn.innerText='♡'; }
-  else { btn.innerText='♥'; }
+  const url = `restaurant_info.html?name=${encodeURIComponent(restName)}`;
+  window.location.href = url;
 }
 
-/* =========================
-   Food Option Selection
-========================= */
-function openFoodOptionModal(itm) {
-  pendingFoodItem=itm;
-  currentQty=1;
-  document.getElementById('opinionChoice').value='No preference';
-  showModal('foodOpinionModal');
-}
-function closeFoodOptionModal() { hideModal('foodOpinionModal'); }
-function confirmFoodOpinion() {
-  const opinion=document.getElementById('opinionChoice').value;
-  if(pendingFoodItem){
-    orderItems.push({name:pendingFoodItem.name, price:pendingFoodItem.price, quantity:currentQty, opinion: opinion});
-    updateOrderSummary();
-  }
-  closeFoodOptionModal();
-}
-
-/* =========================
-   Food Modal for adding items
-========================= */
-function openFoodModal(itm) {
-  pendingFoodItem = itm;
-  currentQty=1;
-  document.getElementById('foodItemName').innerText=itm.name;
-  document.getElementById('foodQuantity').innerText=currentQty;
-  showModal('foodModal');
-}
-function closeFoodModal() { hideModal('foodModal'); }
-function changeQuantity(delta) {
-  currentQty+=delta;
-  if(currentQty<1) currentQty=1;
-  document.getElementById('foodQuantity').innerText=currentQty;
-}
-function addItemToOrder() {
-  if(pendingFoodItem){
-    orderItems.push({name:pendingFoodItem.name, price:pendingFoodItem.price, quantity:currentQty});
-    updateOrderSummary();
-  }
-  closeFoodModal();
-}
-
-/* =========================
-   Update & Display Order
-========================= */
-function updateOrderSummary() {
-  const ul=document.getElementById('orderItems');
-  ul.innerHTML='';
-  orderItems.forEach((it,idx) => {
-    const li=document.createElement('li');
-    li.innerHTML=`${it.name} x${it.quantity} @ ${it.price}`;
-    const removeBtn=document.createElement('button');
-    removeBtn.innerText='Remove';
-    removeBtn.style.marginLeft='10px';
-    removeBtn.onclick=()=>{ orderItems.splice(idx,1); updateOrderSummary(); };
-    li.appendChild(removeBtn);
-    ul.appendChild(li);
-  });
-}
-
-function saveOrder() {
-  if (orderItems.length>0) {
-    orderHistory.push({restaurant:currentRestaurant, items:[...orderItems], date: new Date()});
-  }
-}
-
-/* =========================
-   Navigation & Checkout
-========================= */
-function goToCheckout() {
-  if (orderItems.length===0) { alert("Your cart is empty!"); return; }
-  saveOrder();
-  let total=0;
-  orderItems.forEach(i => {
-    const p=parseFloat(i.price.replace('R',''));
-    total+=p*i.quantity;
-  });
-  total-=discountAmount;
-  if (total<0) total=0;
-  document.getElementById('checkoutItems').innerHTML='';
-  orderItems.forEach(i => {
-    const li=document.createElement('li');
-    li.innerHTML=`${i.name} x${i.quantity} @ ${i.price}`;
-    if(i.opinion && i.opinion!=='No preference') {
-      li.innerHTML+=`<br>Pref: ${i.opinion}`;
-    }
-    document.getElementById('checkoutItems').appendChild(li);
-  });
-  document.getElementById('totalAmount').innerText=`R${total.toFixed(2)}`;
-  document.getElementById('checkoutPage').style.display='block';
-  document.getElementById('orderSummary').style.display='none';
-
-}
-
-// Remove the "Confirm EFT" button from checkout page
-function cancelCheckout() {
-  document.getElementById('checkoutPage').style.display='none';
-  document.getElementById('orderSummary').style.display='block';
-}
-
-// Show payment method selection page
-function showPaymentMethodPage() {
-  document.getElementById('paymentPopup').style.display='flex';
-}
-
-// Function to handle the final payment choice
-function finalizePayment() {
-  if (!selectedPaymentMethod) {
-    alert('Please select a payment method.');
-    return;
-  }
-  if (selectedPaymentMethod==='EFT') {
-    openBankDetailsInput();
-  } else if (selectedPaymentMethod==='Card') {
-    // No AI option anymore
-    alert('Please proceed with your card payment.');
-  }
-  closePaymentPopup();
-
-}
-
-// Show the main payment options popup
-function showPaymentPopup() {
-  // Validate cart
-  const totalText = document.getElementById('totalAmount').innerText;
-  const totalValue = parseFloat(totalText.replace('R',''));
-  if (totalValue <= 0) {
-    alert("Your cart is empty! Please add items before proceeding to payment.");
-    return;
-  }
-  selectedPaymentMethod=null;
-  document.getElementById('paymentPopup').style.display='flex';
-  document.getElementById('eftDetails').style.display='none';
-
-}
-
-// Close the payment popup
-function closePaymentPopup() {
-  document.getElementById('paymentPopup').style.display='none';
-}
-
-// Select payment method
-function selectPaymentMethod(method) {
-  selectedPaymentMethod=method;
-  if (method==='EFT') {
-    document.getElementById('eftDetails').style.display='block';
-  } else {
-    document.getElementById('eftDetails').style.display='none';
-  }
-  function openMapLocation(){
-     window.location.href='http://127.0.0.1:5500/user-app/search_location.html  ';
-  }
-
- 
-}
-
+// Placeholder functions for modal controls
+function closeModal() { /* Close the menu modal */ }
+function viewMap() { /* Show map location */ }
+function closeFoodOpinionModal() { /* Close opinion modal */ }
+function closeFoodModal() { /* Close food modal */ }
+function confirmFoodOpinion() { /* Handle opinion confirmation */ }
+function addItemToOrder() { /* Add item to order list */ }
 </script>
-<script src="client/public/functions/live-tracking.js"async></script>
-
- 
-<script src="client/public/functions/live-tracking.js" async></script> 
- <script  src="client/public/functions/mainTwilioFunction.js" async></script>
-<script  src="client/public/functions/map.js" async></script>
-<script src="client/public/functions/mapFunctions.js" async></script>
-<script src="client/public/functions/payfast.js" async></script>
-<script src="client/public/functions/pinpoint.js" async></script>
-<script src="client/public/functions/pinpoint.js" async></script>
-<script src="client/public/functions/pinpointConfig.js" async></script>
-<script src="client/public/functions/token.js" async></script>
-<script  src="client/public/functions/sendSMS.js" async></script>
-<script  src="client/public/functions/twilio_serverless_function.js" async></script>
-<script  src="client/public/functions/twilio.js" async></script>
-<script  src="client/public/functions/twilioService.js" async></script>
-
-<script  src="client/public/components/payfast.js" async></script>
-<script  src="client/public/components/PayfastCheckout.js" async></script>
-<script  src="client/public/components/real_time_data_fetching.js" async></script>
-<script   src="client/public/components/createPayFastPayment.js" async></script>
-
-<script  src="client/public/hooks/useAuth.js" async></script>
-<script  src="client/public/hooks/useDebounce.js" async></script>
-<script  src="client/public/hooks/useFetch.js" async></script>
-<script  src="client/public/hooks/LocalStorage.js" async></script>
-
-<script  src="client/public/pages/capture_location.jsx" async></script>
-<script  src="client/public/pages/CheckoutPage.js" async></script>
-<script  src="client/public/pages/driver_map_change.jsx" async></script>
-<script src="client/public/pages/DriverHistoryPayment.jsx" async></script>
-<script  src="client/public/pages/driverlogin.jsx" async></script>
-<script  src="client/public/pages/DriverMap.jsx" async></script>
-<script  src="client/public/pages/DriverProfile.jsx" async></script>
-<script  src="client/public/pages/DriverViewAccount.jsx" async></script>
-<script  src="client/public/pages/forgotpassword.jsx" async></script>
-<script  src="client/public/pages/OrderView.jsx" async></script>
-<script  src="client/public/pages/registerdriver.jsx" async></script>
-
-<script  src="server/supabase/env.local" async></script>
-<script  src="server/supabase/supabaseClient.js" async></script>
-
-<script  src="server/.env.client" async></script>update
-<script  src="server/api.client.js" async></script>
-<script  src="server/map.js" async></script>
-<script  src="server/maps.client.js" async></script>
-<script  src="server/notification.client.js" async></script>
-<script  src="server/payfast.client.js" async></script>
- <script src="server/twilioNotifiaction.js" async></script>
-<script src="server/routes.js" async></script>
-<script src="server/server.js" async></script>
-
-
-<script  src="utils/payfastAPI.js" async></script>
+<script src="server/supabase/supabaseClient.js"async></script>
 </body>
 </html>

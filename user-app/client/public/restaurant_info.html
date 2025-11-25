@@ -9,14 +9,13 @@
 </head>
 <body>
 
-<!-- Your restaurant info content here -->
 <h1>Restaurant Details</h1>
 
 <!-- Modal for Restaurant Menu -->
 <div id="menuModal" class="modal">
   <div class="modal-content">
     <span class="close-btn" onclick="closeModal()">&times;</span>
-    <img id="restaurantImage" rc="Images/RS KOTA .jpg" alt="DK Spot & Kota"  />
+    <img id="restaurantImage" src="" alt="Restaurant Image" />
     <h2 id="restaurantName">Restaurant Menu</h2>
     <div id="menuItems"></div>
     <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
@@ -83,71 +82,46 @@
 </div>
 
 <script>
-function showNotificationMessage(message, color='#4CAF50') {
-  const notif = document.getElementById('notification');
-  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
-  notif.style.display = 'block';
-
-  // Hide after 3 seconds
-  setTimeout(() => {
-    notif.style.display = 'none';
-  }, 3000);
-}
-
-function sendTwilioNotification(to, message) {
-  // Show sending message
-  showNotificationMessage('Sending notification...');
-  
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to: to, message: message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      showNotificationMessage('Notification sent successfully!', '#4CAF50');
-    } else {
-      showNotificationMessage('Failed to send notification.', '#f44336');
+function getQueryParams() {
+  const params = {};
+  window.location.search.substring(1).split('&').forEach(pair => {
+    if (pair) {
+      const [key, value] = pair.split('=');
+      params[decodeURIComponent(key)] = decodeURIComponent(value || '');
     }
-  })
-  .catch(() => {
-    showNotificationMessage('Error sending notification.', '#f44336');
   });
+  return params;
 }
 
+window.onload = () => {
+  const params = getQueryParams();
+  const restName = params['name'];
+  const imageMap = {
+    'KFC Parow': 'Images/RS KFC .jpeg',
+    'Sannes Palace': 'Images/RS PALACE .jpg',
+    'DK Spot & Kota': 'Images/RS KOTA .jpg',
+    'Nondyebo Eatery': 'Images/RS NONDYEBO.jpg'
+  };
 
+  if (restName && imageMap[restName]) {
+    document.getElementById('restaurantImage').src = imageMap[restName];
+    document.getElementById('restaurantName').innerText = restName + ' Menu';
+  } else {
+    // fallback if no match
+    document.getElementById('restaurantImage').src = '';
+    document.getElementById('restaurantName').innerText = 'Restaurant Details';
+  }
+};
 
-// Assuming you have an API endpoint at /notify/sms
-function sendSms(to, message) {
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to, message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('SMS sent:', data);
-  })
-  .catch(err => {
-    console.error('Error sending SMS:', err);
-  });
-}
-
-
-  // Placeholder functions for modal controls
-  function closeModal() { /* Close the menu modal */ }
-  function viewMap() { /* Show map location */ }
-  function closeFoodOpinionModal() { /* Close opinion modal */ }
-  function closeFoodModal() { /* Close food modal */ }
-  function confirmFoodOpinion() { /* Handle opinion confirmation */ }
-  function addItemToOrder() { /* Add item to order list */ }
+// Placeholder functions for modal controls
+function closeModal() { /* Close the menu modal */ }
+function viewMap() { /* Show map location */ }
+function closeFoodOpinionModal() { /* Close opinion modal */ }
+function closeFoodModal() { /* Close food modal */ }
+function confirmFoodOpinion() { /* Handle opinion confirmation */ }
+function addItemToOrder() { /* Add item to order list */ }
 </script>
 <script src="server/supabase/supabaseClient.js"async></script>
 
 </body>
 </html>
-
-
