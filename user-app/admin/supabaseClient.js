@@ -14,8 +14,13 @@ async function fetchAdmin() {
       password,
       Change_Username,
       Change_Password,
-      "New Admin_Email",
-      "New Admin_Username"
+    New Admin_Email,
+      New Admin_Username,
+      income_amount,
+      expense_amount,
+      withdraw_amount,
+      total_income_amount,
+      order_tota_amount
     `)
 
   if (error) {
