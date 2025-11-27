@@ -90,6 +90,7 @@
     // Check if email already exists
     if (users.some(user => user.email === email)) {
       alert('Email already registered.');
+       window.location.href = 'http://127.0.0.1:5501/vendor-app/client/public/Login/loginVendor.html';
       return;
     }
 
@@ -98,7 +99,7 @@
     localStorage.setItem('users', JSON.stringify(users));
 
     // Redirect to login page after successful registration
-    window.location.href = 'http://127.0.0.1:5500/vendor-app/loginVendor.html';
+    window.location.href = 'http://127.0.0.1:5501/vendor-app/client/public/Login/loginVendor.html';
   }
 </script>
 
