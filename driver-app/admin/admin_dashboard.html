@@ -101,6 +101,15 @@
   .percentage-change {
     font-size: 14px; margin-left: 10px;
   }
+  .chart-container {
+  padding: 320px; /* Adds 20px of padding on all sides */
+  /* Or specify individual sides: */
+  /* padding-top: 10px; */
+  /* padding-right: 20px; */
+  /* padding-bottom: 10px; */
+  /* padding-left: 20px; */
+}
+
 </style>
 </head>
 <body>
@@ -356,11 +365,12 @@
   <!-- Header above the canvas -->
   <div class="food-header" style="font-size:20px; font-weight:bold; margin-bottom:5px;">Popular Food</div>
   
-  <!-- Canvas below the header -->
+<div class="chart-container">
   <canvas id="circleChart" width="400" height="400"></canvas>
-  
+</div>
+
   <!-- Food Types -->
-  <div class="food-types" style="display:flex; flex-wrap:wrap; gap:15px; margin-top:10px;">
+  <div class="food-types" style="display:flex; flex-wrap:wrap; gap:15px; margin-top:10px">
     <div class="food-item" style="display:flex; align-items:center; gap:10px;">
       <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF6384;"></div>
       <div>Fast Food - 40%</div>
