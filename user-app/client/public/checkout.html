@@ -404,7 +404,7 @@ function openForm() {
 
     try {
       // Call your backend API or Supabase Function
-      const response = await fetch('/api/send-voucher', {
+      const data = onload ('/api/send-voucher', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -412,8 +412,15 @@ function openForm() {
         body: JSON.stringify({ email: email, voucherCode: 'DISCOUNT10' }) // Your voucher code here
       });
 
-      const result = await response.json();
-
+   fetch('your-url-here')
+  .then(response => response.json())
+  .then(result => {
+    // do something with result
+  })
+  .catch(error => {
+    // handle error
+  });
+  
       if (response.ok) {
         statusDiv.innerText = 'Voucher email sent successfully!';
       } else {
@@ -424,7 +431,7 @@ function openForm() {
     }
   }
 
-}
+
 function closeForm() {
   document.getElementById("myForm").style.display = "none";
 }
