@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Loading Screen</title>
+<style>
+  
+</style>
+</head>
+<body>
+
+<header>
+
+</header>
+
+
+<script>
+function showNotificationMessage(message, color='#4CAF50') {
+  const notif = document.getElementById('notification');
+  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
+  notif.style.display = 'block';
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    notif.style.display = 'none';
+  }, 3000);
+}
+
+function sendTwilioNotification(to, message) {
+  // Show sending message
+  showNotificationMessage('Sending notification...');
+  
+  fetch('/notify/sms', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ to: to, message: message })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+    } else {
+      showNotificationMessage('Failed to send notification.', '#f44336');
+    }
+  })
+  .catch(() => {
+    showNotificationMessage('Error sending notification.', '#f44336');
+  });
+}
+
+
+
+// Assuming you have an API endpoint at /notify/sms
+function sendSms(to, message) {
+  fetch('/notify/sms', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ to, message })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log('SMS sent:', data);
+  })
+  .catch(err => {
+    console.error('Error sending SMS:', err);
+  });
+}
+
+</script>
+<script src="server/supabase/supabaseClient.js"async></script>
+
+<script src="client/public/functions/mainTwilioFunction.js" async></script>
+<script src="client/public/functions/token.js" async></script>
+<script src="client/public/functions/sendSMS.js" async></script>
+<script src="client/public/functions/twilio.js" async></script>
+<script src="client/public/functions/map.js" async></script>
+<script src="client/public/functions/payfast.js" async></script>
+<script src="client/public/functions/notification.js" async></script>
+<script src="client/public/functions/mapFunctions.js" async></script>
+<script src="client/public/functions/payfast.js" async></script>
+
+</body>
+</html>
