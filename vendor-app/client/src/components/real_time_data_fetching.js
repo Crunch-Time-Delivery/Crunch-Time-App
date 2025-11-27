@@ -15,8 +15,6 @@ export class RealTimeDataFetcher {
 
     this.socket.onmessage = (event) => {
 
-
-
       // Expect data to have lat and lng
       if (data.lat !== undefined && data.lng !== undefined) {
         updatePosition({ lat: data.lat, lng: data.lng });

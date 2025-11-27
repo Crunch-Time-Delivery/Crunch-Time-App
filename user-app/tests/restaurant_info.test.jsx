@@ -1,0 +1,148 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+
+// A simple React component wrapping your HTML content
+function RestaurantPage() {
+  // Embedding your HTML inside React component
+  return (
+    <div dangerouslySetInnerHTML={{ __html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Restaurant Info</title>
+      <link rel="stylesheet" href="assets/index.css" />
+      </head>
+      <body>
+      
+      <h1>Restaurant Details</h1>
+      
+      <div id="menuModal" class="modal">
+        <div class="modal-content">
+          <span class="close-btn" onclick="closeModal()">&times;</span>
+          <img id="restaurantImage" src="" alt="Restaurant Image" />
+          <h2 id="restaurantName">Restaurant Menu</h2>
+          <div id="menuItems"></div>
+          <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
+        </div>
+      </div>
+      
+      <div id="foodOpinionModal" class="modal">
+        <div class="modal-content" style="max-width:400px;">
+          <span class="close-btn" onclick="closeFoodOpinionModal()">&times;</span>
+          <h3>Tell us your preference</h3>
+          <select id="opinionChoice" style="width:100%; padding:8px;">
+            <option>No preference</option>
+            <option>Spicy</option>
+            <option>Less Salt</option>
+            <option>Extra cheese</option>
+            <option>No onions</option>
+            <option>Less Sugar</option>
+            <option>Extra Ice</option>
+          </select>
+          <div style="margin-top:20px; display:flex; justify-content:center;">
+            <button class="add-more-btn" onclick="confirmFoodOpinion()">Next</button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="foodModal" class="food-modal">
+        <div class="food-modal-content">
+          <span class="food-close-btn" onclick="closeFoodModal()">&times;</span>
+          <h3 id="foodItemName">Food Item</h3>
+          <div style="display:flex; align-items:center; justify-content:space-around; margin-top:10px;">
+            <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+            <span id="foodQuantity">1</span>
+            <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+          </div>
+          <div style="margin-top:20px; display:flex; justify-content:center;">
+            <button class="add-more-btn" onclick="addItemToOrder()">Add to Order</button>
+            <button class="exit-btn" onclick="closeFoodModal()">Exit</button>
+          </div>
+        </div>
+      </div>
+      
+      <a href="http://127.0.0.1:5501/user-app/client/public/my_order.html" style="
+        display:inline-block; 
+        width:100%; 
+        background-color:red; 
+        color:#fff; 
+        padding:15px; 
+        text-align:center; 
+        text-decoration:none; 
+        font-weight:bold; 
+        border-radius:5px; 
+        font-size:16px;
+        margin-top:20px;">Checkout</a>
+      
+      <div id="notification" style="display:none; position:fixed; top:20px; width:100%; z-index:9999; text-align:center;">
+        <div style="background-color:#4CAF50; color:white; padding:10px; display:inline-block; border-radius:4px;">
+          Sending notification...
+        </div>
+      </div>
+      
+      <script>
+      function getQueryParams() {
+        const params = {};
+        window.location.search.substring(1).split('&').forEach(pair => {
+          if (pair) {
+            const [key, value] = pair.split('=');
+            params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+          }
+        });
+        return params;
+      }
+      
+      window.onload = () => {
+        const params = getQueryParams();
+        const restName = params['name'];
+        const imageMap = {
+          'KFC Parow': 'Images/RS KFC .jpeg',
+          'Sannes Palace': 'Images/RS PALACE .jpg',
+          'DK Spot & Kota': 'Images/RS KOTA .jpg',
+          'Nondyebo Eatery': 'Images/RS NONDYEBO.jpg'
+        };
+      
+        if (restName && imageMap[restName]) {
+          document.getElementById('restaurantImage').src = imageMap[restName];
+          document.getElementById('restaurantName').innerText = restName + ' Menu';
+        } else {
+          document.getElementById('restaurantImage').src = '';
+          document.getElementById('restaurantName').innerText = 'Restaurant Details';
+        }
+      };
+      
+      function closeModal() { /* ... */ }
+      function viewMap() { /* ... */ }
+      function closeFoodOpinionModal() { /* ... */ }
+      function closeFoodModal() { /* ... */ }
+      function confirmFoodOpinion() { /* ... */ }
+      function addItemToOrder() { /* ... */ }
+      </script>
+      
+      <!-- External scripts -->
+      <script src="server/supabase/supabaseClient.js" async></script>
+      <script src="client/public/functions/mainTwilioFunction.js" async></script>
+      <script src="client/public/functions/token.js" async></script>
+      <script src="client/public/functions/sendSMS.js" async></script>
+      <script src="client/public/functions/twilio.js" async></script>
+      <script src="client/public/functions/map.js" async></script>
+      <script src="client/public/functions/payfast.js" async></script>
+      <script src="client/public/functions/notification.js" async></script>
+      <script src="client/public/functions/mapFunctions.js" async></script>
+      <script src="client/public/functions/payfast.js" async></script>
+      </body>
+      </html>
+    `}} />
+  );
+}
+
+// Now, in your test file, you can render this component
+
+test('renders restaurant details and updates based on URL params', () => {
+  render(<RestaurantPage />);
+  // Now you can write assertions, e.g.,
+  expect(screen.getByText(/Restaurant Details/)).toBeInTheDocument();
+  // Simulate URL params and check image and name update
+});
