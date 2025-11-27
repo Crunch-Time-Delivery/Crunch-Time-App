@@ -1,0 +1,6 @@
+{
+  "merchantID": "YOUR_MERCHANT_ID",
+  "merchantKey": "YOUR_MERCHANT_KEY",
+  "currency": "ZAR",
+  "paymentStatus": "Pending"
+}
