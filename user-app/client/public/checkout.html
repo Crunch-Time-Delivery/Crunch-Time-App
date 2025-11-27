@@ -85,6 +85,66 @@
   width: 50px;
   height: auto;
 }
+/* Button styling */
+.open-button {
+  background-color: #5fba7d;
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+  position: fixed;
+  bottom: 23px;
+  right: 28px;
+  width: 280px;
+}
+
+/* The popup form - hidden by default */
+.form-popup {
+  display: none; 
+  position: fixed;
+  bottom: 0;
+  right: 15px;
+  border: 3px solid #f1f1f1;
+  z-index: 9;
+}
+
+/* Form container styles */
+.form-container {
+  max-width: 300px;
+  padding: 20px;
+  background-color: white;
+}
+
+/* Full-width input fields */
+.form-container input[type=email] {
+  width: 100%;
+  padding: 15px;
+  margin: 5px 0 22px 0;
+  border: none;
+  background: #f1f1f1;
+}
+
+/* Select the "Get Code" button */
+.form-container .btn {
+  background-color: #f60606;
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  opacity: 0.8;
+}
+
+/* Select the "Close" button */
+.form-container .cancel {
+  background-color: red;
+}
+
+/* Add a hover effect for buttons */
+.form-container .btn:hover, .open-button:hover {
+  opacity: 1;
+}
 
 /* Other styles as needed */
 </style>
@@ -128,10 +188,55 @@
     </div>
     <div class="popup-buttons" style="margin-top:20px;">
       <button onclick="finalizePayment()">Pay Now</button>
-      <button onclick="closePaymentPopup()">Cancel</button>
+      <!-- Inside your checkout page, after the Pay button -->
+<button onclick="closePaymentPopup()">Cancel</button>
+<button style="
+  display:block;
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  background-color:#f30707; /* darker red for contrast */
+  color:#fff;
+  border:none;
+  border-radius:5px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;" onclick="openForm()">Register for Voucher Code</button>
+
+<!-- The Popup Form/Menu -->
+<div class="form-popup" id="myForm">
+  <form action="/submit_registration" method="POST" class="form-container">
+    <h2>Voucher Registration</h2>
+    <p>Please enter your email to receive a code.</p>
+
+    <label for="email"><b>Email</b></label>
+    <input type="email" placeholder="Enter Email" name="email" required>
+
+    <button type="submit" class="btn" onclick="openForm()">Get Code</button>
+    <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+  </form>
+</div>
+<!-- New Voucher Button -->
+<button id="voucherBtn" style="
+  display:block;
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  background-color:#f30707; /* darker red for contrast */
+  color:#fff;
+  border:none;
+  border-radius:5px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;"
+  onclick="applyVoucher()"
+>
+Apply Voucher
+</button>
     </div>
   </div>
 </div>
+
 
 <!-- Bank Details Input Popup -->
 <div id="bankDetailsInput" class="modal">
@@ -153,7 +258,7 @@
 </div>
 
 <div id="notification" style="display:none; position:fixed; top:20px; width:100%; z-index:9999; text-align:center;">
-  <div style="background-color:#4CAF50; color:white; padding:10px; display:inline-block; border-radius:4px;">
+  <div style="background-color:#f50606; color:white; padding:10px; display:inline-block; border-radius:4px;">
     Sending notification...
   </div>
 </div>
@@ -261,6 +366,72 @@ function sendSms(to, message) {
       document.getElementById('eftDetails').style.display = 'none';
     }
   }
+function applyVoucher() {
+  const code = prompt("Enter your voucher code:");
+  if (!code) return;
+
+  // For demonstration, let's assume a fixed voucher code "DISCOUNT10"
+  if (code.trim().toUpperCase() === "DISCOUNT10") {
+    // Apply a 10% discount
+    alert("Voucher applied! 10% discount added to your total.");
+    // Adjust total amount accordingly
+    const totalEl = document.getElementById('totalAmount');
+    let currentTotal = parseFloat(totalEl.innerText.replace('R', ''));
+    const discount = currentTotal * 0.10;
+    const newTotal = currentTotal - discount;
+    totalEl.innerText = `R${newTotal.toFixed(2)}`;
+    // You might want to store the voucher info for later processing
+  } else {
+    alert("Invalid voucher code");
+  }
+}
+
+// Function to open the pop-up form
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY;
+
+function openForm() {
+ // Initialize supabase client
+  const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+    const email = document.getElementById('email').value.trim();
+    const statusDiv = document.getElementById('status');
+
+    if (!email) {
+      statusDiv.innerText = 'Please enter an email address.';
+      return;
+    }
+
+    try {
+      // Call your backend API or Supabase Function
+      const response = await fetch('/api/send-voucher', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: email, voucherCode: 'DISCOUNT10' }) // Your voucher code here
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        statusDiv.innerText = 'Voucher email sent successfully!';
+      } else {
+        statusDiv.innerText = 'Error: ' + (result.error || 'Unknown error');
+      }
+    } catch (err) {
+      statusDiv.innerText = 'Error: ' + err.message;
+    }
+  }
+
+}
+function closeForm() {
+  document.getElementById("myForm").style.display = "none";
+}
+// Function to close the pop-up form
+function closeForm() {
+  document.getElementById("myForm").style.display = "none";
+}
 
   function finalizePayment() {
     if (!selectedPaymentMethod) {
