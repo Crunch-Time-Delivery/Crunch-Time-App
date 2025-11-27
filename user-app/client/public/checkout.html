@@ -293,6 +293,45 @@ function sendSms(to, message) {
     alert('Bank details saved!');
     closeBankDetails();
   }
+  // payfast-paygate.js
+
+function initiatePayFastPayment() {
+  // Define your PayFast merchant details
+  const merchantID = 'YOUR_MERCHANT_ID';
+  const merchantKey = 'YOUR_MERCHANT_KEY';
+  const amount = '100.00'; // Payment amount
+  const itemName = 'Sample Item';
+
+  // PayFast URL
+  const payFastUrl = 'https://www.payfast.co.za/eng/process';
+
+  // Prepare the form data
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = payFastUrl;
+
+  // Helper function to add hidden input fields
+  function addField(name, value) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  }
+
+  // Add required fields
+  addField('merchant_id', merchantID);
+  addField('merchant_key', merchantKey);
+  addField('amount', amount);
+  addField('item_name', itemName);
+  addField('return_url', 'https://yourwebsite.com/return'); // your return URL
+  addField('cancel_url', 'https://yourwebsite.com/cancel'); // your cancel URL
+  addField('notify_url', 'https://yourwebsite.com/ipn'); // IPN notification URL
+
+  // Append form to body and submit
+  document.body.appendChild(form);
+  form.submit();
+}
 </script>
 <script src="server/supabase/supabaseClient.js"async></script>
 
