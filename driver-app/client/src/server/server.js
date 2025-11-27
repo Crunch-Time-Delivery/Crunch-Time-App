@@ -114,3 +114,72 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+
+// PayFast Sandbox credentials (replace with your live credentials for production)
+const MERCHANT_ID = '10000100'; // Sandbox Merchant ID
+const MERCHANT_KEY = '46f0cd694581a'; // Sandbox Merchant Key
+const PASSPHRASE = 'itbVnL9z3d'; // Sandbox Passphrase
+
+app.use(bodyParser.json());
+app.use(express.static('public')); // Serve static files like index.html and script.js
+
+app.post('/process-payment', (req, res) => {
+    const { item_name, amount, name_first, name_last, email_address } = req.body;
+
+    // Prepare PayFast data
+    const payfastData = {
+        merchant_id: MERCHANT_ID,
+        merchant_key: MERCHANT_KEY,
+        return_url: 'http://localhost:3000/success', // Your success URL
+        cancel_url: 'http://localhost:3000/cancel', // Your cancel URL
+        notify_url: 'http://localhost:3000/notify', // Your ITN URL
+        name_first,
+        name_last,
+        email_address,
+        amount: parseFloat(amount).toFixed(2), // Format amount correctly
+        item_name,
+        // Add other required fields like m_payment_id, item_description, etc.
+    };
+
+    // Add passphrase for signature generation
+    const dataWithPassphrase = { ...payfastData, passphrase: PASSPHRASE };
+
+    // Generate PayFast signature
+    let signatureString = '';
+    Object.keys(dataWithPassphrase).sort().forEach(key => {
+        if (dataWithPassphrase[key] !== undefined && dataWithPassphrase[key] !== '') {
+            signatureString += `${key}=${encodeURIComponent(dataWithPassphrase[key]).replace(/%20/g, '+')}&`;
+        }
+    });
+    signatureString = signatureString.slice(0, -1); // Remove trailing '&'
+
+    const signature = crypto.createHash('md5').update(signatureString).digest('hex');
+
+    // Construct the PayFast redirect URL
+    const payfastUrl = 'https://www.payfast.co.za/eng/process?' + new URLSearchParams({
+        ...payfastData,
+        signature: signature
+    }).toString();
+
+    res.json({ success: true, redirectUrl: payfastUrl });
+});
+
+// Example success, cancel, and notify routes
+app.get('/success', (req, res) => {
+    res.send('Payment successful!');
+});
+
+app.get('/cancel', (req, res) => {
+    res.send('Payment cancelled.');
+});
+
+app.post('/notify', (req, res) => {
+    // Implement PayFast ITN (Instant Transaction Notification) verification here
+    console.log('ITN received:', req.body);
+    res.status(200).send('ITN received');
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});

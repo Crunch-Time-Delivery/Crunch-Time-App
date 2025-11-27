@@ -20,6 +20,16 @@
 <!-- Render React component -->
 <script type="text/babel">
   ReactDOM.render(<CaptureLocation />, document.getElementById('root'));
+   // === Load Google Maps ===
+  (function loadGoogleMaps() {
+    if (typeof google !== 'undefined') return;
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+    script.onerror = () => alert('Failed to load Google Maps. Check API key.');
+    document.head.appendChild(script);
+  })();
 </script>
 
 <!-- Add a navigation link to search_location.html -->
