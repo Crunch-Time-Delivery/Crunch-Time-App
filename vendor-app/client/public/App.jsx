@@ -5,8 +5,8 @@ import './App.css'
 import React, { useState, useEffect } from 'react';
 import './database.jsx'; // your real-time notifications
 import  './mapAPI.jsx'; // map display
-import  './PayfastAPI.jsx'; // payment process
-import './smsAndEmailAPI.jsx'; // SMS & email
+import  './PayfastAPI.js'; // payment process
+import './smsAndEmailAPI.js'; // SMS & email
 import  './supabaseClient.js';
 import './createPayFastPayment.js';
 
