@@ -49,6 +49,6 @@ function handleLocationError(browserHasGeolocation, pos) {
     );
     // You might display a message to the user here
 }
-
+export{initMap};
 // Ensure the initMap function is called when the API loads
 // This is typically done by adding `callback=initMap` to the API script URL in your HTML
