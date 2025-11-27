@@ -17,7 +17,13 @@ async function fetchUser() {
       order_cart,
       checkout_cart,
       pick_up_point,
-      drop_off_point
+      drop_off_point,
+       longitude,
+       latitude,
+       location_name,
+       longitude,
+       latitude,
+       location_name
     `); // Added semicolon
 
   if (error) {
