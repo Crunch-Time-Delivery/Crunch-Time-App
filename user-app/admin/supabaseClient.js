@@ -20,7 +20,10 @@ async function fetchAdmin() {
       expense_amount,
       withdraw_amount,
       total_income_amount,
-      order_tota_amount
+      order_tota_amount,
+      restaurant_name,
+       restaurant_menu,
+       establishment
     `)
 
   if (error) {
