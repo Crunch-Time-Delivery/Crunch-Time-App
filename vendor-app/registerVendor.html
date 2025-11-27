@@ -65,7 +65,6 @@
     <img src="img/screenshot (253).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
     <h2 style="color:gray;">Welcome</h2>
     <h3>Register New Vendor</h3>
-    <input type="email" id="regEmail" placeholder="Invitation Email" />
     <input type="text" id="regName" placeholder="Full Name" />
     <input type="password" id="regPassword" placeholder="Password" />
     <button onclick="startRegistration()">Create Account</button>
@@ -76,7 +75,7 @@
   let generatedOTP = '';
 
   function startRegistration() {
-    const email = document.getElementById('regEmail').value.trim();
+    
     const name = document.getElementById('regName').value.trim();
     const pass = document.getElementById('regPassword').value.trim();
 
