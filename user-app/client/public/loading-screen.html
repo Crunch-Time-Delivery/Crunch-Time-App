@@ -1,20 +1,166 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Loading Screen</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Restaurant Name</title>
 <style>
-  
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #fff;
+  }
+  /* Header styling */
+  .header {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+  }
+  .back-icon {
+    font-size: 24px;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+  .title {
+    font-weight: bold;
+    font-size: 20px;
+  }
+  /* Map placeholder styling */
+  .map {
+    height: 300px;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #999;
+    font-size: 18px;
+  }
+  /* Buttons container */
+  .buttons {
+    display: flex;
+    justify-content: space-around;
+    padding: 15px 0;
+  }
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 50px;
+    border-radius: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .call-btn {
+    background-color: #f00;
+    color: #fff;
+  }
+  .chat-btn {
+    background-color: #eee;
+    color: #000;
+  }
+  /* Contact info and rating */
+  .contact-info {
+    display: flex;
+    padding: 0 15px;
+    margin-top: 10px;
+  }
+  .profile-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  .contact-details {
+    margin-left: 10px;
+    flex: 1;
+  }
+  .name {
+    font-weight: 600;
+  }
+  .delivery-status {
+    font-size: 14px;
+    color: gray;
+  }
+  /* Rating badge */
+  .rating {
+    background-color: #fcd868;
+    border-radius: 15px;
+    padding: 4px 8px;
+    display: inline-block;
+    font-size: 14px;
+  }
+  /* Estimated delivery time */
+  .delivery-time {
+    text-align: center;
+    margin: 10px 0;
+    font-weight: bold;
+  }
+  /* Order Progress and Order Info Sections */
+  .section {
+    padding: 0 15px;
+    margin-top: 20px;
+  }
+  .section h3 {
+    margin-bottom: 10px;
+  }
+  /* Placeholder styling for sections */
+  .placeholder {
+    height: 50px;
+    background-color: #eee;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #888;
+  }
 </style>
 </head>
 <body>
 
-<header>
+<!-- Header -->
+<div class="header">
+  <div class="back-icon" onclick="history.back()">←</div>
+  <div class="title">Restaurant Name</div>
+</div>
 
-</header>
+<!-- Map placeholder -->
+<div class="map">Map Placeholder</div>
 
+<!-- Buttons for Call and Chat -->
+<div class="buttons">
+  <div class="btn call-btn" onclick="alert('Calling courier...')">📞</div>
+  <div class="btn chat-btn" onclick="alert('Opening chat...')">💬</div>
+</div>
 
+<!-- Courier and Delivery Info -->
+<div class="contact-info">
+  <img src="https://via.placeholder.com/50" alt="Profile" class="profile-img" />
+  <div class="contact-details">
+    <div class="name">Restaurant Name</div>
+    <div class="delivery-status">The courier is on their way to you</div>
+  </div>
+  <div class="rating">⭐ 4.8</div>
+</div>
+
+<!-- Estimated Time to Delivery -->
+<div class="delivery-time">12:56</div>
+
+<!-- Order Progress Section -->
+<div class="section">
+  <h3>Order Progress</h3>
+  <div class="placeholder">Order Progress Content</div>
+</div>
+
+<!-- Order Info Section -->
+<div class="section">
+  <h3>Order Info</h3>
+  <div class="placeholder">Order Info Content</div>
+</div>
 <script>
 function showNotificationMessage(message, color='#4CAF50') {
   const notif = document.getElementById('notification');
