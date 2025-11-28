@@ -1,9 +1,9 @@
 const axios = require('axios');
 const crypto = require('crypto');
 
-const PAYFAST_MERCHANT_ID = 'your-merchant-id'; // replace with your merchant ID
-const PAYFAST_MERCHANT_KEY = 'your-merchant-key'; // replace with your merchant key
-const PAYFAST_PASS_PHRASE = 'your-passphrase'; // optional, if used
+const PAYFAST_MERCHANT_ID = '10004002  '; // replace with your merchant ID
+const PAYFAST_MERCHANT_KEY = 'q1cd2rdny4a53  '; // replace with your merchant key
+const PAYFAST_PASS_PHRASE = 'payfast   '; // optional, if used
 const PAYFAST_SANDBOX = true; // set to false for production
 
 // Generate PayFast payment URL

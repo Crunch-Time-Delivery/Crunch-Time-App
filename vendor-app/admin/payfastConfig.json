@@ -1,6 +1,6 @@
 {
-  "merchantID": "YOUR_MERCHANT_ID",
-  "merchantKey": "YOUR_MERCHANT_KEY",
+ "merchantID": "10004002 ",
+  "merchantKey": "q1cd2rdny4a53 ",
   "currency": "ZAR",
   "paymentStatus": "Pending"
 }

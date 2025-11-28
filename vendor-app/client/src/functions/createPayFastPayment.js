@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 
 const eftVendorApiUrl = 'https://vendor-api.com/eft/transactions'; // Replace with the actual API URL
-const eftVendorApiKey = 'YOUR_VENDOR_API_KEY'; // Replace with the actual API key
+const eftVendorApiKey = 'q1cd2rdny4a53'; // Replace with the actual API key
 
 app.post('/create-eft-payment', (req, res) => {
   const { amount, item_name } = req.body;

@@ -25,67 +25,65 @@
     margin-bottom: 8px;
   }
   /* Style for the Pay button */
-#payNowButton {
-  background-color: red;
-  color: #fff;
-  padding: 15px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-  margin-top: 20px;
-}
-
-/* Modal styles */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 999;
-  left:0;
-  top:0;
-  width:100%;
-  height:100%;
-  background: rgba(0,0,0,0.5);
-  justify-content: center;
-  align-items: center;
-}
-.popup-content {
-  background:#fff;
-  padding:20px;
-  border-radius:10px;
-  max-width:400px;
-  width:90%;
-}
-
-/* Payment options styling */
-.payment-options {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 15px;
-}
-.payment-option {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.payment-option:hover {
-  background-color: #f0f0f0;
-}
-.payment-icons {
-  display: flex;
-  gap: 10px;
-}
-.payment-icons img {
-  width: 50px;
-  height: auto;
-}
-/* Button styling */
+  #payNowButton {
+    background-color: red;
+    color: #fff;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 20px;
+  }
+  /* Modal styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+  }
+  .popup-content {
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    max-width:400px;
+    width:90%;
+  }
+  /* Payment options styling */
+  .payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+  }
+  .payment-option {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .payment-option:hover {
+    background-color: #f0f0f0;
+  }
+  .payment-icons {
+    display: flex;
+    gap: 10px;
+  }
+  .payment-icons img {
+    width: 50px;
+    height: auto;
+  }
+  /* Button styles */
 .open-button {
   background-color: #5fba7d;
   color: white;
@@ -98,34 +96,42 @@
   right: 28px;
   width: 280px;
 }
-
-/* The popup form - hidden by default */
+/* The popup form - centered modal style */
 .form-popup {
   display: none; 
   position: fixed;
-  bottom: 0;
-  right: 15px;
-  border: 3px solid #f1f1f1;
-  z-index: 9;
+  top: 0; 
+  left: 0;
+  width: 100%; 
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex; /* Flex for centering */
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-/* Form container styles */
+/* Style for the form container inside the centered popup */
 .form-container {
-  max-width: 300px;
+  max-width: 400px;
+  width: 90%;
   padding: 20px;
   background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-/* Full-width input fields */
+/* Input styles */
 .form-container input[type=email] {
   width: 100%;
   padding: 15px;
   margin: 5px 0 22px 0;
   border: none;
   background: #f1f1f1;
+  border-radius: 4px;
 }
 
-/* Select the "Get Code" button */
+/* Buttons inside form */
 .form-container .btn {
   background-color: #f60606;
   color: white;
@@ -134,19 +140,17 @@
   cursor: pointer;
   width: 100%;
   opacity: 0.8;
+  margin-top: 10px;
+  border-radius: 4px;
 }
-
-/* Select the "Close" button */
 .form-container .cancel {
   background-color: red;
 }
 
-/* Add a hover effect for buttons */
+/* Hover effects */
 .form-container .btn:hover, .open-button:hover {
   opacity: 1;
 }
-
-/* Other styles as needed */
 </style>
 </head>
 <body>
@@ -188,55 +192,36 @@
     </div>
     <div class="popup-buttons" style="margin-top:20px;">
       <button onclick="finalizePayment()">Pay Now</button>
-      <!-- Inside your checkout page, after the Pay button -->
-<button onclick="closePaymentPopup()">Cancel</button>
-<button style="
-  display:block;
-  width:100%;
-  margin-top:10px;
-  padding:10px;
-  background-color:#f30707; /* darker red for contrast */
-  color:#fff;
-  border:none;
-  border-radius:5px;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;" onclick="openForm()">Register for Voucher Code</button>
-
-<!-- The Popup Form/Menu -->
-<div class="form-popup" id="myForm">
-  <form action="/submit_registration" method="POST" class="form-container">
-    <h2>Voucher Registration</h2>
-    <p>Please enter your email to receive a code.</p>
-
-    <label for="email"><b>Email</b></label>
-    <input type="email" placeholder="Enter Email" name="email" required>
-
-    <button type="submit" class="btn" onclick="openForm()">Get Code</button>
-    <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
-  </form>
-</div>
-<!-- New Voucher Button -->
-<button id="voucherBtn" style="
-  display:block;
-  width:100%;
-  margin-top:10px;
-  padding:10px;
-  background-color:#f30707; /* darker red for contrast */
-  color:#fff;
-  border:none;
-  border-radius:5px;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;"
-  onclick="applyVoucher()"
->
-Apply Voucher
-</button>
+      <button onclick="closePaymentPopup()">Cancel</button>
+      <!-- Register Voucher Button -->
+      <button style="
+        display:block;
+        width:100%;
+        margin-top:10px;
+        padding:10px;
+        background-color:#f30707;
+        color:#fff;
+        border:none;
+        border-radius:5px;
+        font-size:16px;
+        font-weight:bold;
+        cursor:pointer;"
+        onclick="openForm()">Register for Voucher Code</button>
     </div>
   </div>
 </div>
 
+<!-- The Centered Voucher Registration Popup -->
+<div class="form-popup" id="myForm">
+  <form action="/submit_registration" method="POST" class="form-container" onsubmit="return false;">
+    <h2>Voucher Registration</h2>
+    <p>Please enter your email to receive a code.</p>
+    <label for="email"><b>Email</b></label>
+    <input type="email" placeholder="Enter Email" id="email" required>
+    <button type="button" class="btn" onclick="submitVoucher()">Get Code</button>
+    <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+  </form>
+</div>
 
 <!-- Bank Details Input Popup -->
 <div id="bankDetailsInput" class="modal">
@@ -264,66 +249,50 @@ Apply Voucher
 </div>
 
 <script>
-function showNotificationMessage(message, color='#4CAF50') {
-  const notif = document.getElementById('notification');
-  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
-  notif.style.display = 'block';
+  // Notification functions
+  function showNotificationMessage(message, color='#4CAF50') {
+    const notif = document.getElementById('notification');
+    notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
+    notif.style.display = 'block';
+    setTimeout(() => { notif.style.display = 'none'; }, 3000);
+  }
 
-  // Hide after 3 seconds
-  setTimeout(() => {
-    notif.style.display = 'none';
-  }, 3000);
-}
+  // Placeholder notification functions
+  function sendTwilioNotification(to, message) {
+    showNotificationMessage('Sending notification...');
+    fetch('/notify/sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: to, message: message })
+    }).then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showNotificationMessage('Notification sent successfully!', '#4CAF50');
+        } else {
+          showNotificationMessage('Failed to send notification.', '#f44336');
+        }
+      }).catch(() => {
+        showNotificationMessage('Error sending notification.', '#f44336');
+      });
+  }
 
-function sendTwilioNotification(to, message) {
-  // Show sending message
-  showNotificationMessage('Sending notification...');
-  
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to: to, message: message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      showNotificationMessage('Notification sent successfully!', '#4CAF50');
-    } else {
-      showNotificationMessage('Failed to send notification.', '#f44336');
-    }
-  })
-  .catch(() => {
-    showNotificationMessage('Error sending notification.', '#f44336');
-  });
-}
+  function sendSms(to, message) {
+    fetch('/notify/sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, message })
+    }).then(res => res.json())
+      .then(data => { console.log('SMS sent:', data); })
+      .catch(err => { console.error('Error sending SMS:', err); });
+  }
 
-
-
-// Assuming you have an API endpoint at /notify/sms
-function sendSms(to, message) {
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to, message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('SMS sent:', data);
-  })
-  .catch(err => {
-    console.error('Error sending SMS:', err);
-  });
-}
-
-  // Example data for order items
+  // Sample order data
   let orderItems = [
     {name: 'Sample Food 1', quantity: 2, price: 'R50'},
     {name: 'Sample Food 2', quantity: 1, price: 'R30'}
   ];
 
-  // Function to populate order summary
+  // Populate order summary
   function populateOrderSummary() {
     const ul = document.getElementById('checkoutItems');
     ul.innerHTML = '';
@@ -332,19 +301,15 @@ function sendSms(to, message) {
       const li = document.createElement('li');
       li.innerHTML = `${item.name} x${item.quantity} @ ${item.price}`;
       ul.appendChild(li);
-      // Calculate total
       const p = parseFloat(item.price.replace('R', ''));
       total += p * item.quantity;
     });
     document.getElementById('totalAmount').innerText = `R${total.toFixed(2)}`;
   }
-
-  // Call once on page load
   populateOrderSummary();
 
-  // Show payment method page
+  // Show payment options popup
   function showPaymentMethodPage() {
-    // Ensure there's order to pay
     if (orderItems.length === 0) {
       alert('Your cart is empty!');
       return;
@@ -366,79 +331,6 @@ function sendSms(to, message) {
       document.getElementById('eftDetails').style.display = 'none';
     }
   }
-function applyVoucher() {
-  const code = prompt("Enter your voucher code:");
-  if (!code) return;
-
-  // For demonstration, let's assume a fixed voucher code "DISCOUNT10"
-  if (code.trim().toUpperCase() === "DISCOUNT10") {
-    // Apply a 10% discount
-    alert("Voucher applied! 10% discount added to your total.");
-    // Adjust total amount accordingly
-    const totalEl = document.getElementById('totalAmount');
-    let currentTotal = parseFloat(totalEl.innerText.replace('R', ''));
-    const discount = currentTotal * 0.10;
-    const newTotal = currentTotal - discount;
-    totalEl.innerText = `R${newTotal.toFixed(2)}`;
-    // You might want to store the voucher info for later processing
-  } else {
-    alert("Invalid voucher code");
-  }
-}
-
-// Function to open the pop-up form
-const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY;
-
-function openForm() {
- // Initialize supabase client
-  const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
-
-    const email = document.getElementById('email').value.trim();
-    const statusDiv = document.getElementById('status');
-
-    if (!email) {
-      statusDiv.innerText = 'Please enter an email address.';
-      return;
-    }
-
-    try {
-      // Call your backend API or Supabase Function
-      const data = onload ('/api/send-voucher', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email: email, voucherCode: 'DISCOUNT10' }) // Your voucher code here
-      });
-
-   fetch('your-url-here')
-  .then(response => response.json())
-  .then(result => {
-    // do something with result
-  })
-  .catch(error => {
-    // handle error
-  });
-  
-      if (response.ok) {
-        statusDiv.innerText = 'Voucher email sent successfully!';
-      } else {
-        statusDiv.innerText = 'Error: ' + (result.error || 'Unknown error');
-      }
-    } catch (err) {
-      statusDiv.innerText = 'Error: ' + err.message;
-    }
-  }
-
-
-function closeForm() {
-  document.getElementById("myForm").style.display = "none";
-}
-// Function to close the pop-up form
-function closeForm() {
-  document.getElementById("myForm").style.display = "none";
-}
 
   function finalizePayment() {
     if (!selectedPaymentMethod) {
@@ -462,68 +354,85 @@ function closeForm() {
   }
 
   function saveBankDetails() {
-    // Save details as needed
     const bankName = document.getElementById('bankName').value;
     const accNum = document.getElementById('accountNumber').value;
     const branchCode = document.getElementById('branchCode').value;
     const accountName = document.getElementById('accountName').value;
-    // You can store or process these details as needed
     alert('Bank details saved!');
     closeBankDetails();
   }
-  // payfast-paygate.js
 
-function initiatePayFastPayment() {
-  // Define your PayFast merchant details
-  const merchantID = 'YOUR_MERCHANT_ID';
-  const merchantKey = 'YOUR_MERCHANT_KEY';
-  const amount = '100.00'; // Payment amount
-  const itemName = 'Sample Item';
-
-  // PayFast URL
-  const payFastUrl = 'https://www.payfast.co.za/eng/process';
-
-  // Prepare the form data
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = payFastUrl;
-
-  // Helper function to add hidden input fields
-  function addField(name, value) {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = name;
-    input.value = value;
-    form.appendChild(input);
+  // Voucher registration functions
+  function openForm() {
+    document.getElementById("myForm").style.display = "flex";
   }
 
-  // Add required fields
-  addField('merchant_id', merchantID);
-  addField('merchant_key', merchantKey);
-  addField('amount', amount);
-  addField('item_name', itemName);
-  addField('return_url', 'https://yourwebsite.com/return'); // your return URL
-  addField('cancel_url', 'https://yourwebsite.com/cancel'); // your cancel URL
-  addField('notify_url', 'https://yourwebsite.com/ipn'); // IPN notification URL
+  function closeForm() {
+    document.getElementById("myForm").style.display = "none";
+  }
 
-  // Append form to body and submit
-  document.body.appendChild(form);
-  form.submit();
-}
+  function submitVoucher() {
+    const email = document.getElementById('email').value.trim();
+    if (!email) {
+      alert('Please enter an email.');
+      return;
+    }
+    // Simulate API call
+    fetch('/api/send-voucher', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, voucherCode: 'DISCOUNT10' })
+    }).then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          alert('Voucher email sent successfully!');
+        } else {
+          alert('Error sending voucher.');
+        }
+        closeForm();
+      }).catch(() => {
+        alert('Network error.');
+        closeForm();
+      });
+  }
+
+  // Placeholder for PayFast Payment
+  function initiatePayFastPayment() {
+    const merchantID = '10004002';
+    const merchantKey = 'q1cd2rdny4a53';
+    const amount = '100.00';
+    const itemName = 'Sample Item';
+
+    const payFastUrl = 'https://www.payfast.co.za/eng/process';
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = payFastUrl;
+
+    function addField(name, value) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    }
+
+    addField('merchant_id', merchantID);
+    addField('merchant_key', merchantKey);
+    addField('amount', amount);
+    addField('item_name', itemName);
+    addField('return_url', 'https://yourwebsite.com/return');
+    addField('cancel_url', 'https://yourwebsite.com/cancel');
+    addField('notify_url', 'https://yourwebsite.com/ipn');
+
+    document.body.appendChild(form);
+    form.submit();
+  }
 </script>
-<script src="server/supabase/supabaseClient.js"async></script>
 
-<script src="PayfastAPI.js"async></script>
-<script src="smsAndEmailAPI.js"async></script>
-
-<script src="client/public/functions/mainTwilioFunction.js" async></script>
-<script src="client/public/functions/token.js" async></script>
-<script src="client/public/functions/sendSMS.js" async></script>
-<script src="client/public/functions/twilio.js" async></script>
-<script src="client/public/functions/map.js" async></script>
-<script src="client/public/functions/payfast.js" async></script>
-<script src="client/public/functions/notification.js" async></script>
-<script src="client/public/functions/mapFunctions.js" async></script>
-<script src="client/public/functions/payfast.js" async></script>
+<!-- External scripts if needed -->
+<script src="server/supabase/supabaseClient.js" async></script>
+<script src="PayfastAPI.js" async></script>
+<script src="smsAndEmailAPI.js" async></script>
 </body>
 </html>
