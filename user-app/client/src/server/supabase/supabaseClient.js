@@ -23,7 +23,8 @@ async function fetchUser() {
        location_name,
        longitude,
        latitude,
-       location_name
+       location_name,
+       ORDER_ID
     `); // Added semicolon
 
   if (error) {
