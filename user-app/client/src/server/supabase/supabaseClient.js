@@ -75,7 +75,7 @@ document.getElementById('locationForm').addEventListener('submit', function(e) {
 async function geocodeAddress(address) {
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+'https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q'               `
     );
     const data = await response.json();
     if (data && data.length > 0) {
