@@ -2,9 +2,9 @@ import axios from 'axios';
 
 // PayFast configuration with your merchant details
 const payfastConfig = {
-  merchant_id: 'YOUR_MERCHANT_ID',
-  merchant_key: 'YOUR_MERCHANT_KEY',
-  passphrase: 'YOUR_PASSPHRASE', // optional, if used by PayFast
+  merchant_id: '10004002',
+  merchant_key: 'q1cd2rdny4a53',
+  passphrase: 'TEST_PASSPHRASE', // optional, if used by PayFast
   // Add other necessary configurations if needed
 };
 

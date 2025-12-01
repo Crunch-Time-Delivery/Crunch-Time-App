@@ -7,9 +7,9 @@ const crypto = require('crypto');
 const router = express.Router();
 
 // PayFast configuration - replace with your actual details
-const PAYFAST_MERCHANT_ID = 'your-merchant-id';
-const PAYFAST_MERCHANT_KEY = 'your-merchant-key';
-const PAYFAST_PASS_PHRASE = 'your-passphrase'; // Optional
+const PAYFAST_MERCHANT_ID = '10004002';
+const PAYFAST_MERCHANT_KEY = 'q1cd2rdny4a53';
+const PAYFAST_PASS_PHRASE = 'test-passphrase'; // Optional
 const PAYFAST_SANDBOX = true; // Set to false for production
 
 // Generate PayFast payment URL

@@ -92,56 +92,36 @@
   <div id="status" class="status">No location selected.</div>
 </div>
 
-<!-- Google Maps API - Replace YOUR_API_KEY -->
-
- <script src=".driver-app/client/public/functions/driver_tracking_connection.js"></script>
- <script src=".driver-app/client/publicfunctions/driverTracker.js"></script>
+<!-- Google Maps API - Replace YOUR_API_KEY with your actual API key -->
 <script>
-  // === CONFIG ===
-  const API_URL = ' https://maps.googleapis.com/maps/api/place/textsearch/json '; // CHANGE THIS
-  const GOOGLE_MAPS_API_KEY = 'AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q '; // CHANGE THIS
+  const API_KEY = 'AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q  '; // Replace with your API key
+  const DUMMY_ORDER_ID = 'ORDER1234567890';
 
-  // === Global Variables ===
   let map, driverMarker, customerMarker;
-  let tracking = true;
+  let tracking = false;
   let intervalId = null;
-  let customerLat = 37.7850, customerLng = -122.4383;
+  let customerLat = 37.7850, customerLng = -122.4383; // Default
 
-  // === 1. Customer Location (Geolocation) ===
-  function updateCustomerLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          customerLat = pos.coords.latitude;
-          customerLng = pos.coords.longitude;
-          updateCustomerMarker();
-        },
-        () => console.warn("Geolocation denied")
-      );
-    }
-  }
-
-  function currentCustomerLocation() {
-    return { lat: customerLat, lng: customerLng };
-  }
-
-  // Update every 15 seconds
-  setInterval(updateCustomerLocation, 15000);
-  updateCustomerLocation(); // Initial
-
-  // === 2. Google Maps Init ===
+  // Initialize map with default center
   function initMap() {
-    const center = currentCustomerLocation();
+    // Default center (if no specific order)
+    let centerCoords = { lat: 0, lng: 0 };
+
+    // Check if current input triggers Cape Town
+    const currentOrderId = document.getElementById('orderId').value.trim();
+    if (currentOrderId === DUMMY_ORDER_ID) {
+      centerCoords = { lat: -33.9249, lng: 18.4241 }; // Cape Town
+    }
 
     map = new google.maps.Map(document.getElementById('map'), {
       zoom: 14,
-      center: center,
+      center: centerCoords,
       mapTypeId: 'roadmap',
       disableDefaultUI: false,
-      zoomControl: true
+      zoomControl: true,
     });
 
-    // Customer Marker (You)
+    // Customer Marker
     customerMarker = new google.maps.Marker({
       map: map,
       title: "You are here",
@@ -174,8 +154,8 @@
 
   function updateCustomerMarker() {
     if (customerMarker) {
-      customerMarker.setPosition(currentCustomerLocation());
-      map.panTo(currentCustomerLocation());
+      customerMarker.setPosition({ lat: customerLat, lng: customerLng });
+      map.panTo({ lat: customerLat, lng: customerLng });
     }
   }
 
@@ -186,92 +166,90 @@
     map.setZoom(15);
   }
 
-  // === 3. Live Tracking Logic ===
-  document.addEventListener('DOMContentLoaded', () => {
+  // Geolocation for customer
+  function updateCustomerLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          customerLat = pos.coords.latitude;
+          customerLng = pos.coords.longitude;
+          updateCustomerMarker();
+        },
+        () => console.warn("Geolocation denied")
+      );
+    }
+  }
+
+  // Start tracking
+ document.addEventListener('DOMContentLoaded', () => {
     const orderInput = document.getElementById('orderId');
     const trackBtn = document.getElementById('trackBtn');
     const statusEl = document.getElementById('status');
 
-    const startTracking = () => {
-      const orderId = orderInput.value.trim();
-      if (!orderId || tracking) return;
+    // Load Google Maps
+    window.initMap = initMap;
 
-      tracking = true;
-      trackBtn.disabled = true;
-      trackBtn.textContent = 'Tracking...';
+    // Load Google Maps script
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMap`;
+    script.async = true;
+    document.head.appendChild(script);
+
+    // Update customer location periodically
+    setInterval(updateCustomerLocation, 15000);
+    updateCustomerLocation();
+
+    const startTracking = () => {
+      if (tracking) return; // Already tracking
+
+      const orderId = orderInput.value.trim();
+
+      // Initialize map with correct center based on orderId
+      // Re-initialize map
+      initMap();
+
+      // Set status
       statusEl.className = 'status connecting';
       statusEl.textContent = 'Connecting to driver...';
 
-      // Initial fetch
-      pollDriverLocation(orderId);
-
-      // Poll every 3 seconds
+      // Start polling driver location
       intervalId = setInterval(() => pollDriverLocation(orderId), 3000);
+      tracking = true;
+      document.getElementById('trackBtn').disabled = true;
+      document.getElementById('trackBtn').textContent = 'Tracking...';
     };
 
     const pollDriverLocation = async (orderId) => {
       try {
-        const res = await fetch(`${API_URL}?order=${encodeURIComponent(orderId)}`, {
-          cache: 'no-cache'
-        });
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const data = await res.json();
-
-        if (data.lat != null && data.lng != null) {
-          updateDriverLocation(data.lat, data.lng);
-          statusEl.className = 'status tracking';
-          statusEl.textContent = 'Driver is moving...';
+        // Replace API_URL with your server that returns driver location for the order
+        // For demo, simulate with dummy data if orderId matches dummy
+        if (orderId === DUMMY_ORDER_ID) {
+          // Simulate driver movement around Cape Town
+          const lat = -33.9249 + Math.random() * 0.02; // Small variation
+          const lng = 18.4241 + Math.random() * 0.02;
+          updateDriverLocation(lat, lng);
+          document.getElementById('status').className = 'status tracking';
+          document.getElementById('status').textContent = 'Driver is moving...';
         } else {
-          throw new Error("Invalid data");
+          // For other IDs, simulate no driver
+          throw new Error('Driver not found');
         }
       } catch (err) {
-        console.warn('Poll failed:', err);
-        if (!statusEl.classList.contains('error')) {
-          statusEl.className = 'status error';
-          statusEl.textContent = 'Driver not found or offline.';
-          stopTracking();
-        }
+        console.warn('Error:', err);
+        document.getElementById('status').className = 'status error';
+        document.getElementById('status').textContent = 'Driver not found or offline.';
+        clearInterval(intervalId);
+        tracking = false;
+        document.getElementById('trackBtn').disabled = false;
+        document.getElementById('trackBtn').textContent = 'Track';
       }
     };
 
-    const stopTracking = () => {
-      clearInterval(intervalId);
-      tracking = false;
-      trackBtn.disabled = false;
-      trackBtn.textContent = 'Track';
-    };
-
-    trackBtn.addEventListener('click', startTracking);
-    orderInput.addEventListener('keypress', (e) => {
+    document.getElementById('trackBtn').addEventListener('click', startTracking);
+    document.getElementById('orderId').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') startTracking();
     });
-
-    window.stopTracking = stopTracking;
   });
-
-  // === Load Google Maps ===
-  (function loadGoogleMaps() {
-    if (typeof google !== 'undefined') return;
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q}&callback=initMap`;
-    script.async = true;
-    script.defer = true;
-    script.onerror = () => alert('Failed to load Google Maps. Check API key.');
-    document.head.appendChild(script);
-  })();
-
-
 </script>
-
-<script async src="user-app/googleMapConfig.js" ></script>
-<script async  src="user-app/pinpoint.js" ></script>
-<script async   src="functions/mapFunctions.js"></script>
-<script async   src="user-app/client/public/src/functions/live-tracking.js></script>
-
-</script>
-
-
 </body>
 </html>

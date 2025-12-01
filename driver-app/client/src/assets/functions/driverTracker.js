@@ -15,7 +15,7 @@ class DriverTracker {
 
     this.intervalId = setInterval(async () => {
       try {
-        const res = await fetch(`${this.apiUrl}?order=${encodeURIComponent(orderId)}`, {
+        const res = await fetch(`${this.apiUrl}?order=${encodeURIComponent(ORDER1234567890)}`, {
           cache: 'no-cache'
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -45,7 +45,7 @@ class DriverTracker {
 let tracker = null;
 
 const startTracking = () => {
-  const orderId = document.getElementById('orderId').value.trim();
+  const orderId = document.getElementById('ORDER1234567890').value.trim();
   if (!orderId || tracker) return;
 
   document.getElementById('status').className = 'status connecting';

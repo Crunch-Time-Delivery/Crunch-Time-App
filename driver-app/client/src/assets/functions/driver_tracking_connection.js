@@ -4,7 +4,7 @@
 function initDriverTracking(orderId, updateDriverCallback, handleError) {
   let intervalId = setInterval(async () => {
     try {
-      const res = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?order=${encodeURIComponent(orderId)}`, {
+      const res = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?order=${encodeURIComponent(ORDER1234567890)}`, {
         cache: 'no-cache'
       });
       
