@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 
 
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseKey = process.env.SUPABASE_KEY;
 
 // Create the client with cookie management
 export const createClient = (cookieStore) => {
