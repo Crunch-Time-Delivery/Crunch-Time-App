@@ -95,7 +95,7 @@
 <!-- Google Maps API - Replace YOUR_API_KEY with your actual API key -->
 <script>
   const API_KEY = 'AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q  '; // Replace with your API key
-  const DUMMY_ORDER_ID = 'ORDER1234567890';
+  const ORDER_ID = 'ORDER1234567890';
 
   let map, driverMarker, customerMarker;
   let tracking = false;
@@ -223,7 +223,7 @@
       try {
         // Replace API_URL with your server that returns driver location for the order
         // For demo, simulate with dummy data if orderId matches dummy
-        if (orderId === DUMMY_ORDER_ID) {
+        if (orderId === ORDER_ID) {
           // Simulate driver movement around Cape Town
           const lat = -33.9249 + Math.random() * 0.02; // Small variation
           const lng = 18.4241 + Math.random() * 0.02;
