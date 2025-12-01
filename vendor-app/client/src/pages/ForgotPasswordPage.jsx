@@ -7,7 +7,7 @@ const ForgotPassword = () => {
 
   // Initialize Supabase client
   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = process.env.REACT_APP_SUPABASE_KEY; // or hardcode for testing
+  const supabaseKey = process.env.SUPABASE_KEY; // or hardcode for testing
   const supabase = React.useMemo(() => require('@supabase/supabase-js').createClient(supabaseUrl, supabaseKey), [supabaseKey]);
 
   const handleResetPassword = async () => {
