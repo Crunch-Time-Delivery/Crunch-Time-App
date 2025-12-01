@@ -52,7 +52,7 @@ const startTracking = () => {
   document.getElementById('status').textContent = 'Connecting to driver...';
 
   tracker = new DriverTracker(
-    'https://your-api.example.com/location',
+    '  https://maps.googleapis.com/maps/api/place/details/json   ',
     (lat, lng) => {
       updateDriverLocation(lat, lng);
       document.getElementById('status').className = 'status tracking';
