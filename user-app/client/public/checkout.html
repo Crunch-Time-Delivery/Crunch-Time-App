@@ -428,7 +428,7 @@
     document.body.appendChild(form);
     form.submit();
   }
-  
+
   // Parse the order ID from URL
   const urlParams = new URLSearchParams(window.location.search);
   const orderId = urlParams.get('order') || 'No order ID';
@@ -486,11 +486,14 @@ function initMap() {
 // Load Google Maps script
 (function loadScript() {
   const script = document.createElement('script');
-  script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap`;
+  script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap`;
   script.async = true;
   document.head.appendChild(script);
 })();
+</script>
 
+</body>
+</html>
 </script>
 
 <!-- External scripts if needed -->
