@@ -396,38 +396,44 @@
       });
   }
 
-  // Placeholder for PayFast Payment
   function initiatePayFastPayment() {
-    const merchantID = '10004002';
-    const merchantKey = 'q1cd2rdny4a53';
-    const amount = '100';
-    const itemName = 'Sample Item';
+  // Replace with actual total amount dynamically calculated
+  const totalText = document.getElementById('totalAmount').innerText;
+  const amount = totalText.replace('R', '').trim();
 
-    const payFastUrl = 'https://www.payfast.co.za/eng/process';
+  const merchantID = '10004002'; // Your PayFast Merchant ID
+  const merchantKey = 'q1cd2rdny4a53'; // Your PayFast Merchant Key
+  const itemName = 'Order Payment'; // Or your item description
 
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = payFastUrl;
+  const payFastUrl = 'https://www.payfast.co.za/eng/process';
 
-    function addField(name, value) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      input.value = value;
-      form.appendChild(input);
-    }
+  // Create a form element to submit to PayFast
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = payFastUrl;
 
-    addField('merchant_id', merchantID);
-    addField('merchant_key', merchantKey);
-    addField('amount', amount);
-    addField('item_name', itemName);
-    addField('return_url', 'https://yourwebsite.com/return');
-    addField('cancel_url', 'https://yourwebsite.com/cancel');
-    addField('notify_url', 'https://yourwebsite.com/ipn');
-
-    document.body.appendChild(form);
-    form.submit();
+  // Helper function to add hidden input fields
+  function addField(name, value) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
   }
+
+  // Add required PayFast fields
+  addField('merchant_id', merchantID);
+  addField('merchant_key', merchantKey);
+  addField('amount', amount);
+  addField('item_name', itemName);
+  addField('return_url', 'https://yourwebsite.com/return'); // Update with your actual return URL
+  addField('cancel_url', 'https://yourwebsite.com/cancel'); // Update with your actual cancel URL
+  addField('notify_url', 'https://yourwebsite.com/ipn'); // Update with your actual notification URL
+
+  // Append form to body and submit
+  document.body.appendChild(form);
+  form.submit();
+}
 
   // Parse the order ID from URL
   const urlParams = new URLSearchParams(window.location.search);
