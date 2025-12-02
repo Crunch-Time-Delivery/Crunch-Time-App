@@ -2,8 +2,8 @@ document.getElementById('payfastForm').addEventListener('submit', function(event
     event.preventDefault(); // Prevent default form submission
 
     // Your PayFast merchant details (replace with actual values)
-    const merchantID: '10000100';
- const  merchantKey:'46f0cd694581a';
+const merchantID = '10004002';
+const merchantKey = 'q1cd2rdny4a53';
     const currency = "ZAR";
 
     // Collect form data

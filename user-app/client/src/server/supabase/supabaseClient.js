@@ -145,4 +145,5 @@ async function saveLocationToSupabase(address, lat, lon) {
       console.log('Location saved:', data);
     }
   }
-}
+]
+  

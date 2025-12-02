@@ -375,22 +375,57 @@ function loadDriverAccount() {
 
 // Load Driver Payment History
 function loadDriverHistoryPayment() {
-  document.getElementById('innerContent').innerHTML = `
-    <h1>Payment History</h1>
-    <div class="history-payemnt">
-      <p><strong>Amount Payment :</strong> R 100</p>
-      <p><strong>User Name:</strong> John Doe</p>
-      <p><strong>Date Pick-up:</strong> August 10, 2025</p>
-      <p><strong>Location Pick-up:</strong> Park street, Cape Town</p>
-      <p><strong>Location Drop-off:</strong> Board street, Cape Town</p>
-    </div>
-    <a href="#" id="backToMain">Back</a>
-  `;
-  document.getElementById('backToMain').onclick = (e) => {
-    e.preventDefault();
-    loadMainPage();
-  };
+  // Fetch user's payment history from your backend API
+  fetch('/api/payment-history')
+    .then(res => res.json())
+    .then(data => {
+      // Build HTML for payment history
+      let historyHtml = `
+        <h1>Payment History</h1>`;
+      
+      if (data && data.payments && data.payments.length > 0) {
+        data.payments.forEach(payment => {
+          historyHtml += `
+            <div class="history-payment" style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:8px;">
+              <p><strong>Amount Payment :</strong> R ${payment.amount}</p>
+              <p><strong>User Name:</strong> ${payment.userName}</p>
+              <p><strong>Date Payment:</strong> ${payment.date}</p>
+              <p><strong>Location Pick-up:</strong> ${payment.pickupLocation}</p>
+              <p><strong>Location Drop-off:</strong> ${payment.dropoffLocation}</p>
+            </div>`;
+        });
+      } else {
+        historyHtml += `<p>No payment history found.</p>`;
+      }
+
+      // Inject into your container
+      document.getElementById('innerContent').innerHTML = historyHtml;
+
+      // Add back button
+      const backButton = document.createElement('a');
+      backButton.href = '#';
+      backButton.id = 'backToMain';
+      backButton.innerText = 'Back';
+      document.getElementById('innerContent').appendChild(backButton);
+      document.getElementById('backToMain').onclick = (e) => {
+        e.preventDefault();
+        loadMainPage();
+      };
+    })
+    .catch(error => {
+      console.error('Error fetching payment history:', error);
+      document.getElementById('innerContent').innerHTML = `
+        <h1>Payment History</h1>
+        <p>Error loading payment history.</p>
+        <a href="#" id="backToMain">Back</a>
+      `;
+      document.getElementById('backToMain').onclick = (e) => {
+        e.preventDefault();
+        loadMainPage();
+      };
+    });
 }
+
 
 // Function to show main page
 function loadMainPage() {
