@@ -1,8 +1,8 @@
 import * as Twilio from 'twilio';
 
 // Replace with your actual Account SID and Auth Token from Twilio Console
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
+const accountSid = AC031642049dd74fcc581b0fd106936a4f ;
+const authToken = "1447e415a2fc483bd2bfbea57451d55d";
 
 if (!accountSid || !authToken) {
   console.error('Twilio Account SID and Auth Token must be set as environment variables.');

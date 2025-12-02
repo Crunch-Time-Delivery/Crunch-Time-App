@@ -1,15 +1,12 @@
 const twilio = require('twilio');
 
-const accountSid = '';
-const authToken = 'YOUR_TWILIO_AUTH_TOKEN';
-
 const client = twilio(accountSid, authToken);
 
 async function sendSMS(to, message) {
   try {
     const messageInstance = await client.messages.create({
       body: message,
-      from: 'YOUR_TWILIO_PHONE_NUMBER',
+      from: '+27795349327',
       to: to
     });
     return messageInstance;

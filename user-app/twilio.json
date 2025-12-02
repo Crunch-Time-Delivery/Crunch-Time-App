@@ -1,5 +1,5 @@
 {
-  "accountSid": "YOUR_TWILIO_SID",
-  "authToken": "YOUR_TWILIO_AUTH_TOKEN",
-  "fromNumber": "YOUR_TWILIO_PHONE_NUMBER"
+  "accountSid": "AC031642049dd74fcc581b0fd106936a4f",
+  "authToken": "1447e415a2fc483bd2bfbea57451d55d",
+  "fromNumber": "+27795349327"
 }
