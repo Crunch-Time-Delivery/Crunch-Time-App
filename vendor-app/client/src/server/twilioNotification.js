@@ -13,7 +13,6 @@ const client = twilio(accountSid, authToken);
  * @param {string} message - The message body
  * @returns {Promise} - Promise resolving to message info
  */
-
 function sendSms(to, message) {
   return client.messages.create({
     body: message,
