@@ -1,6 +1,5 @@
 // server.js (or your main server-side file)
 const twilio = require('twilio'); // Import the Twilio Node.js helper library
-
 // Load environment variables for security (e.g., using 'dotenv')
 require('dotenv').config(); 
 
@@ -9,7 +8,6 @@ const accountSid = 'AC031642049dd74fcc581b0fd106936a4f' ;
 const authToken = "1447e415a2fc483bd2bfbea57451d55d   ";
 
 const client = new twilio(accountSid, authToken);
-
 // Function to send an SMS notification
 async function sendAdminNotification(newUserName) {
     try {
