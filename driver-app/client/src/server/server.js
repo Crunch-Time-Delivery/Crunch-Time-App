@@ -32,8 +32,8 @@ app.post('/send-sms', async (req, res) => {
   const { to, message } = req.body;
 
   // Replace with your Twilio credentials
-  const accountSid = 'YOUR_TWILIO_SID';
-  const authToken = 'YOUR_TWILIO_AUTH_TOKEN';
+  const accountSid = ' AC031642049dd74fcc581b0fd106936a4f';
+  const authToken = '1447e415a2fc483bd2bfbea57451d55d';
   const client = require('twilio')(accountSid, authToken);
 
   try {

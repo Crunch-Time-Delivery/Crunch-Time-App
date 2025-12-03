@@ -176,7 +176,7 @@
           <img src="https://img.icons8.com/color/48/000000/mastercard-logo.png" alt="MasterCard" />
           <img src="https://img.icons8.com/color/48/000000/amex.png" alt="Amex" />
         </div>
-        <span style="margin-left:10px;">Pay by Card</span>
+        <span style="margin-left:10px;"onclick="payWithCard()">Pay by Card</span>
       </div>
       <div class="payment-option" onclick="selectPaymentMethod('EFT')">
         <strong>EFT Bank Transfer</strong>
@@ -496,6 +496,45 @@ function initMap() {
   script.async = true;
   document.head.appendChild(script);
 })();
+
+function payWithCard() {
+  // Get total amount
+  const totalText = document.getElementById('totalAmount').innerText;
+  const amount = totalText.replace('R', '').trim();
+
+  // Call your backend to get the payment data
+  fetch('/create-payfast-payment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      amount: amount,
+      item_name: 'Order Payment',
+      return_url: 'https://yourwebsite.com/return',
+      cancel_url: 'https://yourwebsite.com/cancel',
+      notify_url: 'https://yourwebsite.com/ipn'
+    }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    // Create and submit a form to redirect to PayFast
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = data.payfastUrl;
+    for (const key in data.data) {
+      const hiddenField = document.createElement('input');
+      hiddenField.type = 'hidden';
+      hiddenField.name = key;
+      hiddenField.value = data.data[key];
+      form.appendChild(hiddenField);
+    }
+    document.body.appendChild(form);
+    form.submit();
+  })
+  .catch(error => {
+    console.error('Error initiating payment:', error);
+    alert('Error initiating payment. Please try again.');
+  });
+}
 </script>
 
 </body>

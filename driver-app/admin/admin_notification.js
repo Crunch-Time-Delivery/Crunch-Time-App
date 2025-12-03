@@ -5,8 +5,8 @@ const twilio = require('twilio'); // Import the Twilio Node.js helper library
 require('dotenv').config(); 
 
 // Find your Account SID and Auth Token at twilio.com/console
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
+const accountSid = 'AC031642049dd74fcc581b0fd106936a4f ';
+const authToken = "1447e415a2fc483bd2bfbea57451d55d   ";
 
 const client = new twilio(accountSid, authToken);
 
@@ -15,7 +15,7 @@ async function sendAdminNotification(newUserName) {
     try {
         const message = await client.messages.create({
             to: process.env.ADMIN_PHONE_NUMBER, // Admin's phone number (e.g., from environment variables)
-            from: process.env.TWILIO_PHONE_NUMBER, // Your Twilio phone number
+            from: +27795349327, // Your Twilio phone number
             body: `New user logged in: ${newUserName}` // Message content
         });
         console.log(`Notification sent to admin. Message SID: ${message.sid}`);
