@@ -1,7 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Replace with your actual key
+const supabaseKey = process.env.SUPABASE_KEY; // Actual key
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function fetchUser() {
@@ -145,5 +145,4 @@ async function saveLocationToSupabase(address, lat, lon) {
       console.log('Location saved:', data);
     }
   }
-]
-  
+  }
