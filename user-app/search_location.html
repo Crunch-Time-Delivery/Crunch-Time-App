@@ -75,28 +75,29 @@
       <div class="red-column"></div>
     </div>
 
+    <!-- Address input and set button -->
     <form id="locationForm">
       <input type="text" id="locationInput" placeholder="Enter address or city" />
       <button type="submit">Set Location</button>
     </form>
 
+    <!-- Action buttons -->
     <div class="buttons-group">
       <button id="locateBtn">Use My Location</button>
       <button id="resetBtn">Reset Map</button>
     </div>
 
-    <div id="coordinates">No location selected.</div>
+    <!-- Map display -->
     <div id="map"></div>
+    <div id="coordinates">No location selected.</div>
   </div>
 
-  <!-- Google Maps JavaScript API -->
+  <!-- Google Maps API Script -->
   <script>
     let map, marker, geocoder;
 
     function initMap() {
-      // Default location: San Francisco
-      const defaultLocation = { lat: 37.7749, lng: -122.4194 };
-
+      const defaultLocation = { lat: 37.7749, lng: -122.4194 }; // San Francisco
       map = new google.maps.Map(document.getElementById("map"), {
         center: defaultLocation,
         zoom: 12,
@@ -104,21 +105,23 @@
 
       geocoder = new google.maps.Geocoder();
 
+      // Marker at default location
       marker = new google.maps.Marker({
         map: map,
         position: defaultLocation,
       });
 
-      // Load saved location
+      // Load saved location from local storage if exists
       loadSavedLocation();
 
-      // Event Listeners
+      // Set Location form submit
       document.getElementById("locationForm").addEventListener("submit", (e) => {
         e.preventDefault();
         const address = document.getElementById("locationInput").value.trim();
         if (address) geocodeAddress(address);
       });
 
+      // Use My Location button
       document.getElementById("locateBtn").addEventListener("click", () => {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
@@ -139,6 +142,7 @@
         }
       });
 
+      // Reset Map button
       document.getElementById("resetBtn").addEventListener("click", () => {
         const defaultPos = { lat: 37.7749, lng: -122.4194 };
         updateMapLocation(defaultPos, "");
@@ -149,6 +153,7 @@
       });
     }
 
+    // Geocode address
     function geocodeAddress(address) {
       geocoder.geocode({ address: address }, (results, status) => {
         if (status === "OK" && results[0]) {
@@ -163,6 +168,7 @@
       });
     }
 
+    // Update map with new location
     function updateMapLocation(position, address = "") {
       map.setCenter(position);
       map.setZoom(15);
@@ -173,6 +179,7 @@
       }
     }
 
+    // Update coordinate display
     function updateCoordinatesDisplay(lat, lng) {
       const coordsDiv = document.getElementById("coordinates");
       if (lat && lng) {
@@ -182,32 +189,29 @@
       }
     }
 
+    // Save location to local storage
     function saveLocation(position, address) {
       localStorage.setItem("deliveryCoords", JSON.stringify(position));
       localStorage.setItem("deliveryAddress", address);
     }
 
+    // Load saved location from local storage
     function loadSavedLocation() {
       const savedCoords = localStorage.getItem("deliveryCoords");
       const savedAddress = localStorage.getItem("deliveryAddress");
-
       if (savedCoords && savedAddress) {
         const pos = JSON.parse(savedCoords);
         updateMapLocation(pos, savedAddress);
-     1022
         updateCoordinatesDisplay(pos.lat, pos.lng);
       }
     }
-
-    // Load Google Maps API with your key
-    (g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", n = "https://maps.googleapis.com/maps/api/js", m = "key", q = "callback"; var d = function() { var b = window; b = b[c] || (b[c] = {}); var e = b.maps = b.maps || {}; e[l] = e[l] || function() { return new Promise(function(f, r) { if (e[l].loaded) f(e[l].module); else { var i = document.createElement("script"); i.src = n + "?" + m + "=" + "YOUR_GOOGLE_MAPS_API_KEY" + "&" + q + "=" + l + "Loaded"; i.onerror = r; document.head.appendChild(i); window[l + "Loaded"] = function(mod) { e[l].loaded = true; e[l].module = mod; f(mod); }; } }); }; }; d(); })(window);
   </script>
 
-  <!-- Load the Maps API (replace YOUR_GOOGLE_MAPS_API_KEY) -->
-  <script async
-    src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap&libraries=places">
-
-    
-  </script>
+  <!-- Load Google Maps API with your API key -->
+  <script
+    async
+    defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap&libraries=places"
+  ></script>
 </body>
 </html>
