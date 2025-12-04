@@ -1,14 +1,14 @@
  import { createClient } from '@supabase/supabase-js'
  
  // Initialize Supabase client
- const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
- const supabaseKey = process.env.SUPABASE_KEY
- export const supabase = createClient(supabaseUrl, supabaseKey)
- 
- // Storage configuration
- const storageBucket = 'crunchtime' // Actual bucket name
- const storageKeyId = 'e14f15dbd3a60e1e4b2e2f90a19b7587' // Your Key ID
- const storageEndpoint = 'https://wbpgmgtoyzlnawvsfeiu.storage.supabase.co/storage/v1/s3'
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY;
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Storage configuration
+const storageBucket = 'crunchtime'; // Actual bucket name
+const storageKeyId = 'e14f15dbd3a60e1e4b2e2f90a19b7587'; // Your Key ID
+const storageEndpoint = 'https://wbpgmgtoyzlnawvsfeiu.storage.supabase.co/storage/v1/s3';
  
  // Function to upload profile picture
  async function uploadProfilePicture(file, filename) {
