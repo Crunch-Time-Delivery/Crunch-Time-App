@@ -1,7 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Actual key
+const supabaseKey = process.env.SUPABASE_KEY; // Make sure this is set in your environment
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function fetchUser() {
@@ -18,19 +18,17 @@ async function fetchUser() {
       checkout_cart,
       pick_up_point,
       drop_off_point,
-       longitude,
-       latitude,
-       location_name,
-       longitude,
-       latitude,
-       location_name,
-       ORDER_ID
-    `); // Added semicolon
+      longitude,
+      latitude,
+      location_name,
+      ORDER_ID
+    `); // Removed extra comma and fixed formatting
 
   if (error) {
     console.error('Error fetching user:', error);
     return null;
-  } return User;
+  }
+  return User;
 }
 
 // Call the function to fetch user data
@@ -38,10 +36,10 @@ fetchUser().then(user => {
   console.log('User:', user);
 });
 
-// Call the function to fetch Admin data
+// Fetch admin data
 async function fetchAdmin() {
   const { data, error } = await supabase
-    .from('Admins') // Make sure this matches your table name
+    .from('Admins') // Ensure this matches your table name
     .select('*');
   if (error) {
     console.error('Error fetching admin data:', error);
@@ -54,7 +52,7 @@ fetchAdmin().then(admin => {
   console.log('Admin:', admin);
 });
 
-// Initialize map
+// Initialize map using Leaflet
 let map = L.map('map').setView([37.7749, -122.4194], 12); // Default to San Francisco
 let marker;
 
@@ -75,25 +73,30 @@ document.getElementById('locationForm').addEventListener('submit', function(e) {
 async function geocodeAddress(address) {
   try {
     const response = await fetch(
-'https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q'               `
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q`
     );
+
     const data = await response.json();
-    if (data && data.length > 0) {
-      const firstResult = data[0];
-      const lat = parseFloat(firstResult.lat);
-      const lon = parseFloat(firstResult.lon);
+
+    if (data.results && data.results.length > 0) {
+      const firstResult = data.results[0];
+      const lat = firstResult.geometry.location.lat;
+      const lon = firstResult.geometry.location.lng;
+
       // Center map
       map.setView([lat, lon], 15);
+
       // Add or move marker
       if (marker) {
         marker.setLatLng([lat, lon]);
       } else {
         marker = L.marker([lat, lon]).addTo(map);
       }
+
       // Save locally
       localStorage.setItem('deliveryAddress', address);
       localStorage.setItem('deliveryCoords', JSON.stringify({ lat, lon }));
-      
+
       // Save/update in Supabase
       await saveLocationToSupabase(address, lat, lon);
       alert('Location set successfully!');
@@ -145,4 +148,4 @@ async function saveLocationToSupabase(address, lat, lon) {
       console.log('Location saved:', data);
     }
   }
-  }
+}
