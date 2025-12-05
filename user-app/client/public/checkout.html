@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Checkout</title>
 <style>
   /* Styles for the checkout page */
@@ -37,9 +37,9 @@
     width: 100%;
     margin-top: 20px;
   }
-  /* Modal styles */
+  /* Modal styles for payment options */
   .modal {
-    display: none;
+    display: none; /* Hidden by default */
     position: fixed;
     z-index: 999;
     left:0;
@@ -83,74 +83,27 @@
     width: 50px;
     height: auto;
   }
-  /* Button styles */
-.open-button {
-  background-color: #5fba7d;
-  color: white;
-  padding: 16px 20px;
-  border: none;
-  cursor: pointer;
-  opacity: 0.8;
-  position: fixed;
-  bottom: 23px;
-  right: 28px;
-  width: 280px;
-}
-/* The popup form - centered modal style */
-.form-popup {
-  display: none; 
-  position: fixed;
-  top: 0; 
-  left: 0;
-  width: 100%; 
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex; /* Flex for centering */
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-/* Style for the form container inside the centered popup */
-.form-container {
-  max-width: 400px;
-  width: 90%;
-  padding: 20px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-/* Input styles */
-.form-container input[type=email] {
-  width: 100%;
-  padding: 15px;
-  margin: 5px 0 22px 0;
-  border: none;
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-/* Buttons inside form */
-.form-container .btn {
-  background-color: #f60606;
-  color: white;
-  padding: 16px 20px;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  opacity: 0.8;
-  margin-top: 10px;
-  border-radius: 4px;
-}
-.form-container .cancel {
-  background-color: red;
-}
-
-/* Hover effects */
-.form-container .btn:hover, .open-button:hover {
-  opacity: 1;
-}
+  /* Voucher form popup styles (hidden initially) */
+  .form-popup {
+    display: none; /* Hidden initially */
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex; /* Flex for centering */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  .form-container {
+    max-width: 400px;
+    width: 90%;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+  }
 </style>
 </head>
 <body>
@@ -161,22 +114,22 @@
   <h3>Order Summary</h3>
   <ul id="checkoutItems"></ul>
   <h3>Total: <span id="totalAmount">R0</span></h3>
-  <!-- Red "Pay" button that triggers payment options popup -->
+  <!-- Pay button triggers payment popup -->
   <button id="payNowButton" onclick="showPaymentMethodPage()">Pay</button>
 </div>
 
-<!-- Payment popup modal (for EFT, Card) -->
+<!-- Payment method popup -->
 <div id="paymentPopup" class="modal">
   <div class="popup-content">
     <h3>Select Payment Method</h3>
     <div class="payment-options">
       <div class="payment-option" onclick="selectPaymentMethod('Card')">
         <div class="payment-icons">
-          <img src="https://img.icons8.com/color/48/000000/visa.png" alt="Visa" />
-          <img src="https://img.icons8.com/color/48/000000/mastercard-logo.png" alt="MasterCard" />
-          <img src="https://img.icons8.com/color/48/000000/amex.png" alt="Amex" />
+          <img src="https://img.icons8.com/color/48/000000/visa.png" />
+          <img src="https://img.icons8.com/color/48/000000/mastercard-logo.png" />
+          <img src="https://img.icons8.com/color/48/000000/amex.png" />
         </div>
-        <span style="margin-left:10px;"onclick="payWithCard()">Pay by Card</span>
+        <span style="margin-left:10px;">Pay by Card</span>
       </div>
       <div class="payment-option" onclick="selectPaymentMethod('EFT')">
         <strong>EFT Bank Transfer</strong>
@@ -193,7 +146,6 @@
     <div class="popup-buttons" style="margin-top:20px;">
       <button onclick="finalizePayment()">Pay Now</button>
       <button onclick="closePaymentPopup()">Cancel</button>
-      <!-- Register Voucher Button -->
       <button style="
         display:block;
         width:100%;
@@ -211,19 +163,18 @@
   </div>
 </div>
 
-<!-- The Centered Voucher Registration Popup -->
+<!-- Voucher registration form (hidden initially) -->
 <div class="form-popup" id="myForm">
-  <form action="/submit_registration" method="POST" class="form-container" onsubmit="return false;">
+  <form class="form-container" onsubmit="return false;">
     <h2>Voucher Registration</h2>
     <p>Please enter your email to receive a code.</p>
-    <label for="email"><b>Email</b></label>
     <input type="email" placeholder="Enter Email" id="email" required>
     <button type="button" class="btn" onclick="submitVoucher()">Get Code</button>
     <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
   </form>
 </div>
 
-<!-- Bank Details Input Popup -->
+<!-- Bank Details Input (hidden modal) -->
 <div id="bankDetailsInput" class="modal">
   <div class="popup-content" style="max-width:400px;">
     <span class="close-btn" onclick="closeBankDetails()">&times;</span>
@@ -243,56 +194,32 @@
 </div>
 
 <div id="notification" style="display:none; position:fixed; top:20px; width:100%; z-index:9999; text-align:center;">
-  <div style="background-color:#f50606; color:white; padding:10px; display:inline-block; border-radius:4px;">
+  <div style="background-color:#f50606; color:#fff; padding:10px; display:inline-block; border-radius:4px;">
     Sending notification...
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 <script>
-  // Notification functions
-  function showNotificationMessage(message, color='#4CAF50') {
-    const notif = document.getElementById('notification');
-    notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
-    notif.style.display = 'block';
-    setTimeout(() => { notif.style.display = 'none'; }, 3000);
+  // --- Initialize Supabase ---
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey = 'YOUR_SUPABASE_KEY'; // <-- Replace with your actual key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  // --- Functions to toggle voucher form ---
+  function openForm() {
+    document.getElementById('myForm').style.display = 'flex';
+  }
+  function closeForm() {
+    document.getElementById('myForm').style.display = 'none';
   }
 
-  // Placeholder notification functions
-  function sendTwilioNotification(to, message) {
-    showNotificationMessage('Sending notification...');
-    fetch('/notify/sms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: to, message: message })
-    }).then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          showNotificationMessage('Notification sent successfully!', '#4CAF50');
-        } else {
-          showNotificationMessage('Failed to send notification.', '#f44336');
-        }
-      }).catch(() => {
-        showNotificationMessage('Error sending notification.', '#f44336');
-      });
-  }
-
-  function sendSms(to, message) {
-    fetch('/notify/sms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to, message })
-    }).then(res => res.json())
-      .then(data => { console.log('SMS sent:', data); })
-      .catch(err => { console.error('Error sending SMS:', err); });
-  }
-
-  // Sample order data
+  // --- Example order summary ---
   let orderItems = [
-    {name: 'Sample Food 1', quantity: 2, price: 'R50'},
-    {name: 'Sample Food 2', quantity: 1, price: 'R30'}
+    {name:'Food1', quantity:1, price:'R50'},
+    {name:'Food2', quantity:2, price:'R30'}
   ];
 
-  // Populate order summary
   function populateOrderSummary() {
     const ul = document.getElementById('checkoutItems');
     ul.innerHTML = '';
@@ -301,35 +228,84 @@
       const li = document.createElement('li');
       li.innerHTML = `${item.name} x${item.quantity} @ ${item.price}`;
       ul.appendChild(li);
-      const p = parseFloat(item.price.replace('R', ''));
-      total += p * item.quantity;
+      total += parseFloat(item.price.replace('R','')) * item.quantity;
     });
     document.getElementById('totalAmount').innerText = `R${total.toFixed(2)}`;
   }
   populateOrderSummary();
 
-  // Show payment options popup
-  function showPaymentMethodPage() {
-    if (orderItems.length === 0) {
-      alert('Your cart is empty!');
-      return;
-    }
-    document.getElementById('paymentPopup').style.display = 'flex';
+  // --- Submit voucher code ---
+  function submitVoucher() {
+    const email = document.getElementById('email').value.trim();
+    if (!email) { alert('Enter email'); return; }
+    alert('Voucher sent!');
+    closeForm();
   }
 
+  // --- Payment simulation ---
+  async function savePayment() {
+    const data = {
+      date: new Date().toISOString().split('T')[0],
+      amount: parseFloat(document.getElementById('totalAmount').innerText.replace('R','')),
+      transaction_id: 'TX' + Math.floor(Math.random()*1000000),
+      status: 'Completed'
+    };
+    // Save to backend API or directly to Supabase
+    await fetch('/api/save-payment', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    fetchPayments(); // refresh list
+  }
+
+  // --- Fetch payments from database ---
+  async function fetchPayments() {
+    const res = await fetch('/api/get-payments');
+    const data = await res.json();
+    payments = data;
+    renderPaymentHistory();
+  }
+
+  // --- Render payment history table ---
+  function renderPaymentHistory() {
+    const container = document.getElementById('paymentHistoryContainer');
+    container.innerHTML = '';
+    if (!payments || payments.length===0) {
+      container.innerHTML = 'No payment history.';
+      return;
+    }
+    const table = document.createElement('table');
+    table.innerHTML = `<thead>
+      <tr>
+        <th>Date</th>
+        <th>Amount (ZAR)</th>
+        <th>Transaction ID</th>
+        <th>Status</th>
+      </tr></thead>`;
+    const tbody = document.createElement('tbody');
+    payments.forEach(p => {
+      const row = tbody.insertRow();
+      row.insertCell().innerText = `R ${p.amount.toFixed(2)}`;
+      row.insertCell().innerText = p.date;
+      row.insertCell().innerText = p.transaction_id;
+      row.insertCell().innerText = p.status;
+    });
+    table.appendChild(tbody);
+    document.getElementById('paymentHistoryContainer').appendChild(table);
+  }
+
+  // --- Show payment options popup ---
+  function showPaymentMethodPage() {
+    document.getElementById('paymentPopup').style.display = 'flex';
+  }
   function closePaymentPopup() {
     document.getElementById('paymentPopup').style.display = 'none';
   }
-
   let selectedPaymentMethod = null;
-
   function selectPaymentMethod(method) {
     selectedPaymentMethod = method;
-    if (method === 'EFT') {
-      document.getElementById('eftDetails').style.display = 'block';
-    } else {
-      document.getElementById('eftDetails').style.display = 'none';
-    }
+    document.getElementById('eftDetails').style.display = (method==='EFT') ? 'block' : 'none';
   }
 
   function finalizePayment() {
@@ -337,213 +313,30 @@
       alert('Please select a payment method.');
       return;
     }
-    if (selectedPaymentMethod === 'EFT') {
+    if (selectedPaymentMethod==='EFT') {
       openBankDetailsInput();
-    } else if (selectedPaymentMethod === 'Card') {
-      alert('Please proceed with your card payment.');
+    } else if (selectedPaymentMethod==='Card') {
+      alert('Proceed with card payment.');
     }
     closePaymentPopup();
   }
 
   function openBankDetailsInput() {
-    document.getElementById('bankDetailsInput').style.display = 'flex';
+    document.getElementById('bankDetailsInput').style.display='flex';
   }
-
   function closeBankDetails() {
-    document.getElementById('bankDetailsInput').style.display = 'none';
+    document.getElementById('bankDetailsInput').style.display='none';
   }
-
   function saveBankDetails() {
-    const bankName = document.getElementById('bankName').value;
-    const accNum = document.getElementById('accountNumber').value;
-    const branchCode = document.getElementById('branchCode').value;
-    const accountName = document.getElementById('accountName').value;
     alert('Bank details saved!');
     closeBankDetails();
   }
 
-  // Voucher registration functions
-  function openForm() {
-    document.getElementById("myForm").style.display = "flex";
-  }
-
-  function closeForm() {
-    document.getElementById("myForm").style.display = "none";
-  }
-
-  function submitVoucher() {
-    const email = document.getElementById('email').value.trim();
-    if (!email) {
-      alert('Please enter an email.');
-      return;
-    }
-    // Simulate API call
-    fetch('/api/send-voucher', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, voucherCode: 'DISCOUNT10' })
-    }).then(res => res.json())
-      .then(result => {
-        if (result.success) {
-          alert('Voucher email sent successfully!');
-        } else {
-          alert('Error sending voucher.');
-        }
-        closeForm();
-      }).catch(() => {
-        alert('Network error.');
-        closeForm();
-      });
-  }
-
-  function initiatePayFastPayment() {
-  // Replace with actual total amount dynamically calculated
-  const totalText = document.getElementById('totalAmount').innerText;
-  const amount = totalText.replace('R', '').trim();
-
-  const merchantID = '10004002'; // Your PayFast Merchant ID
-  const merchantKey = 'q1cd2rdny4a53'; // Your PayFast Merchant Key
-  const itemName = 'Order Payment'; // Or your item description
-
-  const payFastUrl = 'https://www.payfast.co.za/eng/process';
-
-  // Create a form element to submit to PayFast
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = payFastUrl;
-
-  // Helper function to add hidden input fields
-  function addField(name, value) {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = name;
-    input.value = value;
-    form.appendChild(input);
-  }
-
-  // Add required PayFast fields
-  addField('merchant_id', merchantID);
-  addField('merchant_key', merchantKey);
-  addField('amount', amount);
-  addField('item_name', itemName);
-  addField('return_url', 'https://yourwebsite.com/return'); // Update with your actual return URL
-  addField('cancel_url', 'https://yourwebsite.com/cancel'); // Update with your actual cancel URL
-  addField('notify_url', 'https://yourwebsite.com/ipn'); // Update with your actual notification URL
-
-  // Append form to body and submit
-  document.body.appendChild(form);
-  form.submit();
-}
-
-  // Parse the order ID from URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const orderId = urlParams.get('order') || 'No order ID';
-
-  document.getElementById('orderInfo').innerText = 'Tracking Order: ' + orderId;
-
-  // Initialize Google Map
-function initMap() {
-  let centerCoords;
-
-  // If order ID matches specific dummy, center on Cape Town
-  if (orderId === 'ORDER1234567890') {
-    centerCoords = { lat: -33.9249, lng: 18.4241 }; // Cape Town
-  } else {
-    centerCoords = { lat: 0, lng: 0 }; // Default
-  }
-
-  const map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 14,
-    center: centerCoords,
-    mapTypeId: 'roadmap',
-  });
-
-  // Add a marker for driver (simulate movement)
-  const driverMarker = new google.maps.Marker({
-    map,
-    position: centerCoords,
-    title: 'Driver',
-    icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      scale: 11,
-      fillColor: '#d32f2f',
-      fillOpacity: 1,
-      strokeColor: '#fff',
-      strokeWeight: 3
-    }
-  });
-
-  // Optional: simulate driver movement
-  if (orderId === 'ORDER1234567890') {
-    // Animate around Cape Town
-    let angle = 0;
-    setInterval(() => {
-      angle += 10;
-      const radius = 0.01; // about 1 km
-      const rad = angle * Math.PI / 180;
-      const lat = centerCoords.lat + Math.cos(rad) * radius;
-      const lng = centerCoords.lng + Math.sin(rad) * radius;
-      driverMarker.setPosition({ lat, lng });
-      map.panTo({ lat, lng });
-    }, 2000);
-  }
-}
-
-// Load Google Maps script
-(function loadScript() {
-  const script = document.createElement('script');
-  script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap`;
-  script.async = true;
-  document.head.appendChild(script);
-})();
-
-function payWithCard() {
-  // Get total amount
-  const totalText = document.getElementById('totalAmount').innerText;
-  const amount = totalText.replace('R', '').trim();
-
-  // Call your backend to get the payment data
-  fetch('/create-payfast-payment', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      amount: amount,
-      item_name: 'Order Payment',
-      return_url: 'https://yourwebsite.com/return',
-      cancel_url: 'https://yourwebsite.com/cancel',
-      notify_url: 'https://yourwebsite.com/ipn'
-    }),
-  })
-  .then(res => res.json())
-  .then(data => {
-    // Create and submit a form to redirect to PayFast
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = data.payfastUrl;
-    for (const key in data.data) {
-      const hiddenField = document.createElement('input');
-      hiddenField.type = 'hidden';
-      hiddenField.name = key;
-      hiddenField.value = data.data[key];
-      form.appendChild(hiddenField);
-    }
-    document.body.appendChild(form);
-    form.submit();
-  })
-  .catch(error => {
-    console.error('Error initiating payment:', error);
-    alert('Error initiating payment. Please try again.');
-  });
-}
+  // --- Initialize on page load ---
+  window.onload = () => {
+    populateOrderSummary();
+    fetchPayments(); // Fetch existing payments
+  };
 </script>
-
-</body>
-</html>
-</script>
-
-<!-- External scripts if needed -->
-<script src="server/supabase/supabaseClient.js" async></script>
-<script src="PayfastAPI.js" async></script>
-<script src="smsAndEmailAPI.js" async></script>
 </body>
 </html>

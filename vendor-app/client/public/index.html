@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Vendor App</title>
 <!-- Font Awesome -->
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
@@ -42,11 +42,6 @@
   table { width:100%; border-collapse:collapse; margin-top:10px; }
   th, td { border:1px solid #ccc; padding:8px; }
   th { background:#f0f0f0; }
-  /* Modals styling */
-  .modal {
-    display:flex; align-items:center; justify-content:center; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;
-  }
-  .modal-box { background:#fff; padding:20px; border-radius:8px; width:400px; max-height:80%; overflow-y:auto; }
 </style>
 </head>
 <body>
@@ -55,9 +50,9 @@
 <div class="header">
   <div class="vendor-text">Vendor</div>
   <div class="menu-container">
-<button class="profile-btn" id="profileBtn" onclick="toggleDropdown()" style="margin-left:50px;">
-  <i class="fas fa-user-circle"></i> Menu
-</button>
+    <button class="profile-btn" id="profileBtn" onclick="toggleDropdown()" style="margin-left:50px;">
+      <i class="fas fa-user-circle"></i> Menu
+    </button>
     <div class="dropdown" id="profileDropdown">
       <a href="#" onclick="showManagement('items');">Manage Items</a>
       <a href="#" onclick="showManagement('orders');">Manage Orders</a>
@@ -131,9 +126,13 @@
 <!-- Notification -->
 <div id="notification"></div>
 
-<!-- Scripts: core logic and src connections -->
- <script src="supabaseClient.js" async></script> 
+<!-- Core Script -->
 <script>
+  // Initialize supabase (your URL and KEY)
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey = 'process.env.SUPABASE_KEY'; // replace with your actual key
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
   // Data arrays
   let items = [];
   let orders = [];
@@ -155,12 +154,81 @@
 
   // Show payment history
   function showPaymentHistory() {
+    fetchPayments();
     document.querySelectorAll('.section').forEach(s => s.style.display='none');
     document.getElementById('section-payment-history').style.display='block';
+  }
+
+  // Fetch payment records from Supabase
+  async function fetchPayments() {
+    const { data, error } = await supabase
+      .from('payment_history')
+      .select('*')
+      .order('date', { ascending: false });
+    if (error) {
+      console.error('Error fetching payments:', error);
+      return;
+    }
+    payments = data.map(p => ({
+      date: new Date(p.date).toISOString().split('T')[0],
+      amount: parseFloat(p.amount),
+      transactionId: p.transaction_id,
+      status: p.status
+    }));
     renderPaymentHistory();
   }
 
-  // Show specific section
+  // Render payment history table with Rands
+  function renderPaymentHistory() {
+    const container = document.getElementById('paymentHistoryContainer');
+    container.innerHTML = '';
+
+    if (payments.length === 0) {
+      container.innerHTML = 'No payment history.';
+      return;
+    }
+
+    const table = document.createElement('table');
+    table.innerHTML = `<thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Amount (ZAR)</th>
+                            <th>Transaction ID</th>
+                            <th>Status</th>
+                          </tr>
+                       </thead>`;
+    const tbody = document.createElement('tbody');
+
+    payments.forEach(p => {
+      const row = tbody.insertRow();
+      row.insertCell().innerText = `R ${p.amount.toFixed(2)}`;
+      row.insertCell().innerText = p.date;
+      row.insertCell().innerText = p.transactionId;
+      row.insertCell().innerText = p.status;
+    });
+
+    table.appendChild(tbody);
+    container.innerHTML = '';
+    container.appendChild(table);
+  }
+
+  // Placeholder CRUD functions for items, orders, users
+  function renderItems() { /* Your code here */ }
+  function openItemForm() { /* Your code here */ }
+  function saveItem() { /* Your code here */ }
+  function closeItemForm() { /* Your code here */ }
+  function editItem(i) { /* Your code here */ }
+  function deleteItem(i) { /* Your code here */ }
+  function renderOrders() { /* Your code here */ }
+  function promptAddOrder() { /* Your code here */ }
+  function editOrder(i) { /* Your code here */ }
+  function deleteOrder(i) { /* Your code here */ }
+  function renderUsers() { /* Your code here */ }
+  function openUserForm() { /* Your code here */ }
+  function saveUser() { /* Your code here */ }
+  function closeUserForm() { /* Your code here */ }
+
+  // Show section
   function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.style.display='none');
     document.getElementById(id).style.display='block';
@@ -172,312 +240,11 @@
     alert('Logged out');
   }
 
-  // =================== Item CRUD ===================
-
-  function renderItems() {
-    const container = document.getElementById('itemsTable');
-    container.innerHTML='';
-    if (items.length===0) { container.innerHTML='No items'; return; }
-    const table = document.createElement('table');
-    table.innerHTML=`<thead><tr><th>Vendor</th><th>Item</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>`;
-    const tbody = document.createElement('tbody');
-    items.forEach((it,i) => {
-      const row=tbody.insertRow();
-      row.insertCell().innerText=it.vendor;
-      row.insertCell().innerText=it.item;
-      row.insertCell().innerText=`R ${it.price.toFixed(2)}`;
-      row.insertCell().innerText=it.stock;
-      const cell=row.insertCell();
-      const editBtn=document.createElement('button');
-      editBtn.innerText='Edit';
-      editBtn.onclick=()=>editItem(i);
-      const deleteBtn=document.createElement('button');
-      deleteBtn.innerText='Delete';
-      deleteBtn.style.background='#f44336';
-      deleteBtn.onclick=()=>deleteItem(i);
-      cell.appendChild(editBtn);
-      cell.appendChild(deleteBtn);
-    });
-    table.appendChild(tbody);
-    container.innerHTML='';
-    container.appendChild(table);
-  }
-
-  function openItemForm() {
-    document.getElementById('itemFormTitle').innerText='Add Item';
-    document.getElementById('itemVendor').value='';
-    document.getElementById('itemName').value='';
-    document.getElementById('itemPrice').value='';
-    document.getElementById('itemStock').value='In Stock';
-    document.getElementById('itemFormModal').dataset.editIndex='-1';
-    document.getElementById('itemFormModal').style.display='flex';
-  }
-
-  function editItem(i) {
-    const it=items[i];
-    document.getElementById('itemFormTitle').innerText='Edit Item';
-    document.getElementById('itemVendor').value=it.vendor;
-    document.getElementById('itemName').value=it.item;
-    document.getElementById('itemPrice').value=it.price;
-    document.getElementById('itemStock').value=it.stock;
-    document.getElementById('itemFormModal').dataset.editIndex=i;
-    document.getElementById('itemFormModal').style.display='flex';
-  }
-
-  function saveItem() {
-    const i=Number(document.getElementById('itemFormModal').dataset.editIndex);
-    const vendor = document.getElementById('itemVendor').value.trim();
-    const item = document.getElementById('itemName').value.trim();
-    const price = parseFloat(document.getElementById('itemPrice').value);
-    const stock = document.getElementById('itemStock').value;
-    if (!vendor || !item || isNaN(price)) { alert('Fill all fields'); return; }
-    if (i>=0) { items[i]= {vendor, item, price, stock}; }
-    else { items.push({vendor, item, price, stock}); }
-    closeItemForm();
-    renderItems();
-  }
-
-  function deleteItem(i) {
-    if (confirm('Delete this item?')) { items.splice(i,1); renderItems(); }
-  }
-
-  function closeItemForm() {
-    document.getElementById('itemFormModal').style.display='none';
-  }
-
-  // =================== Orders CRUD ===================
-
-  function renderOrders() {
-    const container = document.getElementById('ordersTable');
-    container.innerHTML='';
-    if (orders.length===0) { container.innerHTML='No orders'; return; }
-    const table = document.createElement('table');
-    table.innerHTML=`<thead><tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>`;
-    const tbody = document.createElement('tbody');
-    orders.forEach((o,i) => {
-      const row=tbody.insertRow();
-      row.insertCell().innerText=o.id;
-      row.insertCell().innerText=o.customer;
-      row.insertCell().innerText=`R ${o.total.toFixed(2)}`;
-      row.insertCell().innerText=o.status;
-      const cell=row.insertCell();
-      const editBtn=document.createElement('button');
-      editBtn.innerText='Edit';
-      editBtn.onclick=()=>editOrder(i);
-      const deleteBtn=document.createElement('button');
-      deleteBtn.innerText='Delete';
-      deleteBtn.style.background='#f44336';
-      deleteBtn.onclick=()=>deleteOrder(i);
-      cell.appendChild(editBtn);
-      cell.appendChild(deleteBtn);
-    });
-    table.appendChild(tbody);
-    document.getElementById('ordersTable').innerHTML='';
-    document.getElementById('ordersTable').appendChild(table);
-  }
-
-  function promptAddOrder() {
-    const customer=prompt('Customer name:');
-    const totalStr=prompt('Total R:');
-    const status=prompt('Status (Pending/Delivered):');
-    const total=parseFloat(totalStr);
-    if (!customer || isNaN(total) || !status) { alert('Invalid input'); return; }
-    const newOrder={id: orders.length+1, customer, total, status};
-    orders.push(newOrder);
-    renderOrders();
-  }
-
-  function editOrder(i) {
-    const o=orders[i];
-    const newStatus=prompt('Set status:', o.status);
-    if (newStatus) { o.status=newStatus; renderOrders(); }
-  }
-
-  function deleteOrder(i) {
-    if (confirm('Delete this order?')) { orders.splice(i,1); renderOrders(); }
-  }
-
-  // =================== Users CRUD ===================
-
-  function renderUsers() {
-    const container = document.getElementById('usersTable');
-    container.innerHTML='';
-    if (users.length===0) { container.innerHTML='No users'; return; }
-    const table = document.createElement('table');
-    table.innerHTML=`<thead><tr><th>Email</th><th>Name</th><th>Actions</th></tr></thead>`;
-    const tbody = document.createElement('tbody');
-    users.forEach((u,i) => {
-      const row=tbody.insertRow();
-      row.insertCell().innerText=u.email;
-      row.insertCell().innerText=u.name;
-      const cell=row.insertCell();
-      const editBtn=document.createElement('button');
-      editBtn.innerText='Edit';
-      editBtn.onclick=()=>editUser(i);
-      const deleteBtn=document.createElement('button');
-      deleteBtn.innerText='Delete';
-      deleteBtn.style.background='#f44336';
-      deleteBtn.onclick=()=>deleteUser(i);
-      cell.appendChild(editBtn);
-      cell.appendChild(deleteBtn);
-    });
-    table.appendChild(tbody);
-    document.getElementById('usersTable').innerHTML='';
-    document.getElementById('usersTable').appendChild(table);
-  }
-
-  function openUserForm() {
-    document.getElementById('userFormTitle').innerText='Add User';
-    document.getElementById('userEmail').value='';
-    document.getElementById('userName').value='';
-    document.getElementById('userFormModal').dataset.editIndex='-1';
-    document.getElementById('userFormModal').style.display='flex';
-  }
-
-  function editUser(i) {
-    const u=users[i];
-    document.getElementById('userFormTitle').innerText='Edit User';
-    document.getElementById('userEmail').value=u.email;
-    document.getElementById('userName').value=u.name;
-    document.getElementById('userFormModal').dataset.editIndex=i;
-    document.getElementById('userFormModal').style.display='flex';
-  }
-
-  function saveUser() {
-    const i=Number(document.getElementById('userFormModal').dataset.editIndex);
-    const email=document.getElementById('userEmail').value.trim();
-    const name=document.getElementById('userName').value.trim();
-    if (!email || !name) { alert('Fill all fields'); return; }
-    if (i>=0) { users[i]= {email, name}; }
-    else { users.push({email, name}); }
-    closeUserForm();
-    renderUsers();
-  }
-
-  function deleteUser(i) {
-    if (confirm('Delete this user?')) { users.splice(i,1); renderUsers(); }
-  }
-
-  function closeUserForm() {
-    document.getElementById('userFormModal').style.display='none';
-  }
-
-  // =================== Payment History ===================
-
-  function showPaymentHistory() {
-    document.querySelectorAll('.section').forEach(s => s.style.display='none');
-    document.getElementById('section-payment-history').style.display='block';
-    renderPaymentHistory();
-  }
-
-  function renderPaymentHistory() {
-    const container = document.getElementById('paymentHistoryContainer');
-    container.innerHTML='';
-    if (payments.length===0) { container.innerHTML='No payment history.'; return; }
-    const table=document.createElement('table');
-    table.innerHTML=`<thead><tr><th>Amount</th><th>Method</th></tr></thead>`;
-    const tbody=document.createElement('tbody');
-    payments.forEach(p => {
-      const row=tbody.insertRow();
-      row.insertCell().innerText=`R ${p.amount.toFixed(2)}`;
-      row.insertCell().innerText=p.method;
-    });
-    table.appendChild(tbody);
-    container.innerHTML='';
-    container.appendChild(table);
-  }
-
-  // =================== Modal handlers ===================
-
-  function openItemForm() {
-    document.getElementById('itemFormTitle').innerText='Add Item';
-    document.getElementById('itemVendor').value='';
-    document.getElementById('itemName').value='';
-    document.getElementById('itemPrice').value='';
-    document.getElementById('itemStock').value='In Stock';
-    document.getElementById('itemFormModal').dataset.editIndex='-1';
-    document.getElementById('itemFormModal').style.display='flex';
-  }
-
-  function closeItemForm() { document.getElementById('itemFormModal').style.display='none'; }
-
-  function saveItem() {
-    const i=Number(document.getElementById('itemFormModal').dataset.editIndex);
-    const vendor = document.getElementById('itemVendor').value.trim();
-    const item = document.getElementById('itemName').value.trim();
-    const price = parseFloat(document.getElementById('itemPrice').value);
-    const stock = document.getElementById('itemStock').value;
-    if (!vendor || !item || isNaN(price)) { alert('Fill all fields'); return; }
-    if (i>=0) { items[i]= {vendor, item, price, stock}; }
-    else { items.push({vendor, item, price, stock}); }
-    closeItemForm();
-    renderItems();
-  }
-
-  function deleteItem(i) {
-    if (confirm('Delete this item?')) { items.splice(i,1); renderItems(); }
-  }
-
-  // =================== User Modal Handlers ===================
-
-  function openUserForm() {
-    document.getElementById('userFormTitle').innerText='Add User';
-    document.getElementById('userEmail').value='';
-    document.getElementById('userName').value='';
-    document.getElementById('userFormModal').dataset.editIndex='-1';
-    document.getElementById('userFormModal').style.display='flex';
-  }
-  function closeUserForm() { document.getElementById('userFormModal').style.display='none'; }
-
-  function saveUser() {
-    const i=Number(document.getElementById('userFormModal').dataset.editIndex);
-    const email=document.getElementById('userEmail').value.trim();
-    const name=document.getElementById('userName').value.trim();
-    if (!email || !name) { alert('Fill all fields'); return; }
-    if (i>=0) { users[i]= {email, name}; }
-    else { users.push({email, name}); }
-    closeUserForm();
-    renderUsers();
-  }
-
+  // On page load
+  window.onload = () => {
+    // fetch payments initially
+    fetchPayments();
+  };
 </script>
-<script src="smsAndEmailAPI.js"async></script>
-
-<!-- External scripts for your project -->
-<script src="client/public/functions/createPayFastPayment.js" async></script>
-<script src="client/public/functions/mainTwilioFunction.js" async></script>
-<script src="client/public/functions/token.js" async></script>
-<script src="client/public/functions/sendSMS.js" async></script>
-<script src="client/public/functions/twilio.js" async></script>
-
-<script src="client/public/components/client_side_payment.js" async></script>
-<script src="client/public/components/save_payment.js" async></script>
-<script src="client/public/components/real_time_data_fetching.js" async></script>
-
-<script src="client/public/hooks/useAuth.js" async></script>
-<script src="client/public/hooks/useDebounce.js" async></script>
-<script src="client/public/hooks/useFetch.js" async></script>
-<script src="client/public/hooks/LocalStorage.js" async></script>
-
-<script src="client/public/pages/ManageItemsPage.jsx" async></script>
-<script src="client/public/pages/MangementSection.js" async></script>
-<script src="client/public/pages/ManageOrdersPage.jsx" async></script>
-<script src="client/public/pages/ManageUsersPage.jsx" async></script>
-<script src="client/public/pages/PaymentHistoryPage.jsx" async></script>
-<script src="client/public/pages/PaymentSuccess.jsx" async></script>
-
-<script src="server/supabase/.env.local" async></script>
-<script src="server/supabase/supabaseClient.js" async></script>
-
-<script src="server/.env.client" async></script>
-<script src="server/api.client.js" async></script>
-<script src="server/map.js" async></script>
-<script src="server/maps.client.js" async></script>
-<script src="server/notification.client.js" async></script>
-<script src="server/payfast.client.js" async></script>
-<script src="server/twilioNotifiaction.js" async></script>
-<script src="server/routes.js" async></script>
-<script src="server/server.js" async></script>
-<script src="utils/payfastAPI.js" async></script>
 </body>
 </html>
