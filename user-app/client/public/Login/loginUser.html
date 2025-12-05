@@ -98,6 +98,32 @@
 </div>
 
 <script>
+
+ // Function to send SMS via backend API
+  function sendSms(toNumber, message) {
+    fetch('http://localhost:3000/send-sms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ to: toNumber, message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if(data.success) {
+        alert('SMS sent successfully.');
+      } else {
+        alert('Failed to send SMS: ' + data.error);
+      }
+    })
+    .catch(() => {
+      alert('Error sending SMS.');
+    });
+  }
+
+
+  
+
   const adminUsername = 'crunchtimeadmin';
   const adminPassword = 'crunchtimeadmin';
 
