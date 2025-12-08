@@ -27,7 +27,6 @@ async function sendAdminNotification(newUserName) {
 // Example of how you would call this function after a successful user login
 // This would typically be within your user authentication logic
 function handleUserLogin(user) {
-    // ... your login logic ...
 
     if (user.isNewUser) { // Assuming you have a way to determine if it's a new user
         sendAdminNotification(user.username);
