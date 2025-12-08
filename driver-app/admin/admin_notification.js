@@ -6,7 +6,7 @@ require('dotenv').config();
 
 // Find your Account SID and Auth Token at twilio.com/console
 const accountSid = 'AC031642049dd74fcc581b0fd106936a4f ';
-const authToken = "1447e415a2fc483bd2bfbea57451d55d   ";
+const authToken = '1447e415a2fc483bd2bfbea57451d55d';
 
 const client = new twilio(accountSid, authToken);
 
