@@ -5,18 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Register Driver</title>
 <style>
-  /* Include styles relevant for registration page */
+  /* Your existing styles */
   body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 20px;
     background-color: #f4f4f4;
   }
-  /* Style for hidden elements */
   .hidden {
     display: none;
   }
-  /* Optional: styles for form elements */
   form {
     max-width: 600px;
     margin: auto;
@@ -53,21 +51,27 @@
 
 <div id="registerContent"></div>
 
+<!-- Include Supabase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 <script>
-  // Function to load the registration form into a container
+  // Initialize Supabase client - replace with your actual keys
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey = process.env.SUPABASE_KEY; // key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
   function loadNewDriverPage() {
     const container = document.getElementById('registerContent');
 
-    // Create and append the image element
+    // Add image
     const img = document.createElement('img');
-    img.src = "img/screenshot (251).jpg"; // Make sure this path is correct
+    img.src = "img/screenshot (251).jpg"; // Check path
     img.alt = "Welcome Image";
     img.style.width = "250px";
     img.style.height = "auto";
     img.style.marginBottom = "20px";
     container.appendChild(img);
 
-    // Set the innerHTML for the rest of the form
+    // Add form HTML
     container.innerHTML += `
       <h1>Register as a Driver</h1>
       <form id="driverForm">
@@ -111,17 +115,17 @@
       </form>
     `;
 
-    // Add event listener for bank selection
+    // Show/hide "other bank" input
     document.getElementById('bankName').addEventListener('change', () => {
       const val = document.getElementById('bankName').value;
       document.getElementById('otherBankDiv').className = (val==='Other')?'':'hidden';
     });
 
-    // Handle form submission
-    document.getElementById('driverForm').onsubmit = (e) => {
+    // Form submit handler
+    document.getElementById('driverForm').onsubmit = async (e) => {
       e.preventDefault();
 
-      // Collect files
+      // Files
       const driverPhotoFile = document.getElementById('driverPhoto').files[0];
       const driverLicenseFile = document.getElementById('driverLicense').files[0];
       const carPhotoFile = document.getElementById('carPhoto').files[0];
@@ -131,36 +135,63 @@
         return;
       }
 
-      // Save driver data including email and password
-      const email = document.getElementById('driverEmail').value.trim();
-      const password = document.getElementById('driverPassword').value.trim();
+      try {
+        // Upload images
+        const driverPhotoURL = await uploadImage('register_driver_photos', driverPhotoFile);
+        const driverLicenseURL = await uploadImage('register_driver_licenses', driverLicenseFile);
+        const carPhotoURL = await uploadImage('register_car_photos', carPhotoFile);
 
-      const driverData = {
-        name: document.getElementById('driverName').value,
-        email: email,
-        password: password,
-        idNumber: document.getElementById('driverID').value,
-        phoneNumber: document.getElementById('driverPhone').value.trim(),
-        bankDetails: document.getElementById('bankDetails').value,
-        bankName: document.getElementById('bankName').value,
-        otherBank: document.getElementById('otherBank').value,
-        carColor: document.getElementById('carColor').value,
-        carType: document.getElementById('carType').value,
-        carRegNumber: document.getElementById('carRegNumber').value,
-        driverPhoto: URL.createObjectURL(driverPhotoFile),
-        driverLicense: URL.createObjectURL(driverLicenseFile),
-        carPhoto: URL.createObjectURL(carPhotoFile),
-        approved: false
-      };
+        // Gather data
+        const driverData = {
+          driver_photo_url: driverPhotoURL,
+          name: document.getElementById('driverName').value,
+          email: document.getElementById('driverEmail').value,
+          password: document.getElementById('driverPassword').value,
+          phone_number: document.getElementById('driverPhone').value.trim(),
+          id_number: document.getElementById('driverID').value,
+          bank_details: document.getElementById('bankDetails').value,
+          bank_name: document.getElementById('bankName').value,
+          other_bank: document.getElementById('otherBank').value,
+          driver_license_url: driverLicenseURL,
+          car_color: document.getElementById('carColor').value,
+          car_type: document.getElementById('carType').value,
+          car_photo_url: carPhotoURL,
+          car_registration_number: document.getElementById('carRegNumber').value,
+          approved: false
+        };
 
-      // Save to localStorage
-      localStorage.setItem('registeredUser', JSON.stringify(driverData));
+        // Save to database
+        await insertDriver(driverData);
 
-      alert('Registration successful! You can now login.');
+        // Optional: Save to localStorage
+        localStorage.setItem('registeredUser', JSON.stringify(driverData));
 
-      // Redirect to login page
-      window.location.href = "http://127.0.0.1:5500/driver-app/loginDriver.html"; // change to your login page filename
+        alert('Registration successful! You can now login.');
+        window.location.href = "http://127.0.0.1:5500/driver-app/loginDriver.html"; // change as needed
+      } catch (err) {
+        console.error(err);
+        alert('Error during registration. Please try again.');
+      }
     };
+
+    // Upload image helper
+    async function uploadImage(folder, file) {
+      const extension = file.name.split('.').pop();
+      const filename = `${Date.now()}.${extension}`;
+      const { data, error } = await supabase.storage.from(folder).upload(filename, file);
+      if (error) throw error;
+      const { data: publicData, error: pubError } = await supabase.storage.from(folder).getPublicUrl(filename);
+      if (pubError) throw pubError;
+      return publicData.publicUrl;
+    }
+
+    // Insert driver data into table
+    async function insertDriver(data) {
+      const { error } = await supabase
+        .from('register_drivers')
+        .insert([data]);
+      if (error) throw error;
+    }
   }
 
   loadNewDriverPage();
