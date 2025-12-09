@@ -203,7 +203,7 @@
 <script>
   // --- Initialize Supabase ---
   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = 'YOUR_SUPABASE_KEY'; // <-- Replace with your actual key
+  const supabaseKey = process.env.SUPABASE_KEY; // Actual key
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
   // --- Functions to toggle voucher form ---

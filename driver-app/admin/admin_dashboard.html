@@ -102,14 +102,8 @@
     font-size: 14px; margin-left: 10px;
   }
   .chart-container {
-  padding: 320px; /* Adds 20px of padding on all sides */
-  /* Or specify individual sides: */
-  /* padding-top: 10px; */
-  /* padding-right: 20px; */
-  /* padding-bottom: 10px; */
-  /* padding-left: 20px; */
-}
-
+    padding: 20px; /* Adjusted for clarity */
+  }
 </style>
 </head>
 <body>
@@ -126,7 +120,6 @@
       <label>Password</label>
       <input type="password" id="password" placeholder="Password" style="width:100%; margin-bottom:10px; padding:8px;"/>
       <button  style="width:100%;background-color:red" onclick="verifyLogin()">Login</button>
-    
     </div>
   </div>
 </div>
@@ -171,8 +164,8 @@
     <div class="menu-icon" title="Menu" style="cursor:pointer; font-size:24px;" onclick="toggleMenuDropdown()">☰</div>
     <div id="menuDropdown">
       <button onclick="showSection('dashboard')">Dashboard</button>
-     <button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/establishment.html'">Establishment</button>
-<button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/restaurant_menu.html'">Restaurant Menu</button>
+      <button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/establishment.html'">Establishment</button>
+      <button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/restaurant_menu.html'">Restaurant Menu</button>
       <button onclick="showSection('Driver')">Driver</button>
       <button onclick="showSection('Vendor')">Vendor</button>
     </div>
@@ -185,9 +178,13 @@
   </div>
 </div>
 
-<!-- ================== DASHBOARD SECTION ================== -->
+<!-- ================== DASHBOARD ================== -->
 <div id="dashboard" class="section active">
-  <!-- Dashboard Content -->
+  <!-- Dashboard content -->
+  <!-- Your existing dashboard code for summary, charts, etc. -->
+  <!-- Insert the dashboard details from your previous code here: -->
+  <!-- For brevity, I'll just include the main dashboard info below -->
+  <!-- The dashboard code begins: -->
   <div>
     <div class="top-bar" style="margin-top:0;">
       <div class="profile-section">
@@ -199,7 +196,6 @@
     <div class="dashboard-container">
       <!-- Filters & Income -->
       <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 20px 0 20px;">
-        <!-- Filter Button & Dropdown -->
         <div style="position:relative;">
           <button onclick="toggleFilterDropdown()">Filter Establishments ▼</button>
           <div id="filterDropdown">
@@ -208,7 +204,6 @@
             <button onclick="filterEstablishments('Type 2')">Type 2</button>
           </div>
         </div>
-        <!-- Income Buttons -->
         <div style="display:flex; gap:10px;">
           <button style="background-color:red; color:#fff;">Total Income</button>
           <button style="background-color:red; color:#fff;">Income</button>
@@ -238,19 +233,14 @@
           </div>
           <div style="margin-top:10px; font-size:24px;">📈</div>
         </div>
-        <!-- Inside your Performance section, replace or add this block -->
         <div style="display:flex; flex-direction:column; align-items:center; margin-top:20px;">
-          <!-- The Performance percentage display -->
           <div style="position: relative; width: 150px; height: 150px;">
             <svg viewBox="0 0 100 100" width="150" height="150" style="transform: rotate(-90deg);">
-              <!-- Background Circle -->
               <circle cx="50" cy="50" r="45" stroke="#eee" stroke-width="10" fill="none"/>
-              <!-- Progress Circle -->
               <circle cx="50" cy="50" r="45" stroke="yellow" stroke-width="10"
                 stroke-linecap="round"
                 stroke-dasharray="282.6" stroke-dashoffset="84.78" fill="none"/>
             </svg>
-            <!-- Text in the middle -->
             <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:24px; font-weight:bold;">70%</div>
           </div>
           <!-- Year Dropdown -->
@@ -306,172 +296,158 @@
             </div>
             <div>Number: 80</div>
             <div class="wave-graph" style="height:50px; background:#e0e0e0; margin-top:10px; border-radius:4px; display:flex; align-items:center; justify-content:center;">Wave Graph</div>
-            <!-- Canvas for Wave Graph -->
             <canvas id="waveGraphThisMonth" width="400" height="200"></canvas>
           </div>
           <!-- Last Year -->
           <div class="select-box" style="flex:1;">
-            <div class="select-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="select-header" style="display:flex; justify-content:space-between; align-items: center;">
               <h4>One Last</h4>
               <div class="option-icon" title="Options" style="width:30px; height:30px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">⋮</div>
             </div>
             <div>Number: 70</div>
             <div class="wave-graph" style="height:50px; background:#e0e0e0; margin-top:10px; border-radius:4px; display:flex; align-items:center; justify-content:center;">Wave Graph</div>
-            <!-- Canvas for Wave Graph -->
             <canvas id="waveGraphLastYear" width="400" height="200"></canvas>
           </div>
         </div>
-    <!-- Four rows with icons and labels below the graphs -->
-<div style="margin-top:30px; display:flex; flex-direction:column; gap:15px; padding:0 20px;">
- 
-  
-<div style="margin-top:30px; display:flex; flex-direction:column; gap:15px; padding:0 20px;">
-  <!-- Total orders complete display   -->
-  <div style="display:flex; align-items:center; gap:10px;">
-    <div style="font-size:24px;">
-      <img src="Screenshot (262).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
-    </div>
-    <div style="font-weight:bold;">Total orders complete </div>
-    <div style="margin-left:auto;">2687</div>
-  </div>
-  <!-- Total orders delivered display   -->
-  <div style="display:flex; align-items:center; gap:10px;">
-    <div style="font-size:24px;">
-      <img src="Screenshot (262).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
-    </div>
-    <div style="font-weight:bold;">Total orders delivered</div>
-    <div style="margin-left:auto;">1784</div>
-  </div>
-  <!-- Total orders canceled display  --> 
-  <div style="display:flex; align-items:center; gap:10px;">
-    <div style="font-size:24px;">
-      <img src="Screenshot (261).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
-    </div>
-    <div style="font-weight:bold;">Total orders canceled</div>
-    <div style="margin-left:auto;">86</div>
-  </div>
-  <!-- Orders pending display   -->
-  <div style="display:flex; align-items:center; gap:10px;">
-    <div style="font-size:24px;">
-      <img src="Screenshot (260).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
-    </div>
-    <div style="font-weight:bold;">Orders pending</div>
-    <div style="margin-left:auto;">467</div>
-  </div>
-</div>
-
-<!-- Popular Food -->
-<div class="popular-food" style="margin-top:30px;">
-  <!-- Header above the canvas -->
-  <div class="food-header" style="font-size:20px; font-weight:bold; margin-bottom:5px;">Popular Food</div>
-  
-<div class="chart-container">
-  <canvas id="circleChart" width="400" height="400"></canvas>
-</div>
-
-  <!-- Food Types -->
-  <div class="food-types" style="display:flex; flex-wrap:wrap; gap:15px; margin-top:10px">
-    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF6384;"></div>
-      <div>Fast Food - 40%</div>
-    </div>
-    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#36A2EB;"></div>
-      <div>Asian - 20%</div>
-    </div>
-    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FFCE56;"></div>
-      <div>Pasta - 15%</div>
-    </div>
-    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#4BC0C0;"></div>
-      <div>Mexican - 10%</div>
-    </div>
-    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#9966FF;"></div>
-      <div>Turkish - 5%</div>
-    </div>
-    <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF9F40;"></div>
-      <div>Desserts - 10%</div>
-    </div>
-  </div>
-</div>
-      
-      <!-- View Select Role Button -->
-      <div style="margin:30px 20px;">
-        <button style="background:red; color:#fff; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;" onclick="showRolePopup()">View Select Role</button>
-      </div>
-      
-      <!-- Role Management Popup -->
-      <div id="rolePopup" class="modal" style="display:none; flex-direction:column;">
-        <div class="modal-box" style="width:90%; max-height:90%; overflow-y:auto;">
-          <h3>Role Management</h3>
-          <!-- User, Vendor, Driver Tables -->
-          <h4>User Accounts</h4>
-          <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
-            <thead><tr><th>Email</th><th>Actions</th></tr></thead>
-            <tbody>
-              <tr>
-                <td>user1@gmail.com</td>
-                <td class="role-buttons">
-                  <button onclick="viewRoleInfo('User', 'user1@example.com')">View</button>
-                  <button onclick="deleteRole('User', 'user1@example.com')">Delete</button>
-                </td>
-              </tr>
-              <tr>
-                <td>user2@gmail.com</td>
-                <td class="role-buttons">
-                  <button onclick="viewRoleInfo('User', 'user2@example.com')">View</button>
-                  <button onclick="deleteRole('User', 'user2@example.com')">Delete</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          
-          <h4>Vendor Accounts</h4>
-          <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
-            <thead><tr><th>Email</th><th>Actions</th></tr></thead>
-            <tbody>
-              <tr>
-                <td>vendor1@gmail.com</td>
-                <td class="role-buttons">
-                  <button onclick="viewRoleInfo('Vendor', 'vendor1@example.com')">View</button>
-                  <button onclick="deleteRole('Vendor', 'vendor1@example.com')">Delete</button>
-                </td>
-              </tr>
-              <tr>
-                <td>vendor2@gmail.com</td>
-                <td class="role-buttons">
-                  <button onclick="viewRoleInfo('Vendor', 'vendor2@example.com')">View</button>
-                  <button onclick="deleteRole('Vendor', 'vendor2@example.com')">Delete</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          
-          <h4>Driver Accounts</h4>
-          <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
-            <thead><tr><th>Email</th><th>Actions</th></tr></thead>
-            <tbody>
-              <tr>
-                <td>driver1@gmail.com</td>
-                <td class="role-buttons">
-                  <button onclick="viewRoleInfo('Driver', 'driver1@example.com')">View</button>
-                  <button onclick="deleteRole('Driver', 'driver1@example.com')">Delete</button>
-                </td>
-              </tr>
-              <tr>
-                <td>driver2@gmail.com</td>
-                <td class="role-buttons">
-                  <button onclick="viewRoleInfo('Driver', 'driver2@example.com')">View</button>
-                  <button onclick="deleteRole('Driver', 'driver2@example.com')">Delete</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          
-          <button style="margin-top:15px; background:red; color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="closeRolePopup()">Close</button>
+        <!-- Additional info rows -->
+        <div style="margin-top:30px; display:flex; flex-direction:column; gap:15px; padding:0 20px;">
+          <!-- Total orders complete -->
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="font-size:24px;">
+              <img src="Screenshot (262).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+            </div>
+            <div style="font-weight:bold;">Total orders complete</div>
+            <div style="margin-left:auto;">2687</div>
+          </div>
+          <!-- Total orders delivered -->
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="font-size:24px;">
+              <img src="Screenshot (262).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+            </div>
+            <div style="font-weight:bold;">Total orders delivered</div>
+            <div style="margin-left:auto;">1784</div>
+          </div>
+          <!-- Total orders canceled -->
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="font-size:24px;">
+              <img src="Screenshot (261).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+            </div>
+            <div style="font-weight:bold;">Total orders canceled</div>
+            <div style="margin-left:auto;">86</div>
+          </div>
+          <!-- Orders pending -->
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="font-size:24px;">
+              <img src="Screenshot (260).png" alt="Image" style="width:100px; height:auto; margin-bottom:20px;"/>
+            </div>
+            <div style="font-weight:bold;">Orders pending</div>
+            <div style="margin-left:auto;">467</div>
+          </div>
+        </div>
+        <!-- Popular Food Chart -->
+        <div class="popular-food" style="margin-top:30px;">
+          <div class="food-header" style="font-size:20px; font-weight:bold; margin-bottom:5px;">Popular Food</div>
+          <div class="chart-container">
+            <canvas id="circleChart" width="400" height="400"></canvas>
+          </div>
+          <div class="food-types" style="display:flex; flex-wrap:wrap; gap:15px; margin-top:10px">
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF6384;"></div>
+              <div>Fast Food - 40%</div>
+            </div>
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#36A2EB;"></div>
+              <div>Asian - 20%</div>
+            </div>
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FFCE56;"></div>
+              <div>Pasta - 15%</div>
+            </div>
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#4BC0C0;"></div>
+              <div>Mexican - 10%</div>
+            </div>
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#9966FF;"></div>
+              <div>Turkish - 5%</div>
+            </div>
+            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
+              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF9F40;"></div>
+              <div>Desserts - 10%</div>
+            </div>
+          </div>
+        </div>
+        <!-- View Select Role Button -->
+        <div style="margin:30px 20px;">
+          <button style="background:red; color:#fff; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;" onclick="showRolePopup()">View Select Role</button>
+        </div>
+        <!-- Role Management Popup -->
+        <div id="rolePopup" class="modal" style="display:none; flex-direction:column;">
+          <div class="modal-box" style="width:90%; max-height:90%; overflow-y:auto;">
+            <h3>Role Management</h3>
+            <!-- User, Vendor, Driver Tables -->
+            <h4>User Accounts</h4>
+            <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
+              <thead><tr><th>Email</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>user1@gmail.com</td>
+                  <td class="role-buttons">
+                    <button onclick="viewRoleInfo('User', 'user1@example.com')">View</button>
+                    <button onclick="deleteRole('User', 'user1@example.com')">Delete</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>user2@gmail.com</td>
+                  <td class="role-buttons">
+                    <button onclick="viewRoleInfo('User', 'user2@example.com')">View</button>
+                    <button onclick="deleteRole('User', 'user2@example.com')">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <h4>Vendor Accounts</h4>
+            <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
+              <thead><tr><th>Email</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>vendor1@gmail.com</td>
+                  <td class="role-buttons">
+                    <button onclick="viewRoleInfo('Vendor', 'vendor1@example.com')">View</button>
+                    <button onclick="deleteRole('Vendor', 'vendor1@example.com')">Delete</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>vendor2@gmail.com</td>
+                  <td class="role-buttons">
+                    <button onclick="viewRoleInfo('Vendor', 'vendor2@example.com')">View</button>
+                    <button onclick="deleteRole('Vendor', 'vendor2@example.com')">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <h4>Driver Accounts</h4>
+            <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
+              <thead><tr><th>Email</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>driver1@gmail.com</td>
+                  <td class="role-buttons">
+                    <button onclick="viewRoleInfo('Driver', 'driver1@example.com')">View</button>
+                    <button onclick="deleteRole('Driver', 'driver1@example.com')">Delete</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>driver2@gmail.com</td>
+                  <td class="role-buttons">
+                    <button onclick="viewRoleInfo('Driver', 'driver2@example.com')">View</button>
+                    <button onclick="deleteRole('Driver', 'driver2@example.com')">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <button style="margin-top:15px; background:red; color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="closeRolePopup()">Close</button>
+          </div>
         </div>
       </div>
     </div>
@@ -479,7 +455,7 @@
 </div>
 
 <!-- ================== Driver Section ================== -->
-<div id="Driver" class="section" style="padding-top:70px;">
+<div id="Driver" class="section" style="display:none; padding-top:70px;">
   <h2 style="margin-left:20px;">Driver Info & Orders</h2>
   <div style="padding:20px;">
     <!-- Driver 1 -->
@@ -518,7 +494,7 @@
 </div>
 
 <!-- ================== Vendor Section ================== -->
-<div id="Vendor" class="section" style="padding-top:70px;">
+<div id="Vendor" class="section" style="display:none; padding-top:70px;">
   <h2 style="margin-left:20px;">Vendor Management</h2>
   <div style="padding:20px;">
     <button onclick="showVendors()">Show All Vendors</button>
@@ -529,13 +505,13 @@
 <div id="roleInfoPopup" class="modal" style="display:none;">
   <div class="modal-box" style="width:90%; max-height:90%; overflow-y:auto;">
     <h3>Role Information</h3>
-    <div id="roleInfoContent" style="margin-bottom:20px;">
-      <!-- Role details inserted here -->
-    </div>
+    <div id="roleInfoContent" style="margin-bottom:20px;"> <!-- Role details inserted here --> </div>
     <button style="margin-top:10px; background:rgb(255, 0, 0); color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="sendNotification()">Send Email/Notification</button>
     <button style="margin-top:10px; background:red; color:#fff; width:100%; padding:10px; border:none; border-radius:6px;" onclick="closeRoleInfo()">Close</button>
   </div>
 </div>
+
+<!-- ================== Scripts ================== -->
 <script src="supabaseClient.js" async></script> 
 <script>
   // ================== INITIAL VARIABLES ==================
@@ -570,6 +546,10 @@
   function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.style.display='none');
     document.getElementById(id).style.display='block';
+
+    // Load driver/vendor info if needed
+    if (id === 'Vendor') loadVendors();
+    if (id === 'Driver') loadDrivers();
   }
 
   // ================== Menu & Profile ==================
@@ -645,7 +625,6 @@
   function selectMonth(month) {
     document.querySelector('.year-button').innerText=month + ' ▼';
     document.getElementById('yearOptions').style.display='none';
-    // Update data display
     updateMonthlyData(month);
   }
 
@@ -791,52 +770,37 @@
   function showPastDeliveries(driverName) { alert('Showing past deliveries for ' + driverName); }
   function showDocuments(driverName) { alert('Showing documents for ' + driverName); }
 
-  // ================== Monthly Data for Income, Expense, Withdraw ==================
-  const monthlyData = {
-    January: { income: 10000, expense: 5000, withdraw: 2000 },
-    February: { income: 12000, expense: 6000, withdraw: 2500 },
-    March: { income: 11000, expense: 5500, withdraw: 2200 },
-    April: { income: 13000, expense: 6500, withdraw: 3000 },
-    May: { income: 12500, expense: 6200, withdraw: 2800 },
-    June: { income: 11500, expense: 5800, withdraw: 2600 },
-    July: { income: 14000, expense: 7000, withdraw: 3200 },
-    August: { income: 13500, expense: 6800, withdraw: 3100 },
-    September: { income: 12500, expense: 6000, withdraw: 2900 },
-    October: { income: 15000, expense: 7500, withdraw: 3400 },
-    November: { income: 16000, expense: 8000, withdraw: 3600 },
-    December: { income: 17000, expense: 8500, withdraw: 3800 },
-  };
-
-  // Function to update income, expense, withdraw display and percentages
-  function updateMonthlyData(month) {
-    const data = monthlyData[month];
-    if (data) {
-      // Update amounts
-      document.getElementById('incomeAmount').innerText = `$${data.income.toLocaleString()}`;
-      document.getElementById('expenseAmount').innerText = `$${data.expense.toLocaleString()}`;
-      document.getElementById('withdrawAmount').innerText = `$${data.withdraw.toLocaleString()}`;
-
-      // Calculate percentage change from January
-      const base = monthlyData['January'];
-      const incomePerc = ((data.income - base.income) / base.income) * 100;
-      const expensePerc = ((data.expense - base.expense) / base.expense) * 100;
-      const withdrawPerc = ((data.withdraw - base.withdraw) / base.withdraw) * 100;
-
-      // Display percentage change with signs
-      document.getElementById('incomePerc').innerText = ` (${incomePerc.toFixed(2)}%)`;
-      document.getElementById('expensePerc').innerText = ` (${expensePerc.toFixed(2)}%)`;
-      document.getElementById('withdrawPerc').innerText = ` (${withdrawPerc.toFixed(2)}%)`;
-    }
+  // Load driver data (simulate)
+  async function loadDrivers() {
+    // Example: set static data for demo
+    document.querySelectorAll('.driver-profile').forEach((div, index) => {
+      if (index === 0) {
+        div.querySelector('h4').innerText='John Doe';
+        div.querySelectorAll('p')[0].innerText='Contact: 123-456-7890';
+        div.querySelectorAll('p')[1].innerText='Plate: ABC-1234';
+        div.querySelectorAll('p')[2].innerText='Email: john@gmail.com';
+        div.querySelectorAll('p')[3].innerHTML='Ratings: 4.5 &#9733;';
+        div.querySelectorAll('p')[4].innerText='Comments: Very punctual.';
+      } else if (index===1) {
+        div.querySelector('h4').innerText='Jane Smith';
+        div.querySelectorAll('p')[0].innerText='Contact: 987-654-3210';
+        div.querySelectorAll('p')[1].innerText='Plate: XYZ-5678';
+        div.querySelectorAll('p')[2].innerText='Email: jane@gmail.com';
+        div.querySelectorAll('p')[3].innerHTML='Ratings: 4.8 &#9733;';
+        div.querySelectorAll('p')[4].innerText='Comments: Great driver.';
+      }
+    });
   }
 
-  // When a month is selected, update data
-  function selectMonth(month) {
-    document.querySelector('.year-button').innerText=month + ' ▼';
-    document.getElementById('yearOptions').style.display='none';
-    updateMonthlyData(month);
+  // Load vendor data (simulate)
+  async function loadVendors() {
+    // For demo, static data or fetch from your backend
   }
 
-  // Initialize default data on page load
+  // Show all vendors (demo)
+  function showVendors() { alert('Display all vendors with accept/reject options and history.'); }
+
+  // When page loads
   window.onload = () => {
     if (!isAuthenticated) {
       document.getElementById('loginModal').style.display='flex';
@@ -844,11 +808,14 @@
       document.getElementById('loginModal').style.display='none';
     }
     initCharts();
-    // Set default month to January
     updateMonthlyData('January');
+    loadDrivers();
+    loadVendors();
   };
 </script>
-<script src="supabaseClient.js"async></script>
-<script src="payfast-track.js"async></script>
+<!-- Import your supabase client setup (from your code) -->
+<script src="supabaseClient.js" async></script>
+<script src="payfast-track.js" async></script>
+
 </body>
 </html>

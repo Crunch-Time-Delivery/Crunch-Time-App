@@ -2,17 +2,17 @@ import { createClient } from '@supabase/supabase-js'
 
 // Initialize Supabase client
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this is set in your environment
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Storage configuration
-const storageBucket = 'crunchtime'; // Actual bucket name
-const storageKeyId = 'e14f15dbd3a60e1e4b2e2f90a19b7587'; // Your Key ID
+const storageBucket = 'crunchtime'; // Your storage bucket name
+const storageKeyId = 'e14f15dbd3a60e1e4b2e2f90a19b7587'; // Your storage key ID
 const storageEndpoint = 'https://wbpgmgtoyzlnawvsfeiu.storage.supabase.co/storage/v1/s3';
 
 // Function to upload profile picture
 async function uploadProfilePicture(file, filename) {
-  const filePath = `profile_pictures/${filename}`
+  const filePath = `profile_pictures/${filename}`;
 
   const { data, error } = await supabase.storage
     .from(storageBucket)
@@ -21,16 +21,16 @@ async function uploadProfilePicture(file, filename) {
         'x-amz-meta-key': storageKeyId,
         'x-amz-meta-endpoint': storageEndpoint,
       },
-    })
+    });
 
   if (error) {
-    console.error('Error uploading profile picture:', error)
-    return null
+    console.error('Error uploading profile picture:', error);
+    return null;
   }
 
-  // Return the public URL or storage path
-  const publicUrl = `${storageEndpoint.replace('/storage/v1/s3', '')}/storage/v1/object/public/${filePath}`
-  return publicUrl
+  // Return the public URL
+  const publicUrl = `${storageEndpoint.replace('/storage/v1/s3', '')}/storage/v1/object/public/${filePath}`;
+  return publicUrl;
 }
 
 // Fetch Admin data
@@ -43,41 +43,76 @@ async function fetchAdmin() {
       password,
       Change_Username,
       Change_Password,
-      New Admin_Email,
-      New Admin_Username,
+      "New Admin_Email",
+      "New Admin_Username",
       income_amount,
       expense_amount,
       withdraw_amount,
       total_income_amount,
-      order_tota_amount,
+      order_total_amount,
       restaurant_name,
-       restaurant_menu,
-       establishment
-    `)
+      restaurant_menu,
+      establishment
+    `);
 
   if (error) {
-    console.error('Error fetching admin:', error)
-    return null
+    console.error('Error fetching admin:', error);
+    return null;
   }
-
-  return Admin
+  return Admin;
 }
 
-// Call the function to fetch Admin data
-fetchAdmin().then(admin => {
-  console.log(admin)
-})
-
-// Example usage: Upload a profile picture
-// (Make sure to get the file object from an input element or other source)
-const fileInput = document.getElementById('profilePicInput')
-fileInput.addEventListener('change', async (event) => {
-  const file = event.target.files[0]
-  const filename = file.name
-
-  const url = await uploadProfilePicture(file, filename)
-  if (url) {
-    console.log('Profile picture uploaded:', url)
-    // You can now save this URL to your database or display it
+// Load Drivers and populate the page
+async function loadDrivers() {
+  const { data, error } = await supabase.from('Driver').select('*');
+  if (error) {
+    console.error('Error fetching drivers:', error);
+    return;
   }
-})
+  if (data.length >= 2) {
+    document.getElementById('driverName1').innerText = data[0].driver_name;
+    document.getElementById('rideHistory1').innerText = data[0].driver_ride_history;
+    document.getElementById('driverPayment1').innerText = data[0].driver_payment;
+    document.getElementById('driverName2').innerText = data[1].driver_name;
+    document.getElementById('rideHistory2').innerText = data[1].driver_ride_history;
+    document.getElementById('driverPayment2').innerText = data[1].driver_payment;
+  }
+}
+
+// Load Vendors and populate the page
+async function loadVendors() {
+  const { data, error } = await supabase.from('Vendor').select('*');
+  if (error) {
+    console.error('Error fetching vendors:', error);
+    return;
+  }
+  if (data.length >= 2) {
+    document.getElementById('vendorName1').innerText = data[0].vendor_name;
+    document.getElementById('vendorItems1').innerText = data[0].items;
+    document.getElementById('vendorHistory1').innerText = data[0].history_orders;
+    document.getElementById('vendorName2').innerText = data[1].vendor_name;
+    document.getElementById('vendorItems2').innerText = data[1].items;
+    document.getElementById('vendorHistory2').innerText = data[1].history_orders;
+  }
+}
+
+// Handle driver cancellation (or update status)
+function cancelDriver(driverName) {
+  alert('Cancel driver: ' + driverName);
+  // Optional: Implement actual DB update to set driver status as canceled
+  // Example:
+  // await supabase.from('Driver').update({ status: 'canceled' }).eq('driver_name', driverName);
+}
+
+// Call functions on page load
+window.onload = () => {
+  if (!isAuthenticated) {
+    document.getElementById('loginModal').style.display='flex';
+  } else {
+    document.getElementById('loginModal').style.display='none';
+  }
+  initCharts();
+  updateMonthlyData('January');
+  loadDrivers();
+  loadVendors();
+};

@@ -6,7 +6,7 @@ function Connection() {
   const [showSuccess, setShowSuccess] = React.useState(false);
 
   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your actual key
+  const supabaseKey = process.env.SUPABASE_KEY; // Actual key
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   const handleResetPassword = async () => {

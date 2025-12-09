@@ -6,42 +6,34 @@
 <title>Vendor App</title>
 <!-- Font Awesome -->
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 <style>
+  /* Your styles here (same as before) */
   body { font-family: sans-serif; background:#f0f0f0; margin:0; }
-  /* Header styling */
-  .header {
-    position: fixed; top:0; width:100%; height:60px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 20px; box-shadow:0 2px 4px rgba(0,0,0,0.1); z-index:999;
-  }
+  .header { position: fixed; top:0; width:100%; height:60px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 20px; box-shadow:0 2px 4px rgba(0,0,0,0.1); z-index:999; }
   .vendor-text { font-weight:bold; color:red; font-size:1.2em; }
-.menu-container {
-  display: flex;
-  align-items: center;
-  position: relative;
-  margin-left: -20px; /* move the whole button more to the left */
-}
+  .menu-container { display: flex; align-items: center; position: relative; margin-left: -20px; }
   .profile-btn { background:#ff0000; color:#fff; padding:8px 12px; border:none; border-radius:50px; cursor:pointer; }
   .dropdown { display:none; position:absolute; right:20px; top:60px; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.2); min-width:200px; z-index:1000; }
   .dropdown.show { display:block; }
   .dropdown a { display:block; padding:10px 15px; text-decoration:none; color:#333; }
   .dropdown a:hover { background:#f0f0f0; }
-
-  /* Container styles */
-  .container {
-    margin-top:80px; padding:20px; max-width:1200px; margin-left:auto; margin-right:auto; background:#fff; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1);
-  }
-  /* Management buttons */
+  .container { margin-top:80px; padding:20px; max-width:1200px; margin-left:auto; margin-right:auto; background:#fff; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
   .management-buttons { margin-bottom:10px; }
   .management-buttons button { margin-right:5px; padding:8px 12px; border:none; border-radius:4px; cursor:pointer; }
   .btn-primary { background:#f90101; color:#fff; }
   .btn-secondary { background:#f60202; color:#fff; }
   .btn-payment-history { background:#fa0303; color:#fff; }
-
-  /* Sections */
   .section { display:none; }
-  /* Tables styling */
   table { width:100%; border-collapse:collapse; margin-top:10px; }
   th, td { border:1px solid #ccc; padding:8px; }
   th { background:#f0f0f0; }
+  .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; justify-content: center; align-items: center; z-index: 2000; }
+  .modal.show { display: flex; }
+  .modal-box { background: #fff; padding: 20px; border-radius: 8px; width: 300px; display: flex; flex-direction: column; }
+  .modal-box input, .modal-box select { margin-bottom: 10px; padding: 8px; width: 100%; }
+  .modal-box button { margin-top: 10px; padding: 8px; border: none; border-radius: 4px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -54,16 +46,15 @@
       <i class="fas fa-user-circle"></i> Menu
     </button>
     <div class="dropdown" id="profileDropdown">
-      <a href="#" onclick="showManagement('items');">Manage Items</a>
-      <a href="#" onclick="showManagement('orders');">Manage Orders</a>
-      <a href="#" onclick="showManagement('users');">Manage Users</a>
-      <a href="#" onclick="showPaymentHistory()">Payment History</a>
-      <a href="#" onclick="logout()">Logout</a>
+      <a href="#" onclick="showManagement('items'); return false;">Manage Items</a>
+      <a href="#" onclick="showManagement('orders'); return false;">Manage Orders</a>
+      <a href="#" onclick="showManagement('users'); return false;">Manage Users</a>
+      <a href="#" onclick="showPaymentHistory(); return false;">Payment History</a>
+      <a href="#" onclick="logout(); return false;">Logout</a>
     </div>
   </div>
 </div>
 
-<!-- Main Content -->
 <div class="container">
   <!-- Management Buttons -->
   <div class="management-buttons">
@@ -91,13 +82,13 @@
   </div>
   <div id="section-payment-history" class="section">
     <h3>Payment History</h3>
-    <button onclick="showPaymentHistory()">Refresh</button>
+    <button onclick="fetchPayments()">Refresh</button>
     <div id="paymentHistoryContainer"></div>
   </div>
 </div>
 
-<!-- Add/Edit Item Modal -->
-<div id="itemFormModal" class="modal" style="display:none;">
+<!-- Modals -->
+<div id="itemFormModal" class="modal">
   <div class="modal-box">
     <h4 id="itemFormTitle">Add Item</h4>
     <input id="itemVendor" placeholder="Vendor" />
@@ -112,8 +103,7 @@
   </div>
 </div>
 
-<!-- Add/Edit User Modal -->
-<div id="userFormModal" class="modal" style="display:none;">
+<div id="userFormModal" class="modal">
   <div class="modal-box">
     <h4 id="userFormTitle">Add User</h4>
     <input id="userEmail" placeholder="Email" />
@@ -123,28 +113,24 @@
   </div>
 </div>
 
-<!-- Notification -->
-<div id="notification"></div>
+<div id="orderFormModal" class="modal">
+  <div class="modal-box">
+    <h4 id="orderFormTitle">Add Order</h4>
+    <p>Order form goes here...</p>
+    <button onclick="closeOrderForm()">Close</button>
+  </div>
+</div>
 
-<!-- Core Script -->
 <script>
-  // Initialize supabase (your URL and KEY)
+  // Initialize Supabase
   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = 'process.env.SUPABASE_KEY'; // replace with your actual key
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  const supabaseKey = 'YOUR_SUPABASE_KEY'; // <-- Replace with your key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  // Data arrays
-  let items = [];
-  let orders = [];
-  let users = [];
-  let payments = [];
-
-  // Toggle dropdown menu
   function toggleDropdown() {
     document.getElementById('profileDropdown').classList.toggle('show');
   }
 
-  // Show management sections
   function showManagement(type) {
     document.querySelectorAll('.section').forEach(s => s.style.display='none');
     if (type==='items') { document.getElementById('section-items').style.display='block'; renderItems(); }
@@ -152,98 +138,107 @@
     if (type==='users') { document.getElementById('section-users').style.display='block'; renderUsers(); }
   }
 
-  // Show payment history
   function showPaymentHistory() {
     fetchPayments();
     document.querySelectorAll('.section').forEach(s => s.style.display='none');
     document.getElementById('section-payment-history').style.display='block';
   }
 
-  // Fetch payment records from Supabase
-  async function fetchPayments() {
-    const { data, error } = await supabase
-      .from('payment_history')
-      .select('*')
-      .order('date', { ascending: false });
-    if (error) {
-      console.error('Error fetching payments:', error);
-      return;
-    }
-    payments = data.map(p => ({
-      date: new Date(p.date).toISOString().split('T')[0],
-      amount: parseFloat(p.amount),
-      transactionId: p.transaction_id,
-      status: p.status
-    }));
-    renderPaymentHistory();
+  // Manage Items
+  function openItemForm() {
+    document.getElementById('itemFormTitle').innerText = 'Add Item';
+    document.getElementById('itemVendor').value = '';
+    document.getElementById('itemName').value = '';
+    document.getElementById('itemPrice').value = '';
+    document.getElementById('itemStock').value = 'In Stock';
+    document.getElementById('itemFormModal').style.display='flex';
+  }
+  function saveItem() {
+    // Save logic here 
+    closeItemForm();
+  }
+  function closeItemForm() {
+    document.getElementById('itemFormModal').style.display='none';
   }
 
-  // Render payment history table with Rands
-  function renderPaymentHistory() {
+  // Manage Users
+  function openUserForm() {
+    document.getElementById('userFormTitle').innerText='Add User';
+    document.getElementById('userEmail').value='';
+    document.getElementById('userName').value='';
+    document.getElementById('userFormModal').style.display='flex';
+  }
+  function saveUser() {
+    // Save logic here
+    closeUserForm();
+  }
+  function closeUserForm() {
+    document.getElementById('userFormModal').style.display='none';
+  }
+
+  // Order modal
+  function promptAddOrder() {
+    alert('Open order form modal here...');
+  }
+  function closeOrderForm() {
+    document.getElementById('orderFormModal').style.display='none';
+  }
+
+  // Fetch Payment History
+async function fetchPayments() {
+  const { data, error } = await supabase
+    .from('payment_history')
+    .select('*')
+    .order('payment_date', { ascending: false });
+  if (error) {
+    console.error('Error fetching payment history:', error);
+    document.getElementById('paymentHistoryContainer').innerHTML = '<p>Error loading payment history.</p>';
+    return;
+  }
+  payments = data; // Save data globally
+  renderPaymentHistory(); // Call render to display
+}
     const container = document.getElementById('paymentHistoryContainer');
-    container.innerHTML = '';
-
-    if (payments.length === 0) {
-      container.innerHTML = 'No payment history.';
+    if (data.length === 0) {
+      container.innerHTML = '<p>No payment history available.</p>';
       return;
     }
-
-    const table = document.createElement('table');
-    table.innerHTML = `<thead>
-                          <tr>
-                            <th>Date</th>
-                            <th>Amount (ZAR)</th>
-                            <th>Transaction ID</th>
-                            <th>Status</th>
-                          </tr>
-                       </thead>`;
-    const tbody = document.createElement('tbody');
-
-    payments.forEach(p => {
-      const row = tbody.insertRow();
-      row.insertCell().innerText = `R ${p.amount.toFixed(2)}`;
-      row.insertCell().innerText = p.date;
-      row.insertCell().innerText = p.transactionId;
-      row.insertCell().innerText = p.status;
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>Payment ID</th>
+            <th>Order ID</th>
+            <th>User Name</th>
+            <th>User Email</th>
+            <th>Method</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    data.forEach(p => {
+      html += `
+        <tr>
+          <td>${p.payment_id}</td>
+          <td>${p.order_id}</td>
+          <td>${p.user_name}</td>
+          <td>${p.user_email}</td>
+          <td>${p.payment_method}</td>
+          <td>$${p.amount.toFixed(2)}</td>
+          <td>${new Date(p.payment_date).toLocaleString()}</td>
+          <td>${p.status}</td>
+        </tr>
+      `;
     });
-
-    table.appendChild(tbody);
-    container.innerHTML = '';
-    container.appendChild(table);
+    html += `</tbody></table>`;
+    document.getElementById('paymentHistoryContainer').innerHTML = html;
   }
 
-  // Placeholder CRUD functions for items, orders, users
-  function renderItems() { /* Your code here */ }
-  function openItemForm() { /* Your code here */ }
-  function saveItem() { /* Your code here */ }
-  function closeItemForm() { /* Your code here */ }
-  function editItem(i) { /* Your code here */ }
-  function deleteItem(i) { /* Your code here */ }
-  function renderOrders() { /* Your code here */ }
-  function promptAddOrder() { /* Your code here */ }
-  function editOrder(i) { /* Your code here */ }
-  function deleteOrder(i) { /* Your code here */ }
-  function renderUsers() { /* Your code here */ }
-  function openUserForm() { /* Your code here */ }
-  function saveUser() { /* Your code here */ }
-  function closeUserForm() { /* Your code here */ }
-
-  // Show section
-  function showSection(id) {
-    document.querySelectorAll('.section').forEach(s => s.style.display='none');
-    document.getElementById(id).style.display='block';
-  }
-
-  // Logout
-  function logout() {
-    localStorage.clear();
-    alert('Logged out');
-  }
-
-  // On page load
   window.onload = () => {
-    // fetch payments initially
-    fetchPayments();
+    // Optional: show default section
   };
 </script>
 </body>
