@@ -1,16 +1,21 @@
 // Function to fetch configuration (if needed)
 async function fetchConfig(configUrl) {
-  const response = await fetch(configUrl);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch config: ${response.statusText}`);
+  try {
+    const response = await fetch(configUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch config: ${response.status} ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching config:', error);
+    throw error;
   }
-  return await response.json();
 }
 
 // Function to track payment
 async function trackPayment() {
   try {
-    // Fetch your configuration if needed
+    // Fetch your configuration
     const config = await fetchConfig('payfastConfig.json');
 
     // Send payment data to your backend API
@@ -28,18 +33,23 @@ async function trackPayment() {
     });
 
     if (!response.ok) {
-      alert(`Error tracking payment: ${response.statusText}`);
+      const errorText = await response.text();
+      alert(`Error tracking payment: ${response.status} ${response.statusText} - ${errorText}`);
       return;
     }
 
     const result = await response.json();
-    // Assuming result has a 'status' field
-    alert(`Payment status: ${result.status}`);
+    // Handle the response based on your API's structure
+    if (result.status) {
+      alert(`Payment status: ${result.status}`);
+    } else {
+      alert('Payment tracking response received, but no status provided.');
+    }
   } catch (error) {
     console.error('Error:', error);
     alert(`An error occurred: ${error.message}`);
   }
 }
 
-// Call the function, e.g., on button click
+// Example: attach to a button click
 // document.getElementById('trackButton').addEventListener('click', trackPayment);

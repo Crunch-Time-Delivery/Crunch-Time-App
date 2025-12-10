@@ -414,6 +414,25 @@
       // Implement filtering based on search and selected establishment here
     }
   });
+
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this is set in your environment
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function fetchRestaurants() {
+  const { data, error } = await supabase
+    .from('restaurants')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching restaurants:', error);
+    return;
+  }
+
+  // Example: Log the data or process it
+  console.log('Restaurants:', data);
+  // You can render or process the data here
+}
 </script>
 
 </body>
