@@ -1,9 +1,10 @@
+// Add event listener to your form
 document.getElementById('payfastForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent default form submission
 
-    // Your PayFast merchant details (replace with actual values)
-  const merchantID = 10004002;
-const merchantKey = "q1cd2rdny4a53";
+    // Your PayFast merchant details (replace with actual values if needed)
+    const merchantID = 10004002;
+    const merchantKey = "q1cd2rdny4a53";
     const currency = "ZAR";
 
     // Collect form data
@@ -14,13 +15,13 @@ const merchantKey = "q1cd2rdny4a53";
         data[key] = value;
     }
 
-    // Include merchant details in data if needed
+    // Add merchant details
     data['merchant_id'] = merchantID;
     data['merchant_key'] = merchantKey;
     data['currency'] = currency;
 
-    // Send data to your server-side endpoint
-    fetch('/process-payment', { // Replace with your actual server endpoint
+    // Send data to your server-side endpoint for processing
+    fetch('/process-payment', { // Make sure this endpoint is properly implemented on your server
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -30,7 +31,7 @@ const merchantKey = "q1cd2rdny4a53";
     .then(response => response.json())
     .then(result => {
         if (result.success && result.redirectUrl) {
-            // Redirect to PayFast gateway or a success page
+            // Redirect user to PayFast gateway
             window.location.href = result.redirectUrl;
         } else {
             alert('Payment processing failed: ' + (result.message || 'Unknown error'));

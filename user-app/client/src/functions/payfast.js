@@ -1,9 +1,8 @@
-const axios = require('axios');
 const crypto = require('crypto');
 
-const PAYFAST_MERCHANT_ID = '10004002  '; // replace with your merchant ID
-const PAYFAST_MERCHANT_KEY = 'q1cd2rdny4a53  '; // replace with your merchant key
-const PAYFAST_PASS_PHRASE = 'payfast   '; // optional, if used
+const PAYFAST_MERCHANT_ID = '10004002'; // replace with your merchant ID
+const PAYFAST_MERCHANT_KEY = 'q1cd2rdny4a53'; // replace with your merchant key
+const PAYFAST_PASS_PHRASE = 'payfast'; // optional, if used
 const PAYFAST_SANDBOX = true; // set to false for production
 
 // Generate PayFast payment URL
@@ -19,7 +18,7 @@ function generatePayFastUrl(data) {
   return `${baseUrl}?${queryString}`;
 }
 
-// Generate signature for PayFast
+// Generate MD5 signature for PayFast
 function generateSignature(data) {
   const keys = Object.keys(data).sort();
   const stringToSign = keys
@@ -35,7 +34,7 @@ function generateSignature(data) {
   return hash;
 }
 
-// Route to create a payment request
+// Endpoint to create a payment
 async function createPayment(req, res) {
   const { amount, itemName, itemDescription, customStr1 } = req.body;
 
@@ -46,9 +45,9 @@ async function createPayment(req, res) {
   const data = {
     merchant_id: PAYFAST_MERCHANT_ID,
     merchant_key: PAYFAST_MERCHANT_KEY,
-    return_url: 'https://yourdomain.com/payfast/return', // update as needed
-    cancel_url: 'https://yourdomain.com/payfast/cancel', // update as needed
-    notify_url: 'https://yourdomain.com/payfast/notify', // update as needed
+    return_url: 'https://yourdomain.com/payfast/return', // replace with your URL
+    cancel_url: 'https://yourdomain.com/payfast/cancel', // replace with your URL
+    notify_url: 'https://yourdomain.com/payfast/notify', // replace with your URL
     amount: amount.toString(),
     item_name: itemName,
     item_description: itemDescription || '',
@@ -63,7 +62,7 @@ async function createPayment(req, res) {
   res.json({ paymentUrl });
 }
 
-// Webhook for PayFast notifications
+// Webhook endpoint for PayFast notifications
 async function handleNotify(req, res) {
   const data = req.body;
 
@@ -73,9 +72,10 @@ async function handleNotify(req, res) {
   }
 
   // Remove signature before verification
-  delete data['signature'];
+  const dataCopy = { ...data };
+  delete dataCopy['signature'];
 
-  const expectedSignature = generateSignature(data);
+  const expectedSignature = generateSignature(dataCopy);
 
   if (receivedSignature !== expectedSignature) {
     return res.status(400).send('Invalid signature');
@@ -85,7 +85,7 @@ async function handleNotify(req, res) {
   const customStr1 = data['custom_str1'];
 
   if (paymentStatus === 'COMPLETE') {
-    // TODO: Update driver income, mark payment as received, etc.
+    // TODO: Update your database, mark payment as received
     return res.status(200).send('Payment verified and processed');
   } else {
     // Handle other statuses if needed

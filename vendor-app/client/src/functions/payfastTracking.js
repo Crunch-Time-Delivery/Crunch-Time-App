@@ -5,7 +5,7 @@ const PAYFAST_MERCHANT_ID = '10004002';
 const PAYFAST_MERCHANT_KEY = 'q1cd2rdny4a53';
 const RETURN_URL = 'https://yourvendorwebsite.com/payment-return';
 const CANCEL_URL = 'https://yourvendorwebsite.com/payment-cancel';
-const NOTIFY_URL = 'https://yourvendorwebsite.com/ipn-listener'; // PayFast server sends IPN notifications here
+const NOTIFY_URL = 'https://yourvendorwebsite.com/ipn-listener'; // Your server endpoint for IPN
 
 /**
  * Initiates a payment process with PayFast
@@ -14,60 +14,61 @@ const NOTIFY_URL = 'https://yourvendorwebsite.com/ipn-listener'; // PayFast serv
  * @param {string} customerEmail - Customer's email address
  */
 function initiatePayFastPayment(amount, itemName, customerEmail) {
-    // Generate a unique transaction ID or order ID
+    // Generate a unique transaction ID
     const transactionId = 'TXN' + Date.now();
- 
-    // Prepare data for PayFast
+
+    // Prepare data to send to PayFast
     const paymentData = {
-        merchant_id:'10004002',
-        merchant_key: 'q1cd2rdny4a53',
+        merchant_id: PAYFAST_MERCHANT_ID,
+        merchant_key: PAYFAST_MERCHANT_KEY,
         amount: amount.toFixed(2),
         item_name: itemName,
         return_url: RETURN_URL,
         cancel_url: CANCEL_URL,
         notify_url: NOTIFY_URL,
-        custom_str1: transactionId, // You can pass custom data here
+        custom_str1: transactionId,
         email_address: customerEmail,
     };
 
-    // Generate signature for security
-    const signature = generateSignature(paymentData, PAYFAST_MERCHANT_KEY);
-    paymentData.signature = signature;
+    // Generate signature
+    generateSignature(paymentData, PAYFAST_MERCHANT_KEY).then(signature => {
+        paymentData['signature'] = signature;
 
-    // Create a form dynamically and submit it
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = 'https://www.payfast.co.za/eng/process';
+        // Create and submit form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'https://www.payfast.co.za/eng/process';
 
-    for (const key in paymentData) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = paymentData[key];
-        form.appendChild(input);
-    }
+        for (const key in paymentData) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = paymentData[key];
+            form.appendChild(input);
+        }
 
-    document.body.appendChild(form);
-    form.submit();
+        document.body.appendChild(form);
+        form.submit();
 
-    // Store transaction ID for tracking
-    localStorage.setItem('currentTransactionId', transactionId);
-    console.log('Redirecting to PayFast for payment...');
+        // Save transaction ID for tracking
+        localStorage.setItem('currentTransactionId', transactionId);
+        console.log('Redirecting to PayFast for payment...');
+    });
 }
 
 /**
- * Generates SHA256 signature for PayFast security
+ * Generates SHA256 signature for PayFast
  * @param {Object} data - Data object to sign
  * @param {string} merchantKey - Your merchant key
- * @returns {string} - Hexadecimal SHA256 hash
+ * @returns {Promise<string>} - The hash as a hex string
  */
 function generateSignature(data, merchantKey) {
     const sortedKeys = Object.keys(data).sort();
     const dataString = sortedKeys.map(k => `${k}=${data[k]}`).join('&');
-    const crypto = window.crypto || window.msCrypto;
+
     const encoder = new TextEncoder();
     const dataBuffer = encoder.encode(dataString + merchantKey);
-    return crypto.subtle.digest('SHA-256', dataBuffer).then(hashBuffer => {
+    return window.crypto.subtle.digest('SHA-256', dataBuffer).then(hashBuffer => {
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         return hashHex;
@@ -75,29 +76,28 @@ function generateSignature(data, merchantKey) {
 }
 
 /**
- * Checks the status of a transaction by querying your backend
- * @param {string} transactionId - The transaction ID to check
- * @returns {Promise<Object>} - The transaction status details
+ * Checks transaction status via your backend
+ * @param {string} transactionId
+ * @returns {Promise<Object>} Transaction status info
  */
 async function checkTransactionStatus(transactionId) {
     try {
         const response = await fetch(`/api/check-transaction?transactionId=${transactionId}`);
-        const result = await response.json();
-        return result;
+        return await response.json();
     } catch (error) {
-        console.error('Error checking transaction status:', error);
+        console.error('Error checking transaction:', error);
         return null;
     }
 }
 
 /**
- * Handles IPN notification received from your backend
- * You should set up an API endpoint to receive IPN and process it
+ * Handles IPN notifications received from your server
+ * Your server should send IPN data here, or you process IPN server-side.
+ * This function can be called after receiving IPN data.
  */
 function handleIPNNotification(ipnData) {
-    // Example: Save to your database, update order status, etc.
     console.log('Received IPN:', ipnData);
-    // You can call your backend API to update order status
+    // For example, update order status in your database
     fetch('/api/update-order-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,14 +106,9 @@ function handleIPNNotification(ipnData) {
     .then(res => res.json())
     .then(data => {
         console.log('Order status updated:', data);
-        // Optionally, notify user of payment success/failure
+        // Optional: notify user
     });
 }
 
-/**
- * Example usage:
- * initiatePayFastPayment(100.00, 'Order #1234', 'customer@example.com');
- */
-
-// Export functions if using modules
-// export { initiatePayFastPayment, checkTransactionStatus, handleIPNNotification };
+// Example usage:
+// initiatePayFastPayment(100.00, 'Order #1234', 'customer@example.com');
