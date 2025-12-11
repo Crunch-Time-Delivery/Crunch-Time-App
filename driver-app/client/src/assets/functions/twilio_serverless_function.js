@@ -1,4 +1,3 @@
-
 // Import Twilio serverless runtime types (optional, for type safety in IDEs)
 require('@twilio-labs/serverless-runtime-types');
 
