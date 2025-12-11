@@ -108,25 +108,44 @@
 
   // Function to send SMS via backend API
   function sendSms(toNumber, message) {
-    fetch('http://localhost:3000/send-sms', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ to: toNumber, message: message })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if(data.success) {
-        alert('SMS sent successfully.');
-      } else {
-        alert('Failed to send SMS: ' + data.error);
-      }
-    })
-    .catch(() => {
-      alert('Error sending SMS.');
-    });
-  }
+  fetch('http://localhost:3000/send-sms', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ to: toNumber, message: message })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if(data.success) {
+      // Show success notification
+      showNotification('SMS sent successfully.', 'success');
+    } else {
+      // Show failure notification with error message
+      showNotification('Failed to send SMS: ' + data.error, 'error');
+    }
+  })
+  .catch(() => {
+    // Show error notification if fetch fails
+    showNotification('Error sending SMS.', 'error');
+  });
+}
+
+// Helper function to display notifications
+function showNotification(message, type) {
+  // Create a notification element
+  const notification = document.createElement('div');
+  notification.innerText = message;
+  notification.className = `notification ${type}`; // style based on type
+  
+  // Append to body or a specific container
+  document.body.appendChild(notification);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    document.body.removeChild(notification);
+  }, 3000);
+}
 
  
 

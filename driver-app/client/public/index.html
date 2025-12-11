@@ -454,7 +454,23 @@ function loadMainPage() {
 }
 
 }); // End of DOMContentLoaded
-
+ async function updatePayment(paymentData) {
+    try {
+      const res = await fetch('/api/updatePayment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentData),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        alert('Payment updated successfully!');
+      } else {
+        alert('Error: ' + result.error);
+      }
+    } catch (err) {
+      console.error('Error updating payment:', err);
+    }
+  }
 
 
 </script>
