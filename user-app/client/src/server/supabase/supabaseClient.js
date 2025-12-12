@@ -1,7 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Make sure this is set in your environment
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this is set in your environment
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function fetchUser() {
@@ -22,7 +22,7 @@ async function fetchUser() {
       latitude,
       location_name,
       ORDER_ID
-    `); // Removed extra comma and fixed formatting
+    `);
 
   if (error) {
     console.error('Error fetching user:', error);
@@ -31,15 +31,13 @@ async function fetchUser() {
   return User;
 }
 
-// Call the function to fetch user data
 fetchUser().then(user => {
   console.log('User:', user);
 });
 
-// Fetch admin data
 async function fetchAdmin() {
   const { data, error } = await supabase
-    .from('Admins') // Ensure this matches your table name
+    .from('Admins')
     .select('*');
   if (error) {
     console.error('Error fetching admin data:', error);
@@ -52,15 +50,19 @@ fetchAdmin().then(admin => {
   console.log('Admin:', admin);
 });
 
-// Initialize map using Leaflet
-let map = L.map('map').setView([37.7749, -122.4194], 12); // Default to San Francisco
+// Initialize Google Map
+let map;
 let marker;
 
-// Add OpenStreetMap tiles
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-}).addTo(map);
+function initMap() {
+  // Default center (e.g., San Francisco)
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: { lat: 37.7749, lng: -122.4194 },
+    zoom: 12,
+  });
+}
+
+// Call initMap when Google Maps script loads in your HTML with callback=initMap
 
 // Event listener for form submission
 document.getElementById('locationForm').addEventListener('submit', function(e) {
@@ -73,9 +75,8 @@ document.getElementById('locationForm').addEventListener('submit', function(e) {
 async function geocodeAddress(address) {
   try {
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q`
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=YOUR_GOOGLE_MAPS_API_KEY`
     );
-
     const data = await response.json();
 
     if (data.results && data.results.length > 0) {
@@ -84,13 +85,17 @@ async function geocodeAddress(address) {
       const lon = firstResult.geometry.location.lng;
 
       // Center map
-      map.setView([lat, lon], 15);
+      map.setCenter({ lat, lng: lon });
+      map.setZoom(15);
 
       // Add or move marker
       if (marker) {
-        marker.setLatLng([lat, lon]);
+        marker.setPosition({ lat, lng: lon });
       } else {
-        marker = L.marker([lat, lon]).addTo(map);
+        marker = new google.maps.Marker({
+          position: { lat, lng: lon },
+          map: map,
+        });
       }
 
       // Save locally
@@ -111,14 +116,13 @@ async function geocodeAddress(address) {
 
 // Save new location or update existing one in Supabase
 async function saveLocationToSupabase(address, lat, lon) {
-  // Check if the address already exists
   const { data: existing, error: fetchError } = await supabase
     .from('DeliveryLocations')
     .select('id')
     .eq('address', address)
     .single();
 
-  if (fetchError && fetchError.code !== 'PGRST116') { // handle no rows found
+  if (fetchError && fetchError.code !== 'PGRST116') {
     console.error('Error fetching existing location:', fetchError);
     alert('Failed to check existing location.');
     return;

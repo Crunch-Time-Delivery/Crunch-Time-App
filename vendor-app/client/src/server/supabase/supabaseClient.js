@@ -11,9 +11,9 @@ const supabaseKey = process.env.SUPABASE_KEY; // Ensure this is set securely
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Twilio credentials from environment variables
-const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
-const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER; // Your Twilio phone number
+const twilioAccountSid = AC031642049dd74fcc581b0fd106936a4f;
+const twilioAuthToken = "1447e415a2fc483bd2bfbea57451d55d" ;
+const twilioPhoneNumber = +27795349327; // Twilio phone number
 
 const twilioClient = twilio(twilioAccountSid, twilioAuthToken);
 

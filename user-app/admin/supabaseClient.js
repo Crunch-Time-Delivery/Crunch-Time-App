@@ -95,7 +95,34 @@ async function loadVendors() {
     document.getElementById('vendorHistory2').innerText = data[1].history_orders;
   }
 }
+// Function to fetch role management data
+async function fetchRoleManagement() {
+  const { data: role_management, error } = await supabase
+    .from('role_management')
+    .select('user_accounts_email, vendor_accounts_email, driver_accounts_email');
 
+  if (error) {
+    console.error('Error fetching role management data:', error);
+    return null;
+  }
+
+  // Assuming you want to store these in a structured format
+  const roleEmails = role_management.map(item => ({
+    userEmail: item.user_accounts_email,
+    vendorEmail: item.vendor_accounts_email,
+    driverEmail: item.driver_accounts_email,
+  }));
+
+  // You can now use roleEmails array as needed
+  return roleEmails;
+}
+// Example usage
+fetchRoleManagement().then(roleEmails => {
+  if (roleEmails) {
+    console.log(roleEmails);
+    // Do something with the data
+  }
+});
 // Handle driver cancellation (or update status)
 function cancelDriver(driverName) {
   alert('Cancel driver: ' + driverName);

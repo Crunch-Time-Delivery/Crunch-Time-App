@@ -5,7 +5,7 @@ let marker = null;
  * Initialize the Google Map
  */
 function initMap() {
-  const initialPosition = { lat: 40.7128, lng: -74.0060 }; // Example: New York City
+  const initialPosition = { lat: 40.7128, lng: -74.0060 }; // NYC
 
   const mapElement = document.getElementById("map");
   if (!mapElement) {
@@ -13,13 +13,13 @@ function initMap() {
     return;
   }
 
-  // Initialize the map
+  // Create the map
   map = new google.maps.Map(mapElement, {
     center: initialPosition,
     zoom: 14,
   });
 
-  // Initialize the marker
+  // Create the marker
   marker = new google.maps.Marker({
     position: initialPosition,
     map: map,
@@ -28,10 +28,8 @@ function initMap() {
 }
 
 /**
- * Update marker position
- * @param {Object} position - new latitude and longitude
- * @param {number} position.lat
- * @param {number} position.lng
+ * Update marker position and pan map
+ * @param {Object} position - new position with lat and lng
  */
 function updatePosition(position) {
   if (!marker || !map) {
@@ -43,22 +41,36 @@ function updatePosition(position) {
 }
 
 /**
- * Simulate live tracking updates
+ * Fetch latest location data from your backend API
+ * Replace this with your actual live data source
  */
-function simulateLiveTracking() {
-  let lat = 40.7128;
-  let lng = -74.0060;
+async function fetchLiveLocation() {
+  try {
+    // Replace URL with your backend API that returns latest location
+    const response = await fetch('/api/live-location'); // Example endpoint
+    if (!response.ok) throw new Error('Network response was not ok');
 
-  setInterval(() => {
-    // For demo: move the marker randomly
-    lat += (Math.random() - 0.5) * 0.001;
-    lng += (Math.random() - 0.5) * 0.001;
-    updatePosition({ lat, lng });
-  }, 3000); // update every 3 seconds
+    const data = await response.json();
+    const { latitude, longitude } = data; // Adjust according to your API response
+    updatePosition({ lat: latitude, lng: longitude });
+  } catch (err) {
+    console.error('Failed to fetch live location:', err);
+  }
 }
 
-// Initialize map when window loads
+/**
+ * Poll for live location updates periodically
+ */
+function startLiveUpdates(interval = 3000) {
+  // Fetch initial location immediately
+  fetchLiveLocation();
+
+  // Then poll periodically
+  setInterval(fetchLiveLocation, interval);
+}
+
+// Initialize map and start live updates on window load
 window.addEventListener('load', () => {
   initMap();
-  simulateLiveTracking(); // Remove or replace with real data source
+  startLiveUpdates(3000); // poll every 3 seconds
 });
