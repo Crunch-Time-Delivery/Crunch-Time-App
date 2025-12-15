@@ -1,35 +1,46 @@
-// Function to fetch configuration (if needed)
+// Function to fetch configuration (cached after first fetch)
+let payfastConfig = null;
+
 async function fetchConfig(configUrl) {
+  if (payfastConfig) return payfastConfig; // Return cached config if available
   try {
     const response = await fetch(configUrl);
     if (!response.ok) {
       throw new Error(`Failed to fetch config: ${response.status} ${response.statusText}`);
     }
-    return await response.json();
+    payfastConfig = await response.json();
+    return payfastConfig;
   } catch (error) {
     console.error('Error fetching config:', error);
     throw error;
   }
 }
 
-// Function to track payment
-async function trackPayment() {
+// Function to initiate and track a payment
+async function trackPayment(paymentDetails = {}) {
   try {
-    // Fetch your configuration
+    // Fetch configuration once
     const config = await fetchConfig('payfastConfig.json');
 
-    // Send payment data to your backend API
+    // Prepare payment data - can override defaults with paymentDetails parameter
+    const paymentData = {
+      merchantID: config.merchantID,
+      merchantKey: config.merchantKey,
+      amount: paymentDetails.amount || config.paymentAmount,
+      currency: paymentDetails.currency || config.currency,
+      // Optional: add more fields like customer info, order ID, etc.
+      ...paymentDetails
+    };
+
+    // Send payment data to your backend API for processing
     const response = await fetch('/track-payment', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
+        // Add auth headers if needed, e.g.,
+        // 'Authorization': 'Bearer YOUR_TOKEN'
       },
-      body: JSON.stringify({
-        merchantID: config.merchantID,
-        merchantKey: config.merchantKey,
-        amount: config.paymentAmount,
-        currency: config.currency
-      })
+      body: JSON.stringify(paymentData)
     });
 
     if (!response.ok) {
@@ -39,11 +50,14 @@ async function trackPayment() {
     }
 
     const result = await response.json();
-    // Handle the response based on your API's structure
+
+    // Handle different response statuses
     if (result.status) {
       alert(`Payment status: ${result.status}`);
+    } else if (result.message) {
+      alert(`Response: ${result.message}`);
     } else {
-      alert('Payment tracking response received, but no status provided.');
+      alert('Payment tracking response received, but no status or message.');
     }
   } catch (error) {
     console.error('Error:', error);
@@ -51,5 +65,8 @@ async function trackPayment() {
   }
 }
 
-// Example: attach to a button click
-// document.getElementById('trackButton').addEventListener('click', trackPayment);
+// Example: attaching to a button click
+// document.getElementById('trackButton').addEventListener('click', () => {
+//   // Optionally pass custom payment details
+//   trackPayment({ amount: 100.00, currency: 'USD' });
+// });
