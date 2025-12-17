@@ -4,6 +4,7 @@ const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
 const supabaseKey = process.env.SUPABASE_KEY; // Ensure this is set in your environment
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Fetch User data
 async function fetchUser() {
   const { data: User, error } = await supabase
     .from('User')
@@ -31,10 +32,61 @@ async function fetchUser() {
   return User;
 }
 
-fetchUser().then(user => {
-  console.log('User:', user);
-});
+// Fetch all users
+async function fetchAllUsers() {
+  const { data, error } = await supabase
+    .from('User')
+    .select('*');
 
+  if (error) {
+    console.error('Error fetching users:', error);
+    return null;
+  }
+  return data;
+}
+
+// Insert a new user
+async function insertUser(userData) {
+  const { data, error } = await supabase
+    .from('User')
+    .insert([userData]);
+
+  if (error) {
+    console.error('Error inserting user:', error);
+    return null;
+  }
+  return data;
+}
+
+// Update existing user
+async function updateUser(id, updatedData) {
+  const { data, error } = await supabase
+    .from('User')
+    .update(updatedData)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating user:', error);
+    return null;
+  }
+  return data;
+}
+
+// Delete user by ID
+async function deleteUser(id) {
+  const { data, error } = await supabase
+    .from('User')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting user:', error);
+    return null;
+  }
+  return data;
+}
+
+// Fetch Admin data
 async function fetchAdmin() {
   const { data, error } = await supabase
     .from('Admins')
@@ -46,75 +98,63 @@ async function fetchAdmin() {
   return data;
 }
 
-fetchAdmin().then(admin => {
-  console.log('Admin:', admin);
-});
+// Fetch all admins
+async function fetchAllAdmins() {
+  const { data, error } = await supabase
+    .from('Admins')
+    .select('*');
 
-// Initialize Google Map
-let map;
-let marker;
-
-function initMap() {
-  // Default center (e.g., San Francisco)
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: { lat: 37.7749, lng: -122.4194 },
-    zoom: 12,
-  });
-}
-
-// Call initMap when Google Maps script loads in your HTML with callback=initMap
-
-// Event listener for form submission
-document.getElementById('locationForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const address = document.getElementById('locationInput').value;
-  geocodeAddress(address);
-});
-
-// Geocode address and update map, localStorage, and Supabase
-async function geocodeAddress(address) {
-  try {
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=YOUR_GOOGLE_MAPS_API_KEY`
-    );
-    const data = await response.json();
-
-    if (data.results && data.results.length > 0) {
-      const firstResult = data.results[0];
-      const lat = firstResult.geometry.location.lat;
-      const lon = firstResult.geometry.location.lng;
-
-      // Center map
-      map.setCenter({ lat, lng: lon });
-      map.setZoom(15);
-
-      // Add or move marker
-      if (marker) {
-        marker.setPosition({ lat, lng: lon });
-      } else {
-        marker = new google.maps.Marker({
-          position: { lat, lng: lon },
-          map: map,
-        });
-      }
-
-      // Save locally
-      localStorage.setItem('deliveryAddress', address);
-      localStorage.setItem('deliveryCoords', JSON.stringify({ lat, lon }));
-
-      // Save/update in Supabase
-      await saveLocationToSupabase(address, lat, lon);
-      alert('Location set successfully!');
-    } else {
-      alert('Location not found. Please try another address.');
-    }
-  } catch (err) {
-    console.error('Error during geocoding:', err);
-    alert('Error fetching location data. Please try again.');
+  if (error) {
+    console.error('Error fetching admins:', error);
+    return null;
   }
+  return data;
 }
 
-// Save new location or update existing one in Supabase
+// Insert a new admin
+async function insertAdmin(adminData) {
+  const { data, error } = await supabase
+    .from('Admins')
+    .insert([adminData]);
+
+  if (error) {
+    console.error('Error inserting admin:', error);
+    return null;
+  }
+  return data;
+}
+
+// Update admin by ID
+async function updateAdmin(id, updatedData) {
+  const { data, error } = await supabase
+    .from('Admins')
+    .update(updatedData)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating admin:', error);
+    return null;
+  }
+  return data;
+}
+
+// Delete admin by ID
+async function deleteAdmin(id) {
+  const { data, error } = await supabase
+    .from('Admins')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting admin:', error);
+    return null;
+  }
+  return data;
+}
+
+// Manage Delivery Locations
+
+// Save new location or update existing one
 async function saveLocationToSupabase(address, lat, lon) {
   const { data: existing, error: fetchError } = await supabase
     .from('DeliveryLocations')
@@ -144,7 +184,7 @@ async function saveLocationToSupabase(address, lat, lon) {
     // Insert new record
     const { data, error } = await supabase
       .from('DeliveryLocations')
-      .insert([{ address: address, latitude: lat, longitude: lon }]);
+      .insert([{ address, latitude: lat, longitude: lon }]);
     if (error) {
       console.error('Error saving to Supabase:', error);
       alert('Failed to save location to database.');
@@ -153,3 +193,37 @@ async function saveLocationToSupabase(address, lat, lon) {
     }
   }
 }
+
+// Delete a delivery location by ID
+async function deleteLocation(id) {
+  const { data, error } = await supabase
+    .from('DeliveryLocations')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting location:', error);
+    return null;
+  }
+  return data;
+}
+
+// Utility to clear local storage of location data
+function clearStoredLocation() {
+  localStorage.removeItem('deliveryAddress');
+  localStorage.removeItem('deliveryCoords');
+  alert('Stored location data cleared.');
+}
+
+// Example usage
+fetchUser().then(user => console.log('User:', user));
+fetchAllUsers().then(users => console.log('All Users:', users));
+fetchAdmin().then(admin => console.log('Admin:', admin));
+fetchAllAdmins().then(admins => console.log('All Admins:', admins));
+
+// You can call insert, update, delete functions as needed, e.g.:
+// insertUser({ username: 'newuser', email: 'new@example.com', ... });
+// updateUser(1, { email: 'updated@example.com' });
+// deleteUser(2);
+
+// Similarly for admin and location management functions.

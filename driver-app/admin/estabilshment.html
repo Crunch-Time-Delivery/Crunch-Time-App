@@ -66,9 +66,7 @@
     background-color: #ddd;
   }
 
-  /* Rest of your styles remain unchanged */
-
-  /* Top Red Bar */
+  /* Top bar styles */
   .top-bar {
     background-color: red;
     height: 60px;
@@ -78,7 +76,7 @@
     padding: 0 20px;
   }
 
-  /* Profile section */
+  /* Profile section styles */
   .profile-section {
     display: flex;
     align-items: center;
@@ -88,7 +86,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: #fff; /* Placeholder */
+    background-color: #fff; /* Placeholder for profile image */
     margin-right: 10px;
   }
 
@@ -98,7 +96,7 @@
     font-size: 1.2em;
   }
 
-  /* Filter/search container */
+  /* Search and filter container */
   .filter-search-container {
     display: flex;
     align-items: center;
@@ -107,7 +105,7 @@
     background-color: #fff;
   }
 
-  /* Dropdown style */
+  /* Select style */
   .filter-dropdown {
     padding: 8px 12px;
     border-radius: 4px;
@@ -124,12 +122,12 @@
     flex: 1;
   }
 
-  /* Container for all info boxes */
-  .container {
+  /* Container for info boxes */
+  #info-container {
     padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
   }
 
   /* Info box styles */
@@ -174,13 +172,13 @@
     gap: 8px;
   }
 
-  /* Individual fields */
+  /* Editable fields */
   .field {
     font-weight: bold;
     outline: none;
   }
 
-  /* Hyperlinks container */
+  /* Action links */
   .links {
     margin-top: 10px;
     display: flex;
@@ -188,7 +186,6 @@
     align-items: center;
   }
 
-  /* Hyperlinks in red */
   .hyperlink-red {
     color: red;
     text-decoration: none;
@@ -196,7 +193,6 @@
     cursor: pointer;
     font-size: 1em;
   }
-
   .hyperlink-red:hover {
     text-decoration: underline;
   }
@@ -213,7 +209,6 @@
     cursor: pointer;
     transition: background-color 0.3s;
   }
-
   .remove-btn:hover {
     background-color: #c0392b;
   }
@@ -229,9 +224,7 @@
     font-size: 1em;
     cursor: pointer;
     display: block;
-    transition: background-color 0.3s;
   }
-
   #add-btn:hover {
     background-color: darkred;
   }
@@ -239,9 +232,8 @@
 </head>
 <body>
 
-<!-- Header with menu icon and dropdown -->
+<!-- Header with menu icon -->
 <div class="header">
-  <!-- Menu -->
   <div class="menu-container">
     <div class="menu-icon" title="Menu" style="cursor:pointer; font-size:24px;" onclick="toggleMenuDropdown()">☰</div>
     <div id="menuDropdown">
@@ -254,16 +246,15 @@
   </div>
 </div>
 
-<!-- Top Red Bar -->
+<!-- Top bar with admin info -->
 <div class="top-bar">
   <div class="profile-section">
     <div class="profile-picture"></div>
     <div class="admin-name">Admin Establishment</div>
   </div>
-  <!-- You can keep or remove the existing menu icon if you want, but the header menu icon is now separate -->
 </div>
 
-<!-- Filter dropdown and search bar placed below top bar -->
+<!-- Filter/search controls -->
 <div class="filter-search-container">
   <select id="establishment-filter" class="filter-dropdown">
     <option value="">Select Establishment</option>
@@ -275,30 +266,24 @@
   <input type="text" id="search-input" placeholder="Search..." />
 </div>
 
-<!-- Container for multiple info boxes -->
-<div class="container" id="info-container">
-  <!-- Dynamic content will be added here -->
-</div>
+<!-- Main container for dynamic info boxes -->
+<div id="info-container"></div>
 
-<!-- Add button -->
+<!-- Add button to create new info boxes -->
 <button id="add-btn">Add Restaurant Info</button>
 
 <script>
-  // Function to toggle menu dropdown
+  // Toggle menu dropdown
   function toggleMenuDropdown() {
     const dropdown = document.getElementById('menuDropdown');
-    if (dropdown.style.display === 'block') {
-      dropdown.style.display = 'none';
-    } else {
-      dropdown.style.display = 'block';
-    }
+    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
   }
 
-  // Optional: close dropdown if clicked outside
-  document.addEventListener('click', function(event) {
+  // Close dropdown if clicked outside
+  document.addEventListener('click', (e) => {
     const dropdown = document.getElementById('menuDropdown');
-    const menuIcon = document.querySelector('.menu-icon');
-    if (!dropdown.contains(event.target) && !menuIcon.contains(event.target)) {
+    const menuBtn = document.querySelector('.menu-icon');
+    if (!dropdown.contains(e.target) && !menuBtn.contains(e.target)) {
       dropdown.style.display = 'none';
     }
   });
@@ -306,6 +291,7 @@
   const container = document.getElementById('info-container');
   const addBtn = document.getElementById('add-btn');
 
+  // Function to create an info box
   function createInfoBox() {
     const box = document.createElement('div');
     box.className = 'info-box';
@@ -318,65 +304,55 @@
     iconDiv.className = 'icon';
     iconDiv.innerHTML = '&#128247;'; // Camera icon
     iconDiv.title = "Click to change image";
-    iconDiv.onclick = () => {
-      alert('Image icon clicked! You can implement image change here.');
-    };
+    iconDiv.onclick = () => alert('Image click! Implement image change.');
     iconSection.appendChild(iconDiv);
 
     // Details section
     const detailsDiv = document.createElement('div');
     detailsDiv.className = 'details';
 
-    // Function to create a field
-    function createField(labelText, valueText) {
+    function createField(label, value) {
       const p = document.createElement('p');
       p.className = 'field';
       p.contentEditable = true;
-      p.innerText = labelText + ': ' + valueText;
+      p.innerText = label + ': ' + value;
       return p;
     }
 
     const nameField = createField('Name', 'Sample Restaurant');
     const contactField = createField('Contact', '123-456-7890');
     const websiteField = createField('Website', 'https://example.com');
-    const addressField = createField('Address', '123 Main St, City');
+    const addressField = createField('Address', '123 Main St');
 
-    // Append fields
     detailsDiv.appendChild(nameField);
     detailsDiv.appendChild(contactField);
     detailsDiv.appendChild(websiteField);
     detailsDiv.appendChild(addressField);
 
-    // Links container
+    // Links
     const linksDiv = document.createElement('div');
     linksDiv.className = 'links';
 
-    // "Edit" / "Save" toggle link in red
     const editLink = document.createElement('a');
     editLink.className = 'hyperlink-red';
     editLink.innerText = 'Edit';
-    editLink.href = '#';
     let isEditing = false;
-
     editLink.onclick = (e) => {
       e.preventDefault();
       isEditing = !isEditing;
-      [nameField, contactField, websiteField, addressField].forEach(field => {
-        field.contentEditable = isEditing;
-        field.style.backgroundColor = isEditing ? '#ffe' : '';
+      [nameField, contactField, websiteField, addressField].forEach(f => {
+        f.contentEditable = isEditing;
+        f.style.backgroundColor = isEditing ? '#ffe' : '';
       });
       editLink.innerText = isEditing ? 'Save' : 'Edit';
     };
 
-    // "View Menu" link in red
     const viewLink = document.createElement('a');
     viewLink.className = 'hyperlink-red';
     viewLink.innerText = 'View Menu';
-    viewLink.href = '#';
-
     viewLink.onclick = (e) => {
       e.preventDefault();
-      alert('Viewing the menu! You can replace this with modal or page navigation.');
+      alert('View menu - replace with modal or page navigation.');
     };
 
     linksDiv.appendChild(editLink);
@@ -393,47 +369,49 @@
     // Assemble box
     box.appendChild(iconSection);
     box.appendChild(detailsDiv);
+    box.appendChild(linksDiv);
     box.appendChild(removeBtn);
 
     container.appendChild(box);
   }
 
-  // Initialize with one info box
+  // Initialize with one box
   createInfoBox();
 
-  // Add new info box
+  // Add new box on button click
   document.getElementById('add-btn').onclick = () => {
     createInfoBox();
   };
 
-  // Search bar (trigger on Enter)
-  document.getElementById('search-input').addEventListener('keydown', function(e) {
+  // Search filter
+  document.getElementById('search-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      alert('Searching for: ' + this.value);
-      // Implement filtering based on search and selected establishment here
+      alert('Searching for: ' + e.target.value);
+      // Implement filtering logic here
     }
   });
 
+  // Example: fetch restaurant data from backend
+  const { createClient } = window.supabase || {}; // Assuming your setup
   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Ensure this is set in your environment
-export const supabase = createClient(supabaseUrl, supabaseKey);
+  const supabaseKey = process.env.SUPABASE_KEY; // Replace with your key
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function fetchRestaurants() {
-  const { data, error } = await supabase
-    .from('restaurants')
-    .select('*');
-
-  if (error) {
-    console.error('Error fetching restaurants:', error);
-    return;
+  async function fetchRestaurants() {
+    const { data, error } = await supabase.from('restaurants').select('*');
+    if (error) {
+      console.error('Error fetching restaurants:', error);
+      return;
+    }
+    console.log('Restaurants:', data);
+    // You can render data here
   }
 
-  // Example: Log the data or process it
-  console.log('Restaurants:', data);
-  // You can render or process the data here
-}
+  // Call fetch on page load
+  window.onload = () => {
+    fetchRestaurants();
+  };
 </script>
-
 </body>
 </html>

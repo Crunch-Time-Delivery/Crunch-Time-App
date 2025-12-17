@@ -5,247 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Restaurant Dashboard</title>
   <style>
-    /* Reset */
+    /* Reset styles and layout styles omitted for brevity, kept from your code */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
-    /* Body styles */
     body {
       font-family: Arial, sans-serif;
       background-color: #f0f2f5;
     }
-
-    /* Header with menu icon and dropdown */
-    .header {
-      display: flex;
-      align-items: center;
-      padding: 10px 20px;
-      background-color: #fff;
-      position: relative;
-      border-bottom: 1px solid #ccc;
-    }
-
-    /* Menu container and icon */
-    .menu-container {
-      position: relative;
-    }
-
-    .menu-icon {
-      font-size: 24px;
-      cursor: pointer;
-    }
-
-    /* Dropdown menu styles */
-    #menuDropdown {
-      display: none; /* Hidden by default */
-      position: absolute;
-      top: 40px;
-      left: 0;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      padding: 10px;
-      z-index: 1000;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    #menuDropdown button {
-      width: 150px;
-      padding: 8px 12px;
-      border: none;
-      background-color: #f0f0f0;
-      border-radius: 4px;
-      cursor: pointer;
-      text-align: left;
-    }
-
-    #menuDropdown button:hover {
-      background-color: #ddd;
-    }
-
-    /* Top Red Bar */
-    .top-bar {
-      background-color: red;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-    }
-
-    /* Profile section */
-    .profile-section {
-      display: flex;
-      align-items: center;
-    }
-
-    .profile-picture {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: #fff; /* Placeholder */
-      margin-right: 10px;
-    }
-
-    .admin-name {
-      color: #fff;
-      font-weight: bold;
-      font-size: 1.2em;
-    }
-
-    /* Menu icon inside top bar (not used now, but kept for consistency) */
-    .menu-icon {
-      font-size: 24px;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    /* Container for filter and search, placed below top bar */
-    .filter-search-container {
-      display: flex;
-      align-items: center;
-      padding: 10px 20px;
-      gap: 10px;
-      background-color: #fff;
-    }
-
-    /* Dropdown style */
-    .filter-dropdown {
-      padding: 8px 12px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      font-size: 1em;
-    }
-
-    /* Search input style */
-    #search-input {
-      padding: 8px 12px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      font-size: 1em;
-      flex: 1;
-    }
-
-    /* Container for restaurant entries */
-    .content-container {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    /* Restaurant box styling */
-    .restaurant-box {
-      display: flex;
-      background-color: #fff;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    /* Image section */
-    .image-section {
-      flex-shrink: 0;
-      margin-right: 20px;
-    }
-
-    .restaurant-image {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-
-    /* Text box styling */
-    .text-box {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .restaurant-name {
-      font-size: 1.5em;
-      margin-bottom: 10px;
-      outline: none;
-    }
-
-    .restaurant-link {
-      color: #007bff;
-      text-decoration: none;
-      margin-bottom: 10px;
-    }
-
-    .restaurant-link:hover {
-      text-decoration: underline;
-    }
-
-    /* Buttons container */
-    .buttons {
-      display: flex;
-      gap: 10px;
-    }
-
-    /* Action Buttons */
-    .action-btn {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1.2em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Specific button styles */
-    .edit-btn {
-      background-color: #007bff;
-      color: #fff;
-    }
-
-    .edit-btn:hover {
-      background-color: #0069d9;
-    }
-
-    .remove-btn {
-      background-color: #dc3545;
-      color: #fff;
-    }
-
-    .remove-btn:hover {
-      background-color: #c82333;
-    }
-
-    /* Add Button style */
-    #add-restaurant {
-      margin: 20px;
-      padding: 12px 20px;
-      background-color: red;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 1em;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    #add-restaurant:hover {
-      background-color: darkred;
-    }
+    /* Header styles */
+    .header { display: flex; align-items: center; padding: 10px 20px; background: #fff; position: relative; border-bottom: 1px solid #ccc; }
+    .menu-container { position: relative; }
+    .menu-icon { font-size: 24px; cursor: pointer; }
+    #menuDropdown { display: none; position: absolute; top: 40px; left: 0; background: #fff; border: 1px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.2); padding: 10px; z-index: 1000; flex-direction: column; gap: 10px; }
+    #menuDropdown button { width: 150px; padding: 8px 12px; border: none; background: #f0f0f0; border-radius: 4px; cursor: pointer; text-align: left; }
+    #menuDropdown button:hover { background: #ddd; }
+    /* Top bar styles */
+    .top-bar { background: red; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+    .profile-section { display: flex; align-items: center; }
+    .profile-picture { width: 40px; height: 40px; border-radius: 50%; background: #fff; margin-right: 10px; }
+    .admin-name { color: #fff; font-weight: bold; font-size: 1.2em; }
+    /* Filter / search bar styles */
+    .filter-search-container { display: flex; align-items: center; padding: 10px 20px; background: #fff; gap: 10px; }
+    .filter-dropdown { padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; font-size: 1em; }
+    #search-input { padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; font-size: 1em; flex: 1; }
+    /* Content styles */
+    #content-container { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+    /* Restaurant box styles */
+    .restaurant-box { display: flex; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .image-section { flex-shrink: 0; margin-right: 20px; }
+    .restaurant-image { width: 150px; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; }
+    .text-box { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .restaurant-name { font-size: 1.5em; margin-bottom: 10px; outline: none; cursor: pointer; }
+    .restaurant-link { color: #007bff; text-decoration: none; margin-bottom: 10px; }
+    .restaurant-link:hover { text-decoration: underline; }
+    .buttons { display: flex; gap: 10px; margin-top: 10px; }
+    .action-btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 1.2em; display: flex; align-items: center; justify-content: center; }
+    .edit-btn { background: #007bff; color: #fff; }
+    .edit-btn:hover { background: #0069d9; }
+    .remove-btn { background: #dc3545; color: #fff; }
+    .remove-btn:hover { background: #c82333; }
+    /* Add button style */
+    #add-restaurant { margin: 20px; padding: 12px 20px; background: red; color: #fff; border: none; border-radius: 6px; font-size: 1em; cursor: pointer; }
+    #add-restaurant:hover { background: darkred; }
+    /* Additional styles omitted for brevity */
   </style>
 </head>
 <body>
-  <!-- Header with menu icon and dropdown -->
+  <!-- Header with menu icon -->
   <div class="header">
-    <!-- Menu -->
     <div class="menu-container">
-      <div class="menu-icon" title="Menu" style="cursor:pointer; font-size:24px;" onclick="toggleMenuDropdown()">☰</div>
+      <div class="menu-icon" title="Menu" onclick="toggleMenuDropdown()">☰</div>
       <div id="menuDropdown">
         <button onclick="showSection('dashboard')">Dashboard</button>
         <button onclick="window.location.href='http://127.0.0.1:5500/driver-app/admin/estabilshment.html'">Establishment</button>
@@ -256,16 +68,15 @@
     </div>
   </div>
 
-  <!-- Top Red Bar -->
+  <!-- Top bar -->
   <div class="top-bar">
     <div class="profile-section">
       <div class="profile-picture"></div>
       <div class="admin-name">Restaurant Menu</div>
     </div>
-    <!-- Optional: Keep or remove this menu icon if you want a second one -->
   </div>
 
-  <!-- Filter dropdown and search bar -->
+  <!-- Filter/search -->
   <div class="filter-search-container">
     <select id="establishment-filter" class="filter-dropdown">
       <option value="">Select Establishment</option>
@@ -277,142 +88,125 @@
     <input type="text" id="search-input" placeholder="Search..." />
   </div>
 
-  <!-- Container for restaurant entries -->
-  <div class="content-container" id="content-container">
-    <!-- Dynamic restaurant entries will be added here -->
-  </div>
+  <!-- Content container -->
+  <div id="content-container"></div>
 
   <!-- Add button -->
-  <button class="add-button" id="add-restaurant">Add Restaurant Menu</button>
+  <button id="add-restaurant">Add Restaurant Menu</button>
 
-  <script>
-    // Toggle menu dropdown
-    function toggleMenuDropdown() {
-      const dropdown = document.getElementById('menuDropdown');
-      if (dropdown.style.display === 'block') {
-        dropdown.style.display = 'none';
-      } else {
-        dropdown.style.display = 'block';
-      }
-    }
-
-    // Close dropdown if clicked outside
-    document.addEventListener('click', function(event) {
-      const dropdown = document.getElementById('menuDropdown');
-      const menuIcon = document.querySelector('.menu-container');
-      if (!dropdown.contains(event.target) && !menuIcon.contains(event.target)) {
-        dropdown.style.display = 'none';
-      }
-    });
-
-    const container = document.getElementById('content-container');
-    const addBtn = document.getElementById('add-restaurant');
-
-    function createRestaurantBox() {
-      const box = document.createElement('div');
-      box.className = 'restaurant-box';
-
-      // Image section
-      const imageContainer = document.createElement('div');
-      imageContainer.className = 'image-section';
-
-      const img = document.createElement('img');
-      img.src = 'https://via.placeholder.com/150';
-      img.alt = 'Restaurant Image';
-      img.className = 'restaurant-image';
-
-      imageContainer.appendChild(img);
-
-      // Text box
-      const textBox = document.createElement('div');
-      textBox.className = 'text-box';
-
-      const restaurantName = document.createElement('h3');
-      restaurantName.className = 'restaurant-name';
-      restaurantName.contentEditable = true;
-      restaurantName.innerText = 'Restaurant Name';
-
-      const urlLink = document.createElement('a');
-      urlLink.href = '#';
-      urlLink.innerText = 'Restaurant Menu';
-      urlLink.className = 'restaurant-link';
-
-      const buttonsContainer = document.createElement('div');
-      buttonsContainer.className = 'buttons';
-
-      // Edit button
-      const editBtn = document.createElement('button');
-      editBtn.className = 'action-btn edit-btn';
-      editBtn.innerHTML = '&#9998;'; // Pencil icon
-      editBtn.title = 'Edit';
-
-      // Remove button
-      const removeBtn = document.createElement('button');
-      removeBtn.className = 'action-btn remove-btn';
-      removeBtn.innerHTML = '&times;';
-      removeBtn.title = 'Remove';
-
-      // Append buttons
-      buttonsContainer.appendChild(editBtn);
-      buttonsContainer.appendChild(removeBtn);
-
-      // Append all to text box
-      textBox.appendChild(restaurantName);
-      textBox.appendChild(urlLink);
-      textBox.appendChild(buttonsContainer);
-
-      // Append to main box
-      box.appendChild(imageContainer);
-      box.appendChild(textBox);
-
-      // Append to container
-      container.appendChild(box);
-
-      // Event handlers
-      editBtn.onclick = () => {
-        restaurantName.contentEditable = true;
-        restaurantName.focus();
-      };
-      removeBtn.onclick = () => {
-        container.removeChild(box);
-      };
-    }
-
-    // Initialize with one restaurant
-    createRestaurantBox();
-
-    // Add new on button click
-    document.getElementById('add-restaurant').onclick = () => {
-      createRestaurantBox();
-    };
-
-    // Optional: handle search
-    document.getElementById('search-input').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        alert('Searching for: ' + e.target.value);
-      }
-    });
-
-    const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Ensure this is set in your environment
-export const supabase = createClient(supabaseUrl, supabaseKey);
-
-
-    async function fetchRestaurantMenus() {
-  const { data, error } = await supabase
-    .from('restaurant_menus')
-    .select('*');
-
-  if (error) {
-    console.error('Error fetching restaurant menus:', error);
-    return;
+<script>
+  // Toggle menu dropdown
+  function toggleMenuDropdown() {
+    const dropdown = document.getElementById('menuDropdown');
+    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
   }
+  document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('menuDropdown');
+    if (!dropdown.contains(e.target) && !document.querySelector('.menu-icon').contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
 
-  // Example: Log the data or process it
-  console.log('Restaurant Menus:', data);
-  // You can render or process the data here
+  const container = document.getElementById('content-container');
+
+  // Function to create and add a restaurant info box
+function createRestaurantBox() {
+  const box = document.createElement('div');
+  box.className = 'restaurant-box';
+
+  // Image section
+  const imgDiv = document.createElement('div');
+  imgDiv.className = 'image-section';
+  const img = document.createElement('img');
+  img.src = 'https://via.placeholder.com/150';
+  img.alt = 'Restaurant Image';
+  img.className = 'restaurant-image';
+  img.onclick = () => {
+    alert('Click to change image (implement file upload)');
+  };
+  imgDiv.appendChild(img);
+
+  // Text section
+  const textDiv = document.createElement('div');
+  textDiv.className = 'text-box';
+
+  const name = document.createElement('h3');
+  name.className = 'restaurant-name';
+  name.contentEditable = true;
+  name.innerText = 'Restaurant Name';
+
+  const link = document.createElement('a');
+  link.href = '#';
+  link.className = 'restaurant-link';
+  link.innerText = 'Restaurant Menu';
+
+  const btnContainer = document.createElement('div');
+  btnContainer.className = 'buttons';
+
+  const editBtn = document.createElement('button');
+  editBtn.className = 'action-btn edit-btn';
+  editBtn.innerHTML = '&#9998;';
+  editBtn.title = 'Edit';
+
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'action-btn remove-btn';
+  removeBtn.innerHTML = '&times;';
+  removeBtn.title = 'Remove';
+
+  // Append buttons
+  btnContainer.appendChild(editBtn);
+  btnContainer.appendChild(removeBtn);
+
+  // Append to textDiv
+  textDiv.appendChild(name);
+  textDiv.appendChild(link);
+  textDiv.appendChild(btnContainer);
+
+  // Append to box
+  box.appendChild(imgDiv);
+  box.appendChild(textDiv);
+
+  // Append to container
+  container.appendChild(box);
+
+  // Event handlers
+  editBtn.onclick = () => {
+    name.contentEditable = true;
+    name.focus();
+  };
+  removeBtn.onclick = () => {
+    container.removeChild(box);
+  };
 }
-  </script>
+
+// Initialize with one restaurant
+createRestaurantBox();
+
+// Add new entry
+document.getElementById('add-restaurant').onclick = () => {
+  createRestaurantBox();
+};
+
+// Search handling
+document.getElementById('search-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    alert('Searching for: ' + e.target.value);
+    // implement real search/filter logic here
+  }
+});
+
+// Example backend data fetch (using supabase or other)
+async function fetchRestaurantMenus() {
+  // Replace with your backend API or database fetch
+  // For example, using supabase:
+  // const { data, error } = await supabase.from('restaurant_menus').select('*');
+  // console.log('Menus:', data);
+}
+
+// Call fetch on load
+window.onload = () => {
+  fetchRestaurantMenus();
+};
+</script>
 </body>
 </html>

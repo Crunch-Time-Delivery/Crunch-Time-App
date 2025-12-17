@@ -94,21 +94,19 @@
 
 <!-- Google Maps API - Replace YOUR_API_KEY with your actual API key -->
 <script>
-  const API_KEY = 'AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q  '; // Replace with your API key
+  const API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'; // Replace with your API key
   const DUMMY_ORDER_ID = 'ORDER1234567890';
 
   let map, driverMarker, customerMarker;
   let tracking = false;
   let intervalId = null;
-  let customerLat = 37.7850, customerLng = -122.4383; // Default
+  let customerLat = 37.7850, customerLng = -122.4383; // Default customer location
 
   // Initialize map with default center
   function initMap() {
-    // Default center (if no specific order)
     let centerCoords = { lat: 0, lng: 0 };
-
-    // Check if current input triggers Cape Town
     const currentOrderId = document.getElementById('orderId').value.trim();
+
     if (currentOrderId === DUMMY_ORDER_ID) {
       centerCoords = { lat: -33.9249, lng: 18.4241 }; // Cape Town
     }
@@ -186,10 +184,8 @@
     const trackBtn = document.getElementById('trackBtn');
     const statusEl = document.getElementById('status');
 
-    // Load Google Maps
-    window.initMap = initMap;
-
     // Load Google Maps script
+    window.initMap = initMap;
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMap`;
     script.async = true;
@@ -201,18 +197,12 @@
 
     const startTracking = () => {
       if (tracking) return; // Already tracking
-
       const orderId = orderInput.value.trim();
-
-      // Initialize map with correct center based on orderId
-      // Re-initialize map
-      initMap();
-
-      // Set status
+      initMap(); // Re-init map for new order
       statusEl.className = 'status connecting';
       statusEl.textContent = 'Connecting to driver...';
 
-      // Start polling driver location
+      // Begin polling
       intervalId = setInterval(() => pollDriverLocation(orderId), 3000);
       tracking = true;
       document.getElementById('trackBtn').disabled = true;
@@ -221,23 +211,21 @@
 
     const pollDriverLocation = async (orderId) => {
       try {
-        // Replace API_URL with your server that returns driver location for the order
-        // For demo, simulate with dummy data if orderId matches dummy
+        // Replace with your server API call to fetch driver location
+        // For demo, simulate driver movement for dummy ID
         if (orderId === DUMMY_ORDER_ID) {
-          // Simulate driver movement around Cape Town
-          const lat = -33.9249 + Math.random() * 0.02; // Small variation
+          const lat = -33.9249 + Math.random() * 0.02;
           const lng = 18.4241 + Math.random() * 0.02;
           updateDriverLocation(lat, lng);
-          document.getElementById('status').className = 'status tracking';
-          document.getElementById('status').textContent = 'Driver is moving...';
+          statusEl.className = 'status tracking';
+          statusEl.textContent = 'Driver is moving...';
         } else {
-          // For other IDs, simulate no driver
           throw new Error('Driver not found');
         }
       } catch (err) {
         console.warn('Error:', err);
-        document.getElementById('status').className = 'status error';
-        document.getElementById('status').textContent = 'Driver not found or offline.';
+        statusEl.className = 'status error';
+        statusEl.textContent = 'Driver not found or offline.';
         clearInterval(intervalId);
         tracking = false;
         document.getElementById('trackBtn').disabled = false;

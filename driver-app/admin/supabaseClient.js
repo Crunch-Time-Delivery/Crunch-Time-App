@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 
 // Initialize Supabase client
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Ensure this is set in your environment
+const supabaseKey = process.env.SUPABASE_KEY; // Make sure this environment variable is set
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Storage configuration
@@ -10,10 +10,9 @@ const storageBucket = 'crunchtime'; // Your storage bucket name
 const storageKeyId = 'e14f15dbd3a60e1e4b2e2f90a19b7587'; // Your storage key ID
 const storageEndpoint = 'https://wbpgmgtoyzlnawvsfeiu.storage.supabase.co/storage/v1/s3';
 
-// Function to upload profile picture
+// Upload profile picture
 async function uploadProfilePicture(file, filename) {
   const filePath = `profile_pictures/${filename}`;
-
   const { data, error } = await supabase.storage
     .from(storageBucket)
     .upload(filePath, file, {
@@ -22,47 +21,33 @@ async function uploadProfilePicture(file, filename) {
         'x-amz-meta-endpoint': storageEndpoint,
       },
     });
-
   if (error) {
     console.error('Error uploading profile picture:', error);
     return null;
   }
-
-  // Return the public URL
+  // Generate public URL
   const publicUrl = `${storageEndpoint.replace('/storage/v1/s3', '')}/storage/v1/object/public/${filePath}`;
   return publicUrl;
 }
 
 // Fetch Admin data
 async function fetchAdmin() {
-  const { data: Admin, error } = await supabase
+  const { data: admin, error } = await supabase
     .from('Admin')
     .select(`
-      id,
-      username,
-      password,
-      Change_Username,
-      Change_Password,
-      "New Admin_Email",
-      "New Admin_Username",
-      income_amount,
-      expense_amount,
-      withdraw_amount,
-      total_income_amount,
-      order_total_amount,
-      restaurant_name,
-      restaurant_menu,
-      establishment
+      id, username, password, Change_Username, Change_Password,
+      "New Admin_Email", "New Admin_Username", income_amount,
+      expense_amount, withdraw_amount, total_income_amount,
+      order_total_amount, restaurant_name, restaurant_menu, establishment
     `);
-
   if (error) {
     console.error('Error fetching admin:', error);
     return null;
   }
-  return Admin;
+  return admin;
 }
 
-// Load Drivers and populate the page
+// Load Drivers and populate UI
 async function loadDrivers() {
   const { data, error } = await supabase.from('Driver').select('*');
   if (error) {
@@ -79,7 +64,7 @@ async function loadDrivers() {
   }
 }
 
-// Load Vendors and populate the page
+// Load Vendors and populate UI
 async function loadVendors() {
   const { data, error } = await supabase.from('Vendor').select('*');
   if (error) {
@@ -95,39 +80,31 @@ async function loadVendors() {
     document.getElementById('vendorHistory2').innerText = data[1].history_orders;
   }
 }
-// Function to fetch role management data
+
+// Fetch role management data
 async function fetchRoleManagement() {
-  const { data: role_management, error } = await supabase
+  const { data: roleData, error } = await supabase
     .from('role_management')
     .select('user_accounts_email, vendor_accounts_email, driver_accounts_email');
 
   if (error) {
-    console.error('Error fetching role management data:', error);
+    console.error('Error fetching role management:', error);
     return null;
   }
 
-  // Assuming you want to store these in a structured format
-  const roleEmails = role_management.map(item => ({
+  const roleEmails = roleData.map(item => ({
     userEmail: item.user_accounts_email,
     vendorEmail: item.vendor_accounts_email,
     driverEmail: item.driver_accounts_email,
   }));
 
-  // You can now use roleEmails array as needed
   return roleEmails;
 }
-// Example usage
-fetchRoleManagement().then(roleEmails => {
-  if (roleEmails) {
-    console.log(roleEmails);
-    // Do something with the data
-  }
-});
+
 // Handle driver cancellation (or update status)
-function cancelDriver(driverName) {
+async function cancelDriver(driverName) {
   alert('Cancel driver: ' + driverName);
-  // Optional: Implement actual DB update to set driver status as canceled
-  // Example:
+  // Example: update driver status in database
   // await supabase.from('Driver').update({ status: 'canceled' }).eq('driver_name', driverName);
 }
 
@@ -142,4 +119,11 @@ window.onload = () => {
   updateMonthlyData('January');
   loadDrivers();
   loadVendors();
+  // Fetch role management data if needed
+  fetchRoleManagement().then(roleEmails => {
+    if (roleEmails) {
+      console.log('Role Emails:', roleEmails);
+      // You can process or display role email info here
+    }
+  });
 };
