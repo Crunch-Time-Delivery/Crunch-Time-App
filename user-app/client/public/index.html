@@ -358,6 +358,7 @@ button {
 </div>
 
 <script>
+  
 function showNotificationMessage(message, color='#4CAF50') {
   const notif = document.getElementById('notification');
   notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
@@ -411,8 +412,9 @@ function sendSms(to, message) {
 
 // Replace the showMenu function
 function showMenu(restName) {
-  const url = `restaurant_info.html?name=${encodeURIComponent(restName)}`;
+  const url = `restaurant_info.html?name=${encodeURIComponent(name)}`;
   window.location.href = url;
+ 
 }
 
 // Placeholder functions for modal controls

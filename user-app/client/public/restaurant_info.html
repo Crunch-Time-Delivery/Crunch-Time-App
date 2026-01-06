@@ -4,127 +4,296 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Restaurant Info</title>
-<!-- Your CSS -->
-<link rel="stylesheet" href="assets/index.css" />
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f7f7f7;
+  color: #222;
+}
+
+/* HEADER */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.header a {
+  text-decoration: none;
+  color: #000;
+  font-size: 18px;
+  margin-right: 10px;
+}
+
+.hero img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.container {
+  padding: 15px;
+  background: #fff;
+}
+
+.restaurant-title {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.meta {
+  font-size: 13px;
+  color: #666;
+  margin: 6px 0;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  padding: 10px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.info-row a {
+  color: red;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.menu-section {
+  margin-top: 20px;
+}
+
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.checkout-bar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: red;
+  color: #fff;
+  text-align: center;
+  padding: 15px;
+  font-weight: bold;
+}
+
+.checkout-bar a {
+  color: #fff;
+  text-decoration: none;
+}
+
+/* FOOD MODAL */
+.food-modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+}
+
+.food-modal-content {
+  background: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 8px;
+}
+
+.food-close-btn {
+  float: right;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.quantity-btn {
+  padding: 8px 14px;
+  font-size: 16px;
+}
+
+.add-more-btn, .exit-btn {
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-more-btn {
+  background: red;
+  color: #fff;
+}
+
+.exit-btn {
+  background: #ccc;
+}
+</style>
 </head>
+
 <body>
 
-<h1>Restaurant Details</h1>
-
-<!-- Modal for Restaurant Menu -->
-<div id="menuModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="closeModal()">&times;</span>
-    <img id="restaurantImage" src="" alt="Restaurant Image" />
-    <h2 id="restaurantName">Restaurant Menu</h2>
-    <div id="menuItems"></div>
-    <button class="view-map-btn" onclick="viewMap()">View Map Location</button>
-  </div>
+<!-- HEADER -->
+<div class="header">
+  <a href="index.html">←</a>
+  <h2>Restaurant Info</h2>
 </div>
 
-<!-- Food Opinion Modal -->
-<div id="foodOpinionModal" class="modal">
-  <div class="modal-content" style="max-width:400px;">
-    <span class="close-btn" onclick="closeFoodOpinionModal()">&times;</span>
-    <h3>Tell us your preference</h3>
-    <select id="opinionChoice" style="width:100%; padding:8px;">
-      <option>No preference</option>
-      <option>Spicy</option>
-      <option>Less Salt</option>
-      <option>Extra cheese</option>
-      <option>No onions</option>
-      <option>Less Sugar</option>
-      <option>Extra Ice</option>
-    </select>
-    <div style="margin-top:20px; display:flex; justify-content:center;">
-      <button class="add-more-btn" onclick="confirmFoodOpinion()">Next</button>
-    </div>
-  </div>
+<!-- HERO -->
+<div class="hero">
+  <img id="restaurantImage">
 </div>
 
-<!-- Food Item Modal -->
+<!-- CONTENT -->
+<div class="container">
+  <div class="restaurant-title" id="restaurantName"></div>
+
+  <div class="meta">
+    ⭐ 4.3 • ~25 min
+  </div>
+
+  <div class="info-row">
+    <span>📍 Restaurant Info</span>
+    <a id="mapLink" target="_blank">View Map</a>
+  </div>
+
+  <div class="info-row">
+    <span id="deliveryTime">🚚 Deliver in 20 – 35 min</span>
+    <a href="#" onclick="changeDelivery()">Change</a>
+  </div>
+
+  <div class="menu-section" id="menu"></div>
+</div>
+
+<!-- CHECKOUT -->
+<div class="checkout-bar">
+  <a href="my_order.html">Go to My Orders</a>
+</div>
+
+<!-- FOOD MODAL -->
 <div id="foodModal" class="food-modal">
   <div class="food-modal-content">
     <span class="food-close-btn" onclick="closeFoodModal()">&times;</span>
-    <h3 id="foodItemName">Food Item</h3>
-    <div style="display:flex; align-items:center; justify-content:space-around; margin-top:10px;">
+    <h3 id="foodItemName"></h3>
+
+    <div style="display:flex;justify-content:center;gap:20px;">
       <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
       <span id="foodQuantity">1</span>
       <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
     </div>
-    <div style="margin-top:20px; display:flex; justify-content:center;">
+
+    <div style="margin-top:20px;text-align:center;">
       <button class="add-more-btn" onclick="addItemToOrder()">Add to Order</button>
       <button class="exit-btn" onclick="closeFoodModal()">Exit</button>
     </div>
   </div>
 </div>
 
-<!-- Other restaurant info content can go here -->
-
-<!-- Checkout Button with CSS styling -->
-<a href="http://127.0.0.1:5501/user-app/client/public/my_order.html" style="
-  display:inline-block; 
-  width:100%; 
-  background-color:red; 
-  color:#fff; 
-  padding:15px; 
-  text-align:center; 
-  text-decoration:none; 
-  font-weight:bold; 
-  border-radius:5px; 
-  font-size:16px;
-  margin-top:20px;">Checkout</a>
-
-<div id="notification" style="display:none; position:fixed; top:20px; width:100%; z-index:9999; text-align:center;">
-  <div style="background-color:#4CAF50; color:white; padding:10px; display:inline-block; border-radius:4px;">
-    Sending notification...
-  </div>
-</div>
-
 <script>
-function getQueryParams() {
-  const params = {};
-  window.location.search.substring(1).split('&').forEach(pair => {
-    if (pair) {
-      const [key, value] = pair.split('=');
-      params[decodeURIComponent(key)] = decodeURIComponent(value || '');
-    }
-  });
-  return params;
-}
-
-window.onload = () => {
-  const params = getQueryParams();
-  const restName = params['name'];
-  const imageMap = {
-    'KFC Parow': 'Images/RS KFC .jpeg',
-    'Sannes Palace': 'Images/RS PALACE .jpg',
-    'DK Spot & Kota': 'Images/RS KOTA .jpg',
-    'Nondyebo Eatery': 'Images/RS NONDYEBO.jpg'
-  };
-
-  if (restName && imageMap[restName]) {
-    document.getElementById('restaurantImage').src = imageMap[restName];
-    document.getElementById('restaurantName').innerText = restName + ' Menu';
-  } else {
-    // fallback if no match
-    document.getElementById('restaurantImage').src = '';
-    document.getElementById('restaurantName').innerText = 'Restaurant Details';
+/* RESTAURANT DATA */
+const restaurantData = {
+  "KFC Parow": {
+    image: "Images/RS KFC .jpeg",
+    map: "https://www.google.com/maps/search/KFC+Parow",
+    menu: [
+      { name: "Zinger Burger", price: 45 },
+      { name: "Streetwise 2", price: 35 }
+    ]
+  },
+  "Sannes Palace": {
+    image: "Images/RS PALACE .jpg",
+    map: "https://www.google.com/maps/search/Sannes+Palace",
+    menu: [
+      { name: "Chicken Curry", price: 60 },
+      { name: "Beef Stew", price: 70 }
+    ]
+  },
+  "DK Spot & Kota": {
+    image: "Images/RS KOTA .jpg",
+    map: "https://www.google.com/maps/search/DK+Spot+Kota",
+    menu: [
+      { name: "Kota Special", price: 25 },
+      { name: "Egg Gatsby", price: 35 }
+    ]
   }
 };
 
-// Placeholder functions for modal controls
-function closeModal() { /* Close the menu modal */ }
-function viewMap() { /* Show map location */ }
-function closeFoodOpinionModal() { /* Close opinion modal */ }
-function closeFoodModal() { /* Close food modal */ }
-function confirmFoodOpinion() { /* Handle opinion confirmation */ }
-function addItemToOrder() { /* Add item to order list */ }
+const params = new URLSearchParams(window.location.search);
+const restaurantName = params.get("name") || "DK Spot & Kota";
+const restaurant = restaurantData[restaurantName];
+
+document.getElementById("restaurantName").innerText = restaurantName;
+document.getElementById("restaurantImage").src = restaurant.image;
+document.getElementById("mapLink").href = restaurant.map;
+
+/* LOAD MENU */
+const menuDiv = document.getElementById("menu");
+restaurant.menu.forEach(item => {
+  const div = document.createElement("div");
+  div.className = "menu-item";
+  div.innerHTML = `<span>${item.name}</span><span>R${item.price}</span>`;
+  div.onclick = () => openFoodModal(item);
+  menuDiv.appendChild(div);
+});
+
+/* FOOD MODAL LOGIC */
+let selectedItem = null;
+let quantity = 1;
+
+function openFoodModal(item) {
+  selectedItem = item;
+  quantity = 1;
+  document.getElementById("foodItemName").innerText = item.name;
+  document.getElementById("foodQuantity").innerText = quantity;
+  document.getElementById("foodModal").style.display = "block";
+}
+
+function closeFoodModal() {
+  document.getElementById("foodModal").style.display = "none";
+}
+
+function changeQuantity(val) {
+  quantity = Math.max(1, quantity + val);
+  document.getElementById("foodQuantity").innerText = quantity;
+}
+
+function addItemToOrder() {
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  cart.push({
+    ...selectedItem,
+    restaurant: restaurantName,
+    qty: quantity
+  });
+  localStorage.setItem("cart", JSON.stringify(cart));
+  closeFoodModal();
+}
+
+/* DELIVERY TIME */
+function changeDelivery() {
+  const times = ["15 – 25 min", "20 – 35 min", "30 – 45 min"];
+  document.getElementById("deliveryTime").innerText =
+    "🚚 Deliver in " + times[Math.floor(Math.random() * times.length)];
+}
 </script>
-<script src="server/supabase/supabaseClient.js"async></script>
 
-<script src="smsAndEmailAPI.js"async></script>
-
+<!-- EXISTING SCRIPTS (UNCHANGED) -->
+<script src="server/supabase/supabaseClient.js" async></script>
+<script src="smsAndEmailAPI.js" async></script>
 <script src="client/public/functions/mainTwilioFunction.js" async></script>
 <script src="client/public/functions/token.js" async></script>
 <script src="client/public/functions/sendSMS.js" async></script>
@@ -133,6 +302,8 @@ function addItemToOrder() { /* Add item to order list */ }
 <script src="client/public/functions/payfast.js" async></script>
 <script src="client/public/functions/notification.js" async></script>
 <script src="client/public/functions/mapFunctions.js" async></script>
-<script src="client/public/functions/payfast.js" async></script>
+
 </body>
 </html>
+
+
