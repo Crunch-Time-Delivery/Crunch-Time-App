@@ -158,58 +158,67 @@ function showNotificationMessage(message, color='#4CAF50') {
     notif.style.display = 'none';
   }, 3000);
 }
+//
+
 
 function sendTwilioNotification(to, message) {
-  // Show sending message
-  showNotificationMessage('Sending notification...');
-  
-  fetch('/notify/sms', {
+  if (!to || !message) {
+    showNotificationMessage('Missing phone number or message', '#f44336');
+    return;
+  }
+
+  // Show sending state
+  showNotificationMessage('Sending message...', '#2196F3');
+
+  fetch('/api/sms', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to: to, message: message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      showNotificationMessage('Notification sent successfully!', '#4CAF50');
-    } else {
-      showNotificationMessage('Failed to send notification.', '#f44336');
-    }
-  })
-  .catch(() => {
-    showNotificationMessage('Error sending notification.', '#f44336');
-  });
-}
-
-// Assuming you have an API endpoint at /notify/sms
-function sendSms(to, message) {
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
     body: JSON.stringify({ to, message })
   })
   .then(res => res.json())
   .then(data => {
-    console.log('SMS sent:', data);
+    if (data.success || data.sid) {
+      showNotificationMessage('Message sent successfully ✔️', '#4CAF50');
+      playNotificationSound();
+    } else {
+      showNotificationMessage('Failed to send message ❌', '#f44336');
+    }
   })
-  .catch(err => {
-    console.error('Error sending SMS:', err);
+  .catch(() => {
+    showNotificationMessage('Error sending message ❌', '#f44336');
   });
 }
 
 
-  // Function to show notifications with a sound
-  function showNotification(message, soundFile) {
-    const audio = new Audio(soundFile);
-    audio.play();
 
-    const container = document.getElementById('notificationContainer');
-    if (container) {
-      container.innerHTML = `<p>${message}</p>`;
-    }
-  }
+function showNotificationMessage(text, color = '#333') {
+  const container = document.getElementById('notificationContainer');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div style="
+      padding:10px;
+      background:${color};
+      color:#fff;
+      border-radius:8px;
+      font-size:14px;
+    ">
+      ${text}
+    </div>
+  `;
+}
+
+function playNotificationSound() {
+  const audio = new Audio('/sounds/notify.mp3'); // optional
+  audio.play().catch(() => {});
+}
+
+
+
+function sendSms(to, message) {
+  sendTwilioNotification(to, message);
+}
+
 
   // Function to load notification page content
 function loadNotificationPage() {
@@ -455,22 +464,32 @@ function loadMainPage() {
 
 }); // End of DOMContentLoaded
  async function updatePayment(paymentData) {
-    try {
-      const res = await fetch('/api/updatePayment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentData),
-      });
-      const result = await res.json();
-      if (res.ok) {
-        alert('Payment updated successfully!');
-      } else {
-        alert('Error: ' + result.error);
-      }
-    } catch (err) {
-      console.error('Error updating payment:', err);
+  try {
+    showNotificationMessage('Updating payment...', '#2196F3');
+
+    const res = await fetch('/api/updatePayment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(paymentData)
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.error || 'Payment update failed');
     }
+
+    showNotificationMessage('Payment updated successfully ✔️', '#4CAF50');
+    playNotificationSound();
+
+    return result;
+  } catch (err) {
+    console.error('Error updating payment:', err);
+    showNotificationMessage('Error updating payment ❌', '#f44336');
+    throw err;
   }
+}
+
 
 
 </script>
