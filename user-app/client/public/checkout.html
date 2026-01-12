@@ -3,297 +3,141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Checkout & Tracking</title>
-
+<title>Checkout</title>
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
+body{margin:0;font-family:Arial;background:#f5f5f5}
+.hidden{display:none}
+.container{max-width:420px;margin:auto;padding-bottom:90px}
+.header{background:#fff;padding:15px;font-weight:bold;text-align:center}
+.map img{width:100%;height:200px;object-fit:cover}
+.card{background:#fff;margin:12px;padding:14px;border-radius:14px}
+.address{display:flex;justify-content:space-between}
+.voucher{background:#ffb84d;padding:14px;margin:12px;border-radius:10px;text-align:center;font-weight:bold;color:#fff;cursor:pointer}
+.summary-row{display:flex;justify-content:space-between;margin-bottom:6px}
+.total-row{border-top:1px dashed #ddd;padding-top:8px;font-weight:bold;font-size:16px}
+.method{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
+.method-left{display:flex;align-items:center;gap:10px}
+.method img{width:32px}
+.bottom-bar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:420px;background:red;color:#fff;
+  padding:16px;display:flex;justify-content:space-between;font-weight:bold;cursor:pointer
 }
-
-/* COMMON */
-.hidden { display: none; }
-.container { max-width: 420px; margin: auto; }
-
-/* ================= CHECKOUT ================= */
-.checkout-container { padding-bottom: 90px; }
-
-.header {
-  background: #fff;
-  padding: 15px;
-  font-weight: bold;
-  text-align: center;
-}
-
-.map img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-}
-
-.card {
-  background: #fff;
-  margin: 12px;
-  padding: 14px;
-  border-radius: 14px;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.total { font-weight: bold; font-size: 16px; }
-
-.method {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-}
-
-.bottom-bar {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 420px;
-  background: red;
-  color: #fff;
-  padding: 15px;
-  display: flex;
-  justify-content: space-between;
-  cursor: pointer;
-}
-
-/* ================= TRACKING ================= */
-.tracking-container { background: #fff; }
-
-.track-header {
-  padding: 12px;
-  text-align: center;
-  font-weight: bold;
-  border-bottom: 1px solid #eee;
-}
-
-.track-sub { font-size: 12px; color: #777; }
-
-.track-map img {
-  width: 100%;
-  height: 260px;
-  object-fit: cover;
-}
-
-.driver-card {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-}
-
-.driver-card img {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
-
-.driver-actions {
-  margin-left: auto;
-  display: flex;
-  gap: 10px;
-}
-
-.driver-actions button {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: red;
-  color: #fff;
-  cursor: pointer;
-}
-
-.track-info { padding: 15px; }
-
-.time { font-size: 24px; font-weight: bold; }
-
-.badge {
-  background: red;
-  color: #fff;
-  font-size: 12px;
-  padding: 3px 8px;
-  border-radius: 8px;
-  margin-left: 6px;
-}
-
-.tabs {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
-  font-weight: bold;
-}
-
-/* ================= POPUP ================= */
-.popup-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 1000;
-  align-items: center;
-  justify-content: center;
-}
-
-.popup {
-  background: #fff;
-  width: 320px;
-  padding: 16px;
-  border-radius: 10px;
-}
-
-.popup textarea {
-  width: 100%;
-  height: 90px;
-  resize: none;
-  padding: 8px;
-}
-
-.popup-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-}
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000}
+.popup{background:#fff;padding:16px;width:300px;border-radius:12px}
+.popup input{width:100%;padding:10px;margin-top:10px}
+.track-header{text-align:center;padding:12px;font-weight:bold;background:#fff}
+.driver-card{display:flex;align-items:center;padding:12px;background:#fff;margin:10px;border-radius:12px}
+.driver-icon{width:46px;height:46px;border-radius:50%;background:red;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;}
+.driver-actions{margin-left:auto;display:flex;gap:10px}
+.driver-actions button{width:36px;height:36px;border-radius:50%;background:red;color:#fff;border:none}
 </style>
 </head>
 
 <body>
 
-<!-- ================= CHECKOUT PAGE ================= -->
-<div id="checkoutPage" class="container checkout-container">
+<!-- CHECKOUT -->
+<div id="checkoutPage" class="container">
+<div class="header">Checkout</div>
 
-  <div class="header">Checkout</div>
-
-  <div class="map">
-    <img src="https://maps.googleapis.com/maps/api/staticmap?center=Kenilworth,CapeTown&zoom=14&size=600x300&markers=color:red|Kenilworth">
-  </div>
-
-  <div class="card">
-    <strong>17 Bishop Park Way</strong><br>
-    <small>Delivery 25–35 min</small>
-  </div>
-
-  <div class="card">
-    <strong>Payment Summary</strong>
-    <div class="summary-row"><span>Subtotal</span><span id="subtotal"></span></div>
-    <div class="summary-row"><span>Service Fee</span><span>R10.00</span></div>
-    <div class="summary-row"><span>Delivery Fee</span><span>R20.00</span></div>
-    <div class="summary-row total"><span>Total</span><span id="total"></span></div>
-  </div>
-
+<div class="map">
+<img src="https://maps.googleapis.com/maps/api/staticmap?center=Kenilworth,CapeTown&zoom=14&size=600x300">
 </div>
 
-<div class="bottom-bar" onclick="placeOrder()">
-  <span>Place order</span>
-  <span id="barTotal"></span>
+<div class="card address">
+<div><strong>17 Bishop Park Way</strong><br><small>Delivery 25 – 35 min</small></div> ✏️
 </div>
 
-<!-- ================= TRACKING PAGE ================= -->
-<div id="trackingPage" class="container tracking-container hidden">
+<div class="voucher" onclick="openVoucher()">Input voucher coupon</div>
 
-  <div class="track-header">
-    M&D Pizza
-    <div class="track-sub">The courier is on their way to you</div>
-  </div>
-
-  <div class="track-map">
-    <img src="https://maps.googleapis.com/maps/api/staticmap?center=Kenilworth,CapeTown&zoom=14&size=600x400">
-  </div>
-
-  <div class="driver-card">
-    <div>
-      <strong>Courier</strong><br>
-      <small>On the way</small>
-    </div>
-    <div class="driver-actions">
-      <button onclick="makeCall()">📞</button>
-      <button onclick="openPopup()">💬</button>
-    </div>
-  </div>
-
-  <div class="track-info">
-    <div class="time">
-      12:56 <span class="badge">4.8 ★</span>
-    </div>
-    <small>Estimated time to delivery</small>
-  </div>
+<div class="card">
+<div class="summary-row"><span>Subtotal</span><span id="subtotal"></span></div>
+<div class="summary-row"><span>Discount</span><span id="discount">R0.00</span></div>
+<div class="summary-row"><span>Service Fee</span><span>R10.00</span></div>
+<div class="summary-row"><span>Delivery Fee</span><span>R20.00</span></div>
+<div class="summary-row total-row"><span>Total</span><span id="total"></span></div>
 </div>
 
-<!-- ================= MESSAGE POPUP ================= -->
-<div class="popup-overlay" id="messagePopup">
-  <div class="popup">
-    <h3>Send Message</h3>
-    <textarea id="smsInput" placeholder="Type your message..."></textarea>
-    <div class="popup-actions">
-      <button onclick="closePopup()">Cancel</button>
-      <button onclick="sendMessage()">Send</button>
-    </div>
-  </div>
+<div class="card">
+<div class="method">
+<div class="method-left"><img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png">Instant EFT</div>
+<input type="radio" name="paymethod" value="eft" checked>
 </div>
+<div class="method">
+<div class="method-left"><img src="https://cdn-icons-png.flaticon.com/512/891/891462.png">Card (Visa / MasterCard)</div>
+<input type="radio" name="paymethod" value="card">
+</div>
+</div>
+</div>
+
+<div class="bottom-bar" onclick="payNow()">
+<span>Place Order</span><span id="barTotal"></span>
+</div>
+
+<!-- TRACKING -->
+<div id="trackingPage" class="hidden">
+<div class="track-header">M&D Pizza – Courier on the way</div>
+<img src="https://maps.googleapis.com/maps/api/staticmap?center=Kenilworth,CapeTown&zoom=14&size=600x400">
+<div class="driver-card">
+<div class="driver-icon">🚗</div>
+<div style="margin-left:10px"><strong>Delivery Driver</strong><br><small>CAW 6567</small></div>
+<div class="driver-actions"><button>📞</button><button>💬</button></div>
+</div>
+</div>
+
+<!-- Voucher -->
+<div class="popup-overlay" id="voucherPopup">
+<div class="popup">
+<strong>Enter Voucher Code</strong>
+<input id="voucherCode" placeholder="SAVE20">
+<button onclick="applyVoucher()">Apply</button>
+</div>
+</div>
+
+<!-- PAYFAST -->
+<form id="payfastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
+<input type="hidden" name="merchant_id" value="10000100">
+<input type="hidden" name="merchant_key" value="46f0cd694581a">
+<input type="hidden" name="return_url" value="https://yourdomain.com/checkout.html?paid=true">
+<input type="hidden" name="cancel_url" value="https://yourdomain.com/checkout.html">
+<input type="hidden" name="item_name" value="M&D Pizza Order">
+<input type="hidden" name="amount" id="pfAmount">
+<input type="hidden" name="payment_method" id="pfMethod">
+</form>
 
 <script>
-const subtotal = parseFloat(localStorage.getItem("subtotal")) || 120;
-const total = subtotal + 10 + 20;
+let subtotal=170, discount=0;
 
-document.getElementById("subtotal").innerText = "R" + subtotal.toFixed(2);
-document.getElementById("total").innerText = "R" + total.toFixed(2);
-document.getElementById("barTotal").innerText = "R" + total.toFixed(2);
-
-function placeOrder() {
-  checkoutPage.classList.add("hidden");
-  document.querySelector(".bottom-bar").classList.add("hidden");
-  trackingPage.classList.remove("hidden");
+function recalc(){
+ let total=subtotal-discount+30;
+ document.getElementById("subtotal").innerText="R"+subtotal.toFixed(2);
+ document.getElementById("discount").innerText="-R"+discount.toFixed(2);
+ document.getElementById("total").innerText="R"+total.toFixed(2);
+ document.getElementById("barTotal").innerText="R"+total.toFixed(2);
 }
 
-const phoneNumber = "+27795349327";
-
-/* 📞 Call */
-function makeCall() {
-  fetch("/api/call", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ to: phoneNumber })
-  }).then(() => alert("Call initiated"));
+function openVoucher(){ voucherPopup.style.display="flex"; }
+function applyVoucher(){
+ if(voucherCode.value.toUpperCase()=="SAVE20") discount=20;
+ voucherPopup.style.display="none"; recalc();
 }
 
-/* 💬 Popup */
-function openPopup() {
-  messagePopup.style.display = "flex";
+function payNow(){
+ let method=document.querySelector("input[name='paymethod']:checked").value;
+ pfMethod.value = method==="eft" ? "eft" : "cc";
+ pfAmount.value = (subtotal-discount+30).toFixed(2);
+ payfastForm.submit();
 }
 
-function closePopup() {
-  messagePopup.style.display = "none";
-  smsInput.value = "";
+if(new URLSearchParams(window.location.search).get("paid")){
+ checkoutPage.classList.add("hidden");
+ trackingPage.classList.remove("hidden");
 }
 
-/* ✉️ Send Message */
-function sendMessage() {
-  const message = smsInput.value.trim();
-  if (!message) return alert("Enter a message");
-
-  fetch("/api/sms", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ to: phoneNumber, message })
-  }).then(() => {
-    alert("Message sent");
-    closePopup();
-  });
-}
+recalc();
 </script>
 
 </body>
 </html>
+
+
