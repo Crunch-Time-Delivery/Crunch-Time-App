@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Checkout</title>
+
 <style>
 body{margin:0;font-family:Arial;background:#f5f5f5}
 .hidden{display:none}
@@ -76,7 +77,7 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 
 <!-- TRACKING -->
 <div id="trackingPage" class="hidden">
-<div class="track-header">M&D Pizza – Courier on the way</div>
+<div class="track-header">KFC – Courier on the way</div>
 <img src="https://maps.googleapis.com/maps/api/staticmap?center=Kenilworth,CapeTown&zoom=14&size=600x400">
 <div class="driver-card">
 <div class="driver-icon">🚗</div>
@@ -96,14 +97,30 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 
 <!-- PAYFAST -->
 <form id="payfastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
-<input type="hidden" name="merchant_id" value="10000100">
-<input type="hidden" name="merchant_key" value="46f0cd694581a">
-<input type="hidden" name="return_url" value="https://yourdomain.com/checkout.html?paid=true">
-<input type="hidden" name="cancel_url" value="https://yourdomain.com/checkout.html">
-<input type="hidden" name="item_name" value="M&D Pizza Order">
-<input type="hidden" name="amount" id="pfAmount">
-<input type="hidden" name="payment_method" id="pfMethod">
+
+  <!-- Merchant -->
+  <input type="hidden" name="merchant_id" value="10000100">
+  <input type="hidden" name="merchant_key" value="46f0cd694581a">
+
+  <!-- URLs -->
+  <input type="hidden" name="return_url" value="http://127.0.0.1:5501/checkout.html?paid=true">
+  <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/checkout.html">
+  <input type="hidden" name="notify_url" value="http://127.0.0.1:5501/payfast_notify">
+
+  <!-- Order Info -->
+  <input type="hidden" name="item_name" value="KFC">
+  <input type="hidden" name="item_description" value="Food delivery checkout">
+  <input type="hidden" name="amount" id="pfAmount">
+
+  <!-- Customer (optional but recommended) -->
+  <input type="hidden" name="name_first" value="Customer">
+  <input type="hidden" name="email_address" value="customer@email.com">
+
+  <!-- Payment Channel -->
+  <input type="hidden" name="payment_method" id="pfMethod">
+
 </form>
+
 
 <script>
 let subtotal=170, discount=0;
@@ -122,22 +139,45 @@ function applyVoucher(){
  voucherPopup.style.display="none"; recalc();
 }
 
-function payNow(){
- let method=document.querySelector("input[name='paymethod']:checked").value;
- pfMethod.value = method==="eft" ? "eft" : "cc";
- pfAmount.value = (subtotal-discount+30).toFixed(2);
- payfastForm.submit();
+function payNow() {
+  const selected = document.querySelector("input[name='paymethod']:checked");
+  if (!selected) {
+    alert("Please select a payment method");
+    return;
+  }
+
+  const method = selected.value;
+
+  // Calculate final total
+  const serviceFee = 10;
+  const deliveryFee = 20;
+  const total = (subtotal - discount + serviceFee + deliveryFee).toFixed(2);
+
+  // Set PayFast amount
+  pfAmount.value = total;
+
+  // Set PayFast payment channel
+  if (method === "eft") {
+    pfMethod.value = "eft";   // PayFast Instant EFT
+  } else {
+    pfMethod.value = "cc";    // Credit / Debit Card
+  }
+
+  // Security check
+  if (total <= 0) {
+    alert("Invalid payment amount");
+    return;
+  }
+
+  // Redirect user to PayFast secure gateway
+  payfastForm.submit();
 }
 
-if(new URLSearchParams(window.location.search).get("paid")){
- checkoutPage.classList.add("hidden");
- trackingPage.classList.remove("hidden");
-}
+
 
 recalc();
 </script>
 
 </body>
 </html>
-
 
