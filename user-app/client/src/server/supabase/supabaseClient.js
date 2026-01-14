@@ -6,7 +6,6 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
 
 /**
- * ⚠️ IMPORTANT
  * Use the PUBLIC anon key in frontend code
  * NEVER expose service_role key in browser
  */
