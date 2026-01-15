@@ -234,7 +234,7 @@ const restaurantData = {
 };
 
 const params = new URLSearchParams(window.location.search);
-const restaurantName = params.get("name") || "DK Spot & Kota";
+const restaurantName = params.get("name") || "KFC Parow";
 const restaurant = restaurantData[restaurantName];
 
 document.getElementById("restaurantName").innerText = restaurantName;
