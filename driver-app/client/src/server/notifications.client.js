@@ -1,5 +1,5 @@
 import axios from 'axios';
-const API = process.env.VITE_API_BASE_URL;
+const API = AC031642049dd74fcc581b0fd106936a4f;
 
 export function sendSms(to, message) {
   return axios.post(`${API}/notify/sms`, { to, message });
