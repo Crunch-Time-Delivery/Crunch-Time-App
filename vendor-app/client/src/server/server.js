@@ -119,7 +119,7 @@ app.listen(PORT, () => {
 // PayFast Sandbox credentials (replace with your live credentials for production)
 const MERCHANT_ID = '10000100'; // Sandbox Merchant ID
 const MERCHANT_KEY = '46f0cd694581a'; // Sandbox Merchant Key
-const PASSPHRASE = 'itbVnL9z3d'; // Sandbox Passphrase
+const PASSPHRASE = 'test-payfast'; // Sandbox Passphrase
 
 app.use(bodyParser.json());
 app.use(express.static('public')); // Serve static files like index.html and script.js
@@ -129,8 +129,8 @@ app.post('/process-payment', (req, res) => {
 
     // Prepare PayFast data
     const payfastData = {
-        merchant_id: MERCHANT_ID,
-        merchant_key: MERCHANT_KEY,
+        merchant_id: 10000100,
+        merchant_key: '46f0cd694581a',
         return_url: 'http://localhost:3000/success', // Your success URL
         cancel_url: 'http://localhost:3000/cancel', // Your cancel URL
         notify_url: 'http://localhost:3000/notify', // Your ITN URL
