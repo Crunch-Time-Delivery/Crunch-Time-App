@@ -207,7 +207,7 @@ function showNotification(message, type) {
       if (driverData.email && driverData.email.toLowerCase()===email && driverData.password===password) {
         localStorage.setItem('currentUser', JSON.stringify(driverData));
         if (driverApproved) {
-          window.location.href='http://127.0.0.1:5500/user-app/index.html';
+          window.location.href='http://127.0.0.1:5501/user-app/client/public/index.html';
         } else {
           generateAndSendOtp();
           showOtp();

@@ -28,8 +28,7 @@ async function trackPayment(paymentDetails = {}) {
       merchantKey: config.merchantKey,
       amount: paymentDetails.amount || config.paymentAmount,
       currency: paymentDetails.currency || config.currency,
-      // Optional: add more fields like customer info, order ID, etc.
-      ...paymentDetails
+      
     };
 
     // Send payment data to your backend API for processing
