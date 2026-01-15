@@ -121,7 +121,7 @@ export async function fetchAdmins() {
   const { data, error } = await supabase
     .from('Admins')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: true });
 
   if (error) handleError('fetchAdmins', error);
   return data;

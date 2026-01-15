@@ -44,7 +44,7 @@ async function fetchAdmin() {
   const { data: Admins, error } = await supabase
     .from('Admin')
     .select('*');
-
+   
   if (error) {
     console.error('Error fetching admin data:', error);
     return null;
@@ -52,26 +52,15 @@ async function fetchAdmin() {
   return Admins;
 }
 
-// Insert a new driver
-async function insertDriver(driverData) {
-  const { data, error } = await supabase
-    .from('Drivers')
-    .insert([driverData]);
-
-  if (error) {
-    console.error('Error inserting driver:', error);
-    return null;
-  }
-  return data;
-}
 
 // Update an existing driver by ID
 async function updateDriver(id, updatedData) {
   const { data, error } = await supabase
     .from('Drivers')
     .update(updatedData)
-    .eq('id', id);
-
+    .eq('id', id)
+ .select()
+ .single();
   if (error) {
     console.error('Error updating driver:', error);
     return null;
@@ -84,8 +73,9 @@ async function deleteDriver(id) {
   const { data, error } = await supabase
     .from('Drivers')
     .delete()
-    .eq('id', id);
-
+    .eq('id', id)
+    .select()
+ .single();
   if (error) {
     console.error('Error deleting driver:', error);
     return null;

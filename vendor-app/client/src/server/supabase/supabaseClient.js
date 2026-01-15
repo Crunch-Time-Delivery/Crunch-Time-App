@@ -61,8 +61,9 @@ async function fetchDrivers() {
 async function fetchAdmin() {
   const { data: Admin, error } = await supabase
     .from('Admin')
-    .select('*');
-
+    .select('*')
+      .select()
+    .single();
   if (error) {
     console.error('Error fetching admin:', error);
     return null;
@@ -85,7 +86,9 @@ async function updateVendor(id, updateData) {
   const { data, error } = await supabase
     .from('Vendor')
     .update(updateData)
-    .eq('id', id);
+    .eq('id', id)
+    .select()
+    .single();
   if (error) {
     console.error('Error updating vendor:', error);
     return null;
@@ -96,7 +99,9 @@ async function deleteVendor(id) {
   const { data, error } = await supabase
     .from('Vendor')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .select()
+    .single();
   if (error) {
     console.error('Error deleting vendor:', error);
     return null;
@@ -108,7 +113,9 @@ async function deleteVendor(id) {
 async function createDriver(driverData) {
   const { data, error } = await supabase
     .from('Drivers')
-    .insert([driverData]);
+    .insert([driverData])
+    .select()
+    .single();
   if (error) {
     console.error('Error creating driver:', error);
     return null;
@@ -119,7 +126,9 @@ async function updateDriver(id, updateData) {
   const { data, error } = await supabase
     .from('Drivers')
     .update(updateData)
-    .eq('id', id);
+    .eq('id', id)
+    .select()
+    .single();
   if (error) {
     console.error('Error updating driver:', error);
     return null;
@@ -142,7 +151,9 @@ async function deleteDriver(id) {
 async function createAdmin(adminData) {
   const { data, error } = await supabase
     .from('Admin')
-    .insert([adminData]);
+    .insert([adminData])
+    .select()
+    .single();
   if (error) {
     console.error('Error creating admin:', error);
     return null;
@@ -153,7 +164,9 @@ async function updateAdmin(id, updateData) {
   const { data, error } = await supabase
     .from('Admin')
     .update(updateData)
-    .eq('id', id);
+    .eq('id', id)
+    .select()
+    .single();
   if (error) {
     console.error('Error updating admin:', error);
     return null;
@@ -164,7 +177,9 @@ async function deleteAdmin(id) {
   const { data, error } = await supabase
     .from('Admin')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .select()
+    .single();
   if (error) {
     console.error('Error deleting admin:', error);
     return null;
@@ -187,7 +202,9 @@ async function updatePaymentStatus(paymentId, newStatus) {
   const { data, error } = await supabase
     .from('payments')
     .update({ status: newStatus })
-    .eq('id', paymentId);
+    .eq('id', paymentId)
+    .select()
+    .single();
   if (error) {
     console.error('Error updating payment status:', error);
     return null;
@@ -211,8 +228,8 @@ app.post('/send-sms', async (req, res) => {
   }
 });
 
-// Create PayFast payment link and store in DB
-app.post('/create-payfast-payment', async (req, res) => {
+// Save PayFast payment link and in DB
+app.post('/save-payfast-payment', async (req, res) => {
   const { amount, item_name } = req.body;
   const merchantID = '10004002';
   const merchantKey = 'q1cd2rdny4a53';
