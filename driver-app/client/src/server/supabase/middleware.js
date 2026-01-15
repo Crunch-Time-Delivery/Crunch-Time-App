@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseKey = process.env.SUPABASE_KEY;
 
 export async function updateDriverStatus(request) {
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
