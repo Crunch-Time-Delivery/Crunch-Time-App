@@ -62,7 +62,7 @@ async function fetchAdmin() {
   const { data: Admin, error } = await supabase
     .from('Admin')
     .select('*')
-      .select()
+    .select()
     .single();
   if (error) {
     console.error('Error fetching admin:', error);

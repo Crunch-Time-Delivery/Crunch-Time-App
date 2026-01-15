@@ -59,8 +59,8 @@ async function updateDriver(id, updatedData) {
     .from('Drivers')
     .update(updatedData)
     .eq('id', id)
- .select()
- .single();
+    .select()
+    .single();
   if (error) {
     console.error('Error updating driver:', error);
     return null;
@@ -75,7 +75,7 @@ async function deleteDriver(id) {
     .delete()
     .eq('id', id)
     .select()
- .single();
+    .single();
   if (error) {
     console.error('Error deleting driver:', error);
     return null;
