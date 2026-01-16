@@ -11,35 +11,50 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 .container{max-width:420px;margin:auto;padding-bottom:90px}
 .header{background:#fff;padding:15px;font-weight:bold;text-align:center}
 .map img{width:100%;height:200px;object-fit:cover}
-.card{background:#fff;margin:12px;padding:14px;border-radius:14px}
-.tips{background:#fff;margin:12px;padding:14px;border-radius:14px}
+.card,.tips{background:#fff;margin:12px;padding:14px;border-radius:14px}
 .address{display:flex;justify-content:space-between}
 .voucher{background:#ffb84d;padding:14px;margin:12px;border-radius:10px;text-align:center;font-weight:bold;color:#fff;cursor:pointer}
+
 .summary-row{display:flex;justify-content:space-between;margin-bottom:6px}
 .total-row{border-top:1px dashed #ddd;padding-top:8px;font-weight:bold;font-size:16px}
+
 .method{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
 .method-left{display:flex;align-items:center;gap:10px}
 .method img{width:32px}
+
 .bottom-bar{
   position:fixed;bottom:0;left:50%;transform:translateX(-50%);
   width:100%;max-width:420px;background:red;color:#fff;
-  padding:16px;display:flex;justify-content:space-between;font-weight:bold;cursor:pointer
+  padding:16px;display:flex;justify-content:space-between;
+  font-weight:bold;cursor:pointer
 }
-.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000}
-.popup{background:#fff;padding:16px;width:300px;border-radius:12px}
-.popup input{width:100%;padding:10px;margin-top:10px}
-.track-header{text-align:center;padding:12px;font-weight:bold;background:#fff}
-.driver-card{display:flex;align-items:center;padding:12px;background:#fff;margin:10px;border-radius:12px}
-.driver-icon{width:46px;height:46px;border-radius:50%;background:red;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;}
-.driver-actions{margin-left:auto;display:flex;gap:10px}
-.driver-actions button{width:36px;height:36px;border-radius:50%;background:red;color:#fff;border:none}
+
+/* Tips */
+.tip-options{display:flex;gap:10px;margin-top:10px}
+.tip-btn{
+  flex:1;padding:10px;border-radius:10px;
+  border:1px solid #ddd;background:#fff;
+  cursor:pointer;font-weight:bold
+}
+.tip-btn.active{background:red;color:#fff;border-color:red}
+
+/* Popup */
+.popup-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);
+  display:none;align-items:center;justify-content:center;z-index:1000
+}
+.popup{
+  background:#fff;padding:16px;width:280px;border-radius:12px
+}
+.popup input,.popup button{
+  width:100%;padding:10px;margin-top:10px
+}
 </style>
 </head>
 
 <body>
 
-<!-- CHECKOUT -->
-<div id="checkoutPage" class="container">
+<div class="container">
 <div class="header">Checkout</div>
 
 <div class="map">
@@ -52,45 +67,50 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 
 <div class="voucher" onclick="openVoucher()">Input voucher coupon</div>
 
+<!-- Tips -->
+<div class="tips">
+<strong>Add a tip for your driver</strong>
+<div class="tip-options">
+<button class="tip-btn" onclick="setTip(5,this)">R5</button>
+<button class="tip-btn" onclick="setTip(10,this)">R10</button>
+<button class="tip-btn" onclick="setTip(15,this)">R15</button>
+</div>
+</div>
+
 <div class="card">
-<div class="summary-row"><span>Subtotal</span><span id="subtotal"></span></div>
+<div class="summary-row"><span>Subtotal</span><span id="subtotal">R0.00</span></div>
 <div class="summary-row"><span>Discount</span><span id="discount">R0.00</span></div>
 <div class="summary-row"><span>Service Fee</span><span>R10.00</span></div>
 <div class="summary-row"><span>Delivery Fee</span><span>R20.00</span></div>
-<div class="summary-row total-row"><span>Total</span><span id="total"></span></div>
+<div class="summary-row"><span>Tip</span><span id="tipAmount">R0.00</span></div>
+<div class="summary-row total-row"><span>Total</span><span id="total">R0.00</span></div>
 </div>
-<!-- card -->
+
 <div class="card">
 <div class="method">
-<div class="method-left"><img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png">Instant EFT</div>
+<div class="method-left">
+<img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png">
+Instant EFT
+</div>
 <input type="radio" name="paymethod" value="eft" checked>
 </div>
+
 <div class="method">
-<div class="method-left"><img src="https://cdn-icons-png.flaticon.com/512/891/891462.png">Card (Visa / MasterCard)</div>
+<div class="method-left">
+<img src="https://cdn-icons-png.flaticon.com/512/891/891462.png">
+Card (Visa / MasterCard)
+</div>
 <input type="radio" name="paymethod" value="card">
 </div>
 </div>
 </div>
-<!-- tips front end -->
-<div class="tips">
 
-</div>
 <div class="bottom-bar" onclick="payNow()">
-<span>Place Order</span><span id="barTotal"></span>
+<span>Place Order</span>
+<span id="barTotal">R0.00</span>
 </div>
 
-<!-- TRACKING -->
-<div id="trackingPage" class="hidden">
-<div class="track-header">KFC – Courier on the way</div>
-<img src="https://maps.googleapis.com/maps/api/staticmap?center=Kenilworth,CapeTown&zoom=14&size=600x400">
-<div class="driver-card">
-<div class="driver-icon">🚗</div>
-<div style="margin-left:10px"><strong>Delivery Driver</strong><br><small>CAW 6567</small></div>
-<div class="driver-actions"><button>📞</button><button>💬</button></div>
-</div>
-</div>
-
-<!-- Voucher -->
+<!-- Voucher Popup -->
 <div class="popup-overlay" id="voucherPopup">
 <div class="popup">
 <strong>Enter Voucher Code</strong>
@@ -99,137 +119,56 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 </div>
 </div>
 
-<!-- PAYFAST -->
+<!-- PayFast -->
 <form id="payfastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
-
-  <!-- Merchant -->
-  <input type="hidden" name="merchant_id" value="10000100">
-  <input type="hidden" name="merchant_key" value="46f0cd694581a">
-
-  <!-- URLs -->
-  <input type="hidden" name="return_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html?paid=true">
-  <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html">
-  <input type="hidden" name="notify_url" value="http://127.0.0.1:5501/payfast_notify">
-
-  <!-- Order Info -->
-  <input type="hidden" name="item_name" value="KFC">
-  <input type="hidden" name="item_description" value="Food delivery checkout">
-  <input type="hidden" name="amount" id="pfAmount">
-
-  <!-- Customer (optional but recommended) -->
-  <input type="hidden" name="name_first" value="Customer">
-  <input type="hidden" name="email_address" value="customer@email.com">
-
-  <!-- Payment Channel -->
-  <input type="hidden" name="payment_method" id="pfMethod">
-
+<input type="hidden" name="merchant_id" value="10000100">
+<input type="hidden" name="merchant_key" value="46f0cd694581a">
+<input type="hidden" name="amount" id="pfAmount">
+<input type="hidden" name="payment_method" id="pfMethod">
 </form>
 
-
 <script>
-function showNotificationMessage(message, color='#4CAF50') {
-  const notif = document.getElementById('notification');
-  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
-  notif.style.display = 'block';
-
-  // Hide after 3 seconds
-  setTimeout(() => {
-    notif.style.display = 'none';
-  }, 3000);
-}
-
-function sendTwilioNotification(to, message) {
-  // Show sending message
-  showNotificationMessage('Sending notification...');
-  
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to: to, message: message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      showNotificationMessage('Notification sent successfully!', '#4CAF50');
-    } else {
-      showNotificationMessage('Failed to send notification.', '#f44336');
-    }
-  })
-  .catch(() => {
-    showNotificationMessage('Error sending notification.', '#f44336');
-  });
-}
-
-// Assuming you have an API endpoint at /notify/sms
-function sendSms(to, message) {
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to, message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('SMS sent:', data);
-  })
-  .catch(err => {
-    console.error('Error sending SMS:', err);
-  });
-}
-
-
-let subtotal=170, discount=0;
+let subtotal = 170;
+let discount = 0;
+let tip = 0;
+const serviceFee = 10;
+const deliveryFee = 20;
 
 function recalc(){
- let total=subtotal-discount+30;
- document.getElementById("subtotal").innerText="R"+subtotal.toFixed(2);
- document.getElementById("discount").innerText="-R"+discount.toFixed(2);
- document.getElementById("total").innerText="R"+total.toFixed(2);
- document.getElementById("barTotal").innerText="R"+total.toFixed(2);
+  const total = subtotal - discount + serviceFee + deliveryFee + tip;
+  document.getElementById("subtotal").innerText = "R" + subtotal.toFixed(2);
+  document.getElementById("discount").innerText = "-R" + discount.toFixed(2);
+  document.getElementById("tipAmount").innerText = "R" + tip.toFixed(2);
+  document.getElementById("total").innerText = "R" + total.toFixed(2);
+  document.getElementById("barTotal").innerText = "R" + total.toFixed(2);
 }
 
-function openVoucher(){ voucherPopup.style.display="flex"; }
+function setTip(amount, btn){
+  tip = amount;
+  document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  recalc();
+}
+
+function openVoucher(){
+  document.getElementById("voucherPopup").style.display="flex";
+}
+
 function applyVoucher(){
- if(voucherCode.value.toUpperCase()=="SAVE20") discount=20;
- voucherPopup.style.display="none"; recalc();
+  if(document.getElementById("voucherCode").value.toUpperCase()==="SAVE20"){
+    discount = 20;
+  }
+  document.getElementById("voucherPopup").style.display="none";
+  recalc();
 }
 
-function payNow() {
-  const selected = document.querySelector("input[name='paymethod']:checked");
-  if (!selected) {
-    alert("Please select a payment method");
-    return;
-  }
-
-  const method = selected.value;
-
-  // Calculate final total
-  const serviceFee = 10;
-  const deliveryFee = 20;
-  const total = (subtotal - discount + serviceFee + deliveryFee).toFixed(2);
-
-  // Set PayFast amount
-  pfAmount.value = total;
-
-  // Set PayFast payment channel
-  if (method === "eft") {
-    pfMethod.value = "eft";   // PayFast Instant EFT
-  } else {
-    pfMethod.value = "cc";    // Credit / Debit Card
-  }
-
-  // Security check
-  if (total <= 0) {
-    alert("Invalid payment amount");
-    return;
-  }
-
-  // Redirect user to PayFast secure gateway
-  payfastForm.submit();
+function payNow(){
+  const method=document.querySelector("input[name='paymethod']:checked").value;
+  const total=subtotal-discount+serviceFee+deliveryFee+tip;
+  document.getElementById("pfAmount").value = total.toFixed(2);
+  document.getElementById("pfMethod").value = method==="eft"?"eft":"cc";
+  document.getElementById("payfastForm").submit();
 }
-
-
 
 recalc();
 </script>
