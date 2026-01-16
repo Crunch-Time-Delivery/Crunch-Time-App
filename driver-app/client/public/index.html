@@ -161,33 +161,62 @@ function showNotificationMessage(message, color='#4CAF50') {
 //
 
 
+let isSendingSMS = false;
+
 function sendTwilioNotification(to, message) {
   if (!to || !message) {
     showNotificationMessage('Missing phone number or message', '#f44336');
     return;
   }
 
-  // Show sending state
+  if (isSendingSMS) {
+    showNotificationMessage('Message already sending...', '#ff9800');
+    return;
+  }
+
+  isSendingSMS = true;
+
   showNotificationMessage('Sending message...', '#2196F3');
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
   fetch('/api/sms', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal: controller.signal,
     body: JSON.stringify({ to, message })
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success || data.sid) {
+  .then(async res => {
+    clearTimeout(timeout);
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Server error');
+    }
+
+    if (data.success === true || data.sid) {
       showNotificationMessage('Message sent successfully ✔️', '#4CAF50');
-      playNotificationSound();
+      if (typeof playNotificationSound === 'function') {
+        playNotificationSound();
+      }
     } else {
-      showNotificationMessage('Failed to send message ❌', '#f44336');
+      throw new Error('Twilio rejected the message');
     }
   })
-  .catch(() => {
-    showNotificationMessage('Error sending message ❌', '#f44336');
+  .catch(err => {
+    if (err.name === 'AbortError') {
+      showNotificationMessage('Request timed out ⏱️', '#f44336');
+    } else {
+      showNotificationMessage(`Failed to send message ❌`, '#f44336');
+    }
+    console.error('SMS Error:', err);
+  })
+  .finally(() => {
+    isSendingSMS = false;
   });
 }
+
 
 
 

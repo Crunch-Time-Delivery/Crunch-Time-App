@@ -154,27 +154,62 @@
   }, 3000);
 }
 
+let isSendingSMS = false;
+
 function sendTwilioNotification(to, message) {
-  // Show sending message
-  showNotificationMessage('Sending notification...');
-  
-  fetch('/notify/sms', {
+  if (!to || !message) {
+    showNotificationMessage('Missing phone number or message', '#f44336');
+    return;
+  }
+
+  if (isSendingSMS) {
+    showNotificationMessage('Message already sending...', '#ff9800');
+    return;
+  }
+
+  isSendingSMS = true;
+
+  showNotificationMessage('Sending message...', '#2196F3');
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+  fetch('/api/sms', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to: to, message: message })
+    signal: controller.signal,
+    body: JSON.stringify({ to, message })
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+  .then(async res => {
+    clearTimeout(timeout);
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Server error');
+    }
+
+    if (data.success === true || data.sid) {
+      showNotificationMessage('Message sent successfully ✔️', '#4CAF50');
+      if (typeof playNotificationSound === 'function') {
+        playNotificationSound();
+      }
     } else {
-      showNotificationMessage('Failed to send notification.', '#f44336');
+      throw new Error('Twilio rejected the message');
     }
   })
-  .catch(() => {
-    showNotificationMessage('Error sending notification.', '#f44336');
+  .catch(err => {
+    if (err.name === 'AbortError') {
+      showNotificationMessage('Request timed out ⏱️', '#f44336');
+    } else {
+      showNotificationMessage(`Failed to send message ❌`, '#f44336');
+    }
+    console.error('SMS Error:', err);
+  })
+  .finally(() => {
+    isSendingSMS = false;
   });
 }
+
 
 // Assuming you have an API endpoint at /notify/sms
 function sendSms(to, message) {
