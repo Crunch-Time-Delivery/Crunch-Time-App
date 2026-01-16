@@ -120,12 +120,32 @@ Card (Visa / MasterCard)
 </div>
 
 <!-- PayFast -->
+<!-- PAYFAST -->
 <form id="payfastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
-<input type="hidden" name="merchant_id" value="10000100">
-<input type="hidden" name="merchant_key" value="46f0cd694581a">
-<input type="hidden" name="amount" id="pfAmount">
-<input type="hidden" name="payment_method" id="pfMethod">
+
+  <!-- Merchant Details -->
+  <input type="hidden" name="merchant_id" value="10000100">
+  <input type="hidden" name="merchant_key" value="46f0cd694581a">
+
+  <!-- Transaction Details -->
+  <input type="hidden" name="item_name" value="Food Delivery Order">
+  <input type="hidden" name="item_description" value="Checkout payment">
+  <input type="hidden" name="amount" id="pfAmount">
+
+  <!-- Customer Details (recommended) -->
+  <input type="hidden" name="name_first" value="Customer">
+  <input type="hidden" name="email_address" value="customer@email.com">
+
+  <!-- Redirect URLs -->
+  <input type="hidden" name="return_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html?paid=true">
+  <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html">
+  <input type="hidden" name="notify_url" value="http://127.0.0.1:5501/api/payfast/notify">
+
+  <!-- Payment Method -->
+  <input type="hidden" name="payment_method" id="pfMethod">
+
 </form>
+
 
 <script>
 let subtotal = 170;
@@ -162,13 +182,30 @@ function applyVoucher(){
   recalc();
 }
 
-function payNow(){
-  const method=document.querySelector("input[name='paymethod']:checked").value;
-  const total=subtotal-discount+serviceFee+deliveryFee+tip;
+function payNow() {
+  const selected = document.querySelector("input[name='paymethod']:checked");
+  if (!selected) {
+    alert("Please select a payment method");
+    return;
+  }
+
+  const total = subtotal - discount + serviceFee + deliveryFee + tip;
+
+  if (total <= 0) {
+    alert("Invalid payment amount");
+    return;
+  }
+
+  // Amount must have 2 decimals
   document.getElementById("pfAmount").value = total.toFixed(2);
-  document.getElementById("pfMethod").value = method==="eft"?"eft":"cc";
+
+  // PayFast payment channel
+  document.getElementById("pfMethod").value =
+    selected.value === "eft" ? "eft" : "cc";
+
   document.getElementById("payfastForm").submit();
 }
+
 
 recalc();
 </script>
