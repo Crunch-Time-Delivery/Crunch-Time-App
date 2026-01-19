@@ -12,7 +12,7 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 .header{background:#fff;padding:15px;font-weight:bold;text-align:center}
 .map img{width:100%;height:200px;object-fit:cover}
 .card,.tips{background:#fff;margin:12px;padding:14px;border-radius:14px}
-.address{display:flex;justify-content:space-between}
+.address{display:flex;justify-content:space-between;align-items:center}
 .voucher{background:#ffb84d;padding:14px;margin:12px;border-radius:10px;text-align:center;font-weight:bold;color:#fff;cursor:pointer}
 
 .summary-row{display:flex;justify-content:space-between;margin-bottom:6px}
@@ -57,12 +57,18 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 <div class="container">
 <div class="header">Checkout</div>
 
+<!-- MAP -->
 <div class="map">
-<img src="https://maps.googleapis.com/maps/api/staticmap?center=Kenilworth,CapeTown&zoom=14&size=600x300">
+<img id="staticMap" src="" alt="Delivery Map">
 </div>
 
+<!-- ADDRESS -->
 <div class="card address">
-<div><strong>17 Bishop Park Way</strong><br><small>Delivery 25 – 35 min</small></div> ✏️
+  <div>
+    <strong id="deliveryAddress">Loading address...</strong><br>
+    <small>Delivery 25 – 35 min</small>
+  </div>
+  ✏️
 </div>
 
 <div class="voucher" onclick="openVoucher()">Input voucher coupon</div>
@@ -119,34 +125,31 @@ Card (Visa / MasterCard)
 </div>
 </div>
 
-<!-- PayFast -->
-<form id="payfastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
-
-  <!-- Merchant Details -->
-  <input type="hidden" name="merchant_id" value="10000100">
-  <input type="hidden" name="merchant_key" value="46f0cd694581a">
-
-  <!-- Transaction Details -->
-  <input type="hidden" name="item_name" value="Food Delivery Order">
-  <input type="hidden" name="item_description" value="Checkout payment">
-  <input type="hidden" name="amount" id="pfAmount">
-
-  <!-- Customer Details (recommended) -->
-  <input type="hidden" name="name_first" value="Customer">
-  <input type="hidden" name="email_address" value="customer@email.com">
-
-  <!-- Redirect URLs -->
-  <input type="hidden" name="return_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html?paid=true">
-  <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html">
-  <input type="hidden" name="notify_url" value="http://127.0.0.1:5501/api/payfast/notify">
-
-  <!-- Payment Method -->
-  <input type="hidden" name="payment_method" id="pfMethod">
-
-</form>
-
-
 <script>
+/* ================= LOCATION LOAD ================= */
+
+function loadDeliveryLocation() {
+  const coords = localStorage.getItem("deliveryCoords");
+  const address = localStorage.getItem("deliveryAddress");
+
+  const mapImg = document.getElementById("staticMap");
+  const addressDiv = document.getElementById("deliveryAddress");
+
+  if (coords && address) {
+    const pos = JSON.parse(coords);
+    const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${pos.lat},${pos.lng}&zoom=15&size=600x300&markers=color:red|${pos.lat},${pos.lng}&key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q`;
+
+    mapImg.src = mapUrl;
+    addressDiv.innerText = address;
+  } else {
+    mapImg.src =
+      "https://maps.googleapis.com/maps/api/staticmap?center=Kenilworth,CapeTown&zoom=14&size=600x300";
+    addressDiv.innerText = "17 Bishop Park Way";
+  }
+}
+
+/* ================= CHECKOUT LOGIC ================= */
+
 let subtotal = 170;
 let discount = 0;
 let tip = 0;
@@ -181,34 +184,14 @@ function applyVoucher(){
   recalc();
 }
 
-function payNow() {
-  const selected = document.querySelector("input[name='paymethod']:checked");
-  if (!selected) {
-    alert("Please select a payment method");
-    return;
-  }
-
-  const total = subtotal - discount + serviceFee + deliveryFee + tip;
-
-  if (total <= 0) {
-    alert("Invalid payment amount");
-    return;
-  }
-
-  // Amount must have 2 decimals
-  document.getElementById("pfAmount").value = total.toFixed(2);
-
-  // PayFast payment channel
-  document.getElementById("pfMethod").value =
-    selected.value === "eft" ? "eft" : "cc";
-
-  document.getElementById("payfastForm").submit();
+function payNow(){
+  alert("Payment submitted");
 }
 
-
+/* INIT */
+loadDeliveryLocation();
 recalc();
 </script>
 
 </body>
 </html>
-

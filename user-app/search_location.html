@@ -1,217 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Search Delivery Location</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-    }
-    .search-location-container {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .title-row {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    h1 {
-      margin: 0;
-      font-size: 24px;
-      flex: 1;
-    }
-    .red-column {
-      width: 20px;
-      height: 20px;
-      background-color: red;
-      margin-left: 10px;
-      border-radius: 3px;
-    }
-    form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    input[type="text"] {
-      flex: 1;
-      padding: 8px;
-      font-size: 16px;
-    }
-    button {
-      padding: 8px 16px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #map {
-      height: 400px;
-      width: 100%;
-      margin-top: 20px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    .buttons-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-      justify-content: center;
-    }
-    #coordinates {
-      margin-top: 10px;
-      text-align: center;
-      font-family: monospace;
-      font-size: 14px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Search Delivery Location</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #f5f5f5;
+}
+.search-location-container {
+  max-width: 600px;
+  margin: auto;
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+}
+.title-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+h1 {
+  margin: 0;
+  font-size: 22px;
+  flex: 1;
+}
+.red-column {
+  width: 20px;
+  height: 20px;
+  background: red;
+  border-radius: 4px;
+}
+form {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+}
+button {
+  padding: 10px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
+#map {
+  height: 400px;
+  width: 100%;
+  margin-top: 15px;
+  border-radius: 10px;
+}
+.buttons-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  justify-content: center;
+}
+#coordinates {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+  font-family: monospace;
+}
+</style>
 </head>
+
 <body>
-  <div class="search-location-container">
-    <div class="title-row">
-      <h1>Search Delivery Location</h1>
-      <div class="red-column"></div>
-    </div>
 
-    <!-- Address input and set button -->
-    <form id="locationForm">
-      <input type="text" id="locationInput" placeholder="Enter address or city" />
-      <button type="submit">Set Location</button>
-    </form>
-
-    <!-- Action buttons -->
-    <div class="buttons-group">
-      <button id="locateBtn">Use My Location</button>
-      <button id="resetBtn">Reset Map</button>
-    </div>
-
-    <!-- Map display -->
-    <div id="map"></div>
-    <div id="coordinates">No location selected.</div>
+<div class="search-location-container">
+  <div class="title-row">
+    <h1>Search Delivery Location</h1>
+    <div class="red-column"></div>
   </div>
 
-  <!-- Google Maps API Script -->
-  <script>
-    let map, marker, geocoder;
+  <!-- ADDRESS SEARCH -->
+  <form id="locationForm">
+    <input type="text" id="locationInput" placeholder="Enter address or city" required>
+    <button type="submit">Set Location</button>
+  </form>
 
-    function initMap() {
-      const defaultLocation = { lat: 37.7749, lng: -122.4194 }; // San Francisco
-      map = new google.maps.Map(document.getElementById("map"), {
-        center: defaultLocation,
-        zoom: 12,
-      });
+  <!-- ACTION BUTTONS -->
+  <div class="buttons-group">
+    <button type="button" id="locateBtn">Use My Location</button>
+    <button type="button" id="resetBtn">Reset Map</button>
+  </div>
 
-      geocoder = new google.maps.Geocoder();
+  <!-- MAP -->
+  <div id="map"></div>
+  <div id="coordinates">No location selected.</div>
+</div>
 
-      // Marker at default location
-      marker = new google.maps.Marker({
-        map: map,
-        position: defaultLocation,
-      });
+<script>
+let map, marker, geocoder;
+const DEFAULT_POS = { lat: -33.9249, lng: 18.4241 }; // Cape Town
 
-      // Load saved location from local storage if exists
-      loadSavedLocation();
+function initMap() {
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: DEFAULT_POS,
+    zoom: 13
+  });
 
-      // Set Location form submit
-      document.getElementById("locationForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const address = document.getElementById("locationInput").value.trim();
-        if (address) geocodeAddress(address);
-      });
+  marker = new google.maps.Marker({
+    map,
+    position: DEFAULT_POS
+  });
 
-      // Use My Location button
-      document.getElementById("locateBtn").addEventListener("click", () => {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const pos = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-              };
-              updateMapLocation(pos, "My Location");
-              saveLocation(pos, "My Location");
-            },
-            () => {
-              alert("Unable to retrieve your location. Please allow location access.");
-            }
-          );
-        } else {
-          alert("Geolocation is not supported by this browser.");
-        }
-      });
+  geocoder = new google.maps.Geocoder();
 
-      // Reset Map button
-      document.getElementById("resetBtn").addEventListener("click", () => {
-        const defaultPos = { lat: 37.7749, lng: -122.4194 };
-        updateMapLocation(defaultPos, "");
-        localStorage.removeItem("deliveryCoords");
-        localStorage.removeItem("deliveryAddress");
-        document.getElementById("locationInput").value = "";
-        updateCoordinatesDisplay(null);
-      });
+  loadSavedLocation();
+
+  /* SET LOCATION */
+  document.getElementById("locationForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const address = document.getElementById("locationInput").value.trim();
+    if (!address) return;
+
+    geocoder.geocode({ address }, (results, status) => {
+      if (status !== "OK" || !results[0]) {
+        alert("Location not found.");
+        return;
+      }
+
+      const result = results[0];
+      const pos = {
+        lat: result.geometry.location.lat(),
+        lng: result.geometry.location.lng()
+      };
+
+      saveLocation(pos, result.formatted_address);
+      updateMap(pos, result.formatted_address);
+      alert("Location saved successfully!");
+    });
+  });
+
+  /* USE MY LOCATION */
+  document.getElementById("locateBtn").addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported");
+      return;
     }
 
-    // Geocode address
-    function geocodeAddress(address) {
-      geocoder.geocode({ address: address }, (results, status) => {
-        if (status === "OK" && results[0]) {
-          const location = results[0].geometry.location;
-          const pos = { lat: location.lat(), lng: location.lng() };
-          updateMapLocation(pos, address);
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+
+        geocoder.geocode({ location: pos }, (results, status) => {
+          const address =
+            status === "OK" && results[0]
+              ? results[0].formatted_address
+              : "My Location";
+
           saveLocation(pos, address);
-          alert("Location set successfully!");
-        } else {
-          alert("Location not found. Please try a different address.");
-        }
-      });
-    }
+          updateMap(pos, address);
+        });
+      },
+      () => alert("Location permission denied")
+    );
+  });
 
-    // Update map with new location
-    function updateMapLocation(position, address = "") {
-      map.setCenter(position);
-      map.setZoom(15);
-      marker.setPosition(position);
-      updateCoordinatesDisplay(position.lat, position.lng);
-      if (address) {
-        document.getElementById("locationInput").value = address;
-      }
-    }
+  /* RESET */
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    localStorage.removeItem("deliveryCoords");
+    localStorage.removeItem("deliveryAddress");
 
-    // Update coordinate display
-    function updateCoordinatesDisplay(lat, lng) {
-      const coordsDiv = document.getElementById("coordinates");
-      if (lat && lng) {
-        coordsDiv.innerHTML = `Current Coordinates: Latitude ${lat.toFixed(5)}, Longitude ${lng.toFixed(5)}`;
-      } else {
-        coordsDiv.innerHTML = "No location selected.";
-      }
-    }
+    updateMap(DEFAULT_POS, "");
+    document.getElementById("locationInput").value = "";
+    document.getElementById("coordinates").innerText = "No location selected.";
+  });
+}
 
-    // Save location to local storage
-    function saveLocation(position, address) {
-      localStorage.setItem("deliveryCoords", JSON.stringify(position));
-      localStorage.setItem("deliveryAddress", address);
-    }
+/* HELPERS */
+function updateMap(pos, address) {
+  map.setCenter(pos);
+  map.setZoom(15);
+  marker.setPosition(pos);
 
-    // Load saved location from local storage
-    function loadSavedLocation() {
-      const savedCoords = localStorage.getItem("deliveryCoords");
-      const savedAddress = localStorage.getItem("deliveryAddress");
-      if (savedCoords && savedAddress) {
-        const pos = JSON.parse(savedCoords);
-        updateMapLocation(pos, savedAddress);
-        updateCoordinatesDisplay(pos.lat, pos.lng);
-      }
-    }
-  </script>
+  if (address) document.getElementById("locationInput").value = address;
+  document.getElementById("coordinates").innerText =
+    `Lat: ${pos.lat.toFixed(5)}, Lng: ${pos.lng.toFixed(5)}`;
+}
 
-  <!-- Load Google Maps API with your API key -->
-  <script
-    async
-    defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap&libraries=places"
-  ></script>
+function saveLocation(pos, address) {
+  localStorage.setItem("deliveryCoords", JSON.stringify(pos));
+  localStorage.setItem("deliveryAddress", address);
+}
+
+function loadSavedLocation() {
+  const coords = localStorage.getItem("deliveryCoords");
+  const address = localStorage.getItem("deliveryAddress");
+  if (!coords || !address) return;
+
+  updateMap(JSON.parse(coords), address);
+}
+</script>
+
+<script
+  async
+  defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap"
+></script>
+
 </body>
 </html>
