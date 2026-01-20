@@ -370,44 +370,68 @@ function showNotificationMessage(message, color='#4CAF50') {
   }, 3000);
 }
 
-function sendTwilioNotification(to, message) {
-  // Show sending message
-  showNotificationMessage('Sending notification...');
-  
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to: to, message: message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      showNotificationMessage('Notification sent successfully!', '#4CAF50');
-    } else {
-      showNotificationMessage('Failed to send notification.', '#f44336');
-    }
-  })
-  .catch(() => {
-    showNotificationMessage('Error sending notification.', '#f44336');
-  });
-}
+/**
+ * Send SMS via Twilio backend
+ * @param {string} to - Phone number (E.164 format, e.g. +278xxxxxxxx)
+ * @param {string} message - SMS message body
+ */
+async function sendTwilioNotification(to, message) {
+  showNotificationMessage('Sending notification...', '#2196F3');
 
-// Assuming you have an API endpoint at /notify/sms
-function sendSms(to, message) {
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to, message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('SMS sent:', data);
-  })
-  .catch(err => {
-    console.error('Error sending SMS:', err);
-  });
+  try {
+    const response = await fetch('/notify/sms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ to, message })
+    });
+
+    if (!response.ok) {
+      throw new Error('Server error');
+    }
+
+    const data = await response.json();
+
+    if (data.success === true) {
+      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+      console.log('SMS sent:', data);
+    } else {
+      showNotificationMessage(
+        data.error || 'Failed to send notification.',
+        '#f44336'
+      );
+      console.error('SMS failed:', data);
+    }
+  } catch (error) {
+    console.error('Error sending SMS:', error);
+    showNotificationMessage('Network error. Please try again.', '#f44336');
+  }
+}
+function showNotificationMessage(text, color = '#333') {
+  let box = document.getElementById('notificationMessage');
+
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'notificationMessage';
+    box.style.position = 'fixed';
+    box.style.bottom = '20px';
+    box.style.left = '50%';
+    box.style.transform = 'translateX(-50%)';
+    box.style.padding = '12px 20px';
+    box.style.borderRadius = '8px';
+    box.style.color = '#fff';
+    box.style.fontSize = '14px';
+    box.style.zIndex = '9999';
+    document.body.appendChild(box);
+  }
+
+  box.style.backgroundColor = color;
+  box.innerText = text;
+
+  setTimeout(() => {
+    box.remove();
+  }, 4000);
 }
 
 // Replace the showMenu function
