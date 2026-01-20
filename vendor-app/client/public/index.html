@@ -156,77 +156,124 @@
 
 let isSendingSMS = false;
 
-function sendTwilioNotification(to, message) {
+/**
+ * Show a temporary notification on the page
+ * @param {string} text
+ * @param {string} color
+ */
+function showNotificationMessage(text, color = '#333') {
+  let box = document.getElementById('notificationMessage');
+
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'notificationMessage';
+    box.style.position = 'fixed';
+    box.style.bottom = '20px';
+    box.style.left = '50%';
+    box.style.transform = 'translateX(-50%)';
+    box.style.padding = '12px 20px';
+    box.style.borderRadius = '8px';
+    box.style.color = '#fff';
+    box.style.fontSize = '14px';
+    box.style.zIndex = '9999';
+    document.body.appendChild(box);
+  }
+
+  box.style.backgroundColor = color;
+  box.innerText = text;
+
+  setTimeout(() => box.remove(), 4000);
+}
+
+/**
+ * Send SMS via backend /notify/sms with retries & timeout
+ * @param {string} to - Phone number (E.164 format)
+ * @param {string} message - Message content
+ * @param {function} [callback] - Optional callback on success
+ * @param {number} [retries=2] - Number of retries on failure
+ */
+async function sendSms(to, message, callback = null, retries = 2) {
   if (!to || !message) {
-    showNotificationMessage('Missing phone number or message', '#f44336');
+    showNotificationMessage('Phone number or message missing', '#f44336');
     return;
   }
 
   if (isSendingSMS) {
-    showNotificationMessage('Message already sending...', '#ff9800');
+    showNotificationMessage('Another message is sending...', '#ff9800');
     return;
   }
 
   isSendingSMS = true;
-
   showNotificationMessage('Sending message...', '#2196F3');
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+  const attemptSend = async (attempt = 1) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
-  fetch('/api/sms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    signal: controller.signal,
-    body: JSON.stringify({ to, message })
-  })
-  .then(async res => {
-    clearTimeout(timeout);
-    const data = await res.json();
+    try {
+      const res = await fetch('/notify/sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({ to, message })
+      });
 
-    if (!res.ok) {
-      throw new Error(data.error || 'Server error');
-    }
+      clearTimeout(timeout);
+      const data = await res.json();
 
-    if (data.success === true || data.sid) {
-      showNotificationMessage('Message sent successfully ✔️', '#4CAF50');
-      if (typeof playNotificationSound === 'function') {
-        playNotificationSound();
+      if (!res.ok) throw new Error(data.error || 'Server error');
+
+      showNotificationMessage('SMS sent successfully ✔️', '#4CAF50');
+      console.log('SMS sent:', data);
+
+      if (callback && typeof callback === 'function') callback(data);
+
+    } catch (err) {
+      clearTimeout(timeout);
+      console.error(`SMS Error (Attempt ${attempt}):`, err);
+
+      if (err.name === 'AbortError') {
+        showNotificationMessage('Request timed out ⏱️', '#f44336');
+      } else {
+        showNotificationMessage('Failed to send SMS ❌', '#f44336');
       }
-    } else {
-      throw new Error('Twilio rejected the message');
+
+      if (attempt <= retries) {
+        console.log(`Retrying... (${attempt + 1})`);
+        return attemptSend(attempt + 1);
+      }
+    } finally {
+      isSendingSMS = false;
     }
-  })
-  .catch(err => {
-    if (err.name === 'AbortError') {
-      showNotificationMessage('Request timed out ⏱️', '#f44336');
-    } else {
-      showNotificationMessage(`Failed to send message ❌`, '#f44336');
-    }
-    console.error('SMS Error:', err);
-  })
-  .finally(() => {
-    isSendingSMS = false;
-  });
+  };
+
+  attemptSend();
 }
 
+/**
+ * Optional: Send SMS to user by Supabase user ID
+ * Requires Supabase client to be initialized
+ */
+async function sendSmsToUser(userId, message, callback = null) {
+  try {
+    const { data, error } = await supabase
+      .from('User')
+      .select('phone')
+      .eq('id', userId)
+      .single();
 
-// Assuming you have an API endpoint at /notify/sms
-function sendSms(to, message) {
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to, message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('SMS sent:', data);
-  })
-  .catch(err => {
-    console.error('Error sending SMS:', err);
-  });
+    if (error || !data?.phone) {
+      showNotificationMessage('User phone not found', '#f44336');
+      console.error('Supabase Error:', error);
+      return;
+    }
+
+    sendSms(data.phone, message, callback);
+
+  } catch (err) {
+    console.error('Error fetching user phone:', err);
+    showNotificationMessage('Error fetching user info', '#f44336');
+  }
 }
 
   // Initialize Supabase

@@ -89,7 +89,7 @@ header h1 {
 /* CART ITEM */
 .cart-item {
   display: flex;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .cart-item img {
@@ -111,6 +111,14 @@ header h1 {
 
 .item-title {
   font-weight: bold;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: red;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 .price-row {
@@ -139,17 +147,6 @@ header h1 {
   font-weight: bold;
 }
 
-/* ADD MORE */
-.add-more {
-  width: 100%;
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-  background: #fff;
-  cursor: pointer;
-}
-
 /* CHECKOUT BAR */
 .checkout-bar {
   position: fixed;
@@ -163,13 +160,23 @@ header h1 {
   box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
 }
 
-.checkout-btn {
-  background: red;
-  color: #fff;
+.checkout-btn, .addon-btn {
   border: none;
   padding: 12px 20px;
   border-radius: 12px;
   cursor: pointer;
+  font-weight: bold;
+}
+
+.checkout-btn {
+  background: red;
+  color: #fff;
+}
+
+.addon-btn {
+  background: #ff0011;
+  color: #fff;
+  margin-right: 10px;
 }
 
 /* MODAL */
@@ -179,11 +186,15 @@ header h1 {
   inset: 0;
   background: rgba(0,0,0,0.6);
   z-index: 9999;
+  justify-content: center;
+  align-items: center;
 }
 
 .modal {
-  position: absolute;
-  inset: 5%;
+  position: relative;
+  width: 90%;
+  max-width: 500px;
+  height: 80%;
   background: #fff;
   border-radius: 16px;
   overflow: hidden;
@@ -225,8 +236,6 @@ header h1 {
     </div>
 
     <div id="cartItems"></div>
-
-    <button class="add-more" onclick="addMoreItems()">+ add more items</button>
   </div>
 </div>
 
@@ -235,18 +244,19 @@ header h1 {
 </div>
 
 <div class="checkout-bar">
+  <button class="addon-btn" onclick="openAddonMenu()">+ Add-on Menu</button>
   <strong id="totalPrice">R0.00</strong>
   <button class="checkout-btn" onclick="goToCheckout()">Checkout</button>
 </div>
 
-<!-- MODAL -->
-<div id="modalOverlay" class="modal-overlay">
+<!-- ADD-ON MODAL -->
+<div id="addonModal" class="modal-overlay">
   <div class="modal">
     <div class="modal-header">
-      <strong>Add more items</strong>
-      <button onclick="closeModal()">✕</button>
+      <strong>Select Items</strong>
+      <button onclick="closeAddonMenu()">✕</button>
     </div>
-    <iframe id="menuFrame"></iframe>
+    <iframe id="addonIframe" src="http://127.0.0.1:5501/user-app/client/public/restaurant_info.html"></iframe>
   </div>
 </div>
 
@@ -255,9 +265,15 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 const cartItemsDiv = document.getElementById("cartItems");
 const totalPriceEl = document.getElementById("totalPrice");
 
+/* ======== RENDER CART ======== */
 function renderCart() {
   cartItemsDiv.innerHTML = "";
   let total = 0;
+
+  if (!cart.length) {
+    cartItemsDiv.innerHTML =
+      "<p style='text-align:center;color:#777;'>Your cart is empty</p>";
+  }
 
   cart.forEach((item, index) => {
     total += item.price * item.qty;
@@ -265,10 +281,11 @@ function renderCart() {
     const div = document.createElement("div");
     div.className = "cart-item";
     div.innerHTML = `
-      <img src="Images/RS KOTA .jpg">
+      <img src="${item.image || 'Images/RS KOTA .jpg'}">
       <div class="item-info">
         <div class="item-top">
           <div class="item-title">${item.name}</div>
+          <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
         </div>
         <div>${item.restaurant}</div>
         <div class="price-row">R${item.price}</div>
@@ -286,20 +303,24 @@ function renderCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
 }
 
+/* ======== UPDATE QTY ======== */
 function updateQty(index, delta) {
-  cart[index].qty = Math.max(1, cart[index].qty + delta);
+  cart[index].qty += delta;
+
+  if (cart[index].qty <= 0) {
+    cart.splice(index, 1);
+  }
+
   renderCart();
 }
 
-function goBack() {
-  if (cart.length) {
-    window.location.href =
-      `restaurant_info.html?name=${encodeURIComponent(cart[cart.length - 1].restaurant)}`;
-  } else {
-    window.history.back();
-  }
+/* ======== REMOVE ITEM ======== */
+function removeItem(index) {
+  cart.splice(index, 1);
+  renderCart();
 }
 
+/* ======== TAB SWITCH ======== */
 function setTab(tab) {
   document.getElementById("inProgress").style.display =
     tab === "inProgress" ? "block" : "none";
@@ -311,36 +332,45 @@ function setTab(tab) {
     .classList.add("active");
 }
 
-function addMoreItems() {
-  document.getElementById("menuFrame").src =
-    `restaurant_info.html?name=${encodeURIComponent(cart[cart.length - 1].restaurant)}`;
-  document.getElementById("modalOverlay").style.display = "block";
-  document.body.style.overflow = "hidden";
+/* ======== BACK BUTTON ======== */
+function goBack() {
+  window.history.back();
 }
 
-function closeModal() {
-  document.getElementById("modalOverlay").style.display = "none";
-  document.body.style.overflow = "auto";
-  renderCart();
-}
-
+/* ======== CHECKOUT ======== */
 function goToCheckout() {
   window.location.href = "checkout.html";
 }
 
+/* ======== ADD-ON MENU POPUP ======== */
+function openAddonMenu() {
+  document.getElementById("addonModal").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeAddonMenu() {
+  document.getElementById("addonModal").style.display = "none";
+  document.body.style.overflow = "auto";
+}
+
+/* ======== ADD ITEM FROM POPUP ======== */
+function addItemFromPopup(item) {
+  // Example item structure: {name, price, restaurant, qty, image}
+  cart.push(item);
+  renderCart();
+  closeAddonMenu();
+}
+
+/* ======== MOCK: Listen to messages from iframe ======== */
+window.addEventListener("message", (e) => {
+  if (e.data && e.data.type === "addToCart") {
+    addItemFromPopup(e.data.item);
+  }
+});
+
+/* ======== INIT ======== */
 renderCart();
 </script>
-
-<!-- EXISTING SCRIPTS -->
-<script src="server/supabase/supabaseClient.js" async></script>
-<script src="client/public/functions/mainTwilioFunction.js" async></script>
-<script src="client/public/functions/token.js" async></script>
-<script src="client/public/functions/sendSMS.js" async></script>
-<script src="client/public/functions/twilio.js" async></script>
-<script src="client/public/functions/map.js" async></script>
-<script src="client/public/functions/payfast.js" async></script>
-<script src="client/public/functions/notification.js" async></script>
-<script src="client/public/functions/mapFunctions.js" async></script>
 
 </body>
 </html>

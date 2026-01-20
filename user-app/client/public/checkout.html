@@ -83,6 +83,7 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 </div>
 </div>
 
+<!-- SUMMARY -->
 <div class="card">
 <div class="summary-row"><span>Subtotal</span><span id="subtotal">R0.00</span></div>
 <div class="summary-row"><span>Discount</span><span id="discount">R0.00</span></div>
@@ -92,24 +93,45 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 <div class="summary-row total-row"><span>Total</span><span id="total">R0.00</span></div>
 </div>
 
+<!-- PAYMENT METHODS -->
 <div class="card">
-<div class="method">
-<div class="method-left">
-<img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png">
-Instant EFT
+
+  <!-- Instant EFT -->
+  <div class="method">
+    <div class="method-left">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png">
+      Instant EFT
+    </div>
+    <input type="radio" name="paymethod" value="eft" checked>
+  </div>
+
+  <!-- Card -->
+  <div class="method">
+    <div class="method-left">
+      <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png">
+      Card (Visa / MasterCard)
+    </div>
+    <input type="radio" name="paymethod" value="cc">
+  </div>
+
 </div>
-<input type="radio" name="paymethod" value="eft" checked>
 </div>
 
-<div class="method">
-<div class="method-left">
-<img src="https://cdn-icons-png.flaticon.com/512/891/891462.png">
-Card (Visa / MasterCard)
-</div>
-<input type="radio" name="paymethod" value="card">
-</div>
-</div>
-</div>
+<!-- PAYFAST FORM -->
+<form id="payfastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
+  <input type="hidden" name="merchant_id" value="10000100">
+  <input type="hidden" name="merchant_key" value="46f0cd694581a">
+
+  <input type="hidden" name="amount" id="pf_amount">
+  <input type="hidden" name="item_name" value="CrunchTime Order">
+  <input type="hidden" name="item_description" value="Food delivery checkout">
+
+  <input type="hidden" name="payment_method" id="pf_method">
+
+  <input type="hidden" name="return_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html">
+  <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/user-app/client/public/index.html">
+  <input type="hidden" name="notify_url" value="https://example.com/notify">
+</form>
 
 <div class="bottom-bar" onclick="payNow()">
 <span>Place Order</span>
@@ -126,30 +148,11 @@ Card (Visa / MasterCard)
 </div>
 
 <script>
-/* ================= LOCATION LOAD ================= */
+/* ================= LOCATION ================= */
+document.getElementById("deliveryAddress").innerText =
+  localStorage.getItem("deliveryAddress") || "17 Bishop Park Way";
 
-function loadDeliveryLocation() {
-  const coords = localStorage.getItem("deliveryCoords");
-  const address = localStorage.getItem("deliveryAddress");
-
-  const mapImg = document.getElementById("staticMap");
-  const addressDiv = document.getElementById("deliveryAddress");
-
-  if (coords && address) {
-    const pos = JSON.parse(coords);
-    const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${pos.lat},${pos.lng}&zoom=15&size=600x300&markers=color:red|${pos.lat},${pos.lng}&key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q`;
-
-    mapImg.src = mapUrl;
-    addressDiv.innerText = address;
-  } else {
-    mapImg.src =
-      "https://maps.googleapis.com/maps/api/staticmap?center=Kenilworth,CapeTown&zoom=14&size=600x300";
-    addressDiv.innerText = "17 Bishop Park Way";
-  }
-}
-
-/* ================= CHECKOUT LOGIC ================= */
-
+/* ================= CHECKOUT ================= */
 let subtotal = 170;
 let discount = 0;
 let tip = 0;
@@ -158,16 +161,18 @@ const deliveryFee = 20;
 
 function recalc(){
   const total = subtotal - discount + serviceFee + deliveryFee + tip;
+
   document.getElementById("subtotal").innerText = "R" + subtotal.toFixed(2);
   document.getElementById("discount").innerText = "-R" + discount.toFixed(2);
   document.getElementById("tipAmount").innerText = "R" + tip.toFixed(2);
   document.getElementById("total").innerText = "R" + total.toFixed(2);
   document.getElementById("barTotal").innerText = "R" + total.toFixed(2);
+  document.getElementById("pf_amount").value = total.toFixed(2);
 }
 
 function setTip(amount, btn){
   tip = amount;
-  document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
   recalc();
 }
@@ -184,12 +189,19 @@ function applyVoucher(){
   recalc();
 }
 
+/* ================= PAYFAST ================= */
 function payNow(){
-  alert("Payment submitted");
+  recalc();
+
+  const selectedMethod =
+    document.querySelector('input[name="paymethod"]:checked').value;
+
+  document.getElementById("pf_method").value = selectedMethod;
+
+  document.getElementById("payfastForm").submit();
 }
 
 /* INIT */
-loadDeliveryLocation();
 recalc();
 </script>
 
