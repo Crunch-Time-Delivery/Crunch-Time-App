@@ -44,7 +44,7 @@ body {
   position: absolute;
   right: 0;
   background: #fff;
-  min-width: 200px;
+  min-width: 220px;
   border-radius: 6px;
   box-shadow: 0 4px 10px rgba(0,0,0,.15);
   overflow: hidden;
@@ -97,7 +97,7 @@ body {
   width: 100%;
   margin-top: 15px;
   padding: 14px;
-  background: #28a745;
+  background: #f0040c;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -109,6 +109,28 @@ body {
   padding: 40px;
   color: #777;
 }
+.card {
+  border: 1px solid #e0e0e0;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.total {
+  font-weight: bold;
+  margin-top: 10px;
+}
+#map {
+  width: 100%;
+  height: 300px;
+  margin-top: 10px;
+  border-radius: 8px;
+}
 </style>
 </head>
 
@@ -119,7 +141,7 @@ body {
     <div class="driver-label">Driver</div>
     <div class="menu-container" id="menuContainer">
       <button class="menu-button" id="menuButton">Menu ▼</button>
-      <div class="dropdown-content">
+      <div class="dropdown-content" id="dropdownMenu">
         <a href="#" id="orderViewLink">Order View</a>
         <a href="#" id="driverAccountLink">Driver View Account</a>
         <a href="#" id="driverHistoryPayment">Driver History Payment</a>
@@ -128,20 +150,39 @@ body {
     </div>
   </div>
 
-  <div id="innerContent"></div>
+  <div id="innerContent">
+    <h2>Welcome Driver</h2>
+    <p>Select an option from the menu.</p>
+  </div>
 </div>
 
-<script>
-let isSendingSMS = false;
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q"></script>
 
-/**
- * Show a temporary notification on the page
- * @param {string} text
- * @param {string} color
- */
+<script>
+// ================= DROPDOWN MENU =================
+document.addEventListener('DOMContentLoaded', () => {
+  const menuContainer = document.getElementById('menuContainer');
+  const menuButton = document.getElementById('menuButton');
+  const dropdown = document.getElementById('dropdownMenu');
+
+  menuButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menuContainer.classList.toggle('show');
+  });
+
+  dropdown.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', () => menuContainer.classList.remove('show'));
+
+  dropdown.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => menuContainer.classList.remove('show'));
+  });
+});
+
+// ================= SMS NOTIFICATIONS =================
+let isSendingSMS = false;
 function showNotificationMessage(text, color = '#333') {
   let box = document.getElementById('notificationMessage');
-
   if (!box) {
     box = document.createElement('div');
     box.id = 'notificationMessage';
@@ -156,38 +197,17 @@ function showNotificationMessage(text, color = '#333') {
     box.style.zIndex = '9999';
     document.body.appendChild(box);
   }
-
   box.style.backgroundColor = color;
   box.innerText = text;
-
   setTimeout(() => box.remove(), 4000);
 }
-
-/**
- * Send SMS via backend /notify/sms with retries & timeout
- * @param {string} to - Phone number (E.164 format)
- * @param {string} message - Message content
- * @param {function} [callback] - Optional callback on success
- * @param {number} [retries=2] - Number of retries on failure
- */
 async function sendSms(to, message, callback = null, retries = 2) {
-  if (!to || !message) {
-    showNotificationMessage('Phone number or message missing', '#f44336');
-    return;
-  }
-
-  if (isSendingSMS) {
-    showNotificationMessage('Another message is sending...', '#ff9800');
-    return;
-  }
-
-  isSendingSMS = true;
-  showNotificationMessage('Sending message...', '#2196F3');
-
+  if (!to || !message) { showNotificationMessage('Phone number or message missing', '#f44336'); return; }
+  if (isSendingSMS) { showNotificationMessage('Another message is sending...', '#ff9800'); return; }
+  isSendingSMS = true; showNotificationMessage('Sending message...', '#2196F3');
   const attemptSend = async (attempt = 1) => {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
       const res = await fetch('/notify/sms', {
         method: 'POST',
@@ -195,132 +215,56 @@ async function sendSms(to, message, callback = null, retries = 2) {
         signal: controller.signal,
         body: JSON.stringify({ to, message })
       });
-
       clearTimeout(timeout);
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.error || 'Server error');
-
       showNotificationMessage('SMS sent successfully ✔️', '#4CAF50');
-      console.log('SMS sent:', data);
-
-      if (callback && typeof callback === 'function') callback(data);
-
+      if (callback) callback(data);
     } catch (err) {
       clearTimeout(timeout);
       console.error(`SMS Error (Attempt ${attempt}):`, err);
-
-      if (err.name === 'AbortError') {
-        showNotificationMessage('Request timed out ⏱️', '#f44336');
-      } else {
-        showNotificationMessage('Failed to send SMS ❌', '#f44336');
-      }
-
-      if (attempt <= retries) {
-        console.log(`Retrying... (${attempt + 1})`);
-        return attemptSend(attempt + 1);
-      }
-    } finally {
-      isSendingSMS = false;
-    }
+      showNotificationMessage(err.name === 'AbortError' ? 'Request timed out ⏱️' : 'Failed to send SMS ❌', '#f44336');
+      if (attempt <= retries) return attemptSend(attempt + 1);
+    } finally { isSendingSMS = false; }
   };
-
   attemptSend();
 }
 
-/**
- * Optional: Send SMS to user by Supabase user ID
- * Requires Supabase client to be initialized
- */
-async function sendSmsToUser(userId, message, callback = null) {
-  try {
-    const { data, error } = await supabase
-      .from('User')
-      .select('phone')
-      .eq('id', userId)
-      .single();
-
-    if (error || !data?.phone) {
-      showNotificationMessage('User phone not found', '#f44336');
-      console.error('Supabase Error:', error);
-      return;
-    }
-
-    sendSms(data.phone, message, callback);
-
-  } catch (err) {
-    console.error('Error fetching user phone:', err);
-    showNotificationMessage('Error fetching user info', '#f44336');
-  }
+// ================= DRIVER FUNCTIONALITY =================
+function loadMainPage() {
+  document.getElementById('innerContent').innerHTML = `
+    <h1>Welcome Driver</h1>
+    <p>Select an option from the menu.</p>
+  `;
 }
 
-
-document.addEventListener('DOMContentLoaded', () => {
-  const menuBtn = document.getElementById('menuButton');
-  const menu = document.getElementById('menuContainer');
-
-  menuBtn.onclick = () => menu.classList.toggle('show');
-  document.onclick = e => {
-    if (!menu.contains(e.target)) menu.classList.remove('show');
-  };
-
-  document.getElementById('driverHistoryPayment').onclick = e => {
-    e.preventDefault();
-    loadDriverHistoryPayment();
-  };
-});
-
-/* ===============================
-   UPDATED DRIVER PAYMENT HISTORY
-================================ */
+// DRIVER PAYMENT HISTORY
 async function loadDriverHistoryPayment() {
   const container = document.getElementById('innerContent');
-
   container.innerHTML = `<div class="loading">Loading payment history…</div>`;
-
   try {
     const res = await fetch('/api/payment-history');
     if (!res.ok) throw new Error('Fetch failed');
-
     const data = await res.json();
     const payments = data?.payments || [];
     let total = 0;
-
     let html = `<h1>Payment History</h1>`;
-
-    if (!payments.length) {
-      container.innerHTML = `
-        <h1>Payment History</h1>
-        <div class="empty-state">No payment history available.</div>
-        <a href="#" onclick="loadMainPage()">Back</a>
-      `;
-      return;
-    }
-
+    if (!payments.length) { container.innerHTML = `<h1>Payment History</h1><div class="empty-state">No payment history available.</div><a href="#" onclick="loadMainPage()">Back</a>`; return; }
     payments.forEach(p => {
-      const amount = Number(p.amount) || 0;
-      total += amount;
-
-      html += `
-        <div class="payment-card">
-          <div class="payment-row"><strong>Amount</strong><span>R ${amount.toFixed(2)}</span></div>
-          <div class="payment-row"><strong>User</strong><span>${p.userName || '-'}</span></div>
-          <div class="payment-row"><strong>Date</strong><span>${p.date || '-'}</span></div>
-          <div class="payment-row"><strong>Pick-up</strong><span>${p.pickupLocation || '-'}</span></div>
-          <div class="payment-row"><strong>Drop-off</strong><span>${p.dropoffLocation || '-'}</span></div>
-        </div>
-      `;
+      const amount = Number(p.amount) || 0; total += amount;
+      html += `<div class="payment-card">
+        <div class="payment-row"><strong>Amount</strong><span>R ${amount.toFixed(2)}</span></div>
+        <div class="payment-row"><strong>User</strong><span>${p.userName || '-'}</span></div>
+        <div class="payment-row"><strong>Date</strong><span>${p.date || '-'}</span></div>
+        <div class="payment-row"><strong>Pick-up</strong><span>${p.pickupLocation || '-'}</span></div>
+        <div class="payment-row"><strong>Drop-off</strong><span>${p.dropoffLocation || '-'}</span></div>
+      </div>`;
     });
-
-    html += `
-      <div class="payment-total">Total Due: R ${total.toFixed(2)}</div>
-
+    html += `<div class="payment-total">Total Due: R ${total.toFixed(2)}</div>
       <div class="payfast-box">
         <label><input type="radio" name="paymethod" value="cc" checked> Card</label>
         <label style="margin-left:15px"><input type="radio" name="paymethod" value="eft"> Instant EFT</label>
-
         <button class="payfast-btn" id="payFastBtn">Pay with PayFast</button>
-
         <form id="payFastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
           <input type="hidden" name="merchant_id" value="10000100">
           <input type="hidden" name="merchant_key" value="46f0cd694581a">
@@ -333,35 +277,82 @@ async function loadDriverHistoryPayment() {
           <input type="hidden" name="notify_url" value="http://127.0.0.1:5501/payfast_notify.php">
         </form>
       </div>
-
-      <a href="#" onclick="loadMainPage()" style="display:block;margin-top:20px;">Back</a>
-    `;
-
+      <a href="#" onclick="loadMainPage()" style="display:block;margin-top:20px;">Back</a>`;
     container.innerHTML = html;
-
     document.getElementById('payFastBtn').onclick = () => {
       const method = document.querySelector("input[name='paymethod']:checked").value;
       document.getElementById('pfMethod').value = method;
       document.getElementById('payFastForm').submit();
     };
-
   } catch (err) {
     console.error(err);
-    container.innerHTML = `
-      <h1>Payment History</h1>
-      <p style="color:red">Failed to load payment history.</p>
-      <a href="#" onclick="loadMainPage()">Back</a>
-    `;
+    container.innerHTML = `<h1>Payment History</h1><p style="color:red">Failed to load payment history.</p><a href="#" onclick="loadMainPage()">Back</a>`;
   }
 }
 
-function loadMainPage() {
-  document.getElementById('innerContent').innerHTML = `
-    <h1>Welcome Driver</h1>
-    <p>Select an option from the menu.</p>
-  `;
+// ORDER VIEW
+function loadOrderView() {
+  const container = document.getElementById('innerContent');
+  const order = { id:'ORD-10045', customer:'John Smith', verification:'482913', date:'2026-01-21', pickup:'Pizza Palace, Cape Town', dropoff:'12 Long Street, Cape Town', total:245.00, items:[{ name:'Large Pizza', qty:1, price:120},{name:'Chicken Wings', qty:2, price:45},{name:'Cooldrink', qty:1, price:35 }] };
+  container.innerHTML = `
+    <h2>Order View</h2>
+    <div class="card">
+      <div class="row"><strong>Order ID</strong><span>${order.id}</span></div>
+      <div class="row"><strong>Customer</strong><span>${order.customer}</span></div>
+      <div class="row"><strong>Verification Code</strong><span>${order.verification}</span></div>
+      <div class="row"><strong>Order Date</strong><span>${order.date}</span></div>
+    </div>
+    <div class="card">
+      <h3>Order Items</h3>
+      ${order.items.map(i=>`<div class="row"><span>${i.name} (x${i.qty})</span><span>R ${(i.qty*i.price).toFixed(2)}</span></div>`).join('')}
+      <div class="total">Total: R ${order.total.toFixed(2)}</div>
+    </div>
+    <div class="card">
+      <h3>Delivery Route</h3>
+      <p><strong>Pick-up:</strong> ${order.pickup}</p>
+      <p><strong>Drop-off:</strong> ${order.dropoff}</p>
+      <div id="map"></div>
+    </div>`;
+  initMap();
 }
+
+// DRIVER ACCOUNT
+function loadDriverAccount() {
+  const container = document.getElementById('innerContent');
+  const driver = { name:'John', surname:'Doe', plate:'CA 456-789', contact:'072 345 6789', email:'sipho.driver@email.com' };
+  container.innerHTML = `
+    <h2>Driver Account</h2>
+    <div class="card">
+      <div class="row"><strong>Name</strong><span>${driver.name} ${driver.surname}</span></div>
+      <div class="row"><strong>Plate No</strong><span>${driver.plate}</span></div>
+      <div class="row"><strong>Contact</strong><span>${driver.contact}</span></div>
+      <div class="row"><strong>Email</strong><span>${driver.email}</span></div>
+    </div>
+    <button class="danger" onclick="removeDriver()">Remove Driver</button>`;
+}
+
+function removeDriver() {
+  if (!confirm('Are you sure you want to remove this driver?')) return;
+  alert('Driver removed successfully (dummy action)');
+}
+
+// ================= MAP =================
+function initMap() {
+  const pickup = { lat: -33.9249, lng: 18.4241 }; // Restaurant
+  const dropoff = { lat: -33.9289, lng: 18.4174 }; // Customer
+  const map = new google.maps.Map(document.getElementById("map"), { zoom: 13, center: pickup });
+  new google.maps.Marker({ position: pickup, map, label: 'P', title: 'Restaurant Pickup' });
+  new google.maps.Marker({ position: dropoff, map, label: 'D', title: 'Customer Drop-off' });
+}
+
+// ================= MENU EVENT BINDING =================
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('orderViewLink').onclick = e => { e.preventDefault(); loadOrderView(); };
+  document.getElementById('driverAccountLink').onclick = e => { e.preventDefault(); loadDriverAccount(); };
+  document.getElementById('driverHistoryPayment').onclick = e => { e.preventDefault(); loadDriverHistoryPayment(); };
+});
 </script>
 
 </body>
 </html>
+

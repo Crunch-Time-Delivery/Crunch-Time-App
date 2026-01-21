@@ -97,6 +97,23 @@ button {
 </div>
 
 <script>
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+/* =========================
+   SUPABASE CONFIG
+========================= */
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+
+const supabaseKey = process.env.SUPABASE_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+
+
+let { data: Drivers, error } = await supabase
+  .from('Drivers')
+  .select('GPS location')
+
 let map, marker, geocoder;
 const DEFAULT_POS = { lat: -33.9249, lng: 18.4241 }; // Cape Town
 
