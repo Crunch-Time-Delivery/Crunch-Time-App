@@ -126,33 +126,29 @@ function sendSms(to, message) {
 
   let generatedOTP = '';
 
-  function startRegistration() {
-    
-    const name = document.getElementById('regName').value.trim();
-    const pass = document.getElementById('regPassword').value.trim();
+ function startRegistration() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPassword').value.trim();
 
-    if (!email || !name || !pass) {
-      alert('Fill all fields');
-      return;
-    }
-
-    // Retrieve existing users from localStorage or initialize
-    let users = JSON.parse(localStorage.getItem('users')) || [];
-
-    // Check if email already exists
-    if (users.some(user => user.email === email)) {
-      alert('Email already registered.');
-       window.location.href = 'http://127.0.0.1:5501/vendor-app/client/public/Login/loginVendor.html';
-      return;
-    }
-
-    // Save new user
-    users.push({ email: email, name: name, pass: pass });
-    localStorage.setItem('users', JSON.stringify(users));
-
-    // Redirect to login page after successful registration
-    window.location.href = 'http://127.0.0.1:5501/vendor-app/client/public/Login/loginVendor.html';
+  if (!name || !email || !pass) {
+    alert('Please fill all fields');
+    return;
   }
+
+  let users = JSON.parse(localStorage.getItem('users')) || [];
+
+  if (users.some(user => user.email === email)) {
+    alert('Email already registered');
+    return;
+  }
+
+  users.push({ name, email, pass });
+  localStorage.setItem('users', JSON.stringify(users));
+
+  alert('Account created successfully!');
+  window.location.href = 'http://127.0.0.1:5501/vendor-app/client/public/Login/loginVendor.html';
+}
 </script>
 
 </body>
