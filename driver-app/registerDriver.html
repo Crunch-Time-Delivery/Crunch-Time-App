@@ -4,251 +4,228 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Register Driver</title>
+
 <style>
-  /* Your existing styles */
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: #f4f4f4;
-  }
-  .hidden {
-    display: none;
-  }
-  form {
-    max-width: 600px;
-    margin: auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-  }
-  label {
-    display: block;
-    margin-top: 15px;
-    font-weight: bold;
-  }
-  input, select {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    box-sizing: border-box;
-  }
-  .action-btn {
-    margin-top: 20px;
-    padding: 10px 15px;
-    background-color: #ff0000;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .action-btn:hover {
-    background-color: #b30000;
-  }
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+.hidden {
+  display: none;
+}
+
+form {
+  max-width: 600px;
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  box-sizing: border-box;
+}
+
+.action-btn {
+  margin-top: 20px;
+  padding: 12px;
+  width: 100%;
+  background-color: #ff0000;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background-color: #b30000;
+}
+
+#notification {
+  text-align: center;
+  margin-bottom: 15px;
+}
 </style>
 </head>
+
 <body>
 
+<div id="notification" class="hidden"></div>
 <div id="registerContent"></div>
 
-<!-- Include Supabase JS SDK -->
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 <script>
-function showNotificationMessage(message, color='#4CAF50') {
-  const notif = document.getElementById('notification');
-  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
-  notif.style.display = 'block';
+/* ===============================
+   SUPABASE CONFIG (BROWSER SAFE)
+================================ */
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = 'YOUR_PUBLIC_ANON_KEY_HERE'; // 🔴 REQUIRED
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-  // Hide after 3 seconds
+/* ===============================
+   NOTIFICATION
+================================ */
+function showNotificationMessage(message, color = '#4CAF50') {
+  const notif = document.getElementById('notification');
+  notif.innerHTML = `
+    <div style="background:${color};color:#fff;padding:10px;border-radius:6px;">
+      ${message}
+    </div>`;
+  notif.classList.remove('hidden');
+
   setTimeout(() => {
-    notif.style.display = 'none';
+    notif.classList.add('hidden');
   }, 3000);
 }
 
-function sendTwilioNotification(to, message) {
-  // Show sending message
-  showNotificationMessage('Sending notification...');
-  
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to: to, message: message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      showNotificationMessage('Notification sent successfully!', '#4CAF50');
-    } else {
-      showNotificationMessage('Failed to send notification.', '#f44336');
-    }
-  })
-  .catch(() => {
-    showNotificationMessage('Error sending notification.', '#f44336');
+/* ===============================
+   LOAD PAGE
+================================ */
+function loadNewDriverPage() {
+  const container = document.getElementById('registerContent');
+
+  container.innerHTML = `
+    <div style="text-align:center">
+      <img src="img/screenshot (251).jpg" alt="Welcome" style="width:250px;margin-bottom:20px">
+    </div>
+
+    <h1>Register as a Driver</h1>
+
+    <form id="driverForm">
+      <label>Upload Selfie:</label>
+      <input type="file" id="driverPhoto" accept="image/*" required>
+
+      <label>Name:</label>
+      <input type="text" id="driverName" required>
+
+      <label>Email:</label>
+      <input type="email" id="driverEmail" required>
+
+      <label>Password:</label>
+      <input type="password" id="driverPassword" required>
+
+      <label>Phone Number:</label>
+      <input type="tel" id="driverPhone" required>
+
+      <label>ID Number:</label>
+      <input type="text" id="driverID" required>
+
+      <label>Bank Account Number:</label>
+      <input type="text" id="bankDetails" required>
+
+      <label>Bank Name:</label>
+      <select id="bankName" required>
+        <option value="">Select Bank</option>
+        <option value="FNB">FNB</option>
+        <option value="Standard Bank">Standard Bank</option>
+        <option value="Capitec">Capitec</option>
+        <option value="Nedbank">Nedbank</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <div id="otherBankDiv" class="hidden">
+        <label>Specify Bank:</label>
+        <input type="text" id="otherBank">
+      </div>
+
+      <label>Driver License:</label>
+      <input type="file" id="driverLicense" accept="image/*" required>
+
+      <label>Car Color:</label>
+      <input type="text" id="carColor" required>
+
+      <label>Car Type:</label>
+      <input type="text" id="carType" required>
+
+      <label>Car Photo:</label>
+      <input type="file" id="carPhoto" accept="image/*" required>
+
+      <label>Car Registration Number:</label>
+      <input type="text" id="carRegNumber" required>
+
+      <button class="action-btn">Submit Registration</button>
+    </form>
+  `;
+
+  document.getElementById('bankName').addEventListener('change', e => {
+    document.getElementById('otherBankDiv')
+      .classList.toggle('hidden', e.target.value !== 'Other');
   });
+
+  document.getElementById('driverForm').addEventListener('submit', handleSubmit);
 }
 
-// Assuming you have an API endpoint at /notify/sms
-function sendSms(to, message) {
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to, message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('SMS sent:', data);
-  })
-  .catch(err => {
-    console.error('Error sending SMS:', err);
-  });
-}
+/* ===============================
+   FORM SUBMIT
+================================ */
+async function handleSubmit(e) {
+  e.preventDefault();
 
+  try {
+    showNotificationMessage('Uploading documents...');
 
-  // Initialize Supabase client - replace with your actual keys
-  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = process.env.SUPABASE_KEY; // key
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const driverPhotoURL = await uploadImage('register_driver_photos', driverPhoto.files[0]);
+    const driverLicenseURL = await uploadImage('register_driver_licenses', driverLicense.files[0]);
+    const carPhotoURL = await uploadImage('register_car_photos', carPhoto.files[0]);
 
-  function loadNewDriverPage() {
-    const container = document.getElementById('registerContent');
-
-    // Add image
-    const img = document.createElement('img');
-    img.src = "img/screenshot (251).jpg"; // Check path
-    img.alt = "Welcome Image";
-    img.style.width = "250px";
-    img.style.height = "auto";
-    img.style.marginBottom = "20px";
-    container.appendChild(img);
-
-    // Add form HTML
-    container.innerHTML += `
-      <h1>Register as a Driver</h1>
-      <form id="driverForm">
-        <label>Upload Selfie (Driver Photo):</label>
-        <input type="file" id="driverPhoto" accept="image/*" required />
-        <label>Name:</label>
-        <input type="text" id="driverName" required />
-        <label>Email:</label>
-        <input type="email" id="driverEmail" required />
-        <label>Password:</label>
-        <input type="password" id="driverPassword" required />
-        <label>Phone Number:</label>
-        <input type="tel" id="driverPhone" placeholder="e.g., 0612345678" required />
-        <label>ID Number:</label>
-        <input type="text" id="driverID" required />
-        <label>Bank Account Details:</label>
-        <input type="text" id="bankDetails" placeholder="Account Number" required />
-        <label>Bank Name:</label>
-        <select id="bankName" required>
-          <option value="">Select Bank</option>
-          <option value="FNB">FNB</option>
-          <option value="Standard Bank">Standard Bank</option>
-          <option value="Capitec">Capitec</option>
-          <option value="NedBank">NedBank</option>
-          <option value="Other">Other</option>
-        </select>
-        <div id="otherBankDiv" class="hidden">
-          <label>Specify Bank:</label>
-          <input type="text" id="otherBank" />
-        </div>
-        <label>Driver's License Upload:</label>
-        <input type="file" id="driverLicense" accept="image/*" required />
-        <label>Car Details:</label>
-        <input type="text" id="carColor" placeholder="Car Color" required />
-        <input type="text" id="carType" placeholder="Car Type" required />
-        <label>Car Photo:</label>
-        <input type="file" id="carPhoto" accept="image/*" required />
-        <label>Car Registration Number:</label>
-        <input type="text" id="carRegNumber" required />
-        <button type="submit" class="action-btn">Submit Registration</button>
-      </form>
-    `;
-
-    // Show/hide "other bank" input
-    document.getElementById('bankName').addEventListener('change', () => {
-      const val = document.getElementById('bankName').value;
-      document.getElementById('otherBankDiv').className = (val==='Other')?'':'hidden';
-    });
-
-    // Form submit handler
-    document.getElementById('driverForm').onsubmit = async (e) => {
-      e.preventDefault();
-
-      // Files
-      const driverPhotoFile = document.getElementById('driverPhoto').files[0];
-      const driverLicenseFile = document.getElementById('driverLicense').files[0];
-      const carPhotoFile = document.getElementById('carPhoto').files[0];
-
-      if (!driverPhotoFile || !driverLicenseFile || !carPhotoFile) {
-        alert('Please upload all required images.');
-        return;
-      }
-
-      try {
-        // Upload images
-        const driverPhotoURL = await uploadImage('register_driver_photos', driverPhotoFile);
-        const driverLicenseURL = await uploadImage('register_driver_licenses', driverLicenseFile);
-        const carPhotoURL = await uploadImage('register_car_photos', carPhotoFile);
-
-        // Gather data
-        const driverData = {
-          driver_photo_url: driverPhotoURL,
-          name: document.getElementById('driverName').value,
-          email: document.getElementById('driverEmail').value,
-          password: document.getElementById('driverPassword').value,
-          phone_number: document.getElementById('driverPhone').value.trim(),
-          id_number: document.getElementById('driverID').value,
-          bank_details: document.getElementById('bankDetails').value,
-          bank_name: document.getElementById('bankName').value,
-          other_bank: document.getElementById('otherBank').value,
-          driver_license_url: driverLicenseURL,
-          car_color: document.getElementById('carColor').value,
-          car_type: document.getElementById('carType').value,
-          car_photo_url: carPhotoURL,
-          car_registration_number: document.getElementById('carRegNumber').value,
-          approved: false
-        };
-
-        // Save to database
-        await insertDriver(driverData);
-
-        // Optional: Save to localStorage
-        localStorage.setItem('registeredUser', JSON.stringify(driverData));
-
-        alert('Registration successful! You can now login.');
-        window.location.href = "http://127.0.0.1:5500/driver-app/loginDriver.html"; // change as needed
-      } catch (err) {
-        console.error(err);
-        alert('Error during registration. Please try again.');
-      }
+    const driverData = {
+      driver_photo_url: driverPhotoURL,
+      name: driverName.value,
+      email: driverEmail.value,
+      password: driverPassword.value,
+      phone_number: driverPhone.value,
+      id_number: driverID.value,
+      bank_details: bankDetails.value,
+      bank_name: bankName.value,
+      other_bank: otherBank.value || null,
+      driver_license_url: driverLicenseURL,
+      car_color: carColor.value,
+      car_type: carType.value,
+      car_photo_url: carPhotoURL,
+      car_registration_number: carRegNumber.value,
+      approved: false
     };
 
-    // Upload image helper
-    async function uploadImage(folder, file) {
-      const extension = file.name.split('.').pop();
-      const filename = `${Date.now()}.${extension}`;
-      const { data, error } = await supabase.storage.from(folder).upload(filename, file);
-      if (error) throw error;
-      const { data: publicData, error: pubError } = await supabase.storage.from(folder).getPublicUrl(filename);
-      if (pubError) throw pubError;
-      return publicData.publicUrl;
-    }
+    const { error } = await supabase.from('register_drivers').insert([driverData]);
+    if (error) throw error;
 
-    // Insert driver data into table
-    async function insertDriver(data) {
-      const { error } = await supabase
-        .from('register_drivers')
-        .insert([data]);
-      if (error) throw error;
-    }
+    showNotificationMessage('Registration successful!');
+    setTimeout(() => {
+      window.location.href = 'loginDriver.html';
+    }, 1500);
+
+  } catch (err) {
+    console.error(err);
+    showNotificationMessage('Registration failed', '#f44336');
   }
+}
 
-  loadNewDriverPage();
+/* ===============================
+   IMAGE UPLOAD
+================================ */
+async function uploadImage(bucket, file) {
+  const filename = `${Date.now()}-${file.name}`;
+  const { error } = await supabase.storage.from(bucket).upload(filename, file);
+  if (error) throw error;
+
+  return supabase.storage.from(bucket).getPublicUrl(filename).data.publicUrl;
+}
+
+loadNewDriverPage();
 </script>
 </body>
 </html>
