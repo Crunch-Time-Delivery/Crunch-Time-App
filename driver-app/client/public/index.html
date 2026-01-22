@@ -312,6 +312,7 @@ function loadOrderView() {
       <p><strong>Pick-up:</strong> ${order.pickup}</p>
       <p><strong>Drop-off:</strong> ${order.dropoff}</p>
       <div id="map"></div>
+       <button >Accept / Decline</button>
     </div>`;
   initMap();
 }
@@ -351,6 +352,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('driverAccountLink').onclick = e => { e.preventDefault(); loadDriverAccount(); };
   document.getElementById('driverHistoryPayment').onclick = e => { e.preventDefault(); loadDriverHistoryPayment(); };
 });
+
+
 </script>
 
 </body>
