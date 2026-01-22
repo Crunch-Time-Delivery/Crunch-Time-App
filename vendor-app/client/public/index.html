@@ -550,6 +550,28 @@ async function sendSmsToUser(userId, message, callback = null) {
     });
     html += `</tbody></table>`;
     document.getElementById('paymentHistoryContainer').innerHTML = html;
+     const payfast = require('@payfast/core');
+// Your actual merchant_id and passphrase
+const merchantId = "10004002";
+const passphrase = "payfast";
+
+// Example: Get weekly history (adjust date as needed)
+async function getdailyHistory() {
+  try {
+    const response = await payfast.transactions.daily({
+      "date": "2025-01-15",
+      "version": "v1",
+      "timestamp": new Date().toISOString(),
+      "passphrase": passphrase,
+      "merchant-id": merchantId
+    });
+    console.log(response); // Process the returned data (often CSV/JSON)
+  } catch (error) {
+    console.error("Error fetching history:", error);
+  }
+}
+
+getDailyHistory();
   }
 
   // Initialize default view
