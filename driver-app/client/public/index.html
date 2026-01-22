@@ -408,6 +408,28 @@ function initMap() {
         // Browser doesn't support Geolocation
         handleLocationError(false, infoWindow, map.getCenter());
     }
+
+    const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseAnonKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+async function updateLocation(userId, lat, lng) {
+  const { data, error } = await supabase
+    .from('locations')
+    .insert([
+      {
+        user_id: userId,
+        latitude: lat,
+        longitude: lng,
+        // PostGIS uses POINT(longitude latitude) format for input
+        location: `POINT(${lng} ${lat})` 
+      },
+    ])
+    .select();
+
+  if (error) console.error('Error updating location:', error.message);
+  else console.log('Location updated:', data);
+}
 }
 
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
