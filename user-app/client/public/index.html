@@ -280,6 +280,66 @@ button {
 #payNowButton {
   background-color: red; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px;
 }
+
+.user-icon {
+  font-size: 20px;
+  cursor: pointer;
+
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid red;
+  border-radius: 50%;
+  color: red;
+}
+
+
+/* PROFILE MODAL */
+#profileModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-box {
+  background: #fff;
+  width: 380px;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.profile-box h3 {
+  text-align: center;
+  margin-top: 0;
+}
+
+.profile-box input,
+.profile-box select {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+}
+
+.profile-box button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.save-btn { background: #2196F3; color: white }
+.delete-btn { background: red; color: white }
+.close-btn { background: #777; color: white }
 </style>
 </head>
 <body>
@@ -296,6 +356,41 @@ button {
   <button onclick="window.location.href='http://127.0.0.1:5501/user-app/search_location.html'">Map Location - Pick up now</button>
 </div>
 
+  <span class="user-icon" onclick="openProfile()">👤</span>
+</div>
+
+<!-- PROFILE MODAL -->
+<div id="profileModal">
+  <div class="profile-box">
+    <h3>User Profile</h3>
+
+    <input id="username" disabled placeholder="Username">
+    <input id="email" disabled placeholder="Email">
+    <input id="password" placeholder="Password">
+
+    <button class="save-btn" onclick="updatePassword()">Update Password</button>
+
+    <hr>
+
+    <h4>Card Details</h4>
+
+    <select id="cardType">
+      <option value="">Select Card</option>
+      <option>Visa</option>
+      <option>MasterCard</option>
+      <option>Amex</option>
+    </select>
+
+    <input id="cardNumber" placeholder="Card Number">
+    <input id="cvv" placeholder="CVV">
+    <input id="securityCode" placeholder="Security Code">
+
+    <button class="save-btn" onclick="saveCardDetails()">Save Card</button>
+
+    <button class="delete-btn" onclick="deleteUser()">Delete Account</button>
+    <button class="close-btn" onclick="closeProfile()">Close</button>
+  </div>
+</div>
 <!-- Filters -->
 <div class="filters">
   <button><img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food" /><span>Fast Food</span></button>
@@ -448,6 +543,75 @@ function closeFoodOpinionModal() { /* Close opinion modal */ }
 function closeFoodModal() { /* Close food modal */ }
 function confirmFoodOpinion() { /* Handle opinion confirmation */ }
 function addItemToOrder() { /* Add item to order list */ }
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+const userId = localStorage.getItem('user_id')
+
+async function loadProfile() {
+  const { data, error } = await supabase
+    .from('User')
+    .select('*')
+    .eq('id', userId)
+    .single()
+
+  if (error) {
+    alert('Failed to load profile')
+    return
+  }
+
+  username.value = data.username
+  email.value = data.email
+  password.value = data.password || ''
+  cardType.value = data.card_type || ''
+  cardNumber.value = data.card_number || ''
+  cvv.value = data.cvv || ''
+  securityCode.value = data.security_code || ''
+}
+
+window.openProfile = () => {
+  profileModal.style.display = 'flex'
+  loadProfile()
+}
+
+window.closeProfile = () => {
+  profileModal.style.display = 'none'
+}
+
+window.updatePassword = async () => {
+  const { error } = await supabase
+    .from('User')
+    .update({ password: password.value })
+    .eq('id', userId)
+
+  error ? alert('Password update failed') : alert('Password updated')
+}
+
+window.saveCardDetails = async () => {
+  const { error } = await supabase
+    .from('User')
+    .update({
+      card_type: cardType.value,
+      card_number: cardNumber.value,
+      cvv: cvv.value,
+      security_code: securityCode.value
+    })
+    .eq('id', userId)
+
+  error ? alert('Card save failed') : alert('Card saved')
+}
+
+window.deleteUser = async () => {
+  if (!confirm('Delete account permanently?')) return
+
+  await supabase.from('User').delete().eq('id', userId)
+  localStorage.clear()
+  location.href = 'http://127.0.0.1:5501/user-app/register_home.html'
+}
 </script>
 
 <script src="smsAndEmailAPI.js"async></script>

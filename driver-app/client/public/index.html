@@ -131,6 +131,67 @@ body {
   margin-top: 10px;
   border-radius: 8px;
 }
+ h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 400px;
+    margin: 0 auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+
+  .profile-pic-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 15px;
+  }
+
+  .profile-pic-container img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #2196F3;
+  }
+
+  .upload-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #2196F3;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .card .row:last-child {
+    border-bottom: none;
+  }
+
+  input[type="file"] {
+    display: none;
+  }
 </style>
 </head>
 
@@ -341,19 +402,49 @@ function loadOrderView() {
   initMap();
 }
 
-// DRIVER ACCOUNT
+//driver account
 function loadDriverAccount() {
   const container = document.getElementById('innerContent');
-  const driver = { name:'John', surname:'Doe', plate:'CA 456-789', contact:'072 345 6789', email:'johndoe.driver@email.com' };
+  const driver = { 
+    name:'John', 
+    surname:'Doe', 
+    plate:'CA 456-789', 
+    contact:'072 345 6789', 
+    email:'johndoe.driver@email.com',
+    profilePic: 'https://via.placeholder.com/120' // default placeholder
+  };
+
   container.innerHTML = `
     <h2>Driver Account</h2>
     <div class="card">
+      <div class="profile-pic-container">
+        <img id="driverPic" src="${driver.profilePic}" alt="Profile Picture">
+        <label class="upload-btn" for="picUpload">+</label>
+        <input type="file" id="picUpload" accept="image/*">
+      </div>
       <div class="row"><strong>Name</strong><span>${driver.name} ${driver.surname}</span></div>
       <div class="row"><strong>Plate No</strong><span>${driver.plate}</span></div>
       <div class="row"><strong>Contact</strong><span>${driver.contact}</span></div>
       <div class="row"><strong>Email</strong><span>${driver.email}</span></div>
     </div>
-    `;
+  `;
+
+  const picInput = document.getElementById('picUpload');
+  const picImg = document.getElementById('driverPic');
+  picInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      picImg.src = e.target.result;
+      localStorage.setItem('driverProfilePic', e.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const savedPic = localStorage.getItem('driverProfilePic');
+  if (savedPic) picImg.src = savedPic;
 }
 
 // ================= MAP =================
@@ -456,4 +547,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
