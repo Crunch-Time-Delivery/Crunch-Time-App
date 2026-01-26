@@ -359,6 +359,50 @@ button {
   <span class="user-icon" onclick="openProfile()">👤</span>
 </div>
 
+<!-- USER ICON BUTTON -->
+<span class="user-icon" onclick="openProfile()" title="Profile">👤</span>
+
+<!-- PROFILE MODAL -->
+<div id="profileModal" class="modal hidden" onclick="closeProfile(event)">
+  <div class="profile-box" onclick="event.stopPropagation()">
+    <h3>User Profile</h3>
+
+    <input id="username" disabled placeholder="Username">
+    <input id="email" disabled placeholder="Email">
+    <input id="password" type="password" placeholder="New Password">
+
+    <button class="save-btn" onclick="updatePassword()">Update Password</button>
+
+    <hr>
+
+    <h4>Card Details</h4>
+
+    <select id="cardType">
+      <option value="">Select Card</option>
+      <option>Visa</option>
+      <option>MasterCard</option>
+      <option>Amex</option>
+    </select>
+
+    <input id="cardNumber" placeholder="Card Number">
+    <input id="cvv" placeholder="CVV">
+    <input id="securityCode" placeholder="Security Code">
+
+    <button class="save-btn" onclick="saveCardDetails()">Save Card</button>
+
+    <button class="delete-btn" onclick="deleteUser()">Delete Account</button>
+    <button class="close-btn" onclick="closeProfile()">Close</button>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
 <!-- PROFILE MODAL -->
 <div id="profileModal">
   <div class="profile-box">
