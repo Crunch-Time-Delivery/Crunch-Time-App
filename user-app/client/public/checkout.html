@@ -93,45 +93,60 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 <div class="summary-row total-row"><span>Total</span><span id="total">R0.00</span></div>
 </div>
 
-<!-- PAYMENT METHODS -->
-<div class="card">
 
-  <!-- Instant EFT -->
-  <div class="method">
-    <div class="method-left">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png">
-      Instant EFT
-    </div>
-    <input type="radio" name="paymethod" value="eft" checked>
-  </div>
-
-  <!-- Card -->
-  <div class="method">
-    <div class="method-left">
-      <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png">
-      Card (Visa / MasterCard/ Amex)
-    </div>
-    <input type="radio" name="paymethod" value="cc">
-  </div>
-
-</div>
-</div>
-
-<!-- PAYFAST FORM -->
+<!-- PAYMENT METHODS + PAYFAST FORM -->
 <form id="payfastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
+  <!-- PayFast hidden fields -->
   <input type="hidden" name="merchant_id" value="10000100">
   <input type="hidden" name="merchant_key" value="46f0cd694581a">
-
   <input type="hidden" name="amount" id="pf_amount">
   <input type="hidden" name="item_name" value="CrunchTime Order">
   <input type="hidden" name="item_description" value="Food delivery checkout">
-
   <input type="hidden" name="payment_method" id="pf_method">
-
+  <input type="hidden" name="signature" id="pf_signature"> <!-- hash signature -->
   <input type="hidden" name="return_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html">
   <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/user-app/client/public/index.html">
   <input type="hidden" name="notify_url" value="https://example.com/notify">
+
+  <div class="card">
+    <!-- Instant EFT -->
+    <div class="method">
+      <div class="method-left">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png">
+        Instant EFT (Company Account)
+      </div>
+      <input type="radio" name="paymethod" value="eft" checked onchange="toggleCardForm(false)">
+      <div style="font-size:12px;color:#555;margin-top:5px;">
+        Bank: ABSA, Account Name: CrunchTime, Acc #: 1234567890
+      </div>
+    </div>
+
+    <!-- Card Payment -->
+    <div class="method">
+      <div class="method-left">
+        <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png">
+        Card Payment (Visa / MasterCard / Amex)
+      </div>
+      <input type="radio" name="paymethod" value="cc" onchange="toggleCardForm(true)">
+    </div>
+
+    <!-- Card Input Form -->
+    <div class="card hidden" id="cardForm">
+      <strong>Enter Card Details</strong>
+      <input type="text" name="card_number" placeholder="Card Number" maxlength="19" oninput="formatCardNumber(this)" required />
+      <input type="text" name="card_name" placeholder="Cardholder Name" required />
+      <div style="display:flex;gap:10px">
+        <input type="text" name="card_expiry" placeholder="MM/YY" maxlength="5" required />
+        <input type="password" name="card_cvv" placeholder="CVV" maxlength="4" required />
+      </div>
+      <small style="color:#777">🔒 Secure payment processed by PayFast</small>
+      <button type="button" onclick="submitCardForm()" style="margin-top:10px;background:red;color:#fff;padding:10px;border:none;width:100%;border-radius:6px;cursor:pointer;">
+        Submit Card & Pay
+      </button>
+    </div>
+  </div>
 </form>
+
 
 <div class="bottom-bar" onclick="payNow()">
 <span>Place Order</span>
@@ -148,6 +163,77 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 </div>
 
 <script>
+/* ================= CARD FORM TOGGLE ================= */
+function toggleCardForm(show) {
+  document.getElementById("cardForm").classList.toggle("hidden", !show);
+}
+
+/* ================= CARD NUMBER FORMAT ================= */
+function formatCardNumber(input) {
+  input.value = input.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
+}
+
+/* ================= CALCULATE HASH ================= */
+function generateHash(fields, merchantKey) {
+  // Concatenate the fields in PayFast recommended order: key=value&key=value...
+  let str = Object.keys(fields)
+    .filter(k => fields[k] !== undefined && fields[k] !== "")
+    .sort()
+    .map(k => `${k}=${fields[k]}`)
+    .join("&");
+
+  // Append merchant key at the end
+  str += `&merchant_key=${merchantKey}`;
+
+  // Simple JS hash (SHA-256) using crypto API
+  return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str))
+    .then(buf => {
+      // convert ArrayBuffer to hex string
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    });
+}
+
+/* ================= PAYFLOW ================= */
+function payNow() {
+  const selectedMethod = document.querySelector('input[name="paymethod"]:checked').value;
+  document.getElementById("pf_method").value = selectedMethod;
+
+  if (selectedMethod === "cc") {
+    // Show card form first
+    toggleCardForm(true);
+    return; // stop auto-submit until user enters card details
+  }
+
+  // EFT can submit directly
+  generateAndSubmitHash(selectedMethod);
+}
+
+function submitCardForm() {
+  const selectedMethod = "cc";
+  document.getElementById("pf_method").value = selectedMethod;
+  document.getElementById("cardForm").classList.add("hidden");
+
+  generateAndSubmitHash(selectedMethod);
+}
+
+/* ================= GENERATE HASH AND SUBMIT ================= */
+function generateAndSubmitHash(paymentMethod) {
+  const pfAmount = document.getElementById("pf_amount").value;
+  const merchantKey = document.querySelector('input[name="merchant_key"]').value;
+
+  const fields = {
+    amount: pfAmount,
+    item_name: "CrunchTime Order",
+    item_description: "Food delivery checkout",
+    payment_method: paymentMethod
+  };
+
+  generateHash(fields, merchantKey).then(hash => {
+    document.getElementById("pf_signature").value = hash;
+    document.getElementById("payfastForm").submit();
+  });
+}
+
 /* ================= LOCATION ================= */
 document.getElementById("deliveryAddress").innerText =
   localStorage.getItem("deliveryAddress") || "17 Bishop Park Way";
@@ -161,7 +247,6 @@ const deliveryFee = 20;
 
 function recalc(){
   const total = subtotal - discount + serviceFee + deliveryFee + tip;
-
   document.getElementById("subtotal").innerText = "R" + subtotal.toFixed(2);
   document.getElementById("discount").innerText = "-R" + discount.toFixed(2);
   document.getElementById("tipAmount").innerText = "R" + tip.toFixed(2);
@@ -189,15 +274,23 @@ function applyVoucher(){
   recalc();
 }
 
-/* ================= PAYFAST ================= */
+/* ================= PAYFLOW ================= */
 function payNow(){
   recalc();
-
-  const selectedMethod =
-    document.querySelector('input[name="paymethod"]:checked').value;
-
+  const selectedMethod = document.querySelector('input[name="paymethod"]:checked').value;
+  if(selectedMethod === 'cc'){
+    // show card form popup first
+    toggleCardForm(true);
+    return; // stop auto-submit
+  }
   document.getElementById("pf_method").value = selectedMethod;
+  document.getElementById("payfastForm").submit();
+}
 
+function submitCardForm(){
+  const selectedMethod = 'cc';
+  document.getElementById("pf_method").value = selectedMethod;
+  document.getElementById("cardForm").classList.add("hidden");
   document.getElementById("payfastForm").submit();
 }
 

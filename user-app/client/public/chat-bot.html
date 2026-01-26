@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AI Chat App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+}
+
+.top-bar {
+  background: #ef0606;
+  color: #fff;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.top-bar button {
+  background: #fff;
+  color: #ed0808;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.chat-container {
+  max-width: 420px;
+  margin: 20px auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  height: 75vh;
+}
+
+.messages {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+}
+
+.msg {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  max-width: 80%;
+  font-size: 14px;
+}
+
+.user {
+  background: #e8f0fe;
+  color: #f20909;
+  margin-left: auto;
+  text-align: right;
+}
+
+.bot {
+  background: #f1f3f4;
+  color: #333;
+  margin-right: auto;
+}
+
+.input-box {
+  display: flex;
+  border-top: 1px solid #ddd;
+}
+
+.input-box input {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  outline: none;
+}
+
+.input-box button {
+  background: #f40404;
+  color: #fff;
+  border: none;
+  padding: 12px 18px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top-bar" id="topBar">
+  <div>AI Chat Bot 🤖</div>
+  <button onclick="login()">Sign in with Google</button>
+</div>
+
+<div class="chat-container">
+  <div class="messages" id="messages"></div>
+
+  <div class="input-box">
+    <input id="messageInput" disabled placeholder="Please log in…" />
+    <button id="sendBtn" disabled onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+/* ===============================
+   DUMMY GOOGLE AUTH (WORKING)
+================================ */
+
+const dummyGoogleUser = {
+  name: "John Demo",
+  email: "johndemo@gmail.com",
+  avatar: "https://i.pravatar.cc/150?img=3"
+};
+
+let currentUser = null;
+
+function login() {
+  currentUser = dummyGoogleUser;
+
+  document.getElementById("topBar").innerHTML = `
+    <div>Welcome, ${currentUser.name} 👋</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="${currentUser.avatar}" style="width:32px;height:32px;border-radius:50%">
+      <button onclick="logout()">Logout</button>
+    </div>
+  `;
+
+  document.getElementById("messageInput").disabled = false;
+  document.getElementById("sendBtn").disabled = false;
+  document.getElementById("messageInput").placeholder = "Type your message…";
+
+  addMessage("You are logged in successfully ✅", "bot");
+}
+
+function logout() {
+  location.reload();
+}
+
+/* ===============================
+   CHAT LOGIC
+================================ */
+
+function sendMessage() {
+  const input = document.getElementById("messageInput");
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMessage(text, "user");
+  input.value = "";
+
+  const typing = addMessage("Typing…", "bot");
+
+  // Simulated remote AI response
+  setTimeout(() => {
+    typing.remove();
+    addMessage(generateRemoteAIReply(text), "bot");
+  }, 900);
+}
+
+function generateRemoteAIReply(message) {
+  return `🤖 AI Response:\n\nI received your message:\n"${message}"\n\nThis is a remote-ready AI reply. Connect this to your backend (OpenAI / Gemini / Supabase Edge Function) to go fully live.`;
+}
+
+/* ===============================
+   UI HELPERS
+================================ */
+
+function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = `msg ${type}`;
+  div.textContent = text;
+  document.getElementById("messages").appendChild(div);
+  div.scrollIntoView({ behavior: "smooth" });
+  return div;
+}
+</script>
+
+</body>
+</html>
