@@ -43,7 +43,6 @@
     <div class="dropdown" id="profileDropdown">
       <a href="#" onclick="showManagement('items'); return false;">Manage Items</a>
       <a href="#" onclick="showManagement('orders'); return false;">Manage Orders</a>
-      <a href="#" onclick="showManagement('users'); return false;">Manage Users</a>
       <a href="#" onclick="showManagement('payment'); return false;">Payment History</a>
       <a href="#" onclick="logout(); return false;">Logout</a>
     </div>
@@ -57,7 +56,6 @@
     <button class="red-button" onclick="showSection('restaurantInfo')">Enter Restaurant Info</button>
     <button class="red-button" onclick="showSection('addItem')">Add Item</button>
     <button class="red-button" onclick="showSection('addOrder')">Add Order</button>
-    <button class="red-button" onclick="showSection('addUser')">Add User</button>
     <button class="red-button" onclick="fetchPayments()">Payment History</button>
   </div>
 
@@ -83,19 +81,66 @@
   </div>
 
   <!-- Add Item -->
-  <div id="section-addItem" class="section" style="display:none;">
-    <h3>Add Item</h3>
-    <div class="form-container">
-      <input type="text" id="itemVendor" placeholder="Vendor" />
-      <input type="text" id="itemName" placeholder="Item" />
-      <input type="number" id="itemPrice" placeholder="Price" />
-      <select id="itemStock">
-        <option value="In Stock">In Stock</option>
-        <option value="Out of Stock">Out of Stock</option>
-      </select>
-      <button class="red-button" onclick="addItem()">Save Item</button>
+<div id="section-addItem" class="section" style="display:none;">
+  <h3>Add Menu Item</h3>
+
+  <div class="form-container">
+
+    <!-- Vendor Info -->
+    <input type="text" id="itemVendor" placeholder="Restaurant / Vendor Name" />
+
+    <!-- Basic Item Info -->
+    <input type="text" id="itemName" placeholder="Item Name (e.g. Chicken Burger)" />
+
+    <textarea id="itemDescription" placeholder="Item Description"></textarea>
+
+    <!-- Category -->
+    <select id="itemCategory">
+      <option value="">Select Category</option>
+      <option value="Fast Food">Fast Food</option>
+      <option value="Burgers">Burgers</option>
+      <option value="Pizza">Pizza</option>
+      <option value="Wings">Wings</option>
+      <option value="Healthy">Healthy</option>
+      <option value="Chinese">Chinese</option>
+      <option value="Halal">Halal</option>
+      <option value="Korean">Korean</option>
+    </select>
+
+    <!-- Pricing -->
+    <input type="number" id="itemPrice" placeholder="Price (ZAR)" />
+
+    <input type="number" id="itemDiscount" placeholder="Discount % (optional)" />
+
+    <!-- Portion & Prep -->
+    <input type="text" id="itemPortion" placeholder="Portion Size (e.g. Large)" />
+
+    <input type="number" id="prepTime" placeholder="Prep Time (minutes)" />
+
+    <!-- Dietary -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <label><input type="checkbox" id="isVeg"> Vegetarian</label>
+      <label><input type="checkbox" id="isHalal"> Halal</label>
+      <label><input type="checkbox" id="isSpicy"> Spicy</label>
     </div>
+
+    <!-- Stock -->
+    <select id="itemStock">
+      <option value="In Stock">In Stock</option>
+      <option value="Out of Stock">Out of Stock</option>
+    </select>
+
+    <!-- Image -->
+    <input type="file" id="itemImage" accept="image/*" />
+
+    <!-- Save -->
+    <button class="red-button" onclick="addItem()">
+      Save Item
+    </button>
+
   </div>
+</div>
+
 
   <!-- Add Order -->
   <div id="section-addOrder" class="section" style="display:none;">
@@ -104,21 +149,12 @@
       <input type="text" id="orderId" placeholder="Order ID" />
       <input type="text" id="orderUserName" placeholder="User Name" />
       <input type="email" id="orderUserEmail" placeholder="User Email" />
-      <input type="text" id="orderMethod" placeholder="Payment Method" />
       <input type="number" id="orderAmount" placeholder="Amount" />
       <button class="red-button" onclick="addOrder()">Save Order</button>
     </div>
   </div>
 
-  <!-- Add User -->
-  <div id="section-addUser" class="section" style="display:none;">
-    <h3>Add User</h3>
-    <div class="form-container">
-      <input type="email" id="userEmail" placeholder="Email" />
-      <input type="text" id="userName" placeholder="Name" />
-      <button class="red-button" onclick="addUser()">Save User</button>
-    </div>
-  </div>
+ 
 
   <!-- Payment History -->
   <div id="section-payment" class="section" style="display:none;">
