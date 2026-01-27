@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,6 +50,7 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 .popup input,.popup button{
   width:100%;padding:10px;margin-top:10px
 }
+
 </style>
 </head>
 
@@ -96,19 +98,21 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 
 <!-- PAYMENT METHODS + PAYFAST FORM -->
 <form id="payfastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
+
   <!-- PayFast hidden fields -->
   <input type="hidden" name="merchant_id" value="10000100">
   <input type="hidden" name="merchant_key" value="46f0cd694581a">
-  <input type="hidden" name="amount" id="pf_amount">
+  <input type="hidden" name="amount" id="pf_amount" value="150.00">
   <input type="hidden" name="item_name" value="CrunchTime Order">
   <input type="hidden" name="item_description" value="Food delivery checkout">
-  <input type="hidden" name="payment_method" id="pf_method">
-  <input type="hidden" name="signature" id="pf_signature"> <!-- hash signature -->
+  <input type="hidden" name="payment_method" id="pf_method" value="eft">
+  <input type="hidden" name="signature" id="pf_signature">
   <input type="hidden" name="return_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html">
   <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/user-app/client/public/index.html">
   <input type="hidden" name="notify_url" value="https://example.com/notify">
 
   <div class="card">
+
     <!-- Instant EFT -->
     <div class="method">
       <div class="method-left">
@@ -116,9 +120,10 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
         Instant EFT (Company Account)
       </div>
       <input type="radio" name="paymethod" value="eft" checked onchange="toggleCardForm(false)">
-      <div style="font-size:12px;color:#555;margin-top:5px;">
-        Bank: ABSA, Account Name: CrunchTime, Acc #: 1234567890
-      </div>
+    </div>
+
+    <div style="font-size:12px;color:#555;margin-bottom:10px;">
+      Bank: ABSA • Account Name: CrunchTime • Acc #: 1234567890
     </div>
 
     <!-- Card Payment -->
@@ -133,20 +138,31 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
     <!-- Card Input Form -->
     <div class="card hidden" id="cardForm">
       <strong>Enter Card Details</strong>
-      <input type="text" name="card_number" placeholder="Card Number" maxlength="19" oninput="formatCardNumber(this)" required />
-      <input type="text" name="card_name" placeholder="Cardholder Name" required />
+
+      <input type="text"
+             id="cardNumber"
+             placeholder="Card Number"
+             maxlength="19"
+             oninput="formatCardNumber(this)">
+
+      <input type="text" placeholder="Cardholder Name">
+
       <div style="display:flex;gap:10px">
-        <input type="text" name="card_expiry" placeholder="MM/YY" maxlength="5" required />
-        <input type="password" name="card_cvv" placeholder="CVV" maxlength="4" required />
+        <input type="text" placeholder="MM/YY" maxlength="5">
+        <input type="password" placeholder="CVV" maxlength="4">
       </div>
+
       <small style="color:#777">🔒 Secure payment processed by PayFast</small>
-      <button type="button" onclick="submitCardForm()" style="margin-top:10px;background:red;color:#fff;padding:10px;border:none;width:100%;border-radius:6px;cursor:pointer;">
+
+      <button type="button"
+              onclick="submitCardForm()"
+              style="margin-top:10px;background:red;color:#fff;padding:10px;border:none;width:100%;border-radius:6px;cursor:pointer;">
         Submit Card & Pay
       </button>
     </div>
+
   </div>
 </form>
-
 
 <div class="bottom-bar" onclick="payNow()">
 <span>Place Order</span>
