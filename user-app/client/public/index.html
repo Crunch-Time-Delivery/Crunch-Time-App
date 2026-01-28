@@ -340,6 +340,54 @@ button {
 .save-btn { background: #f00707; color: white }
 .delete-btn { background: red; color: white }
 .close-btn { background: #777; color: white }
+.filters {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 10px 5px;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: none;
+  border-radius: 30px;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+}
+
+.filter-btn img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.filter-btn span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Optional scrollbar styling */
+.filters::-webkit-scrollbar {
+  height: 6px;
+}
+.filters::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
 </style>
 </head>
 <body>
@@ -393,16 +441,29 @@ button {
 </div>
 <!-- Filters -->
 <div class="filters">
-  <button"></button>><img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food" /><span>Fast Food</span></button>
-  <button><img src="Images/CR7 Veg .jpg" alt="Healthy" /><span>Healthy</span></button>
-  <button><img src="Images/CR7.jpg" alt="Burgers" /><span>Burgers</span></button>
-  <button><img src="Images/CR7 SUCCI.jpg" alt="Chinese" /><span>Chinese</span></button>
-  <button><img src="Images/CR7 WINGS.jpg" alt="Wings" /><span>Wings</span></button>
-  <button><img src="Images/CR7 PIZZA.webp" alt="Pizza" /><span>Pizza</span></button>
-  <button><img src="Images/CR7 SUCCI .webp" alt="Halal" /><span>Halal</span></button>
-  <button><img src="Images/CR7 KOREA .jpeg" alt="Korean" /><span>Korean</span></button>
-  <button>&rarr;</button>
+  <button class="filter-btn" onclick="selectCategory('Fast Food')">
+    <img src="Images/Ultraprocessed foods display 2 framed - shutterstock_2137640529_r.jpg" alt="Fast Food" />
+    <span>Fast Food</span>
+  </button>
+
+  <button class="filter-btn" onclick="selectCategory('Burgers')">
+    <img src="Images/CR7.jpg" alt="Burgers" />
+    <span>Burgers</span>
+  </button>
+
+  <button class="filter-btn" onclick="selectCategory('Asian')">
+    <img src="Images/CR7 SUCCI.jpg" alt="Asian" />
+    <span>Asian</span>
+  </button>
+
+ <button class="filter-btn" onclick="selectCategory('Pizza')">
+    <img src="Images/CR7 PIZZA.webp" alt="Pizza" />
+    <span>Pizza</span>
+  </button>
 </div>
+
+<!-- Restaurant list -->
+<div class="restaurant-list" id="restaurantList"></div>
 
 <!-- Restaurant list -->
 <div class="restaurant-list" id="restaurantList">
@@ -446,6 +507,114 @@ button {
   </div>
 </div>
 
+<!-- Burgers Restaurants -->
+<div class="restaurant-list" id="burgersList" style="display:none;">
+
+  <div class="restaurant-card" onclick="showMenu('Rodeo Spur Halaal')">
+    <img src="Images/spur.jpg" alt="Rodeo Spur Halaal"
+      onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
+    <div class="details">
+      <div>Rodeo Spur Halaal</div>
+      <div class="rating">4.4 ★</div>
+      <div>Sponsored - 5 min - 4.4 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+
+  <div class="restaurant-card" onclick="showMenu('RocoMamas Rondebosch')">
+    <img src="Images/img.jpg" alt="RocoMamas Rondebosch"
+      onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
+    <div class="details">
+      <div>RocoMamas Rondebosch</div>
+      <div class="rating">4.0 ★</div>
+      <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+
+  <div class="restaurant-card" onclick="showMenu('Krispy King Rondebosch')">
+    <img src="Images/fried_chicken.jpg" alt="Krispy King Rondebosch"
+      onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
+    <div class="details">
+      <div>KRISPY KING RONDEBOSCH (HALAL)</div>
+      <div class="rating">3.3 ★</div>
+      <div>10 min - 0.6 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+
+</div>
+
+
+<!-- Asian Restaurants -->
+<div class="restaurant-list" id="asianList" style="display:none;">
+
+  <div class="restaurant-card" onclick="showMenu('Khao Hom Halal Thai Cuisine ')">
+    <img src="Images/download.png" alt="Khao Hom Halal Thai Cuisine "
+      onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
+    <div class="details">
+      <div>Khao Hom Halal Thai Cuisine - Claremont
+</div>
+      <div class="rating">4.4 ★</div>
+      <div>Sponsored - 5 min - 4.4 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+
+  <div class="restaurant-card" onclick="showMenu('Somma Asian Restaurant Rondebosch')">
+    <img src="Images/asian_(1).jpg" alt="Somma Asian Restaurant Rondebosch"
+      onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
+    <div class="details">
+      <div>Somma Asian Restaurant Rondebosch
+</div>
+      <div class="rating">4.0 ★</div>
+      <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+
+</div>
+
+
+<!-- Pizza Restaurants -->
+<div class="restaurant-list" id="pizzaList" style="display:none;">
+
+  <div class="restaurant-card" onclick="showMenu('La Infernos Pizzeria (Kromboom')">
+    <img src="Images/wood-pizza.png" alt="La Inferno's Pizzeria (Kromboom)"
+      onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
+    <div class="details">
+      <div>La Inferno's Pizzeria (Kromboom)</div>
+      <div class="rating">4.4 ★</div>
+      <div>Sponsored - 5 min - 4.4 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+
+  <div class="restaurant-card" onclick="showMenu('Debonairs Pizza')">
+    <img src="Images/download (1).png" alt="Debonairs Pizza"
+      onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
+    <div class="details">
+      <div>Debonairs Pizza </div>
+      <div class="rating">4.0 ★</div>
+      <div>Uber Eats HDP-Owned - 16 min - 0.6 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+
+  <div class="restaurant-card" onclick="showMenu('Romans Pizza ')">
+    <img src="Images/roman_pizza.jpg" alt="Roman's Pizza "
+      onclick="window.location.href='http://127.0.0.1:5501/user-app/client/public/restaurant_info.html'; event.stopPropagation();"/>
+    <div class="details">
+      <div>Roman's Pizza </div>
+      <div class="rating">3.3 ★</div>
+      <div>10 min - 0.6 km</div>
+    </div>
+    <button class="fav" onclick="event.stopPropagation(); toggleFavorite(this)">♥</button>
+  </div>
+
+</div>
+
+
 <div id="notification" style="display:none; position:fixed; top:20px; width:100%; z-index:9999; text-align:center;">
   <div style="background-color:#4CAF50; color:white; padding:10px; display:inline-block; border-radius:4px;">
     Sending notification...
@@ -453,7 +622,35 @@ button {
 </div>
 
 <script>
-  
+
+function selectCategory(category) {
+  // Hide all lists first
+  document.getElementById("burgersList").style.display = "none";
+  document.getElementById("asianList").style.display = "none";
+  document.getElementById("pizzaList").style.display = "none";
+
+  // Show selected category
+  if (category === "Burgers") {
+    document.getElementById("burgersList").style.display = "block";
+  } else if (category === "Asian") {
+    document.getElementById("asianList").style.display = "block";
+  } else if (category === "Pizza") {
+    document.getElementById("pizzaList").style.display = "block";
+  }
+}
+
+function showMenu(name) {
+  alert("Open menu for " + name);
+}
+
+function toggleFavorite(btn) {
+  btn.classList.toggle("active");
+}
+
+
+
+
+
 function showNotificationMessage(message, color='#4CAF50') {
   const notif = document.getElementById('notification');
   notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
