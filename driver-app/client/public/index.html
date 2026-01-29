@@ -14,7 +14,6 @@ body {
   margin: 0;
   background: #f4f4f4;
 }
-/* HEADER */
 .header {
   display: flex;
   justify-content: space-between;
@@ -36,8 +35,6 @@ body {
   border-radius: 6px;
   cursor: pointer;
 }
-
-/* MENU */
 .menu-container { position: relative; }
 .dropdown-content {
   display: none;
@@ -58,8 +55,6 @@ body {
   border-bottom: 1px solid #eee;
 }
 .dropdown-content a:hover { background: #f5f5f5; }
-
-/* CONTENT */
 #contentArea {
   max-width: 900px;
   margin: 20px auto;
@@ -79,7 +74,6 @@ body {
   margin-top: 10px;
   border-radius: 8px;
 }
-/* Additional styles for profile, buttons, notification, etc., can be added as needed */
 </style>
 </head>
 <body>
@@ -113,6 +107,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menuContainer');
   const menuButton = document.getElementById('menuButton');
   const dropdown = document.getElementById('dropdownMenu');
+  // Fix: bind the click event for driver account link
+  const driverLink = document.getElementById('driverAccountLink');
+  if (driverLink) {
+    driverLink.onclick = e => { e.preventDefault(); loadDriverAccount(); };
+  }
 
   menuButton.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -123,9 +122,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   dropdown.addEventListener('click', (e) => e.stopPropagation());
 
-  // Bind menu links
+  // Bind other menu links
   document.getElementById('orderViewLink').onclick = e => { e.preventDefault(); loadOrderView(); };
-  document.getElementById('driverAccountLink').onclick = e => { e.preventDefault(); loadDriverAccount(); };
+  document.getElementById('driverAccountLink').onclick = e => { e.preventDefault(); loadDriverAccount()(); };
   document.getElementById('driverHistoryPayment').onclick = e => { e.preventDefault(); loadDriverHistoryPayment(); };
 });
 
@@ -150,302 +149,6 @@ function showNotificationMessage(text, color = '#333') {
   box.style.backgroundColor = color;
   box.innerText = text;
   setTimeout(() => box.remove(), 4000);
-}
-async function sendSms(to, message, callback = null, retries = 2) {
-  if (!to || !message) { showNotificationMessage('Phone number or message missing', '#f44336'); return; }
-  if (isSendingSMS) { showNotificationMessage('Another message is sending...', '#ff9800'); return; }
-  isSendingSMS = true; showNotificationMessage('Sending message...', '#2196F3');
-  const attemptSend = async (attempt = 1) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-    try {
-      const res = await fetch('/notify/sms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({ to, message })
-      });
-      clearTimeout(timeout);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Server error');
-      showNotificationMessage('SMS sent successfully ✔️', '#4CAF50');
-      if (callback) callback(data);
-    } catch (err) {
-      clearTimeout(timeout);
-      console.error(`SMS Error (Attempt ${attempt}):`, err);
-      showNotificationMessage(err.name === 'AbortError' ? 'Request timed out ⏱️' : 'Failed to send SMS ❌', '#f44336');
-      if (attempt <= retries) return attemptSend(attempt + 1);
-    } finally { isSendingSMS = false; }
-  };
-  attemptSend();
-}
-
-// ================= DRIVER FUNCTIONALITY =================
-function loadMainPage() {
-  document.getElementById('innerContent').innerHTML = `
-    <h1>Welcome Driver</h1>
-    <p>Select an option from the menu.</p>
-  `;
-}
-
-// ================= Load Payment History =================
-async function loadDriverHistoryPayment() {
-  const container = document.getElementById('innerContent');
-  container.innerHTML = `<div class="loading">Loading payment history…</div>`;
-  try {
-    const res = await fetch('/api/payment-history');
-    if (!res.ok) throw new Error('Fetch failed');
-    const data = await res.json();
-    const payments = data?.payments || [];
-    let total = 0;
-    let html = `<h1>Payment History</h1>`;
-    if (!payments.length) {
-      container.innerHTML = `<h1>Payment History</h1><div class="empty-state">No payment history available.</div><a href="#" onclick="loadMainPage()">Back</a>`;
-      return;
-    }
-    payments.forEach(p => {
-      const amount = Number(p.amount) || 0; total += amount;
-      html += `<div class="payment-card">
-        <div class="payment-row"><strong>Amount</strong><span>R ${amount.toFixed(2)}</span></div>
-        <div class="payment-row"><strong>User</strong><span>${p.userName || '-'}</span></div>
-        <div class="payment-row"><strong>Date</strong><span>${p.date || '-'}</span></div>
-        <div class="payment-row"><strong>Pick-up</strong><span>${p.pickupLocation || '-'}</span></div>
-        <div class="payment-row"><strong>Drop-off</strong><span>${p.dropoffLocation || '-'}</span></div>
-      </div>`;
-    });
-    html += `<div class="payment-total">Total Due: R ${total.toFixed(2)}</div>
-      <div class="payfast-box">
-        <label><input type="radio" name="paymethod" value="cc" checked> Card</label>
-        <label style="margin-left:15px"><input type="radio" name="paymethod" value="eft"> Instant EFT</label>
-        <button class="payfast-btn" id="payFastBtn">Pay with PayFast</button>
-        <form id="payFastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
-          <input type="hidden" name="merchant_id" value="10000100" />
-          <input type="hidden" name="merchant_key" value="46f0cd694581a" />
-          <input type="hidden" name="item_name" value="Driver Payout" />
-          <input type="hidden" name="amount" value="${total.toFixed(2)}" />
-          <input type="hidden" name="payment_method" id="pfMethod" />
-          <input type="hidden" name="m_payment_id" value="DRIVER_${Date.now()}" />
-          <input type="hidden" name="return_url" value="http://127.0.0.1:5501/success.html" />
-          <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/dashboard.html" />
-          <input type="hidden" name="notify_url" value="http://127.0.0.1:5501/payfast_notify.php" />
-        </form>
-      </div>
-      <a href="#" onclick="loadMainPage()" style="display:block;margin-top:20px;">Back</a>`;
-    document.getElementById('payFastBtn').onclick = () => {
-      const method = document.querySelector("input[name='paymethod']:checked").value;
-      document.getElementById('pfMethod').value = method;
-      document.getElementById('payFastForm').submit();
-    };
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = `<h1>Payment History</h1><p style="color:red">Failed to load payment history.</p><a href="#" onclick="loadMainPage()">Back</a>`;
-  }
-}
-
-// ================= Order View =================
-function loadOrderView() {
-  const container = document.getElementById('innerContent');
-  const order = {
-    id: 'ORD-10045',
-    customer: 'John Smith',
-    verification: '482913',
-    date: '2026-01-21',
-    pickup: 'Pizza Palace, Cape Town',
-    dropoff: '12 Long Street, Cape Town',
-    total: 245.00,
-    items: [
-      { name: 'Large Pizza', qty: 1, price: 120 },
-      { name: 'Chicken Wings', qty: 2, price: 45 },
-      { name: 'Cooldrink', qty: 1, price: 35 }
-    ]
-  };
-  container.innerHTML = `
-    <h2>Order View</h2>
-    <div class="card">
-      <div class="row"><strong>Order ID</strong><span>${order.id}</span></div>
-      <div class="row"><strong>Customer</strong><span>${order.customer}</span></div>
-      <div class="row"><strong>Verification Code</strong><span>${order.verification}</span></div>
-      <div class="row"><strong>Order Date</strong><span>${order.date}</span></div>
-    </div>
-    <div class="card">
-      <h3>Order Items</h3>
-      ${order.items.map(i => `<div class="row"><span>${i.name} (x${i.qty})</span><span>R ${(i.qty * i.price).toFixed(2)}</span></div>`).join('')}
-      <div class="total">Total: R ${order.total.toFixed(2)}</div>
-    </div>
-    <div class="card">
-      <h3>Delivery Route</h3>
-      <p><strong>Pick-up:</strong> ${order.pickup}</p>
-      <p><strong>Drop-off:</strong> ${order.dropoff}</p>
-      <div id="map"></div>
-      <button>Accept / Decline</button>
-    </div>`;
-  initMap();
-}
-
-// ================= DRIVER ACCOUNT =================
-function loadDriverAccount() {
-  const container = document.getElementById('innerContent');
-  const driver = {
-    name: 'John',
-    surname: 'Doe',
-    plate: 'CA 456-789',
-    contact: '072 345 6789',
-    email: 'johndoe.driver@email.com',
-    profilePic: 'https://via.placeholder.com/120'
-  };
-  container.innerHTML = `
-    <h2>Driver Account</h2>
-    <div class="card">
-      <div class="profile-pic-container">
-        <img id="driverPic" src="${driver.profilePic}" alt="Profile Picture" />
-        <label class="upload-btn" for="picUpload">+</label>
-        <input type="file" id="picUpload" accept="image/*" />
-      </div>
-      <div class="row"><strong>Name</strong><span>${driver.name} ${driver.surname}</span></div>
-      <div class="row"><strong>Plate No</strong><span>${driver.plate}</span></div>
-      <div class="row"><strong>Contact</strong><span>${driver.contact}</span></div>
-      <div class="row"><strong>Email</strong><span>${driver.email}</span></div>
-    </div>
-  `;
-  // Profile picture upload handler
-  const picInput = document.getElementById('picUpload');
-  const picImg = document.getElementById('driverPic');
-  picInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      picImg.src = e.target.result;
-      localStorage.setItem('driverProfilePic', e.target.result);
-    };
-    reader.readAsDataURL(file);
-  });
-  // Load saved profile pic if exists
-  const savedPic = localStorage.getItem('driverProfilePic');
-  if (savedPic) picImg.src = savedPic;
-}
-
-// ================= MAP FUNCTION =================
-function initMap() {
-  const pickup = { lat: -33.9249, lng: 18.4241 }; // Restaurant
-  const dropoff = { lat: -33.9289, lng: 18.4174 }; // Customer
-  const map = new google.maps.Map(document.getElementById("map"), { zoom: 13, center: pickup });
-  new google.maps.Marker({ position: pickup, map, label: 'P', title: 'Restaurant Pickup' });
-  new google.maps.Marker({ position: dropoff, map, label: 'D', title: 'Customer Drop-off' });
-  
-  let infoWindow, userMarker;
-  // Initialize map with user location tracking
-  function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-    infoWindow.setPosition(pos);
-    infoWindow.setContent(
-      browserHasGeolocation
-        ? "Error: The Geolocation service failed."
-        : "Error: Your browser doesn't support geolocation."
-    );
-    infoWindow.open(map);
-  }
-
-  if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(
-      (position) => {
-        const pos = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
-        if (!userMarker) {
-          userMarker = new google.maps.Marker({ position: pos, map, title: "You are here!" });
-        } else {
-          userMarker.setPosition(pos);
-        }
-        map.setCenter(pos);
-        // Optionally, save location to your database here
-      },
-      () => handleLocationError(true, new google.maps.InfoWindow(), map.getCenter()),
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-    );
-  } else {
-    handleLocationError(false, new google.maps.InfoWindow(), map.getCenter());
-  }
-}
-
-// ================== Load content functions ==================
-function loadOrderView() {
-  const container = document.getElementById('innerContent');
-  const order = {
-    id: 'ORD-10045',
-    customer: 'John Smith',
-    verification: '482913',
-    date: '2026-01-21',
-    pickup: 'Pizza Palace, Cape Town',
-    dropoff: '12 Long Street, Cape Town',
-    total: 245.00,
-    items: [
-      { name: 'Large Pizza', qty: 1, price: 120 },
-      { name: 'Chicken Wings', qty: 2, price: 45 },
-      { name: 'Cooldrink', qty: 1, price: 35 }
-    ]
-  };
-  container.innerHTML = `
-    <h2>Order View</h2>
-    <div class="card">
-      <div class="row"><strong>Order ID</strong><span>${order.id}</span></div>
-      <div class="row"><strong>Customer</strong><span>${order.customer}</span></div>
-      <div class="row"><strong>Verification Code</strong><span>${order.verification}</span></div>
-      <div class="row"><strong>Order Date</strong><span>${order.date}</span></div>
-    </div>
-    <div class="card">
-      <h3>Order Items</h3>
-      ${order.items.map(i => `<div class="row"><span>${i.name} (x${i.qty})</span><span>R ${(i.qty * i.price).toFixed(2)}</span></div>`).join('')}
-      <div class="total">Total: R ${order.total.toFixed(2)}</div>
-    </div>
-    <div class="card">
-      <h3>Delivery Route</h3>
-      <p><strong>Pick-up:</strong> ${order.pickup}</p>
-      <p><strong>Drop-off:</strong> ${order.dropoff}</p>
-      <div id="map"></div>
-      <button>Accept / Decline</button>
-    </div>`;
-  initMap();
-}
-
-function loadDriverAccount() {
-  const container = document.getElementById('innerContent');
-  const driver = {
-    name: 'John',
-    surname: 'Doe',
-    plate: 'CA 456-789',
-    contact: '072 345 6789',
-    email: 'johndoe.driver@email.com',
-    profilePic: 'https://via.placeholder.com/120'
-  };
-  container.innerHTML = `
-    <h2>Driver Account</h2>
-    <div class="card">
-      <div class="profile-pic-container">
-        <img id="driverPic" src="${driver.profilePic}" alt="Profile Picture" />
-        <label class="upload-btn" for="picUpload">+</label>
-        <input type="file" id="picUpload" accept="image/*" />
-      </div>
-      <div class="row"><strong>Name</strong><span>${driver.name} ${driver.surname}</span></div>
-      <div class="row"><strong>Plate No</strong><span>${driver.plate}</span></div>
-      <div class="row"><strong>Contact</strong><span>${driver.contact}</span></div>
-      <div class="row"><strong>Email</strong><span>${driver.email}</span></div>
-    </div>`;
-  // Profile pic upload handler
-  const picInput = document.getElementById('picUpload');
-  const picImg = document.getElementById('driverPic');
-  picInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      picImg.src = e.target.result;
-      localStorage.setItem('driverProfilePic', e.target.result);
-    };
-    reader.readAsDataURL(file);
-  });
-  const savedPic = localStorage.getItem('driverProfilePic');
-  if (savedPic) picImg.src = savedPic;
 }
 
 // ================= Map Function =================
@@ -475,18 +178,181 @@ function initMap() {
           lng: position.coords.longitude
         };
         if (!userMarker) {
-          userMarker = new google.maps.Marker({ position: pos, map, title: "You are here!" });
+          userMarker = new google.maps.Marker({ position: pos, map, title: "You are here!", icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 6,
+            fillColor: '#4285F4',
+            fillOpacity: 1,
+            strokeColor: 'white',
+            strokeWeight: 2
+          } });
         } else {
           userMarker.setPosition(pos);
         }
         map.setCenter(pos);
-        // Save location if needed
       },
       () => handleLocationError(true, new google.maps.InfoWindow(), map.getCenter()),
       { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
     );
   } else {
     handleLocationError(false, new google.maps.InfoWindow(), map.getCenter());
+  }
+}
+
+// ================== Load Content Functions ==================
+function loadMainPage() {
+  document.getElementById('innerContent').innerHTML = `
+    <h1>Welcome Driver</h1>
+    <p>Select an option from the menu.</p>
+  `;
+}
+
+// ================= Load Payment History with Dummy PayFast Tracking =================
+async function loadDriverHistoryPayment() {
+  const container = document.getElementById('innerContent');
+  container.innerHTML = `<div class="loading">Loading payment history…</div>`;
+  
+  // Simulate async API call
+  await new Promise(res => setTimeout(res, 1000));
+  
+  // Dummy payment data with simulated PayFast transaction IDs
+  const payments = [
+    { id: 'PAY-1234', amount: 250.00, status: 'Pending' },
+    { id: 'PAY-5678', amount: 150.00, status: 'Completed' },
+  ];
+
+  // Generate HTML
+  let html = `<h1>Payment History</h1>`;
+  payments.forEach(p => {
+    html += `
+      <div class="card" style="margin-bottom:10px; padding:10px; border:1px solid #ccc;">
+        <div><strong>Payment ID:</strong> ${p.id}</div>
+        <div><strong>Amount:</strong> R ${p.amount.toFixed(2)}</div>
+        <div><strong>Status:</strong> ${p.status}</div>
+        <button onclick="trackPayFast('${p.id}')">Track Payment</button>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+
+// Function to simulate tracking a PayFast payment status
+function trackPayFast(paymentId) {
+  // You would replace this with your server-side API call to verify payment status
+  // For demo, we'll simulate different statuses based on paymentId
+  let status;
+  if (paymentId === 'PAY-1234') status = 'Pending';
+  else if (paymentId === 'PAY-5678') status = 'Completed';
+  else status = 'Unknown';
+
+  alert(`Tracking Payment ID: ${paymentId}\nStatus: ${status}`);
+}
+
+// ================= Order View =================
+function loadOrderView() {
+  const container = document.getElementById('innerContent');
+  const order = {
+    id: 'ORD-10045',
+    customer: 'John Smith',
+    verification: '482913',
+    date: '2026-01-21',
+    pickup: 'Pizza Palace, Cape Town',
+    dropoff: '12 Long Street, Cape Town',
+    total: 245.00,
+    items: [
+      { name: 'Large Pizza', qty: 1, price: 120 },
+      { name: 'Chicken Wings', qty: 2, price: 45 },
+      { name: 'Cooldrink', qty: 1, price: 35 }
+    ]
+  };
+  container.innerHTML = `
+    <h2 style="color: red; border-left: 4px solid red; padding-left: 10px;">Order View</h2>
+    <div class="card">
+      <div class="row"><strong>Order ID</strong> ${order.id}</div>
+      <div class="row"><strong>Customer</strong> ${order.customer}</div>
+      <div class="row"><strong>Verification</strong> ${order.verification}</div>
+      <div class="row"><strong>Date</strong> ${order.date}</div>
+    </div>
+    <div class="card">
+      <h3 style="color: red; border-left: 4px solid red; padding-left: 10px;">Order Items</h3>
+      ${order.items.map(i => `<div class="row"><span>${i.name} (x${i.qty})</span><span>R ${(i.qty * i.price).toFixed(2)}</span></div>`).join('')}
+      <div class="total"><strong>Total:</strong> R ${order.total.toFixed(2)}</div>
+    </div>
+    <div class="card">
+      <h3 style="color: red; border-left: 4px solid red; padding-left: 10px;">Delivery Route</h3>
+      <p><strong>Pick-up:</strong> ${order.pickup}</p>
+      <p><strong>Drop-off:</strong> ${order.dropoff}</p>
+      <div id="map"></div>
+      <button>Accept / Decline</button>
+    </div>`;
+  initMap();
+}
+
+// ================== Load driver account with profile icon ==================
+function loadDriverAccount() {
+  const container = document.getElementById('innerContent');
+  container.innerHTML = `
+    <h2>Driver Account</h2>
+    <div class="card">
+      <!-- Profile Icon with overlay button -->
+      <div style="position: relative; width: 60px; height: 60px; margin: auto;">
+        <div id="profileIcon" style="
+          width: 50px; height: 50px; 
+          border-radius: 50%; 
+          background-color: #ccc; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-size: 24px; 
+          color: #fff;
+          margin: auto;
+        ">👤</div>
+        <label for="picUpload" style="
+          position: absolute;
+          bottom: -5px;
+          right: -5px;
+          background-color: #007bff;
+          color: #fff;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          cursor: pointer;
+          border: 2px solid #fff;
+        ">+</label>
+        <input type="file" id="picUpload" accept="image/*" style="display: none;" />
+      </div>
+      <div class="row"><strong>Name</strong><span>${driver.name} ${driver.surname}</span></div>
+      <div class="row"><strong>Plate No</strong><span>${driver.plate}</span></div>
+      <div class="row"><strong>Contact</strong><span>${driver.contact}</span></div>
+      <div class="row"><strong>Email</strong><span>${driver.email}</span></div>
+    </div>`;
+  // Setup upload handler
+  const picInput = document.getElementById('picUpload');
+  const profileIcon = document.getElementById('profileIcon');
+
+  picInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      profileIcon.style.backgroundImage = `url(${e.target.result})`;
+      profileIcon.style.backgroundSize = 'cover';
+      profileIcon.textContent = '';
+      localStorage.setItem('driverProfilePic', e.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Load saved pic if exists
+  const savedPic = localStorage.getItem('driverProfilePic');
+  if (savedPic) {
+    profileIcon.style.backgroundImage = `url(${savedPic})`;
+    profileIcon.style.backgroundSize = 'cover';
+    profileIcon.textContent = '';
   }
 }
 </script>
