@@ -286,7 +286,18 @@ function loadOrderView() {
       <button>Accept / Decline</button>
     </div>`;
   initMap();
+
 }
+
+import { createClient } from '@supabase/supabase-js'
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+
+let { data: Drivers, error } = await supabase
+  .from('Drivers')
+  .select('verification')
 
 // ================== Load driver account with profile icon ==================
 function loadDriverAccount() {
