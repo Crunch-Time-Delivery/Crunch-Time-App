@@ -312,6 +312,33 @@ function submitCardForm(){
 
 /* INIT */
 recalc();
+
+
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY; //  actual key
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Fetch vendor data
+async function fetchUser() {
+  const { data: user, error } = await supabase
+    .from('User')
+    .select(`
+  cardType,
+  cardNumber,
+ cvv,
+ securityCode
+
+`);
+
+  if (error) {
+    console.error('Error fetching user:', error);
+    return null;
+  }
+  return User;
+
+  }
+  
+
 </script>
 
 </body>

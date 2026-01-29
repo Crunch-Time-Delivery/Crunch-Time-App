@@ -202,7 +202,7 @@ body {
             </div>
 
             <div>
-                <strong>Your Driver</strong><br>
+                <strong id="loadDriverName">Your Driver</strong><br>
                 <small>On the way</small>
             </div>
 
@@ -218,7 +218,7 @@ body {
 
         <div class="info">
             <div>
-                <div class="badge">CAA5567</div>
+                <div class="badge" id="loadDriverPlateNo">CAA5567</div>
                 <div class="rating">4.8 ⭐</div>
             </div>
 
@@ -383,9 +383,55 @@ async function sendSmsToUser(userId, message, callback = null) {
   }
 }
 
-  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = process.env.SUPABASE_KEY; // Actual key
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY; //  actual key
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Fetch vendor data
+async function fetchDrivers() {
+  const { data: drivers, error } = await supabase
+    .from('Drivers')
+    .select(`
+ driver_name,
+  plate_no
+
+
+`);
+
+  if (error) {
+    console.error('Error fetching driver:', error);
+    return null;
+  }
+  return Drivers;
+
+  
+}
+async function loadDriverPlateNo() {
+  const { data, error } = await supabase
+    .from('Drivers')
+    .select('plate_no')
+    .limit(1)  // Assuming you want the first driver, or modify as needed
+    .single();
+
+  if (error || !data) {
+    document.getElementById('driverPlateNo').innerText = 'No driver data';
+  } else {
+    document.getElementById('driverPlateNo').innerText = data.plate_no;
+  }
+  async function loadDriverName() {
+  const { data, error } = await supabase
+    .from('Drivers')
+    .select('driver_name')
+    .limit(1)  // Assuming you want the first driver, or modify as needed
+    .single();
+
+  if (error || !data) {
+    document.getElementById('driver_name').innerText = 'No driver data';
+  } else {
+    document.getElementById('driver_name').innerText = data.plate_no;
+  }
+}
 
 
 function goBack() {
@@ -413,7 +459,7 @@ function showTab(tab) {
     } else {
         document.getElementById("tabInfo").classList.add("active");
     }
-}
+}}
 </script>
 
 </body>

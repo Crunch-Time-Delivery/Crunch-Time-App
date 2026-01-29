@@ -31,9 +31,9 @@ async function fetchVendor() {
 }
 
 // Fetch Drivers data
-async function fetchDrivers() {
-  const { data: Drivers, error } = await supabase
-    .from('Drivers')
+async function fetchVendor() {
+  const { data: vendor, error } = await supabase
+    .from('vendor')
     .select(`
       id,
       vendor,
@@ -54,7 +54,7 @@ async function fetchDrivers() {
     console.error('Error fetching drivers:', error);
     return null;
   }
-  return Drivers;
+  return vendor;
 }
 
 // Fetch Admin data
