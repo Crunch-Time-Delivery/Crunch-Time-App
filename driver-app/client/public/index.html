@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Driver App</title>
 
+<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
 <style>
@@ -13,7 +14,6 @@ body {
   margin: 0;
   background: #f4f4f4;
 }
-
 /* HEADER */
 .header {
   display: flex;
@@ -68,62 +68,10 @@ body {
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0,0,0,.1);
 }
-.payment-card {
-  border: 1px solid #e0e0e0;
-  padding: 14px;
-  border-radius: 10px;
-  margin-bottom: 12px;
-  background: #fafafa;
-}
-.payment-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-.payment-total {
-  font-size: 18px;
-  font-weight: bold;
-  color: #d32f2f;
-  margin-top: 15px;
-}
-.payfast-box {
-  margin-top: 20px;
-  padding: 15px;
-  background: #f5f5f5;
-  border-radius: 10px;
-}
-.payfast-btn {
-  width: 100%;
-  margin-top: 15px;
-  padding: 14px;
-  background: #f0040c;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-}
 .loading, .empty-state {
   text-align: center;
   padding: 40px;
   color: #777;
-}
-.card {
-  border: 1px solid #e0e0e0;
-  padding: 14px;
-  border-radius: 10px;
-  margin-bottom: 12px;
-  background: #fafafa;
-}
-.row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.total {
-  font-weight: bold;
-  margin-top: 10px;
 }
 #map {
   width: 100%;
@@ -131,70 +79,9 @@ body {
   margin-top: 10px;
   border-radius: 8px;
 }
- h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  .card {
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    max-width: 400px;
-    margin: 0 auto;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    text-align: center;
-  }
-
-  .profile-pic-container {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 15px;
-  }
-
-  .profile-pic-container img {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 3px solid #2196F3;
-  }
-
-  .upload-btn {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    background: #2196F3;
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    cursor: pointer;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .card .row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-  }
-
-  .card .row:last-child {
-    border-bottom: none;
-  }
-
-  input[type="file"] {
-    display: none;
-  }
+/* Additional styles for profile, buttons, notification, etc., can be added as needed */
 </style>
 </head>
-
 <body>
 
 <div id="contentArea">
@@ -221,8 +108,7 @@ body {
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q"></script>
 
 <script>
-
-// ================= DROPDOWN MENU =================
+// ================= DROPDOWN MENU TOGGLING =================
 document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menuContainer');
   const menuButton = document.getElementById('menuButton');
@@ -232,13 +118,15 @@ document.addEventListener('DOMContentLoaded', () => {
     e.stopPropagation();
     menuContainer.classList.toggle('show');
   });
-
-  dropdown.addEventListener('click', (e) => e.stopPropagation());
-  document.addEventListener('click', () => menuContainer.classList.remove('show'));
-
-  dropdown.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => menuContainer.classList.remove('show'));
+  document.addEventListener('click', () => {
+    menuContainer.classList.remove('show');
   });
+  dropdown.addEventListener('click', (e) => e.stopPropagation());
+
+  // Bind menu links
+  document.getElementById('orderViewLink').onclick = e => { e.preventDefault(); loadOrderView(); };
+  document.getElementById('driverAccountLink').onclick = e => { e.preventDefault(); loadDriverAccount(); };
+  document.getElementById('driverHistoryPayment').onclick = e => { e.preventDefault(); loadDriverHistoryPayment(); };
 });
 
 // ================= SMS NOTIFICATIONS =================
@@ -300,7 +188,7 @@ function loadMainPage() {
   `;
 }
 
-// DRIVER PAYMENT HISTORY
+// ================= Load Payment History =================
 async function loadDriverHistoryPayment() {
   const container = document.getElementById('innerContent');
   container.innerHTML = `<div class="loading">Loading payment history…</div>`;
@@ -311,7 +199,10 @@ async function loadDriverHistoryPayment() {
     const payments = data?.payments || [];
     let total = 0;
     let html = `<h1>Payment History</h1>`;
-    if (!payments.length) { container.innerHTML = `<h1>Payment History</h1><div class="empty-state">No payment history available.</div><a href="#" onclick="loadMainPage()">Back</a>`; return; }
+    if (!payments.length) {
+      container.innerHTML = `<h1>Payment History</h1><div class="empty-state">No payment history available.</div><a href="#" onclick="loadMainPage()">Back</a>`;
+      return;
+    }
     payments.forEach(p => {
       const amount = Number(p.amount) || 0; total += amount;
       html += `<div class="payment-card">
@@ -328,19 +219,18 @@ async function loadDriverHistoryPayment() {
         <label style="margin-left:15px"><input type="radio" name="paymethod" value="eft"> Instant EFT</label>
         <button class="payfast-btn" id="payFastBtn">Pay with PayFast</button>
         <form id="payFastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
-          <input type="hidden" name="merchant_id" value="10000100">
-          <input type="hidden" name="merchant_key" value="46f0cd694581a">
-          <input type="hidden" name="item_name" value="Driver Payout">
-          <input type="hidden" name="amount" value="${total.toFixed(2)}">
-          <input type="hidden" name="payment_method" id="pfMethod">
-          <input type="hidden" name="m_payment_id" value="DRIVER_${Date.now()}">
-          <input type="hidden" name="return_url" value="http://127.0.0.1:5501/success.html">
-          <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/dashboard.html">
-          <input type="hidden" name="notify_url" value="http://127.0.0.1:5501/payfast_notify.php">
+          <input type="hidden" name="merchant_id" value="10000100" />
+          <input type="hidden" name="merchant_key" value="46f0cd694581a" />
+          <input type="hidden" name="item_name" value="Driver Payout" />
+          <input type="hidden" name="amount" value="${total.toFixed(2)}" />
+          <input type="hidden" name="payment_method" id="pfMethod" />
+          <input type="hidden" name="m_payment_id" value="DRIVER_${Date.now()}" />
+          <input type="hidden" name="return_url" value="http://127.0.0.1:5501/success.html" />
+          <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/dashboard.html" />
+          <input type="hidden" name="notify_url" value="http://127.0.0.1:5501/payfast_notify.php" />
         </form>
       </div>
       <a href="#" onclick="loadMainPage()" style="display:block;margin-top:20px;">Back</a>`;
-    container.innerHTML = html;
     document.getElementById('payFastBtn').onclick = () => {
       const method = document.querySelector("input[name='paymethod']:checked").value;
       document.getElementById('pfMethod').value = method;
@@ -350,35 +240,25 @@ async function loadDriverHistoryPayment() {
     console.error(err);
     container.innerHTML = `<h1>Payment History</h1><p style="color:red">Failed to load payment history.</p><a href="#" onclick="loadMainPage()">Back</a>`;
   }
-  const payfast = require('@payfast/core');
-// Your actual merchant_id and passphrase
-const merchantId = "10004002";
-const passphrase = "payfast";
-
-// Example: Get weekly history (adjust date as needed)
-async function getdailyHistory() {
-  try {
-    const response = await payfast.transactions.daily({
-      "date": "2025-01-15",
-      "version": "v1",
-      "timestamp": new Date().toISOString(),
-      "passphrase": passphrase,
-      "merchant-id": merchantId
-    });
-    console.log(response); // Process the returned data (often CSV/JSON)
-  } catch (error) {
-    console.error("Error fetching history:", error);
-  }
 }
 
-getDailyHistory();
-
-}
-
-// ORDER VIEW
+// ================= Order View =================
 function loadOrderView() {
   const container = document.getElementById('innerContent');
-  const order = { id:'ORD-10045', customer:'John Smith', verification:'482913', date:'2026-01-21', pickup:'Pizza Palace, Cape Town', dropoff:'12 Long Street, Cape Town', total:245.00, items:[{ name:'Large Pizza', qty:1, price:120},{name:'Chicken Wings', qty:2, price:45},{name:'Cooldrink', qty:1, price:35 }] };
+  const order = {
+    id: 'ORD-10045',
+    customer: 'John Smith',
+    verification: '482913',
+    date: '2026-01-21',
+    pickup: 'Pizza Palace, Cape Town',
+    dropoff: '12 Long Street, Cape Town',
+    total: 245.00,
+    items: [
+      { name: 'Large Pizza', qty: 1, price: 120 },
+      { name: 'Chicken Wings', qty: 2, price: 45 },
+      { name: 'Cooldrink', qty: 1, price: 35 }
+    ]
+  };
   container.innerHTML = `
     <h2>Order View</h2>
     <div class="card">
@@ -389,7 +269,7 @@ function loadOrderView() {
     </div>
     <div class="card">
       <h3>Order Items</h3>
-      ${order.items.map(i=>`<div class="row"><span>${i.name} (x${i.qty})</span><span>R ${(i.qty*i.price).toFixed(2)}</span></div>`).join('')}
+      ${order.items.map(i => `<div class="row"><span>${i.name} (x${i.qty})</span><span>R ${(i.qty * i.price).toFixed(2)}</span></div>`).join('')}
       <div class="total">Total: R ${order.total.toFixed(2)}</div>
     </div>
     <div class="card">
@@ -397,30 +277,29 @@ function loadOrderView() {
       <p><strong>Pick-up:</strong> ${order.pickup}</p>
       <p><strong>Drop-off:</strong> ${order.dropoff}</p>
       <div id="map"></div>
-       <button >Accept / Decline</button>
+      <button>Accept / Decline</button>
     </div>`;
   initMap();
 }
 
-//driver account
+// ================= DRIVER ACCOUNT =================
 function loadDriverAccount() {
   const container = document.getElementById('innerContent');
-  const driver = { 
-    name:'John', 
-    surname:'Doe', 
-    plate:'CA 456-789', 
-    contact:'072 345 6789', 
-    email:'johndoe.driver@email.com',
-    profilePic: 'https://via.placeholder.com/120' // default placeholder
+  const driver = {
+    name: 'John',
+    surname: 'Doe',
+    plate: 'CA 456-789',
+    contact: '072 345 6789',
+    email: 'johndoe.driver@email.com',
+    profilePic: 'https://via.placeholder.com/120'
   };
-
   container.innerHTML = `
     <h2>Driver Account</h2>
     <div class="card">
       <div class="profile-pic-container">
-        <img id="driverPic" src="${driver.profilePic}" alt="Profile Picture">
+        <img id="driverPic" src="${driver.profilePic}" alt="Profile Picture" />
         <label class="upload-btn" for="picUpload">+</label>
-        <input type="file" id="picUpload" accept="image/*">
+        <input type="file" id="picUpload" accept="image/*" />
       </div>
       <div class="row"><strong>Name</strong><span>${driver.name} ${driver.surname}</span></div>
       <div class="row"><strong>Plate No</strong><span>${driver.plate}</span></div>
@@ -428,151 +307,188 @@ function loadDriverAccount() {
       <div class="row"><strong>Email</strong><span>${driver.email}</span></div>
     </div>
   `;
-
+  // Profile picture upload handler
   const picInput = document.getElementById('picUpload');
   const picImg = document.getElementById('driverPic');
   picInput.addEventListener('change', (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = (e) => {
       picImg.src = e.target.result;
       localStorage.setItem('driverProfilePic', e.target.result);
     };
     reader.readAsDataURL(file);
   });
-
+  // Load saved profile pic if exists
   const savedPic = localStorage.getItem('driverProfilePic');
   if (savedPic) picImg.src = savedPic;
 }
 
-// ================= MAP =================
+// ================= MAP FUNCTION =================
 function initMap() {
   const pickup = { lat: -33.9249, lng: 18.4241 }; // Restaurant
   const dropoff = { lat: -33.9289, lng: 18.4174 }; // Customer
   const map = new google.maps.Map(document.getElementById("map"), { zoom: 13, center: pickup });
   new google.maps.Marker({ position: pickup, map, label: 'P', title: 'Restaurant Pickup' });
   new google.maps.Marker({ position: dropoff, map, label: 'D', title: 'Customer Drop-off' });
-
- infoWindow, userMarker;
-
-function initMap() {
-    // Initialize the map centered at a default location (e.g., Mountain View, CA)
-    map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 37.4221, lng: -122.0841 },
-        zoom: 15,
-    });
-    infoWindow = new google.maps.InfoWindow();
-
-    // Check if the browser supports Geolocation
-    if (navigator.geolocation) {
-        // Use the watchPosition method for continuous tracking
-        navigator.geolocation.watchPosition(
-            (position) => {
-                const pos = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                };
-
-                // Add or update a marker at the user's current position
-                if (!userMarker) {
-                    userMarker = new google.maps.Marker({
-                        position: pos,
-                        map: map,
-                        title: "You are here!",
-                    });
-                } else {
-                    userMarker.setPosition(pos);
-                }
-
-                // Center the map on the user's position
-                map.setCenter(pos);
-            },
-            () => {
-                // Handle the case where the user denies location permission
-                handleLocationError(true, infoWindow, map.getCenter());
-            },
-            { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 } // Options for better accuracy
-        );
-    } else {
-        // Browser doesn't support Geolocation
-        handleLocationError(false, infoWindow, map.getCenter());
-    }
-
-    const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseAnonKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-async function saveLocation(userId, lat, lng) {
-  const { data, error } = await supabase
-    .from('locations')
-    .upsert(
-      {
-        user_id: userId,
-        latitude: lat,
-        longitude: lng,
-        location: `POINT(${lng} ${lat})`,
-        updated_at: new Date()
-      },
-      { onConflict: 'user_id' }
-    )
-    .select();
-
-  if (error) {
-    console.error('Error saving location:', error.message);
-  } else {
-    console.log('Location saved:', data);
-  }
-}
-async function getUserLocation(userId) {
-  const { data, error } = await supabase
-    .from('locations')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching location:', error.message);
-    return null;
-  }
-
-  return data;
-}
-function watchUserLocation(userId) {
-  if (!navigator.geolocation) return;
-
-  navigator.geolocation.watchPosition((pos) => {
-    saveLocation(
-      userId,
-      pos.coords.latitude,
-      pos.coords.longitude
-    );
-  });
-}
-
-
-function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+  
+  let infoWindow, userMarker;
+  // Initialize map with user location tracking
+  function handleLocationError(browserHasGeolocation, infoWindow, pos) {
     infoWindow.setPosition(pos);
     infoWindow.setContent(
-        browserHasGeolocation
-            ? "Error: The Geolocation service failed."
-            : "Error: Your browser doesn't support geolocation."
+      browserHasGeolocation
+        ? "Error: The Geolocation service failed."
+        : "Error: Your browser doesn't support geolocation."
     );
     infoWindow.open(map);
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+      (position) => {
+        const pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        if (!userMarker) {
+          userMarker = new google.maps.Marker({ position: pos, map, title: "You are here!" });
+        } else {
+          userMarker.setPosition(pos);
+        }
+        map.setCenter(pos);
+        // Optionally, save location to your database here
+      },
+      () => handleLocationError(true, new google.maps.InfoWindow(), map.getCenter()),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+    );
+  } else {
+    handleLocationError(false, new google.maps.InfoWindow(), map.getCenter());
+  }
 }
 
+// ================== Load content functions ==================
+function loadOrderView() {
+  const container = document.getElementById('innerContent');
+  const order = {
+    id: 'ORD-10045',
+    customer: 'John Smith',
+    verification: '482913',
+    date: '2026-01-21',
+    pickup: 'Pizza Palace, Cape Town',
+    dropoff: '12 Long Street, Cape Town',
+    total: 245.00,
+    items: [
+      { name: 'Large Pizza', qty: 1, price: 120 },
+      { name: 'Chicken Wings', qty: 2, price: 45 },
+      { name: 'Cooldrink', qty: 1, price: 35 }
+    ]
+  };
+  container.innerHTML = `
+    <h2>Order View</h2>
+    <div class="card">
+      <div class="row"><strong>Order ID</strong><span>${order.id}</span></div>
+      <div class="row"><strong>Customer</strong><span>${order.customer}</span></div>
+      <div class="row"><strong>Verification Code</strong><span>${order.verification}</span></div>
+      <div class="row"><strong>Order Date</strong><span>${order.date}</span></div>
+    </div>
+    <div class="card">
+      <h3>Order Items</h3>
+      ${order.items.map(i => `<div class="row"><span>${i.name} (x${i.qty})</span><span>R ${(i.qty * i.price).toFixed(2)}</span></div>`).join('')}
+      <div class="total">Total: R ${order.total.toFixed(2)}</div>
+    </div>
+    <div class="card">
+      <h3>Delivery Route</h3>
+      <p><strong>Pick-up:</strong> ${order.pickup}</p>
+      <p><strong>Drop-off:</strong> ${order.dropoff}</p>
+      <div id="map"></div>
+      <button>Accept / Decline</button>
+    </div>`;
+  initMap();
 }
 
-// ================= MENU EVENT BINDING =================
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('orderViewLink').onclick = e => { e.preventDefault(); loadOrderView(); };
-  document.getElementById('driverAccountLink').onclick = e => { e.preventDefault(); loadDriverAccount(); };
-  document.getElementById('driverHistoryPayment').onclick = e => { e.preventDefault(); loadDriverHistoryPayment(); };
-});
+function loadDriverAccount() {
+  const container = document.getElementById('innerContent');
+  const driver = {
+    name: 'John',
+    surname: 'Doe',
+    plate: 'CA 456-789',
+    contact: '072 345 6789',
+    email: 'johndoe.driver@email.com',
+    profilePic: 'https://via.placeholder.com/120'
+  };
+  container.innerHTML = `
+    <h2>Driver Account</h2>
+    <div class="card">
+      <div class="profile-pic-container">
+        <img id="driverPic" src="${driver.profilePic}" alt="Profile Picture" />
+        <label class="upload-btn" for="picUpload">+</label>
+        <input type="file" id="picUpload" accept="image/*" />
+      </div>
+      <div class="row"><strong>Name</strong><span>${driver.name} ${driver.surname}</span></div>
+      <div class="row"><strong>Plate No</strong><span>${driver.plate}</span></div>
+      <div class="row"><strong>Contact</strong><span>${driver.contact}</span></div>
+      <div class="row"><strong>Email</strong><span>${driver.email}</span></div>
+    </div>`;
+  // Profile pic upload handler
+  const picInput = document.getElementById('picUpload');
+  const picImg = document.getElementById('driverPic');
+  picInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      picImg.src = e.target.result;
+      localStorage.setItem('driverProfilePic', e.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+  const savedPic = localStorage.getItem('driverProfilePic');
+  if (savedPic) picImg.src = savedPic;
 }
 
+// ================= Map Function =================
+function initMap() {
+  const pickup = { lat: -33.9249, lng: 18.4241 }; // Restaurant
+  const dropoff = { lat: -33.9289, lng: 18.4174 }; // Customer
+  const map = new google.maps.Map(document.getElementById("map"), { zoom: 13, center: pickup });
+  new google.maps.Marker({ position: pickup, map, label: 'P', title: 'Restaurant Pickup' });
+  new google.maps.Marker({ position: dropoff, map, label: 'D', title: 'Customer Drop-off' });
+  
+  let infoWindow, userMarker;
+  function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+    infoWindow.setPosition(pos);
+    infoWindow.setContent(
+      browserHasGeolocation
+        ? "Error: The Geolocation service failed."
+        : "Error: Your browser doesn't support geolocation."
+    );
+    infoWindow.open(map);
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+      (position) => {
+        const pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        if (!userMarker) {
+          userMarker = new google.maps.Marker({ position: pos, map, title: "You are here!" });
+        } else {
+          userMarker.setPosition(pos);
+        }
+        map.setCenter(pos);
+        // Save location if needed
+      },
+      () => handleLocationError(true, new google.maps.InfoWindow(), map.getCenter()),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+    );
+  } else {
+    handleLocationError(false, new google.maps.InfoWindow(), map.getCenter());
+  }
+}
 </script>
-
 </body>
 </html>
