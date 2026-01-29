@@ -279,7 +279,7 @@ const restaurantData = {
       { name: "Somma Special 2", price: 35 }
     ]
   },
-   " La Infernos Pizzeria (Kromboom')               ": {
+   " La Infernos Pizzeria (Kromboom')   ": {
     image: "Images/wood-pizza.png      ",
     map: "https://www.google.com/maps/place/Rondebosch+East+-+La+Inferno%E2%80%99s+Pizzeria+(Halaal)/@-33.9742634,18.5045007,17z/data=!3m1!4b1!4m6!3m5!1s0x1dcc43e014651c57:0x266ac0033409e680!8m2!3d-33.9742679!4d18.507081!16s%2Fg%2F11pz4_0_td?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
     menu: [
@@ -287,7 +287,7 @@ const restaurantData = {
       { name: "Pizza Special 2", price: 113}
     ]
   },
-    " Romans Pizza               ": {
+    " Romans Pizza  ": {
     image: " Images/roman_pizza.jpg     ",
     map: "https://www.google.com/maps/place/Roman's+Pizza+Rondebosch/@-33.9605544,18.4655682,17z/data=!3m1!4b1!4m6!3m5!1s0x1dcc5d9ae328acff:0xa9bce33e26dfa3dc!8m2!3d-33.9605589!4d18.4701763!16s%2Fg%2F11wj462q3j?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
     menu: [
@@ -295,7 +295,7 @@ const restaurantData = {
       { name: "Pizza Special 2", price: 135 }
     ]
   },
-    "  Debonairs Pizza              ": {
+    "  Debonairs Pizza  ": {
     image: " Images/download (1).png   ",
     map: "https://www.google.com/maps/place/Debonairs+Pizza+Rondebosch/@-33.9617765,18.4676363,17z/data=!3m1!4b1!4m6!3m5!1s0x1dcc5d26650ad4fd:0xcba5cb41b697c723!8m2!3d-33.961781!4d18.4702166!16s%2Fg%2F1tly67dl?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
     menu: [
@@ -306,7 +306,7 @@ const restaurantData = {
 };
 
 const params = new URLSearchParams(window.location.search);
-const restaurantName = params.get("name") || "KFC Parow";
+const restaurantName = params.get("name") ;
 const restaurant = restaurantData[restaurantName];
 
 document.getElementById("restaurantName").innerText = restaurantName;
