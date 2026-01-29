@@ -14,7 +14,7 @@ body {
   font-family: Arial, sans-serif;
   background: #f4f6f8;
 }
-/* ... your existing styles ... */
+/* Your existing styles... */
 .top-bar {
   background: #ef0606;
   color: #fff;
@@ -88,7 +88,6 @@ body {
 
 <div class="top-bar" id="topBar">
   <div>AI Chat Bot 🤖</div>
-  <!-- Remove data-attributes; initialize via JS -->
   <div id="g_id_onload"></div>
   <div id="googleSignInButton" style="margin-left: 10px;"></div>
 </div>
@@ -102,26 +101,23 @@ body {
 </div>
 
 <script>
-// Replace with your actual Google OAuth Client ID
-const CLIENT_ID = 'gen-lang-client-0906955021';
+// Your Client ID
+const CLIENT_ID = '866867707128-mq963ediu3mijf16r27c8e1fgnmp2h3f';
 
-// Initialize Google Sign-In on window load
-window.onload = function() {
-  // Initialize the Google Sign-In SDK
+// Initialize Google Sign-In
+window.onload = () => {
   google.accounts.id.initialize({
     client_id: CLIENT_ID,
     callback: handleGoogleSignIn
   });
-  // Render the Google Sign-In button
   google.accounts.id.renderButton(
     document.getElementById("googleSignInButton"),
     { theme: "outline", size: "large" }
   );
 };
 
-// Handle Google Sign-In response
+// Handle sign-in success
 function handleGoogleSignIn(response) {
-  // Decode ID token to get user info
   const credential = response.credential;
   const payload = parseJwt(credential);
   window.currentUser = {
@@ -133,7 +129,7 @@ function handleGoogleSignIn(response) {
   addMessage("Logged in successfully ✅", "bot");
 }
 
-// Utility to decode JWT token
+// Decode JWT
 function parseJwt(token) {
   const base64Url = token.split('.')[1];
   const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -146,7 +142,7 @@ function parseJwt(token) {
   return JSON.parse(jsonPayload);
 }
 
-// Update UI after login
+// UI after login
 function updateUIAfterLogin() {
   document.getElementById("topBar").innerHTML = `
     <div>Welcome, ${currentUser.name} 👋</div>
@@ -160,12 +156,12 @@ function updateUIAfterLogin() {
   document.getElementById("messageInput").placeholder = "Type your message…";
 }
 
-// Logout function
+// Logout
 function logout() {
   location.reload();
 }
 
-// Chat functions (unchanged)
+// Chat functions
 function sendMessage() {
   const input = document.getElementById("messageInput");
   const text = input.value.trim();
@@ -195,5 +191,3 @@ function addMessage(text, type) {
 
 </body>
 </html>
-
-
