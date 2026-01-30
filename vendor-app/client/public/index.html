@@ -218,6 +218,28 @@ function showNotificationMessage(text, color = '#333') {
   setTimeout(() => box.remove(), 4000);
 }
 
+// Function to trigger Twilio notification (assumes backend endpoint `/send-twilio`)
+function sendTwilioNotification(phoneNumber, message) {
+  fetch('/send-twilio', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ phoneNumber, message })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showNotificationMessage('Notification sent successfully!', 'green');
+    } else {
+      showNotificationMessage('Failed to send notification.', 'red');
+    }
+  })
+  .catch(() => {
+    showNotificationMessage('Error sending notification.', 'red');
+  });
+}
+
 /**
  * Send SMS via backend /notify/sms with retries & timeout
  * @param {string} to - Phone number (E.164 format)

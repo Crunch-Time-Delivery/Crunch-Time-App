@@ -40,7 +40,7 @@ form {
   gap: 10px;
   margin-top: 12px;
 }
-input {
+input[type="text"] {
   flex: 1;
   padding: 10px;
   font-size: 16px;
@@ -70,7 +70,6 @@ button {
 }
 </style>
 </head>
-
 <body>
 
 <div class="search-location-container">
@@ -82,6 +81,8 @@ button {
   <!-- ADDRESS SEARCH -->
   <form id="locationForm">
     <input type="text" id="locationInput" placeholder="Enter address or city" required>
+    <!-- Hidden input to store location data -->
+    <input type="hidden" id="user_location_id" name="user_location_id" />
     <button type="submit" id="setLocationBtn">Set Location</button>
   </form>
 
@@ -107,24 +108,21 @@ button {
 let map, marker, geocoder;
 const DEFAULT_POS = { lat: -33.9249, lng: 18.4241 }; // Cape Town
 
-// Initialize the map
 function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
     center: DEFAULT_POS,
     zoom: 13
   });
-
   marker = new google.maps.Marker({
     map: map,
     position: DEFAULT_POS,
     draggable: true
   });
-
   geocoder = new google.maps.Geocoder();
 
   loadSavedLocation();
 
-  // Address search form
+  // Search form submit
   document.getElementById("locationForm").addEventListener("submit", e => {
     e.preventDefault();
     const address = document.getElementById("locationInput").value.trim();
@@ -141,11 +139,13 @@ function initMap() {
       };
       saveLocation(pos, result.formatted_address);
       updateMap(pos, result.formatted_address);
+      // Save location data to hidden input
+      document.getElementById("user_location_id").value = pos.lat + "," + pos.lng;
       alert("Location set and saved!");
     });
   });
 
-  // Use my current location
+  // Use current location
   document.getElementById("locateBtn").addEventListener("click", () => {
     if (!navigator.geolocation) {
       alert("Geolocation not supported");
@@ -163,6 +163,8 @@ function initMap() {
             : "My Location";
         saveLocation(pos, address);
         updateMap(pos, address);
+        // Save to hidden input
+        document.getElementById("user_location_id").value = pos.lat + "," + pos.lng;
       });
     }, () => alert("Permission denied or error"));
   });
@@ -174,10 +176,11 @@ function initMap() {
     updateMap(DEFAULT_POS, "");
     document.getElementById("locationInput").value = "";
     document.getElementById("coordinates").innerText = "No location selected.";
+    // Clear hidden input
+    document.getElementById("user_location_id").value = "";
   });
 }
 
-// Map update
 function updateMap(pos, address) {
   map.setCenter(pos);
   map.setZoom(15);
@@ -187,13 +190,11 @@ function updateMap(pos, address) {
   if (address) document.getElementById("locationInput").value = address;
 }
 
-// Save location to localStorage
 function saveLocation(pos, address) {
   localStorage.setItem("deliveryCoords", JSON.stringify(pos));
   localStorage.setItem("deliveryAddress", address);
 }
 
-// Load saved location from localStorage
 function loadSavedLocation() {
   const coordsStr = localStorage.getItem("deliveryCoords");
   const address = localStorage.getItem("deliveryAddress");

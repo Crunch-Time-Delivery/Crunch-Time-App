@@ -97,7 +97,11 @@ body {
     <p>Select an option from the menu.</p>
   </div>
 </div>
+<!-- Add this hidden input inside your form -->
+<input type="hidden" id="user_location_id" name="user_location_id" />
 
+<!-- When setting a location (after geocoding or geolocation), do this: -->
+document.getElementById("user_location_id").value = pos.lat + "," + pos.lng;
 <!-- Google Maps API -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q"></script>
 
@@ -130,8 +134,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ================= SMS NOTIFICATIONS =================
 let isSendingSMS = false;
+
 function showNotificationMessage(text, color = '#333') {
   let box = document.getElementById('notificationMessage');
+
   if (!box) {
     box = document.createElement('div');
     box.id = 'notificationMessage';
@@ -146,9 +152,33 @@ function showNotificationMessage(text, color = '#333') {
     box.style.zIndex = '9999';
     document.body.appendChild(box);
   }
+
   box.style.backgroundColor = color;
   box.innerText = text;
+
   setTimeout(() => box.remove(), 4000);
+}
+
+// Function to trigger Twilio notification (assumes backend endpoint `/send-twilio`)
+function sendTwilioNotification(phoneNumber, message) {
+  fetch('/send-twilio', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ phoneNumber, message })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showNotificationMessage('Notification sent successfully!', 'green');
+    } else {
+      showNotificationMessage('Failed to send notification.', 'red');
+    }
+  })
+  .catch(() => {
+    showNotificationMessage('Error sending notification.', 'red');
+  });
 }
 
 // ================= Map Function =================
@@ -156,9 +186,14 @@ function initMap() {
   const pickup = { lat: -33.9249, lng: 18.4241 }; // Restaurant
   const dropoff = { lat: -33.9289, lng: 18.4174 }; // Customer
   const map = new google.maps.Map(document.getElementById("map"), { zoom: 13, center: pickup });
-  new google.maps.Marker({ position: pickup, map, label: 'P', title: 'Restaurant Pickup' });
-  new google.maps.Marker({ position: dropoff, map, label: 'D', title: 'Customer Drop-off' });
-  
+  new google.maps.Marker({ position: pickup, map, label: 'Pickup Point', title: 'Restaurant Pickup' });
+  new google.maps.Marker({ position: dropoff, map, label: 'Drop-off Point', title: 'Customer Drop-off' });
+
+    // Save the position string in hidden input
+      document.getElementById("user_location_id").value = pos.lat + "," + pos.lng;
+      // Update map and marker
+      updateMap(pos, result.formatted_address);
+
   let infoWindow, userMarker;
   function handleLocationError(browserHasGeolocation, infoWindow, pos) {
     infoWindow.setPosition(pos);
@@ -198,6 +233,8 @@ function initMap() {
     handleLocationError(false, new google.maps.InfoWindow(), map.getCenter());
   }
 }
+
+
 
 // ================== Load Content Functions ==================
 function loadMainPage() {

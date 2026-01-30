@@ -268,6 +268,7 @@ let isSendingSMS = false;
  * @param {string} text
  * @param {string} color
  */
+// Function to show UI notification
 function showNotificationMessage(text, color = '#333') {
   let box = document.getElementById('notificationMessage');
 
@@ -290,6 +291,28 @@ function showNotificationMessage(text, color = '#333') {
   box.innerText = text;
 
   setTimeout(() => box.remove(), 4000);
+}
+
+// Function to trigger Twilio notification (assumes backend endpoint `/send-twilio`)
+function sendTwilioNotification(phoneNumber, message) {
+  fetch('/send-twilio', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ phoneNumber, message })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showNotificationMessage('Notification sent successfully!', 'green');
+    } else {
+      showNotificationMessage('Failed to send notification.', 'red');
+    }
+  })
+  .catch(() => {
+    showNotificationMessage('Error sending notification.', 'red');
+  });
 }
 
 /**
