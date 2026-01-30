@@ -520,28 +520,40 @@
 
   let isAuthenticated = false;
 
-  // ================== UTILITY FUNCTIONS ==================
-  function sendEmail(to, subject, body) {
-    alert(`Simulated Email to ${to}:\nSubject: ${subject}\n${body}`);
-  }
-  function sendNotification(to, message) {
-    alert(`Simulated Notification to ${to}:\n${message}`);
-  }
+// Function to show notification message in the UI
 function showNotificationMessage(message, color='#4CAF50') {
   const notif = document.getElementById('notification');
-  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
-  notif.style.display = 'block';
+  if (!notif) {
+    // Create notification container if it doesn't exist
+    const container = document.createElement('div');
+    container.id = 'notification';
+    container.style.position = 'fixed';
+    container.style.bottom = '20px';
+    container.style.left = '50%';
+    container.style.transform = 'translateX(-50%)';
+    container.style.padding = '10px 20px';
+    container.style.borderRadius = '4px';
+    container.style.backgroundColor = color;
+    container.style.color = '#fff';
+    container.style.fontSize = '14px';
+    container.style.zIndex = '9999';
+    document.body.appendChild(container);
+    notif = container;
+  } else {
+    // Update existing notification
+    notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
+    notif.style.display = 'block';
+  }
 
-  // Hide after 3 seconds
+  // Auto-hide after 3 seconds
   setTimeout(() => {
     notif.style.display = 'none';
   }, 3000);
 }
 
+// Function to send SMS notification via backend API
 function sendTwilioNotification(to, message) {
-  // Show sending message
   showNotificationMessage('Sending notification...');
-  
   fetch('/notify/sms', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -138,20 +138,23 @@
   </div>
 </div>
 
+<!-- Add Order -->
+<div id="section-addOrder" class="section" style="display:none;">
+  <h3>Add Order</h3>
+  <div class="form-container">
+    <input type="text" id="orderId" placeholder="Order ID" />
+    <input type="text" id="orderUserName" placeholder="User Name" />
+    <input type="email" id="orderUserEmail" placeholder="User Email" />
+    <input type="number" id="orderAmount" placeholder="Amount" />
 
-  <!-- Add Order -->
-  <div id="section-addOrder" class="section" style="display:none;">
-    <h3>Add Order</h3>
-    <div class="form-container">
-      <input type="text" id="orderId" placeholder="Order ID" />
-      <input type="text" id="orderUserName" placeholder="User Name" />
-      <input type="email" id="orderUserEmail" placeholder="User Email" />
-      <input type="number" id="orderAmount" placeholder="Amount" />
-      <button class="red-button" onclick="addOrder()">Save Order</button>
-    </div>
+    <!-- Additional fields for vendor info -->
+    <input type="text" id="vendorName" placeholder="Vendor Name" />
+    <input type="tel" id="vendorContact" placeholder="Vendor Contact Number" />
+    <input type="text" id="deliveryAddress" placeholder="Delivery Address" />
+
+    <button class="red-button" onclick="addOrder()">Save Order</button>
   </div>
-
- 
+</div>
 
   <!-- Payment History -->
   <div id="section-payment" class="section" style="display:none;">
@@ -335,6 +338,27 @@ async function sendSmsToUser(userId, message, callback = null) {
   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
   const supabaseKey = process.env.SUPABASE_KEY; // Actual key
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+function addOrder() {
+  const orderId = document.getElementById('orderId').value;
+  const userName = document.getElementById('orderUserName').value;
+  const userEmail = document.getElementById('orderUserEmail').value;
+  const amount = document.getElementById('orderAmount').value;
+  const vendorName = document.getElementById('vendorName').value;
+  const vendorContact = document.getElementById('vendorContact').value;
+  const deliveryAddress = document.getElementById('deliveryAddress').value;
+
+  // You can now process or save these values as needed
+  console.log({
+    orderId,
+    userName,
+    userEmail,
+    amount,
+    vendorName,
+    vendorContact,
+    deliveryAddress
+  });
+}
 
   function toggleDropdown() {
     document.getElementById('profileDropdown').classList.toggle('show');
