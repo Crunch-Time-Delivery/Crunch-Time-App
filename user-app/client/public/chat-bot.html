@@ -175,8 +175,25 @@ function sendMessage() {
   }, 900);
 }
 
-function generateRemoteAIReply(message) {
-  return `🤖 AI Response:\n\nI received your message:\n"${message}"\n\nThis is a remote-ready AI reply. Connect this to your backend to go fully live.`;
+async function generateRemoteAIReply(message) {
+  // Replace URL with your AI chatbot API endpoint
+  const apiUrl = 'https://api.otheraibot.com/getResponse';
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: message })
+    });
+    
+    const data = await response.json();
+    // Assume the API returns { reply: "..." }
+    return `🤖 AI Response:\n\n${data.reply}`;
+    
+  } catch (error) {
+    console.error('Error connecting to AI bot:', error);
+    return `🤖 Sorry, I couldn't connect to the AI bot right now.`;
+  }
 }
 
 function addMessage(text, type) {
