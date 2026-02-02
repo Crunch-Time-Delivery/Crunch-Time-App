@@ -179,6 +179,30 @@ function showNotification(message, type) {
   function generateAndSendOtp() {
     generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
     alert(`OTP sent to Email: ${driverData.email}. (OTP: ${generatedOtp})`);
+
+    // Send OTP via your backend endpoint (which uses Twilio)
+  fetch('/send-otp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      phoneNumber: driverData.contact, // or the phone number you want to send to
+      otp: generatedOtp
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(`OTP sent to ${driverData.contact}.`);
+    } else {
+      alert('Failed to send OTP.');
+    }
+  })
+  .catch(() => {
+    alert('Error sending OTP.');
+  });
+}
   }
   function showOtp() {
     document.getElementById('otpModal').style.display='flex';
