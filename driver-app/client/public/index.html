@@ -249,7 +249,7 @@ function loadMainPage() {
   `;
 }
 
-// ================= Load Payment History with Dummy PayFast Tracking =================
+// Load payment history (dummy data with real PayFast IDs)
 async function loadDriverHistoryPayment() {
   const container = document.getElementById('innerContent');
   container.innerHTML = `<div class="loading">Loading payment history…</div>`;
@@ -257,8 +257,8 @@ async function loadDriverHistoryPayment() {
   await new Promise(res => setTimeout(res, 1000));
   
   const payments = [
-    { id: 'PAY-1234', amount: 250.00, status: 'Pending' },
-    { id: 'PAY-5678', amount: 150.00, status: 'Completed' },
+    { id: 'PAYFAST-XXXXXX', amount: 250.00, status: 'Pending' },
+    { id: 'PAYFAST-YYYYYY', amount: 150.00, status: 'Completed' },
   ];
 
   let html = `<h1>Payment History</h1>`;
@@ -275,13 +275,18 @@ async function loadDriverHistoryPayment() {
   container.innerHTML = html;
 }
 
+// Function to verify payment with your backend
 function trackPayFast(paymentId) {
-  let status;
-  if (paymentId === 'PAY-1234') status = 'Pending';
-  else if (paymentId === 'PAY-5678') status = 'Completed';
-  else status = 'Unknown';
-
-  alert(`Tracking Payment ID: ${paymentId}\nStatus: ${status}`);
+  fetch('/verify-payfast', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paymentId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(`Payment ID: ${paymentId}\nStatus: ${data.status}\nDetails: ${data.details}`);
+  })
+  .catch(() => alert('Error verifying payment.'));
 }
 
 function loadOrderView() {
