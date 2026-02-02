@@ -139,6 +139,26 @@
 
   // Call the function to load the account page
   loadDriverAccount();
+
+   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey = process.env.SUPABASE_KEY; // Replace with your actual key
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+
+// Fetch Drivers
+async function loadDrivers() {
+  const { data: Drivers, error } = await supabase
+    .from('Drivers')
+    .select(`
+      id,
+      driver_name,
+      contact,
+      plate_no,
+      email
+    `);
+  document.getElementById('output').textContent = error ? 'Error: ' + error.message : JSON.stringify(Drivers, null, 2);
+}
+
 </script>
 
 </body>
