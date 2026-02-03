@@ -4,8 +4,8 @@ const twilio = require('twilio');
 
 // Initialize Twilio client with your credentials (set as environment variables)
 
-const accountSid =  'AC031642049dd74fcc581b0fd106936a4f';
-const authToken = '1447e415a2fc483bd2bfbea57451d55d';
+const accountSid =  'AC031642049dd74fcc581b0fd106936a4f ';
+const authToken = '6ecf4956b166ae86f2c62ad0f1051dd7  ';
 const client = twilio(accountSid, authToken);
 
 /*** Send SMS via Twilio
