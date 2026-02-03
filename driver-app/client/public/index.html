@@ -7,7 +7,7 @@
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
+<link rel="manifest" href="manifest.json" />
 <style>
 body {
   font-family: Arial, sans-serif;
@@ -326,6 +326,13 @@ function loadOrderView() {
       <button>Accept / Decline</button>
     </div>`;
   initMap();
+}
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(reg => console.log('Service worker registered:', reg))
+      .catch(err => console.log('Service worker registration failed:', err));
+  });
 }
 </script>
 </body>

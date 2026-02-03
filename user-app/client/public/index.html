@@ -8,7 +8,8 @@
 <!-- External CSS -->
 <link rel="stylesheet" href="assets/index.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#2196F3" />
 <!-- External JS libraries -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/js-sha256/dist/sha256.min.js"></script>
@@ -530,6 +531,13 @@ window.deleteUser = async () => {
   await supabase.from('User').delete().eq('id', userId);
   localStorage.clear();
   location.href = 'http://127.0.0.1:5501/user-app/register_home.html';
+}
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('server_worker.js')
+      .then(reg => console.log('Service Worker registered', reg))
+      .catch(err => console.log('Service Worker registration failed', err));
+  });
 }
 </script>
 <script src="smsAndEmailAPI.js"async></script>
