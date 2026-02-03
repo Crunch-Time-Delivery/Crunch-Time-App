@@ -163,9 +163,15 @@ function showNotificationMessage(text, color = '#333') {
 
   setTimeout(() => box.remove(), 4000);
 }
-
 // Function to trigger Twilio notification (assumes backend endpoint `/send-twilio`)
-function sendTwilioNotification(phoneNumber, message) {
+function sendTwilioNotification(phoneNumber, message, callback = null) {
+  if (!phoneNumber || !message) {
+    showNotificationMessage('Phone number or message missing', '#f44336');
+    return;
+  }
+  
+  showNotificationMessage('Sending notification...', '#2196F3');
+
   fetch('/send-twilio', {
     method: 'POST',
     headers: {
@@ -176,13 +182,16 @@ function sendTwilioNotification(phoneNumber, message) {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      showNotificationMessage('Notification sent successfully!', 'green');
+      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+      if (callback && typeof callback === 'function') callback(true, data);
     } else {
-      showNotificationMessage('Failed to send notification.', 'red');
+      showNotificationMessage('Failed to send notification.', '#f44336');
+      if (callback && typeof callback === 'function') callback(false, data);
     }
   })
   .catch(() => {
-    showNotificationMessage('Error sending notification.', 'red');
+    showNotificationMessage('Error sending notification.', '#f44336');
+    if (callback && typeof callback === 'function') callback(false);
   });
 }
 
