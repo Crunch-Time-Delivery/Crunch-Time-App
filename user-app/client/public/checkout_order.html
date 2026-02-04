@@ -416,8 +416,8 @@ async function fetchDrivers() {
   const { data: drivers, error } = await supabase
     .from('Drivers')
     .select(`
- driver_name,
-  plate_no
+    driver_name,
+    plate_no
 
 
 `);

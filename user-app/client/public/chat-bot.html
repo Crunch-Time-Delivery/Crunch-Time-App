@@ -175,24 +175,29 @@ function sendMessage() {
   }, 900);
 }
 
-async function generateRemoteAIReply(message) {
-  // Replace URL with your AI chatbot API endpoint
-  const apiUrl = 'https://api.otheraibot.com/getResponse';
+async function generateDeepAiResponse(message) {
+  const apiUrl = 'https://api.deepai.org/api/text-generator';
 
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: message })
+      headers: {
+        'Api-Key': 'quickstart-QUdJIGlzIGNvbWJlZC4', // public test key
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ text: message })
     });
-    
     const data = await response.json();
-    // Assume the API returns { reply: "..." }
-    return `🤖 AI Response:\n\n${data.reply}`;
-    
+
+    if (data.output) {
+      return `🤖 DeepAI:\n\n${data.output}`;
+    } else {
+      console.error('DeepAI response error:', data);
+      return `🤖 Sorry, DeepAI didn't return a valid response.`;
+    }
   } catch (error) {
-    console.error('Error connecting to AI bot:', error);
-    return `🤖 Sorry, I couldn't connect to the AI bot right now.`;
+    console.error('DeepAI API error:', error);
+    return `🤖 Sorry, I couldn't connect to DeepAI right now.`;
   }
 }
 

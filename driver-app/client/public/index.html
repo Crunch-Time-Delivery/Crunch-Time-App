@@ -101,32 +101,16 @@ body {
 <!-- Add this hidden input inside your form -->
 <input type="hidden" id="user_location_id" name="user_location_id" />
 
-<!-- Google Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q"></script>
+<!-- Google Maps API with callback -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap" async defer></script>
 
 <script>
-document.getElementById('driverAccountLink').onclick = function(e) {
-  // No need to prevent default if opening in new tab
-  // e.preventDefault();
-  // window.location.href = 'http://127.0.0.1:5501/driver-app/client/public/driver_view_account.html';
-  // You can remove this JS handler if you want default behavior
-};
-
-// ================= DROPDOWN MENU TOGGLING =================
 document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menuContainer');
   const menuButton = document.getElementById('menuButton');
   const dropdown = document.getElementById('dropdownMenu');
 
-  // For the "Driver View Account" link that opens in new tab, no JS needed.
-  // But for others, bind handlers
-
-  // Bind other menu links with correct functions
-  document.getElementById('orderViewLink').onclick = e => { e.preventDefault(); loadOrderView(); };
-  // No need to bind driverAccountLink click event if it's a direct link
-  document.getElementById('driverHistoryPayment').onclick = e => { e.preventDefault(); loadDriverHistoryPayment(); };
-
-  // Toggle menu
+  // Bind menu toggle
   menuButton.addEventListener('click', (e) => {
     e.stopPropagation();
     menuContainer.classList.toggle('show');
@@ -135,6 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
     menuContainer.classList.remove('show');
   });
   dropdown.addEventListener('click', (e) => e.stopPropagation());
+
+  // Bind other menu links
+  document.getElementById('orderViewLink').onclick = e => { e.preventDefault(); loadOrderView(); };
+  document.getElementById('driverHistoryPayment').onclick = e => { e.preventDefault(); loadDriverHistoryPayment(); };
 });
 
 // ================= SMS NOTIFICATIONS =================
@@ -196,29 +184,17 @@ function sendTwilioNotification(phoneNumber, message, callback = null) {
 }
 
 // ================= Map Function =================
+let map; // Declare map globally
+let userMarker;
+
 function initMap() {
   const pickup = { lat: -33.9249, lng: 18.4241 }; // Restaurant
   const dropoff = { lat: -33.9289, lng: 18.4174 }; // Customer
-  const map = new google.maps.Map(document.getElementById("map"), { zoom: 13, center: pickup });
+  map = new google.maps.Map(document.getElementById("map"), { zoom: 13, center: pickup });
   new google.maps.Marker({ position: pickup, map, label: 'Pickup Point', title: 'Restaurant Pickup' });
   new google.maps.Marker({ position: dropoff, map, label: 'Drop-off Point', title: 'Customer Drop-off' });
 
-  // Save the position string in hidden input
-  // Note: 'pos' and 'result' are undefined here; remove or handle accordingly
-  // document.getElementById("user_location_id").value = pos.lat + "," + pos.lng;
-  // updateMap(pos, result.formatted_address);
-
-  let infoWindow, userMarker;
-  function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-    infoWindow.setPosition(pos);
-    infoWindow.setContent(
-      browserHasGeolocation
-        ? "Error: The Geolocation service failed."
-        : "Error: Your browser doesn't support geolocation."
-    );
-    infoWindow.open(map);
-  }
-
+  // Handle geolocation
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(
       (position) => {
@@ -227,14 +203,19 @@ function initMap() {
           lng: position.coords.longitude
         };
         if (!userMarker) {
-          userMarker = new google.maps.Marker({ position: pos, map, title: "You are here!", icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 6,
-            fillColor: '#4285F4',
-            fillOpacity: 1,
-            strokeColor: 'white',
-            strokeWeight: 2
-          } });
+          userMarker = new google.maps.Marker({ 
+            position: pos, 
+            map, 
+            title: "You are here!", 
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 6,
+              fillColor: '#4285F4',
+              fillOpacity: 1,
+              strokeColor: 'white',
+              strokeWeight: 2
+            } 
+          });
         } else {
           userMarker.setPosition(pos);
         }
@@ -242,11 +223,21 @@ function initMap() {
         // Save location in hidden input
         document.getElementById("user_location_id").value = pos.lat + "," + pos.lng;
       },
-      () => handleLocationError(true, new google.maps.InfoWindow(), map.getCenter()),
+      () => {
+        const infoWindow = new google.maps.InfoWindow();
+        infoWindow.setPosition(map.getCenter());
+        infoWindow.setContent(
+          "Error: The Geolocation service failed."
+        );
+        infoWindow.open(map);
+      },
       { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
     );
   } else {
-    handleLocationError(false, new google.maps.InfoWindow(), map.getCenter());
+    const infoWindow = new google.maps.InfoWindow();
+    infoWindow.setPosition(map.getCenter());
+    infoWindow.setContent("Error: Your browser doesn't support geolocation.");
+    infoWindow.open(map);
   }
 }
 
@@ -258,7 +249,6 @@ function loadMainPage() {
   `;
 }
 
-// Load payment history (dummy data with real PayFast IDs)
 async function loadDriverHistoryPayment() {
   const container = document.getElementById('innerContent');
   container.innerHTML = `<div class="loading">Loading payment history…</div>`;
@@ -284,7 +274,6 @@ async function loadDriverHistoryPayment() {
   container.innerHTML = html;
 }
 
-// Function to verify payment with your backend
 function trackPayFast(paymentId) {
   fetch('/verify-payfast', {
     method: 'POST',
@@ -336,6 +325,8 @@ function loadOrderView() {
     </div>`;
   initMap();
 }
+
+// Register service worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js')
@@ -344,7 +335,5 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q
-&callback=initMap" async defer></script>
 </body>
 </html>

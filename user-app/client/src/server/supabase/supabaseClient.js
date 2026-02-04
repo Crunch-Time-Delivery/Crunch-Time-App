@@ -8,7 +8,7 @@
 
   // Replace with your actual public anon key
   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = process.env.SUPABASE_KEY; // <-- Replace here
+  const supabaseKey = process.env.SUPABASE_KEY; // api keyupdate
   export const supabase = createClient(supabaseUrl, supabaseKey);
 
   // Error handler
