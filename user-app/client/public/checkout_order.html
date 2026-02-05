@@ -1,274 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Checkout Order</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
 <style>
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-}
-
-/* Full screen app */
-.app {
-    width: 100vw;
-    height: 100vh;
-    background: #fff;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Header */
-.header {
-    padding: 14px;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid #ddd;
-    background: white;
-}
-
-.header i {
-    font-size: 18px;
-    cursor: pointer;
-}
-
-.header h2 {
-    margin: auto;
-    font-size: clamp(16px, 2.5vw, 20px);
-}
-
-/* Status bar */
-.status {
-    text-align: center;
-    padding: 10px;
-    font-size: clamp(12px, 2.5vw, 14px);
-    background: #fff;
-    font-weight: bold;
-}
-
-/* Map */
-.map {
-    flex: 1;
-    background: url('https://i.imgur.com/OU6oFJg.png') center/cover no-repeat;
-}
-
-/* Driver Panel */
-.driver-panel {
-    background: white;
-    border-radius: 25px 25px 0 0;
-    padding: 14px;
-    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-}
-
-/* Driver Row */
-.driver-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* Driver Icon */
-.driver-avatar {
-    width: 12vw;
-    height: 12vw;
-    max-width: 60px;
-    max-height: 60px;
-    min-width: 45px;
-    min-height: 45px;
-    border-radius: 50%;
-    background: #ff3d3d;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: clamp(18px, 4vw, 28px);
-}
-
-/* Action buttons */
-.actions {
-    margin-left: auto;
-    display: flex;
-    gap: 10px;
-}
-
-.action-btn {
-    width: 10vw;
-    height: 10vw;
-    max-width: 42px;
-    max-height: 42px;
-    min-width: 34px;
-    min-height: 34px;
-    background: #ff3d3d;
-    border-radius: 50%;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: clamp(14px, 3vw, 18px);
-    cursor: pointer;
-}
-
-/* Info */
-.info {
-    margin-top: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.badge {
-    background: red;
-    color: white;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: clamp(11px, 2.5vw, 13px);
-}
-
-.rating {
-    background: #ffe600;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: clamp(11px, 2.5vw, 13px);
-    font-weight: bold;
-}
-
-.time {
-    font-size: clamp(20px, 5vw, 28px);
-    font-weight: bold;
-}
-
-/* Tabs */
-.tabs {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-    border-top: 1px solid #ddd;
-    padding-top: 10px;
-}
-
-.tabs div {
-    font-weight: bold;
-    font-size: clamp(13px, 3vw, 15px);
-    color: #444;
-    cursor: pointer;
-}
-
-.tabs .active {
-    color: red;
-}
-
-/* Panels */
-.panel {
-    display: none;
-    margin-top: 10px;
-    font-size: clamp(12px, 3vw, 14px);
-}
-
-.panel.active {
-    display: block;
-}
+/* Your styles here, unchanged for brevity */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
+.app { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+.header { padding: 14px; display: flex; align-items: center; border-bottom: 1px solid #ddd; background: white; }
+.header i { font-size: 18px; cursor: pointer; }
+.header h2 { margin: auto; font-size: clamp(16px, 2.5vw, 20px); }
+.status { text-align: center; padding: 10px; font-size: clamp(12px, 2.5vw, 14px); background: #fff; font-weight: bold; }
+.map { flex: 1; background: url('https://i.imgur.com/OU6oFJg.png') center/cover no-repeat; }
+.driver-panel { background: white; border-radius: 25px 25px 0 0; padding: 14px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
+.driver-row { display: flex; align-items: center; gap: 10px; }
+.driver-avatar { width: 12vw; height: 12vw; max-width: 60px; max-height: 60px; min-width: 45px; min-height: 45px; border-radius: 50%; background: #ff3d3d; display: flex; align-items: center; justify-content: center; color: white; font-size: clamp(18px, 4vw, 28px); }
+.actions { margin-left: auto; display: flex; gap: 10px; }
+.action-btn { width: 10vw; height: 10vw; max-width: 42px; max-height: 42px; min-width: 34px; min-height: 34px; background: #ff3d3d; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: clamp(14px, 3vw, 18px); cursor: pointer; }
+.info { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+.badge { background: red; color: #fff; padding: 4px 10px; border-radius: 8px; font-size: clamp(11px, 2.5vw, 13px); }
+.rating { background: #ffe600; padding: 4px 10px; border-radius: 8px; font-size: clamp(11px, 2.5vw, 13px); font-weight: bold; }
+.time { font-size: clamp(20px, 5vw, 28px); font-weight: bold; }
+.tabs { display: flex; justify-content: space-between; margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px; }
+.tabs div { font-weight: bold; font-size: clamp(13px, 3vw, 15px); color: #444; cursor: pointer; }
+.tabs .active { color: red; }
+.panel { display: none; margin-top: 10px; font-size: clamp(12px, 3vw, 14px); }
+.panel.active { display: block; }
 </style>
 </head>
-
 <body>
 
 <div class="app">
-
     <div class="header">
         <i class="fa fa-arrow-left" onclick="goBack()"></i>
         <h2>KFC</h2>
     </div>
-
     <div class="status">
         The courier is on their way to you
     </div>
-
     <div class="map"></div>
-
     <div class="driver-panel">
-
         <div class="driver-row">
             <div class="driver-avatar">
                 <i class="fa-solid fa-motorcycle"></i>
             </div>
-
             <div>
                 <strong id="loadDriverName">Your Driver</strong><br>
                 <small>On the way</small>
             </div>
-
             <div class="actions">
-                <div class="action-btn" onclick="callDriver()">
-                    <i class="fa fa-phone"></i>
-                </div>
-                <div class="action-btn" onclick="chatDriver()">
-                    <i class="fa fa-comment"></i>
-                </div>
+                <div class="action-btn" onclick="callDriver()"><i class="fa fa-phone"></i></div>
+                <div class="action-btn" onclick="chatDriver()"><i class="fa fa-comment"></i></div>
             </div>
         </div>
-
         <div class="info">
             <div>
-                <div class="badge" id="loadDriverPlateNo">CAA5567</div>
+                <div class="badge" id="driverPlateNo">CAA5567</div>
                 <div class="rating">4.8 ⭐</div>
             </div>
-
             <div style="text-align:right;">
-                <div class="time">12:56</div>
+                <div class="time" id="deliveryTime">12:56</div>
                 <small>Estimated time to delivery</small>
             </div>
         </div>
-
         <div class="tabs">
             <div id="tabProgress" class="active" onclick="showTab('progress')">Order Progress</div>
             <div id="tabInfo" onclick="showTab('info')">Order Info</div>
         </div>
-
         <div id="progress" class="panel active">
             <p>✔ Order confirmed</p>
             <p>✔ Restaurant preparing food</p>
             <p>🚴 Driver on the way</p>
         </div>
-
         <div id="info" class="panel">
             <p><strong>Order:</strong> #CAA5567</p>
             <p><strong>Restaurant:</strong> KFC Parow</p>
             <p><strong>Status:</strong> Out for delivery</p>
         </div>
-
     </div>
-
 </div>
 
+<!-- Notification container -->
+<div id="notification" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:8px; display:none; z-index:9999;"></div>
+
 <script>
-function showNotificationMessage(message, color='#4CAF50') {
+// Show notification message
+function showNotificationMessage(text, color='#333') {
   const notif = document.getElementById('notification');
-  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
+  notif.innerHTML = text;
+  notif.style.backgroundColor = color;
   notif.style.display = 'block';
-
-  // Hide after 3 seconds
-  setTimeout(() => {
-    notif.style.display = 'none';
-  }, 3000);
+  setTimeout(() => { notif.style.display = 'none'; }, 4000);
 }
-
 let isSendingSMS = false;
 
-/**
- * Show a temporary notification on the page
- * @param {string} text
- * @param {string} color
- */
-// Function to show UI notification
 function showNotificationMessage(text, color = '#333') {
   let box = document.getElementById('notificationMessage');
 
@@ -292,9 +123,15 @@ function showNotificationMessage(text, color = '#333') {
 
   setTimeout(() => box.remove(), 4000);
 }
-
 // Function to trigger Twilio notification (assumes backend endpoint `/send-twilio`)
-function sendTwilioNotification(phoneNumber, message) {
+function sendTwilioNotification(phoneNumber, message, callback = null) {
+  if (!phoneNumber || !message) {
+    showNotificationMessage('Phone number or message missing', '#f44336');
+    return;
+  }
+  
+  showNotificationMessage('Sending notification...', '#2196F3');
+
   fetch('/send-twilio', {
     method: 'POST',
     headers: {
@@ -305,185 +142,110 @@ function sendTwilioNotification(phoneNumber, message) {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      showNotificationMessage('Notification sent successfully!', 'green');
+      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+      if (callback && typeof callback === 'function') callback(true, data);
     } else {
-      showNotificationMessage('Failed to send notification.', 'red');
+      showNotificationMessage('Failed to send notification.', '#f44336');
+      if (callback && typeof callback === 'function') callback(false, data);
     }
   })
   .catch(() => {
-    showNotificationMessage('Error sending notification.', 'red');
+    showNotificationMessage('Error sending notification.', '#f44336');
+    if (callback && typeof callback === 'function') callback(false);
   });
 }
 
-/**
- * Send SMS via backend /notify/sms with retries & timeout
- * @param {string} to - Phone number (E.164 format)
- * @param {string} message - Message content
- * @param {function} [callback] - Optional callback on success
- * @param {number} [retries=2] - Number of retries on failure
- */
-async function sendSms(to, message, callback = null, retries = 2) {
-  if (!to || !message) {
-    showNotificationMessage('Phone number or message missing', '#f44336');
-    return;
-  }
+// Utility functions for call and chat
+function goBack() { window.history.back(); }
+function callDriver() { window.location.href = "tel:+27781234567"; }
+function chatDriver() { window.open("https://wa.me/27781234567", "_blank"); }
 
-  if (isSendingSMS) {
-    showNotificationMessage('Another message is sending...', '#ff9800');
-    return;
-  }
-
-  isSendingSMS = true;
-  showNotificationMessage('Sending message...', '#2196F3');
-
-  const attemptSend = async (attempt = 1) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
-    try {
-      const res = await fetch('/notify/sms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({ to, message })
-      });
-
-      clearTimeout(timeout);
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || 'Server error');
-
-      showNotificationMessage('SMS sent successfully ✔️', '#4CAF50');
-      console.log('SMS sent:', data);
-
-      if (callback && typeof callback === 'function') callback(data);
-
-    } catch (err) {
-      clearTimeout(timeout);
-      console.error(`SMS Error (Attempt ${attempt}):`, err);
-
-      if (err.name === 'AbortError') {
-        showNotificationMessage('Request timed out ⏱️', '#f44336');
-      } else {
-        showNotificationMessage('Failed to send SMS ❌', '#f44336');
-      }
-
-      if (attempt <= retries) {
-        console.log(`Retrying... (${attempt + 1})`);
-        return attemptSend(attempt + 1);
-      }
-    } finally {
-      isSendingSMS = false;
-    }
-  };
-
-  attemptSend();
-}
-
-/**
- * Optional: Send SMS to user by Supabase user ID
- * Requires Supabase client to be initialized
- */
-async function sendSmsToUser(userId, message, callback = null) {
-  try {
-    const { data, error } = await supabase
-      .from('User')
-      .select('phone')
-      .eq('id', userId)
-      .single();
-
-    if (error || !data?.phone) {
-      showNotificationMessage('User phone not found', '#f44336');
-      console.error('Supabase Error:', error);
-      return;
-    }
-
-    sendSms(data.phone, message, callback);
-
-  } catch (err) {
-    console.error('Error fetching user phone:', err);
-    showNotificationMessage('Error fetching user info', '#f44336');
-  }
-}
-
-
-  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY; //  actual key
-const supabase = createClient(supabaseUrl, supabaseKey)
-
-// Fetch vendor data
-async function fetchDrivers() {
-  const { data: drivers, error } = await supabase
-    .from('Drivers')
-    .select(`
-    driver_name,
-    plate_no
-
-
-`);
-
-  if (error) {
-    console.error('Error fetching driver:', error);
-    return null;
-  }
-  return Drivers;
-
-  
-}
-async function loadDriverPlateNo() {
-  const { data, error } = await supabase
-    .from('Drivers')
-    .select('plate_no')
-    .limit(1)  // Assuming you want the first driver, or modify as needed
-    .single();
-
-  if (error || !data) {
-    document.getElementById('driverPlateNo').innerText = 'No driver data';
-  } else {
-    document.getElementById('driverPlateNo').innerText = data.plate_no;
-  }
-  async function loadDriverName() {
-  const { data, error } = await supabase
-    .from('Drivers')
-    .select('driver_name')
-    .limit(1)  // Assuming you want the first driver, or modify as needed
-    .single();
-
-  if (error || !data) {
-    document.getElementById('driver_name').innerText = 'No driver data';
-  } else {
-    document.getElementById('driver_name').innerText = data.plate_no;
-  }
-}
-
-
-function goBack() {
-    window.history.back();
-}
-
-function callDriver() {
-    window.location.href = "tel:+27781234567";
-}
-
-function chatDriver() {
-    window.open("https://wa.me/27781234567", "_blank");
-}
-
+// Show tab content
 function showTab(tab) {
     document.getElementById("progress").classList.remove("active");
     document.getElementById("info").classList.remove("active");
     document.getElementById("tabProgress").classList.remove("active");
     document.getElementById("tabInfo").classList.remove("active");
-
     document.getElementById(tab).classList.add("active");
+    document.getElementById("tab" + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add("active");
+}
 
-    if (tab === "progress") {
-        document.getElementById("tabProgress").classList.add("active");
-    } else {
-        document.getElementById("tabInfo").classList.add("active");
+// Initialize Supabase client (replace with your actual credentials)
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY; // 
+const { createClient } = supabase;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Fetch driver info (example)
+async function fetchDriverData() {
+  const { data, error } = await supabase
+    .from('Drivers')
+    .select('driver_name, plate_no')
+    .limit(1)
+    .single();
+
+  if (error || !data) {
+    document.getElementById('loadDriverName').innerText = 'No driver data';
+    document.getElementById('driverPlateNo').innerText = 'N/A';
+  } else {
+    document.getElementById('loadDriverName').innerText = data.driver_name;
+    document.getElementById('driverPlateNo').innerText = data.plate_no;
+  }
+}
+
+// Example: Load driver data on page load
+fetchDriverData();
+
+// Additional functions for SMS/Notification (assuming backend endpoints exist)
+async function sendSms(to, message, callback = null, retries = 2) {
+  if (!to || !message) {
+    showNotificationMessage('Phone number or message missing', '#f44336');
+    return;
+  }
+  let isSending = false;
+  if (isSending) {
+    showNotificationMessage('Another message is sending...', '#ff9800');
+    return;
+  }
+  isSending = true;
+  showNotificationMessage('Sending message...', '#2196F3');
+
+  const attemptSend = async (attempt = 1) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      const res = await fetch('/notify/sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({ to, message }),
+      });
+      clearTimeout(timeout);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Server error');
+      showNotificationMessage('SMS sent successfully ✔️', '#4CAF50');
+      if (callback) callback(data);
+    } catch (err) {
+      clearTimeout(timeout);
+      console.error(`SMS Error (Attempt ${attempt}):`, err);
+      if (err.name === 'AbortError') {
+        showNotificationMessage('Request timed out ⏱️', '#f44336');
+      } else {
+        showNotificationMessage('Failed to send SMS ❌', '#f44336');
+      }
+      if (attempt <= retries) {
+        return attemptSend(attempt + 1);
+      }
+    } finally {
+      isSending = false;
     }
-}}
-</script>
+  };
+  await attemptSend();
+}
 
+// Example: Call this function to send SMS
+// sendSms('+27781234567', 'Your order is on the way!');
+
+</script>
 </body>
 </html>

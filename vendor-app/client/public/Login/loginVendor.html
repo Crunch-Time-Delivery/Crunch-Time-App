@@ -28,6 +28,25 @@
     max-width: 400px;
     width: 90%;
   }
+  /* Notification styles */
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 5px;
+    color: #fff;
+    font-weight: bold;
+    z-index: 1000;
+    opacity: 0.9;
+    font-family: Arial, sans-serif;
+  }
+  .notification.success {
+    background-color: #4CAF50;
+  }
+  .notification.error {
+    background-color: #f44336;
+  }
   .modal {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -62,6 +81,16 @@
   .modal-box img {
     max-width: 250px; height: auto; margin-bottom: 20px; border-radius: 8px;
   }
+  /* Additional styles for OTP modal */
+  #otpModal p {
+    margin: 10px 0;
+  }
+  #loginForgotPassword {
+    display: block;
+    margin-bottom: 15px;
+    text-align: right;
+    font-size: 0.9em;
+  }
 </style>
 </head>
 <body>
@@ -73,7 +102,6 @@
       <img src="img/screenshot (253).jpg" alt="Welcome Image" />
       <h3>Verify Account</h3>
       <p>Please enter the OTP sent to your email to verify your account</p>
-      <p>Enter your OTP code here</p>
       <input id="otpInput" placeholder="OTP" />
       <p>Didn’t receive code? Request again</p>
       <button style="background:#f80202; color:#fff;" onclick="verifyOTP()">Confirm</button>
@@ -85,15 +113,15 @@
     <div class="modal-box">
       <img src="img/screenshot (253).jpg" alt="Welcome Image" />
       <h3>Welcome</h3>
-      <p>For vendors Manage your orders in real time. </p>
-      <label>Email Address</label>
+      <p>For vendors Manage your orders in real time.</p>
+      <label for="username">Email Address</label>
       <input id="username" placeholder="Email" />
-      <label>Password</label>
+      <label for="password">Password</label>
       <input id="password" placeholder="Password" type="password" />
       <!-- Updated Forgot Password link -->
-    <a id="loginForgotPassword" href="http://127.0.0.1:5500/vendor-app/forgotpassword.html" target="_blank">Forgot Password</a>
-   
-    <!-- Buttons for Driver and Admin -->
+      <a id="loginForgotPassword" href="http://127.0.0.1:5500/vendor-app/forgotpassword.html" target="_blank">Forgot Password</a>
+      
+      <!-- Buttons for Login and registration -->
       <button style="background:#f40101; color:#fff;" onclick="verifyLogin()">Login</button>
       <p>Don't have an account? Register here</p>
       <div id="bottomButtons">
@@ -105,8 +133,7 @@
 </div>
 
 <script>
-
-  // Function to send SMS via backend API
+   // Function to send SMS via backend API
   function sendSms(toNumber, message) {
   fetch('http://localhost:3000/send-sms', {
     method: 'POST',
@@ -147,56 +174,48 @@ function showNotification(message, type) {
   }, 3000);
 }
 
- 
-
-
-  const adminUsername = 'crunchtimeadmin';
-  const adminPassword = 'crunchtimeadmin';
-
+  // Generate OTP
   let currentOTP = '';
 
-  // Generate OTP
   function generateOTP() {
     currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('Generated OTP:', currentOTP); // For demo, show in console
+    console.log('Generated OTP:', currentOTP); // For demo purposes
 
-    // Send OTP via your backend endpoint (which uses Twilio)
-  fetch('/send-otp', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      phoneNumber: driverData.contact, // or the phone number you want to send to
-      otp: generatedOtp
+    // Send OTP via your backend endpoint (simulate here)
+    fetch('/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phoneNumber: 'dummy-phone', // Replace with actual contact if available
+        otp: currentOTP
+      })
     })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      alert(`OTP sent to ${driverData.contact}.`);
-    } else {
-      alert('Failed to send OTP.');
-    }
-  })
-  .catch(() => {
-    alert('Error sending OTP.');
-  });
-
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert(`OTP sent to your email/phone.`);
+      } else {
+        alert('Failed to send OTP.');
+      }
+    })
+    .catch(() => {
+      alert('Error sending OTP.');
+    });
   }
 
+  // On page load
   window.onload = () => {
     showLogin();
 
-    // Vendor button - fixed to redirect to specified URL
     document.getElementById('vendorBtn').addEventListener('click', () => {
       window.location.href = 'http://127.0.0.1:5500/vendor-app/index.html';
     });
 
-    // Admin button
     document.getElementById('adminBtn').addEventListener('click', () => {
       const username = prompt('Enter admin username:');
       const pass = prompt('Enter admin password:');
+      const adminUsername = 'crunchtimeadmin';
+      const adminPassword = 'crunchtimeadmin';
       if (username === adminUsername && pass === adminPassword) {
         alert('Admin login success!');
         window.location.href='http://127.0.0.1:5500/vendor-app/admin/admin_dashboard.html';
@@ -205,7 +224,6 @@ function showNotification(message, type) {
       }
     });
 
-    // Generate OTP initially
     generateOTP();
   };
 
@@ -217,20 +235,22 @@ function showNotification(message, type) {
     const username = document.getElementById('username').value.trim();
     const pass = document.getElementById('password').value.trim();
 
-    // For simplicity, admin login is handled separately
+    const adminUsername = 'crunchtimeadmin';
+    const adminPassword = 'crunchtimeadmin';
+
     if (username === adminUsername && pass === adminPassword) {
       alert('Admin login success!');
-      window.location.href='http://127.0.0.1:5501/vendor-app/admin/admin_dashboard.html';
+      window.location.href='http://127.0.0.1:5500/vendor-app/admin/admin_dashboard.html';
       return;
     }
 
-    // Assume shared credentials for vendor and admin
+    // Here, verify vendor credentials (e.g., from localStorage or backend)
     const users = JSON.parse(localStorage.getItem('users')) || [];
     const user = users.find(u => u.email===username && u.pass===pass);
     if (user) {
-      // Save user info if needed
+      // Save login status if needed
       localStorage.setItem('vendorLoggedIn', 'true');
-      // Show OTP modal for unapproved users
+      // Show OTP modal
       generateOTP();
       showOTP();
     } else {
@@ -247,10 +267,9 @@ function showNotification(message, type) {
     if (inputOTP === currentOTP) {
       alert('OTP verified! Redirecting...');
       document.getElementById('otpModal').style.display='none';
-
-      // Assuming OTP verification leads to user/vendor page
+      // Redirect to vendor page
       alert('Login successful!');
-      window.location.href='http://127.0.0.1:5500/vendor-app/index.html'; // user/vendor page
+      window.location.href='http://127.0.0.1:5500/vendor-app/index.html';
     } else {
       alert('Incorrect OTP.');
     }

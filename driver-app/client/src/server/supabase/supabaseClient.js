@@ -1,7 +1,10 @@
+ import {
+    createClient
+  } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 // Your Supabase URL and key (replace with your actual key; keep secret in server-side)
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Replace with your actual public anon key
+const supabaseKey = process.env.SUPABASE_KEY; // actual public anon key
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Fetch Drivers
@@ -42,7 +45,7 @@ async function loadAdmins() {
 }
 
 // Update a driver by ID
-async function updateSampleDriver() {
+async function updateDriver() {
   const updatedData = { rating: 4.5 }; // Example update
   const { data, error } = await supabase
     .from('Drivers')
@@ -53,7 +56,7 @@ async function updateSampleDriver() {
 }
 
 // Delete a driver by ID
-async function deleteSampleDriver() {
+async function deleteDriver() {
   const { data, error } = await supabase
     .from('Drivers')
     .delete()
