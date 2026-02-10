@@ -2,9 +2,7 @@
   // =========================
   // Your Supabase module code
   // =========================
-  import {
-    createClient
-  } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
   // Replace with your actual public anon key
   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';

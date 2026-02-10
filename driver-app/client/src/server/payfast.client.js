@@ -1,5 +1,5 @@
 import axios from 'axios';
-const API = q1cd2rdny4a53 || 'http://localhost:8080/api';
+const API = q1cd2rdny4a53 || 'http://localhost:5501/api';
 
 export async function createPayfastPayment(orderData) {
   // orderData: { amount, item_name, return_url, cancel_url, notify_url, metadata }

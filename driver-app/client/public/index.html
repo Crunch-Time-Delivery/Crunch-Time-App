@@ -273,22 +273,32 @@ async function loadDriverHistoryPayment() {
   });
   container.innerHTML = html;
 }
+async function trackPayFast(paymentId) {
+  try {
+    const response = await fetch('/verify-payfast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paymentId })
+    });
 
-function trackPayFast(paymentId) {
-  fetch('/verify-payfast', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ paymentId })
-  })
-  .then(res => res.json())
-  .then(data => {
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    const data = await response.json();
     alert(`Payment ID: ${paymentId}\nStatus: ${data.status}\nDetails: ${data.details}`);
-  })
-  .catch(() => alert('Error verifying payment.'));
+  } catch (error) {
+    console.error('Error verifying payment:', error);
+    alert('Error verifying payment.');
+  }
 }
-
 function loadOrderView() {
   const container = document.getElementById('innerContent');
+  if (!container) {
+    console.error('Container element not found');
+    return;
+  }
+
   const order = {
     id: 'ORD-10045',
     customer: 'John Smith',
@@ -303,26 +313,34 @@ function loadOrderView() {
       { name: 'Cooldrink', qty: 1, price: 35 }
     ]
   };
+
   container.innerHTML = `
     <h2 style="color: red; border-left: 4px solid red; padding-left: 10px;">Order View</h2>
     <div class="card">
-      <div class="row"><strong>Order ID</strong> ${order.id}</div>
-      <div class="row"><strong>Customer</strong> ${order.customer}</div>
-      <div class="row"><strong>Verification</strong> ${order.verification}</div>
-      <div class="row"><strong>Date</strong> ${order.date}</div>
+      <div class="row"><strong>Order ID:</strong> ${order.id}</div>
+      <div class="row"><strong>Customer:</strong> ${order.customer}</div>
+      <div class="row"><strong>Verification:</strong> ${order.verification}</div>
+      <div class="row"><strong>Date:</strong> ${order.date}</div>
     </div>
     <div class="card">
       <h3 style="color: red; border-left: 4px solid red; padding-left: 10px;">Order Items</h3>
-      ${order.items.map(i => `<div class="row"><span>${i.name} (x${i.qty})</span><span>R ${(i.qty * i.price).toFixed(2)}</span></div>`).join('')}
+      ${order.items.map(i => `
+        <div class="row">
+          <span>${i.name} (x${i.qty})</span>
+          <span>R ${(i.qty * i.price).toFixed(2)}</span>
+        </div>
+      `).join('')}
       <div class="total"><strong>Total:</strong> R ${order.total.toFixed(2)}</div>
     </div>
     <div class="card">
       <h3 style="color: red; border-left: 4px solid red; padding-left: 10px;">Delivery Route</h3>
       <p><strong>Pick-up:</strong> ${order.pickup}</p>
       <p><strong>Drop-off:</strong> ${order.dropoff}</p>
-      <div id="map"></div>
-      <button>Accept / Decline</button>
+      <div id="map" style="height: 200px; width: 100%; margin-top: 10px; border: 1px solid #ccc;"></div>
+      <button style="margin-top: 10px;">Accept / Decline</button>
     </div>`;
+
+  // Initialize the map after the content is loaded
   initMap();
 }
 
