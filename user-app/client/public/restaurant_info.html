@@ -21,36 +21,42 @@ body {
   background: #fff;
   border-bottom: 1px solid #eee;
 }
-
 .header a {
   text-decoration: none;
   color: #000;
   font-size: 18px;
   margin-right: 10px;
 }
+.header h2 {
+  margin: 0;
+  font-size: 20px;
+}
 
+/* HERO IMAGE */
 .hero img {
   width: 100%;
   height: 220px;
   object-fit: cover;
 }
 
+/* MAIN CONTAINER */
 .container {
   padding: 15px;
   background: #fff;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-bottom: 80px; /* Space for checkout bar */
 }
-
 .restaurant-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: bold;
+  margin-bottom: 8px;
 }
-
 .meta {
   font-size: 13px;
   color: #666;
-  margin: 6px 0;
+  margin-bottom: 10px;
 }
-
 .info-row {
   display: flex;
   justify-content: space-between;
@@ -60,17 +66,14 @@ body {
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
 }
-
 .info-row a {
   color: red;
   text-decoration: none;
   font-weight: bold;
 }
-
 .menu-section {
   margin-top: 20px;
 }
-
 .menu-item {
   display: flex;
   justify-content: space-between;
@@ -78,21 +81,27 @@ body {
   border-bottom: 1px solid #eee;
   cursor: pointer;
 }
+.menu-item:hover {
+  background: #fafafa;
+}
 
+/* CHECKOUT BAR */
 .checkout-bar {
   position: fixed;
   bottom: 0;
   width: 100%;
-  background: red;
+  background: #d32f2f;
   color: #fff;
   text-align: center;
   padding: 15px;
   font-weight: bold;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+  z-index: 100;
 }
-
 .checkout-bar a {
   color: #fff;
   text-decoration: none;
+  font-size: 16px;
 }
 
 /* FOOD MODAL */
@@ -105,99 +114,137 @@ body {
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
 }
-
 .food-modal-content {
   background: #fff;
-  margin: 10% auto;
   padding: 20px;
   width: 90%;
   max-width: 400px;
   border-radius: 8px;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
-
 .food-close-btn {
-  float: right;
-  font-size: 20px;
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
+  font-weight: bold;
   cursor: pointer;
+  color: #555;
 }
-
+.quantity-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 20px 0;
+}
 .quantity-btn {
   padding: 8px 14px;
   font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
 }
-
-.add-more-btn, .exit-btn {
-  padding: 10px 15px;
-  margin: 5px;
+#foodQuantity {
+  font-size: 18px;
+  min-width: 30px;
+  text-align: center;
+}
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.options label {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.custom-notes {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: vertical;
+}
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+.add-more-btn {
+  background: #d32f2f;
+  color: #fff;
   border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.exit-btn {
+  background: #ccc;
+  color: #222;
+  border: none;
+  padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
 }
-
-.add-more-btn {
-  background: red;
-  color: #fff;
-}
-
-.exit-btn {
-  background: #ccc;
-}
 </style>
 </head>
-
 <body>
 
-<!-- HEADER -->
 <div class="header">
-  <a href="index.html">←</a>
+  <a href="mainpage.html">←</a>
   <h2>Restaurant Info</h2>
 </div>
 
-<!-- HERO -->
 <div class="hero">
-  <img id="restaurantImage">
+  <img id="restaurantImage" alt="Banner" />
 </div>
 
-<!-- CONTENT -->
 <div class="container">
   <div class="restaurant-title" id="restaurantName"></div>
-
-  <div class="meta">
-    ⭐ 4.3 • ~25 min
-  </div>
-
+  <div class="meta">⭐ 4.3 • ~25 min</div>
   <div class="info-row">
     <span>📍 Restaurant Info</span>
     <a id="mapLink" target="_blank">View Map</a>
   </div>
-
   <div class="info-row">
     <span id="deliveryTime">🚚 Deliver in 20 – 35 min</span>
     <a href="#" onclick="changeDelivery()">Change</a>
   </div>
-
   <div class="menu-section" id="menu"></div>
 </div>
 
-<!-- CHECKOUT -->
 <div class="checkout-bar">
-  <a href="http://127.0.0.1:5501/user-app/client/public/my_order.html">Go to My Orders</a>
+  <a href="my_order.html">Go to My Orders</a>
 </div>
 
-<!-- FOOD MODAL -->
 <div id="foodModal" class="food-modal">
   <div class="food-modal-content">
-    <span class="food-close-btn" onclick="closeFoodModal()">&times;</span>
+    <span class="food-close-btn" onclick="closeFoodModal()">×</span>
     <h3 id="foodItemName"></h3>
-
-    <div style="display:flex;justify-content:center;gap:20px;">
+    <div class="quantity-controls">
       <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
       <span id="foodQuantity">1</span>
       <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
     </div>
-
-    <div style="margin-top:20px;text-align:center;">
+    <div class="options">
+      <label><input type="checkbox" id="extraCheese" /> Extra Cheese</label>
+      <label><input type="checkbox" id="lessSalt" /> Less Salt</label>
+      <label>Add/Remove items:</label>
+      <textarea id="specialInstructions" class="custom-notes" placeholder="e.g. No onions, add extra sauce..." rows="2"></textarea>
+    </div>
+    <div class="buttons">
       <button class="add-more-btn" onclick="addItemToOrder()">Add to Order</button>
       <button class="exit-btn" onclick="closeFoodModal()">Exit</button>
     </div>
@@ -205,133 +252,104 @@ body {
 </div>
 
 <script>
+let selectedItem = null;
+let quantity = 1;
+
 const restaurantData = {
   "KFC Parow": {
     image: "Images/RS KFC.jpeg",
     map: "https://www.google.com/maps/place/KFC+Parow/@-33.9044639,18.5881743,17z/data=!3m1!4b1!4m6!3m5!1s0x1dcc5a5c2d3f59f1:0x60c878c003300520!8m2!3d-33.9044684!4d18.5927824!16s%2Fg%2F1vrhp1v3?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-    menu: [
-      { name: "Zinger Burger", price: 45 },
-      { name: "Streetwise 2", price: 35 }
-    ]
-  },
+    menu: [{ name: "Zinger Burger", price: 45 }, { name: "Streetwise 2", price: 35 }]
+  }, // FIXED: Added missing comma here
   "Sannes Palace": {
     image: "Images/RS PALACE.jpg",
     map: "https://www.google.com/maps/search/Sannes+Palace",
-    menu: [
-      { name: "Chicken Curry", price: 60 },
-      { name: "Beef Stew", price: 70 }
-    ]
+    menu: [{ name: "Chicken Curry", price: 60 }, { name: "Beef Stew", price: 70 }]
   },
   "DK Spot & Kota": {
     image: "Images/RS KOTA.jpg",
     map: "https://www.google.com/maps/search/DK+Spot+Kota",
-    menu: [
-      { name: "Kota Special", price: 25 },
-      { name: "Egg Gatsby", price: 35 }
-    ]
+    menu: [{ name: "Kota Special", price: 25 }, { name: "Egg Gatsby", price: 35 }]
   },
   "Nondyebo Eatery": {
     image: "Images/RS NONDYEBO.jpg",
     map: "https://www.google.com/maps/search/Nondyebo+Eatery",
-    menu: [
-      { name: "Beast Kota", price: 75 },
-      { name: "Beef Liver", price: 50 }
-    ]
+    menu: [{ name: "Beast Kota", price: 75 }, { name: "Beef Liver", price: 50 }]
   },
   "Rodeo Spur Halaal": {
     image: "Images/spur.jpg",
     map: "https://www.google.com/maps/place/Rodeo+Spur+Halaal/@-33.9812407,18.4621962,17z/data=!3m1!4b1!4m6!3m5!1s0x1dcc42d1c99ac2cb:0xe88a5ce5bb0d5747!8m2!3d-33.9812452!4d18.4647765!16s%2Fg%2F1tgz7rck?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-    menu: [
-      { name: "Original Spur Burger", price: 119 },
-      { name: "Sauce Burger", price: 143 }
-    ]
+    menu: [{ name: "Original Spur Burger", price: 119 }, { name: "Sauce Burger", price: 143 }]
   },
   "RocoMamas Rondebosch": {
     image: "Images/img.jpg",
     map: "https://www.google.com/maps/place/RocoMamas+Rondebosch/@-33.9623016,18.4673577,17z/data=!3m1!4b1!4m6!3m5!1s0x1dcc5d7794740533:0x49c51ae629820bb1!8m2!3d-33.9623061!4d18.469938!16s%2Fg%2F11g2z9zxbt?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-    menu: [
-      { name: "Smash Burger", price: 110 },
-      { name: "Smash Burger 2", price: 130 }
-    ]
+    menu: [{ name: "Smash Burger", price: 110 }, { name: "Smash Burger 2", price: 130 }]
   },
   "Krispy King Rondebosch": {
     image: "Images/fried_chicken.jpg",
     map: "https://www.google.com/maps/place/KRISPY+KING+RONDEBOSCH+(HALAL)/@-33.9604203,18.467044,17z/data=!3m1!4b1!4m6!3m5!1s0x1dcc43007558debb:0xb3b4d8c3c641123c!8m2!3d-33.9604248!4d18.4696243!16s%2Fg%2F11vqp59sdg?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-    menu: [
-      { name: "Chicken Special", price: 125 },
-      { name: "Chicken Special", price: 135 }
-    ]
+    menu: [{ name: "Chicken Special", price: 125 }, { name: "Chicken Wings", price: 135 }]
   },
   "Khao Hom Halal Thai Cuisine": {
     image: "Images/download.png",
     map: "https://www.google.com/maps/place/Khao+Hom+Halal+Thai+Cuisine+-+Claremont/@-33.9602459,18.3870402,12z/data=!4m10!1m2!2m1!1sKhao+Hom+Halal+Thai+Cuisine!3m6!1s0x1dcc4396adf30063:0xfa2fd4e3cd6d010!8m2!3d-33.9838151!4d18.4749192!15sChtLaGFvIEhvbSBIYWxhbCBUaGFpIEN1aXNpbmVaHSIba2hhbyBob20gaGFsYWwgdGhhaSBjdWlzaW5lkgEPdGhhaV9yZXN0YXVyYW504AEA!16s%2Fg%2F11fhtxdcdb?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-    menu: [
-      { name: "Thai Special", price: 115 },
-      { name: "Thai Special 2", price: 145 }
-    ]
+    menu: [{ name: "Thai Special", price: 115 }, { name: "Thai Special 2", price: 145 }]
   },
   "Somma Asian Restaurant Rondebosch": {
     image: "Images/asian_(1).jpg",
     map: "https://www.google.com/maps/place/Somma+Asian+Restaurant+Rondebosch/@-33.9592038,18.4680144,17z/data=!3m1!4b1!4m6!3m5!1s0x1dcc5d79cbed433d:0x989b283770058a85!8m2!3d-33.9592083!4d18.4705947!16s%2Fg%2F11x85qv2tw?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-    menu: [
-      { name: "Somma Special", price: 25 },
-      { name: "Somma Special 2", price: 35 }
-    ]
+    menu: [{ name: "Somma Special", price: 25 }, { name: "Somma Special 2", price: 35 }]
   },
   "La Infernos Pizzeria (Kromboom)": {
     image: "Images/wood-pizza.png",
     map: "https://www.google.com/maps/place/Rondebosch+East+-+La+Inferno%E2%80%99s+Pizzeria+(Halaal)/@-33.9742634,18.5045007,17z/data=!3m1!4b1!4m6!3m5!1s0x1dcc43e014651c57:0x266ac0033409e680!8m2!3d-33.9742679!4d18.507081!16s%2Fg%2F11pz4_0_td?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-    menu: [
-      { name: "Pizza Special", price: 122 },
-      { name: "Pizza Special 2", price: 113}
-    ]
+    menu: [{ name: "Pizza Special", price: 122 }, { name: "Pizza Special 2", price: 113}]
   },
   "Romans Pizza": {
     image: "Images/roman_pizza.jpg",
     map: "https://www.google.com/maps/place/Roman's+Pizza+Rondebosch/@-33.9605544,18.4655682,17z/data=!3m1!4b1!4m6!3m5!1s0x1dcc5d9ae328acff:0xa9bce33e26dfa3dc!8m2!3d-33.9605589!4d18.4701763!16s%2Fg%2F11wj462q3j?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-    menu: [
-      { name: "Pizza Special", price: 125 },
-      { name: "Pizza Special 2", price: 135 }
-    ]
+    menu: [{ name: "Pizza Special", price: 125 }, { name: "Pizza Special 2", price: 135 }]
   },
   "Debonairs Pizza": {
     image: "Images/download (1).png",
     map: "https://www.google.com/maps/place/Debonairs+Pizza+Rondebosch/@-33.9617765,18.4676363,17z/data=!3m1!4b1!4m6!3m5!1s0x1dcc5d26650ad4fd:0xcba5cb41b697c723!8m2!3d-33.961781!4d18.4702166!16s%2Fg%2F1tly67dl?entry=ttu&g_ep=EgoyMDI2MDEyNi4wIKXMDSoKLDEwMDc5MjA2OUgBUAM%3D",
-    menu: [
-      { name: "Double Pizza", price: 125 },
-      { name: "Double Pizza 2", price: 135 }
-    ]
+    menu: [{ name: "Double Pizza", price: 125 }, { name: "Double Pizza 2", price: 135 }]
   }
 };
 
+/* --- Initialize Page --- */
 const params = new URLSearchParams(window.location.search);
-const restaurantName = params.get("name") ;
+const restaurantName = params.get("name");
 const restaurant = restaurantData[restaurantName];
 
-document.getElementById("restaurantName").innerText = restaurantName;
-document.getElementById("restaurantImage").src = restaurant.image;
-document.getElementById("mapLink").href = restaurant.map;
+if (restaurant) {
+  document.getElementById("restaurantName").innerText = restaurantName;
+  document.getElementById("restaurantImage").src = restaurant.image;
+  document.getElementById("mapLink").href = restaurant.map;
 
-/* LOAD MENU */
-const menuDiv = document.getElementById("menu");
-restaurant.menu.forEach(item => {
-  const div = document.createElement("div");
-  div.className = "menu-item";
-  div.innerHTML = `<span>${item.name}</span><span>R${item.price}</span>`;
-  div.onclick = () => openFoodModal(item);
-  menuDiv.appendChild(div);
-});
+  const menuDiv = document.getElementById("menu");
+  restaurant.menu.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "menu-item";
+    div.innerHTML = `<span>${item.name}</span><span>R${item.price}</span>`;
+    div.onclick = () => openFoodModal(item);
+    menuDiv.appendChild(div);
+  });
+} else {
+  document.getElementById("restaurantName").innerText = "Restaurant Not Found";
+}
 
-/* FOOD MODAL LOGIC */
-let selectedItem = null;
-let quantity = 1;
-
+/* --- Modal functions --- */
 function openFoodModal(item) {
   selectedItem = item;
   quantity = 1;
   document.getElementById("foodItemName").innerText = item.name;
   document.getElementById("foodQuantity").innerText = quantity;
-  document.getElementById("foodModal").style.display = "block";
+  document.getElementById("extraCheese").checked = false;
+  document.getElementById("lessSalt").checked = false;
+  document.getElementById("specialInstructions").value = "";
+  document.getElementById("foodModal").style.display = "flex";
 }
 
 function closeFoodModal() {
@@ -348,33 +366,23 @@ function addItemToOrder() {
   cart.push({
     ...selectedItem,
     restaurant: restaurantName,
-    qty: quantity
+    qty: quantity,
+    options: {
+      extraCheese: document.getElementById("extraCheese").checked,
+      lessSalt: document.getElementById("lessSalt").checked,
+      instructions: document.getElementById("specialInstructions").value
+    }
   });
   localStorage.setItem("cart", JSON.stringify(cart));
+  alert(selectedItem.name + " added to cart!");
   closeFoodModal();
 }
 
-/* DELIVERY TIME */
 function changeDelivery() {
   const times = ["15 – 25 min", "20 – 35 min", "30 – 45 min"];
   document.getElementById("deliveryTime").innerText =
     "🚚 Deliver in " + times[Math.floor(Math.random() * times.length)];
 }
 </script>
-
-<!-- EXISTING SCRIPTS (UNCHANGED) -->
-<script src="server/supabase/supabaseClient.js" async></script>
-<script src="smsAndEmailAPI.js" async></script>
-<script src="client/public/functions/mainTwilioFunction.js" async></script>
-<script src="client/public/functions/token.js" async></script>
-<script src="client/public/functions/sendSMS.js" async></script>
-<script src="client/public/functions/twilio.js" async></script>
-<script src="client/public/functions/map.js" async></script>
-<script src="client/public/functions/payfast.js" async></script>
-<script src="client/public/functions/notification.js" async></script>
-<script src="client/public/functions/mapFunctions.js" async></script>
-
 </body>
 </html>
-
-

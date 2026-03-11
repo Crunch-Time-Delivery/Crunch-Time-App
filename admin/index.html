@@ -164,8 +164,8 @@
     <div class="menu-icon" title="Menu" style="cursor:pointer; font-size:24px;" onclick="toggleMenuDropdown()">☰</div>
     <div id="menuDropdown">
       <button onclick="showSection('dashboard')">Dashboard</button>
-       <button onclick="window.location.href='http://127.0.0.1:5501/driver-app/admin/estabilshment.html'">Establishment</button>
-      <button onclick="window.location.href='http://127.0.0.1:5501/vendor-app/admin/restaurant_menu.html'">Restaurant Menu</button>
+      <button onclick="window.location.href='http://127.0.0.1:5501/admin/estabilshment.html '">Establishment</button>
+      <button onclick="window.location.href='http://127.0.0.1:5501/admin/restaurant_menu.html '">Restaurant Menu</button>
       <button onclick="showSection('Driver')">Driver</button>
       <button onclick="showSection('Vendor')">Vendor</button>
     </div>
@@ -344,39 +344,41 @@
             <div style="margin-left:auto;">467</div>
           </div>
         </div>
-        <!-- Popular Food Chart -->
-        <div class="popular-food" style="margin-top:30px;">
-          <div class="food-header" style="font-size:20px; font-weight:bold; margin-bottom:5px;">Popular Food</div>
-          <div class="chart-container">
-            <canvas id="circleChart" width="400" height="400"></canvas>
-          </div>
-          <div class="food-types" style="display:flex; flex-wrap:wrap; gap:15px; margin-top:10px">
-            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF6384;"></div>
-              <div>Fast Food - 40%</div>
-            </div>
-            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#36A2EB;"></div>
-              <div>Asian - 20%</div>
-            </div>
-            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FFCE56;"></div>
-              <div>Pasta - 15%</div>
-            </div>
-            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#4BC0C0;"></div>
-              <div>Mexican - 10%</div>
-            </div>
-            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#9966FF;"></div>
-              <div>Turkish - 5%</div>
-            </div>
-            <div class="food-item" style="display:flex; align-items:center; gap:10px;">
-              <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF9F40;"></div>
-              <div>Desserts - 10%</div>
-            </div>
-          </div>
-        </div>
+<!-- Popular Food Chart -->
+<div class="popular-food" style="margin-top:30px;">
+  <div class="food-header" style="font-size:20px; font-weight:bold; margin-bottom:2px;">Popular Food</div>
+  <div class="chart-container" style="margin-top:3px;">
+    
+    <canvas id="circleChart" width="400" height="400"></canvas>
+  </div>
+  <div class="food-types" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:5px;">
+    <div class="food-item" style="display:flex; align-items:center; gap:6px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF6384;"></div>
+      <div>Fast Food - 40%</div>
+    </div>
+    <div class="food-item" style="display:flex; align-items:center; gap:6px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#36A2EB;"></div>
+      <div>Asian - 20%</div>
+    </div>
+    <div class="food-item" style="display:flex; align-items:center; gap:6px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FFCE56;"></div>
+      <div>Pasta - 15%</div>
+    </div>
+    <div class="food-item" style="display:flex; align-items:center; gap:6px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#4BC0C0;"></div>
+      <div>Mexican - 10%</div>
+    </div>
+    <div class="food-item" style="display:flex; align-items:center; gap:6px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#9966FF;"></div>
+      <div>Turkish - 5%</div>
+    </div>
+    <div class="food-item" style="display:flex; align-items:center; gap:6px;">
+      <div class="food-color" style="width:20px; height:20px; border-radius:50%; background:#FF9F40;"></div>
+      <div>Desserts - 10%</div>
+    </div>
+  </div>
+</div>
+
         <!-- View Select Role Button -->
         <div style="margin:30px 20px;">
           <button style="background:red; color:#fff; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;" onclick="showRolePopup()">View Select Role</button>
@@ -519,65 +521,137 @@
   let adminPassword = 'crunchtimeadmin';
 
   let isAuthenticated = false;
+// ================== UTILITY FUNCTIONS ==================
+// Function to simulate sending an email
+function sendEmail(to, subject, body) {
+  alert(`Simulated Email to ${to}:\nSubject: ${subject}\n${body}`);
+}
 
-  // ================== UTILITY FUNCTIONS ==================
-  function sendEmail(to, subject, body) {
-    alert(`Simulated Email to ${to}:\nSubject: ${subject}\n${body}`);
+// Function to simulate sending a notification
+function sendNotification(to, message) {
+  alert(`Simulated Notification to ${to}:\n${message}`);
+}
+
+// Function to show a visual notification message on the webpage
+function showNotificationMessage(message, color = '#4CAF50') {
+  let notif = document.getElementById('notification');
+
+  if (!notif) {
+    notif = document.createElement('div');
+    notif.id = 'notification';
+    notif.style.position = 'fixed';
+    notif.style.top = '20px';
+    notif.style.right = '20px';
+    notif.style.zIndex = '9999';
+    notif.style.transition = 'opacity 0.5s ease';
+    document.body.appendChild(notif);
   }
-  function sendNotification(to, message) {
-    alert(`Simulated Notification to ${to}:\n${message}`);
+
+  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; border-radius:4px; max-width:300px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">${message}</div>`;
+  notif.style.opacity = '1';
+
+  // Clear previous timeout if exists
+  if (showNotificationMessage.timeoutId) {
+    clearTimeout(showNotificationMessage.timeoutId);
   }
 
-  function showNotificationMessage(message, color='#4CAF50') {
-  const notif = document.getElementById('notification');
-  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
-  notif.style.display = 'block';
-
-  // Hide after 3 seconds
-  setTimeout(() => {
-    notif.style.display = 'none';
+  // Fade out after 3 seconds
+  showNotificationMessage.timeoutId = setTimeout(() => {
+    notif.style.opacity = '0';
+    // Remove element after fade out
+    setTimeout(() => {
+      if (notif) notif.remove();
+    }, 500);
   }, 3000);
 }
 
-function sendTwilioNotification(to, message) {
-  // Show sending message
-  showNotificationMessage('Sending notification...');
-  
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to: to, message: message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      showNotificationMessage('Notification sent successfully!', '#4CAF50');
-    } else {
-      showNotificationMessage('Failed to send notification.', '#f44336');
-    }
-  })
-  .catch(() => {
-    showNotificationMessage('Error sending notification.', '#f44336');
-  });
+// Function to cancel current notification immediately
+function cancelNotification() {
+  if (showNotificationMessage.timeoutId) {
+    clearTimeout(showNotificationMessage.timeoutId);
+  }
+  const notif = document.getElementById('notification');
+  if (notif) {
+    notif.style.opacity = '0';
+    setTimeout(() => notif.remove(), 500);
+  }
 }
 
-// Assuming you have an API endpoint at /notify/sms
-function sendSms(to, message) {
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to, message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('SMS sent:', data);
-  })
-  .catch(err => {
-    console.error('Error sending SMS:', err);
-  });
+// Utility to show a loading indicator
+function showLoading() {
+  let loader = document.getElementById('loading');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'loading';
+    loader.innerHTML = 'Loading...';
+    loader.style.position = 'fixed';
+    loader.style.top = '50%';
+    loader.style.left = '50%';
+    loader.style.transform = 'translate(-50%, -50%)';
+    loader.style.padding = '20px';
+    loader.style.backgroundColor = '#fff';
+    loader.style.border = '1px solid #ccc';
+    loader.style.borderRadius = '8px';
+    loader.style.zIndex = '99999';
+    document.body.appendChild(loader);
+  }
+  loader.style.display = 'block';
 }
+
+function hideLoading() {
+  const loader = document.getElementById('loading');
+  if (loader) {
+    loader.style.display = 'none';
+  }
+}
+
+// Validate phone number format
+function isValidPhoneNumber(phone) {
+  const pattern = /^\+?\d{10,15}$/; // Basic international pattern
+  return pattern.test(phone);
+}
+
+// Async function to send SMS via Twilio through your backend API
+async function sendTwilioSms(to, message) {
+  if (!to || !message) {
+    showNotificationMessage('Phone number or message missing', '#f44336');
+    return;
+  }
+  if (!isValidPhoneNumber(to)) {
+    showNotificationMessage('Invalid phone number format', '#f44336');
+    return;
+  }
+
+  showLoading();
+  showNotificationMessage('Sending SMS...');
+
+  try {
+    const response = await fetch('/notify/sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, message }),
+    });
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    const data = await response.json();
+    if (data.success) {
+      showNotificationMessage('SMS sent successfully!', '#4CAF50');
+    } else {
+      showNotificationMessage(`Failed to send SMS: ${data.error || 'Unknown error'}`, '#f44336');
+    }
+  } catch (error) {
+    console.error('Error sending SMS:', error);
+    showNotificationMessage('Error sending SMS.', '#f44336');
+  } finally {
+    hideLoading();
+  }
+}
+
+// Usage examples
+// sendTwilioSms('+1234567890', 'Hello from the enhanced script!');
+// Example usage:
+// sendTwilioSms('+1234567890', 'Hello from Twilio!');
+
 
   // ================== LOGIN & AUTH ==================
   function verifyLogin() {

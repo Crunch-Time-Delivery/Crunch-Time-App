@@ -35,33 +35,92 @@
     margin-bottom: 20px;
   }
 
-  /* Buttons styled as in first code */
+  /* Buttons styling */
   .centered-buttons {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 10px; /* space between buttons */
   }
   .centered-buttons button {
     width: 200px;
+    padding: 12px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 8px;
+    border: none;
+    transition: background-color 0.3s, transform 0.2s;
+    font-weight: bold;
+  }
+
+
+  
+  /* Buttons styled as links, matching overlay button styles */
+  .btn {
+    display: block;
+    width: 100%;
     padding: 12px;
     margin: 10px 0;
     font-size: 1em;
     cursor: pointer;
     border-radius: 4px;
     border: none;
+    text-align: center;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
   }
+
+  /* Style for Create Account and Browser Menu buttons to match overlay buttons */
+  .btn-create, .btn-browser {
+    background: #f60202; /* red background */
+    color: #fff; /* white text */
+  }
+
+  /* Optional: hover effects for these buttons */
+  .btn-create:hover, .btn-browser:hover {
+    background: #c00101;
+  }
+
+  /* Style for Login button to match overlay login button styles if needed */
+  #loginBtn {
+    background: #fff; /* white background */
+    color: #f60202; /* red text */
+    border: 1px solid #f60202;
+  }
+
+  #loginBtn:hover {
+    background: #f60202;
+    color: #fff;
+  }
+/*
   /* Specific styles for each button */
   .btn-create {
     background: #f60202; /* red background */
     color: #fff;
   }
+  .btn-create:hover {
+    background-color: #d00101; /* darker red on hover */
+    transform: scale(1.05);
+  }
+
   .btn-login {
     background: #fff; /* white background */
     color: #f60202; /* red text */
+    border: 2px solid #f60202; /* border for better visibility */
   }
+  .btn-login:hover {
+    background-color: #f60202;
+    color: #fff;
+    transform: scale(1.05);
+  }
+
   .btn-browser {
     background: #f60202; /* red background */
-    color: #fff; /* white text */
+    color: #fff;
+  }
+  .btn-browser:hover {
+    background-color: #d00101; /* darker red on hover */
+    transform: scale(1.05);
   }
 
   /* Terms and Privacy links styling */
@@ -85,13 +144,13 @@
     <h2 style="color:gray;">Welcome</h2>
     <p>Before enjoying CrunchTime deliveries</p>
     <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
-      <button class="centered-buttons btn-create" onclick="window.location.href=' http://127.0.0.1:5501/driver-app/registerDriver.html                 '">Create account</button>
-      <button class="centered-buttons btn-login" onclick="window.location.href='http://127.0.0.1:5501/driver-app/client/public/Login/loginDriver.html                             '">Login</button>
-      <button class="centered-buttons btn-browser" onclick="window.location.href='dummy.html'">Browser Menu</button>
+      <button  class="btn btn-create" onclick="window.location.href='http://127.0.0.1:5501/driver-app/registerDriver.html'">Create account</button>
+      <button  class="btn" onclick="window.location.href='http://127.0.0.1:5501/driver-app/client/public/Login/loginDriver.html'">Login</button>
+      <button class="btn btn-browser" onclick="window.location.href='dummy.html'">Browser Menu</button>
     </div>
-    <p>
+    <p id="termsText">
       By logging in or registering, you have agreed to the
-      <a href="http://127.0.0.1:5500/driver-app/terms-and-conditions.page.html" target="_blank">Terms and Conditions</a>
+      <a href="http://127.0.0.1:5501/driver-app/terms-and-conditions.page.html" target="_blank">Terms and Conditions</a>
       and
       <a href="dummy_privacy.pdf" target="_blank">Privacy Policy</a>.
     </p>

@@ -26,5 +26,7 @@ function showNotification(message, soundFile='notification.mp3') {
       notifButton.onclick=()=>{ alert('Notification clicked!'); };
       container.appendChild(notifButton);
     }
+    
   }
+
 }

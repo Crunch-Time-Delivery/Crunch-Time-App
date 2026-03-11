@@ -2,19 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>AI Chat App</title>
+<title>AI Chat App - Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<!-- Google Platform Library -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f2f5;
 }
-/* Your existing styles... */
 .top-bar {
   background: #ef0606;
   color: #fff;
@@ -22,6 +20,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 .top-bar button {
   background: #fff;
@@ -31,56 +32,77 @@ body {
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
+  font-size: 12px;
+  margin-left: 5px;
 }
 .chat-container {
-  max-width: 420px;
+  max-width: 500px;
   margin: 20px auto;
   background: #fff;
   border-radius: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   display: flex;
   flex-direction: column;
-  height: 75vh;
+  height: 80vh;
 }
 .messages {
   flex: 1;
-  padding: 14px;
+  padding: 15px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 .msg {
-  margin-bottom: 10px;
-  padding: 8px 10px;
-  border-radius: 10px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border-radius: 15px;
   max-width: 80%;
   font-size: 14px;
+  position: relative;
+  line-height: 1.4;
+}
+.msg .time {
+  font-size: 10px;
+  display: block;
+  margin-top: 5px;
+  opacity: 0.7;
 }
 .user {
-  background: #e8f0fe;
-  color: #f20909;
+  background: #f20909;
+  color: #fff;
   margin-left: auto;
-  text-align: right;
+  border-bottom-right-radius: 2px;
 }
 .bot {
   background: #f1f3f4;
   color: #333;
   margin-right: auto;
+  border-bottom-left-radius: 2px;
 }
 .input-box {
   display: flex;
-  border-top: 1px solid #ddd;
+  padding: 10px;
+  border-top: 1px solid #eee;
 }
 .input-box input {
   flex: 1;
   padding: 12px;
-  border: none;
+  border: 1px solid #ddd;
+  border-radius: 25px;
   outline: none;
+  padding-left: 20px;
 }
 .input-box button {
   background: #f40404;
   color: #fff;
   border: none;
-  padding: 12px 18px;
+  padding: 0 20px;
+  margin-left: 10px;
+  border-radius: 25px;
   cursor: pointer;
+}
+.input-box button:disabled {
+    background: #ccc;
 }
 </style>
 </head>
@@ -88,23 +110,20 @@ body {
 
 <div class="top-bar" id="topBar">
   <div>AI Chat Bot 🤖</div>
-  <div id="g_id_onload"></div>
-  <div id="googleSignInButton" style="margin-left: 10px;"></div>
+  <div id="googleSignInButton"></div>
 </div>
 
 <div class="chat-container">
   <div class="messages" id="messages"></div>
   <div class="input-box">
-    <input id="messageInput" disabled placeholder="Please log in…" />
+    <input id="messageInput" disabled placeholder="Please log in…" onkeypress="handleKeyPress(event)" />
     <button id="sendBtn" disabled onclick="sendMessage()">Send</button>
   </div>
 </div>
 
 <script>
-// Your Client ID
 const CLIENT_ID = '866867707128-mq963ediu3mijf16r27c8e1fgnmp2h3f';
 
-// Initialize Google Sign-In
 window.onload = () => {
   google.accounts.id.initialize({
     client_id: CLIENT_ID,
@@ -112,102 +131,138 @@ window.onload = () => {
   });
   google.accounts.id.renderButton(
     document.getElementById("googleSignInButton"),
-    { theme: "outline", size: "large" }
+    { theme: "outline", size: "medium" }
   );
+  
+  // Load existing history if user was already logged in (simulated)
+  loadChatHistory();
 };
 
-// Handle sign-in success
 function handleGoogleSignIn(response) {
-  const credential = response.credential;
-  const payload = parseJwt(credential);
+  const payload = parseJwt(response.credential);
   window.currentUser = {
     name: payload.name,
-    email: payload.email,
     avatar: payload.picture
   };
   updateUIAfterLogin();
-  addMessage("Logged in successfully ✅", "bot");
+  addMessage("Logged in! How can I help you today?", "bot", false);
 }
 
-// Decode JWT
 function parseJwt(token) {
-  const base64Url = token.split('.')[1];
-  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-  const jsonPayload = decodeURIComponent(
-    atob(base64)
-      .split('')
-      .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-      .join('')
-  );
-  return JSON.parse(jsonPayload);
+  return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
 }
 
-// UI after login
 function updateUIAfterLogin() {
   document.getElementById("topBar").innerHTML = `
-    <div>Welcome, ${currentUser.name} 👋</div>
     <div style="display:flex;align-items:center;gap:10px">
-      <img src="${currentUser.avatar}" style="width:32px;height:32px;border-radius:50%">
+      <img src="${currentUser.avatar}" style="width:30px;height:30px;border-radius:50%">
+      <span>Hi, ${currentUser.name.split(' ')[0]}</span>
+    </div>
+    <div>
+      <button onclick="clearChat()">Clear Chat</button>
       <button onclick="logout()">Logout</button>
     </div>
   `;
-  document.getElementById("messageInput").disabled = false;
+  const input = document.getElementById("messageInput");
+  input.disabled = false;
+  input.placeholder = "Type a message...";
   document.getElementById("sendBtn").disabled = false;
-  document.getElementById("messageInput").placeholder = "Type your message…";
+  input.focus();
 }
 
-// Logout
-function logout() {
-  location.reload();
+function handleKeyPress(e) {
+  if (e.key === "Enter") sendMessage();
 }
 
-// Chat functions
-function sendMessage() {
+async function sendMessage() {
   const input = document.getElementById("messageInput");
   const text = input.value.trim();
   if (!text) return;
+
   addMessage(text, "user");
   input.value = "";
-  const typing = addMessage("Typing…", "bot");
-  setTimeout(() => {
-    typing.remove();
-    addMessage(generateRemoteAIReply(text), "bot");
-  }, 900);
+  
+  const typingId = "typing-" + Date.now();
+  const typingDiv = addMessage("DeepAI is thinking...", "bot", false, typingId);
+  
+  const reply = await generateDeepAiResponse(text);
+  
+  document.getElementById(typingId).remove();
+  addMessage(reply, "bot");
 }
-
 async function generateDeepAiResponse(message) {
-  const apiUrl = 'https://api.deepai.org/api/text-generator';
+  const apiKey = 'quickstart-QUdJIGlzIGNvbWJlZC4'; // Replace with your actual API key for production
+  const url = 'https://api.deepai.org/api/text-generator';
 
   try {
-    const response = await fetch(apiUrl, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Api-Key': 'quickstart-QUdJIGlzIGNvbWJlZC4', // public test key
-        'Content-Type': 'application/json'
+        'Api-Key': apiKey,
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ text: message })
+      body: JSON.stringify({
+        text: message,
+        // You can add parameters like max_tokens if supported
+      }),
     });
+
     const data = await response.json();
 
-    if (data.output) {
-      return `🤖 DeepAI:\n\n${data.output}`;
+    // Check if the response contains the generated text
+    if (data && data.output) {
+      return data.output;
     } else {
-      console.error('DeepAI response error:', data);
-      return `🤖 Sorry, DeepAI didn't return a valid response.`;
+      throw new Error('Invalid response from DeepAI API');
     }
   } catch (error) {
-    console.error('DeepAI API error:', error);
-    return `🤖 Sorry, I couldn't connect to DeepAI right now.`;
+    console.error('Error:', error);
+    return 'Sorry, I encountered an error.';
   }
 }
 
-function addMessage(text, type) {
+// Example Usage
+generateDeepAiResponse("Hello, how are you?").then(reply => console.log(reply));
+function addMessage(text, type, save = true, id = null) {
+  const messagesDiv = document.getElementById("messages");
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
   const div = document.createElement("div");
   div.className = `msg ${type}`;
-  div.textContent = text;
-  document.getElementById("messages").appendChild(div);
-  div.scrollIntoView({ behavior: "smooth" });
+  if(id) div.id = id;
+  div.innerHTML = `${text} <span class="time">${time}</span>`;
+  
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+  if (save) {
+    saveMessageToHistory({ text, type, time });
+  }
   return div;
+}
+
+// PERSISTENCE FUNCTIONS
+function saveMessageToHistory(msgObj) {
+  let history = JSON.parse(localStorage.getItem("chat_history")) || [];
+  history.push(msgObj);
+  localStorage.setItem("chat_history", JSON.stringify(history));
+}
+
+function loadChatHistory() {
+  let history = JSON.parse(localStorage.getItem("chat_history")) || [];
+  history.forEach(m => addMessage(m.text, m.type, false));
+}
+
+function clearChat() {
+  if(confirm("Clear all messages?")) {
+    localStorage.removeItem("chat_history");
+    document.getElementById("messages").innerHTML = "";
+  }
+}
+
+function logout() {
+  localStorage.removeItem("chat_history");
+  location.reload();
 }
 </script>
 

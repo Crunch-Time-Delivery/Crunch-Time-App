@@ -1,19 +1,27 @@
  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+// Replace with your actual Supabase URL and API key
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Replace with your actual key
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this environment variable is set
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Example error handler function
+/**
+ * Error handler
+ * @param {string} operation - Name of the operation
+ * @param {Object} error - Error object
+ */
 function handleError(operation, error) {
-  console.error(`Error during ${operation}:`, error.message);
-  // Add more error handling as needed
+  console.error(`Error during ${operation}:`, error.message || error);
 }
 
-// Fetch all vendors with specific fields
+/**
+ * Fetch specific vendor fields, ordered by creation date (latest first)
+ * @returns {Promise<Array|null>}
+ */
 export async function fetchVendor() {
   const { data, error } = await supabase
-    .from('vendor') // Ensure your table name is lowercase 'vendor' or 'Vendor'
+    .from('vendor') // Confirm your table name is 'vendor'
     .select(`
       id,
       vendor,
@@ -38,51 +46,63 @@ export async function fetchVendor() {
   return data;
 }
 
-// Fetch all vendors (simpler)
+/**
+ * Fetch all vendors (all columns)
+ * @returns {Promise<Array|null>}
+ */
 export async function fetchAllVendors() {
   const { data, error } = await supabase.from('vendor').select('*');
   if (error) {
-    console.error('Error fetching vendors:', error);
+    handleError('fetchAllVendors', error);
     return null;
   }
   return data;
 }
 
-// Create a new vendor
+/**
+ * Create a new vendor
+ * @param {Object} vendorData - Data for the new vendor
+ * @returns {Promise<Object|null>}
+ */
 export async function createVendor(vendorData) {
   const { data, error } = await supabase.from('vendor').insert([vendorData]);
   if (error) {
-    console.error('Error creating vendor:', error);
+    handleError('createVendor', error);
     return null;
   }
   return data;
 }
 
-// Update an existing vendor by ID
+/**
+ * Update vendor by ID
+ * @param {number|string} id - Vendor ID
+ * @param {Object} updateData - Data to update
+ * @returns {Promise<Object|null>}
+ */
 export async function updateVendor(id, updateData) {
   const { data, error } = await supabase
     .from('vendor')
     .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
+    .eq('id', id);
   if (error) {
-    console.error('Error updating vendor:', error);
+    handleError('updateVendor', error);
     return null;
   }
   return data;
 }
 
-// Delete a vendor by ID
+/**
+ * Delete vendor by ID
+ * @param {number|string} id - Vendor ID
+ * @returns {Promise<Object|null>}
+ */
 export async function deleteVendor(id) {
   const { data, error } = await supabase
     .from('vendor')
     .delete()
-    .eq('id', id)
-    .select()
-    .single();
+    .eq('id', id);
   if (error) {
-    console.error('Error deleting vendor:', error);
+    handleError('deleteVendor', error);
     return null;
   }
   return data;

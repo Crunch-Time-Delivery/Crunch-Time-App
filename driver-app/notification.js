@@ -13,6 +13,9 @@ function showNotification(message, soundFile) {
   }
 }
 
-
+export function notifyDriver(phoneNumber, message) {
+  // sendTwilioNotification implementation
+  // (including showNotificationMessage)
+}
 // Example: automatically trigger a notification (for testing)
 // showNotification("You have a new notification!", "notification.mp3");

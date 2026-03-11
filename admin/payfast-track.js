@@ -1,6 +1,11 @@
-// Function to fetch configuration (cached after first fetch)
+// Cache for the fetched configuration
 let payfastConfig = null;
 
+/**
+ * Fetches and caches the PayFast configuration from the provided URL.
+ * @param {string} configUrl - URL to fetch the configuration JSON
+ * @returns {Promise<Object>} - Resolves with the configuration object
+ */
 async function fetchConfig(configUrl) {
   if (payfastConfig) return payfastConfig; // Return cached config if available
   try {
@@ -16,19 +21,21 @@ async function fetchConfig(configUrl) {
   }
 }
 
-// Function to initiate and track a payment
+/**
+ * Initiates and tracks a payment with PayFast.
+ * @param {Object} paymentDetails - Optional overrides for payment data
+ */
 async function trackPayment(paymentDetails = {}) {
   try {
     // Fetch configuration once
     const config = await fetchConfig('payfastConfig.json');
 
-    // Prepare payment data - can override defaults with paymentDetails parameter
+    // Prepare payment data, overriding defaults if provided
     const paymentData = {
       merchantID: config.merchantID,
       merchantKey: config.merchantKey,
       amount: paymentDetails.amount || config.paymentAmount,
       currency: paymentDetails.currency || config.currency,
-      
     };
 
     // Send payment data to your backend API for processing
@@ -36,10 +43,10 @@ async function trackPayment(paymentDetails = {}) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-        // Add auth headers if needed, e.g.,
+        // Include auth headers if necessary, e.g.,
         // 'Authorization': 'Bearer YOUR_TOKEN'
       },
-      body: JSON.stringify(paymentData)
+      body: JSON.stringify(paymentData),
     });
 
     if (!response.ok) {

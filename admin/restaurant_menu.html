@@ -45,12 +45,13 @@
     .action-btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 1.2em; display: flex; align-items: center; justify-content: center; }
     .edit-btn { background: #007bff; color: #fff; }
     .edit-btn:hover { background: #0069d9; }
+    .save-btn { background: #28a745; color: #fff; }
+    .save-btn:hover { background: #218838; }
     .remove-btn { background: #dc3545; color: #fff; }
     .remove-btn:hover { background: #c82333; }
     /* Add button style */
     #add-restaurant { margin: 20px; padding: 12px 20px; background: red; color: #fff; border: none; border-radius: 6px; font-size: 1em; cursor: pointer; }
     #add-restaurant:hover { background: darkred; }
-    /* Additional styles omitted for brevity */
   </style>
 </head>
 <body>
@@ -100,6 +101,7 @@
     const dropdown = document.getElementById('menuDropdown');
     dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
   }
+
   document.addEventListener('click', (e) => {
     const dropdown = document.getElementById('menuDropdown');
     if (!dropdown.contains(e.target) && !document.querySelector('.menu-icon').contains(e.target)) {
@@ -148,6 +150,12 @@ function createRestaurantBox() {
   editBtn.innerHTML = '&#9998;';
   editBtn.title = 'Edit';
 
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'action-btn save-btn';
+  saveBtn.innerHTML = '&#128190;'; // floppy disk icon for save
+  saveBtn.title = 'Save';
+  saveBtn.style.display = 'none'; // hidden by default
+
   const removeBtn = document.createElement('button');
   removeBtn.className = 'action-btn remove-btn';
   removeBtn.innerHTML = '&times;';
@@ -155,6 +163,7 @@ function createRestaurantBox() {
 
   // Append buttons
   btnContainer.appendChild(editBtn);
+  btnContainer.appendChild(saveBtn);
   btnContainer.appendChild(removeBtn);
 
   // Append to textDiv
@@ -173,7 +182,16 @@ function createRestaurantBox() {
   editBtn.onclick = () => {
     name.contentEditable = true;
     name.focus();
+    editBtn.style.display = 'none';
+    saveBtn.style.display = 'inline-block';
   };
+
+  saveBtn.onclick = () => {
+    name.contentEditable = false;
+    editBtn.style.display = 'inline-block';
+    saveBtn.style.display = 'none';
+  };
+
   removeBtn.onclick = () => {
     container.removeChild(box);
   };
@@ -197,8 +215,8 @@ document.getElementById('search-input').addEventListener('keydown', (e) => {
 
 // Example backend data fetch (using supabase or other)
 async function fetchRestaurantMenus() {
-  // Replace with your backend API or database fetch
-  // For example, using supabase:
+  // Placeholder for backend fetch
+  // Replace with your API/database fetch
   // const { data, error } = await supabase.from('restaurant_menus').select('*');
   // console.log('Menus:', data);
 }

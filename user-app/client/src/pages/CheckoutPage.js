@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PayFast } from 'payfast-api';
 import { createPayFastTransaction } from '../../utils/payfastApi';
 
-const PayFastApiKey = 'YOUR_PAYFAST_API_KEY';
+const PayFastApiKey = 'q1cd2rdny4a53';
 
 const CheckoutPage = () => {
   const [transactionId, setTransactionId] = useState(null);

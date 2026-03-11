@@ -1,10 +1,8 @@
- import {
-    createClient
-  } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// Your Supabase URL and key (replace with your actual key; keep secret in server-side)
+// Your Supabase URL and key (replace with your actual key; keep public)
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // actual public anon key
+const supabaseKey = process.env.SUPABASE_KEY; //  actual public key
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Fetch Drivers
@@ -51,7 +49,7 @@ async function updateDriver() {
     .from('Drivers')
     .update(updatedData)
     .eq('id', 1)
-    .single();
+    .single(); // Ensure 'id' is primary key
   document.getElementById('output').textContent = error ? 'Error: ' + error.message : JSON.stringify(data, null, 2);
 }
 

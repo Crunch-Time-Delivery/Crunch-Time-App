@@ -4,9 +4,9 @@ const path = require("path");
 
 // Load environment variables (consider using 'dotenv' for local dev)
 // For production, securely store these credentials
-const accountSid = 'AC031642049dd74fcc581b0fd106936a4f';
-const authToken = '1447e415a2fc483bd2bfbea57451d55d';
-const twilioPhoneNumber = '+27795349327';
+const accountSid = process.env.TWILIO_ACCOUNT_SID || 'AC031642049dd74fcc581b0fd106936a4f';
+const authToken = process.env.TWILIO_AUTH_TOKEN || '1447e415a2fc483bd2bfbea57451d55d';
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER || '+27795349327';
 
 const client = twilio(accountSid, authToken);
 const app = express();
@@ -59,19 +59,19 @@ app.post("/send-multiple", (req, res) => {
 
 /**
  * Schedule a message to be sent after a delay (in seconds)
+ * Note: For production, consider using a task queue or scheduler
  */
 app.post("/schedule-message", (req, res) => {
     const { to, body, delaySeconds } = req.body;
     if (!to || !body || typeof delaySeconds !== "number") {
         return res.status(400).json({ success: false, message: "Missing or invalid parameters." });
     }
-    // Schedule via setTimeout (for demo; for production, consider a job queue)
     setTimeout(() => {
         client.messages
             .create({ body, to, from: twilioPhoneNumber })
             .then((msg) => {
                 console.log(`Scheduled message sent. SID: ${msg.sid}`);
-                // Optionally, store scheduled message info in database for management
+                // Optionally, store scheduled message info in a database
             })
             .catch((err) => {
                 console.error("Error sending scheduled message:", err);
@@ -104,7 +104,7 @@ app.post("/send-bulk", async (req, res) => {
     if (!Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ success: false, message: "Invalid 'messages' array." });
     }
-    const maxConcurrency = 5; // limit concurrent sends to avoid rate limits
+    const maxConcurrency = 5; // limit concurrent sends
     const results = [];
     for (let i = 0; i < messages.length; i += maxConcurrency) {
         const chunk = messages.slice(i, i + maxConcurrency);
@@ -114,7 +114,7 @@ app.post("/send-bulk", async (req, res) => {
             results.push(...sentMessages);
         } catch (err) {
             console.error("Error in bulk message:", err);
-            // Optionally handle retries or partial success
+            // handle retries if needed
         }
     }
     const sids = results.map(m => m.sid);
@@ -122,30 +122,28 @@ app.post("/send-bulk", async (req, res) => {
 });
 
 /**
- * Cancel a scheduled message (if stored and cancellable)
- * Note: Twilio doesn't support canceling messages once sent.
- * You need to implement your own scheduling and storage to cancel.
+ * Dummy endpoint for cancelling scheduled messages
+ * Note: Twilio does not support canceling messages once sent.
  */
 app.post("/cancel-scheduled", (req, res) => {
     const { scheduleId } = req.body;
-    // Implement your own storage and cancellation logic
-    // For demo, just respond with a message
+    // Implement your own scheduling system to support cancellations
     res.json({ success: false, message: "Cancellation not supported in this demo." });
 });
 
-// Additional utility: Send templated messages
+/**
+ * Send templated messages
+ */
 app.post("/send-template", (req, res) => {
     const { to, templateId, variables } = req.body;
-    // For example, you might have predefined templates
     const templates = {
         welcome: "Hello {name}, welcome to our service!",
-        reminder: "Hi {name}, your appointment is on {date}."
+        reminder: "Hi {name}, your order is on {orderId}."
     };
     const template = templates[templateId];
     if (!template) {
         return res.status(400).json({ success: false, message: "Invalid template ID." });
     }
-    // Replace variables
     let messageBody = template;
     for (const key in variables) {
         messageBody = messageBody.replace(`{${key}}`, variables[key]);
@@ -160,6 +158,6 @@ app.post("/send-template", (req, res) => {
 });
 
 // Start server
-app.listen(3000, () => {
-  console.log("Server listening at http://localhost:3000");
+app.listen(port, () => {
+  console.log(`Server listening at http://localhost:${port}`);
 });

@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Driver View Account</title>
+<!-- Include Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -37,6 +39,7 @@
     margin: auto;
     background-size: cover;
     background-position: center;
+    position: relative;
   }
   /* Style for the upload label button */
   label[for="picUpload"] {
@@ -54,6 +57,7 @@
     font-size: 14px;
     cursor: pointer;
     border: 2px solid #fff;
+    font-weight: bold;
   }
 </style>
 </head>
@@ -63,7 +67,15 @@
   <!-- Content will be injected here -->
 </div>
 
+<!-- Optional: Add output element for debugging -->
+<div id="output" style="white-space: pre-wrap; margin-top: 20px;"></div>
+
 <script>
+  // Initialize Supabase
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey = process.env.SUPABASE_KEY; // actual key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
   // Sample driver data; replace with actual data as needed
   const driver = {
     name: 'John',
@@ -107,9 +119,9 @@
     const picInput = document.getElementById('picUpload');
     const profileIcon = document.getElementById('profileIcon');
 
-    // Add the icon label after injecting HTML
+    // Set "+" icon for label
     const label = document.querySelector("label[for='picUpload']");
-    label.innerHTML = "+"; // Set the "+" icon
+    label.innerHTML = "+";
 
     label.onclick = () => {
       document.getElementById('picUpload').click();
@@ -140,24 +152,22 @@
   // Call the function to load the account page
   loadDriverAccount();
 
-   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = process.env.SUPABASE_KEY; // Replace with your actual key
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  // Function to load drivers from Supabase
+  async function loadDrivers() {
+    const { data: Drivers, error } = await supabase
+      .from('Drivers')
+      .select(`
+        id,
+        driver_name,
+        contact,
+        plate_no,
+        email
+      `);
+    document.getElementById('output').textContent = error ? 'Error: ' + error.message : JSON.stringify(Drivers, null, 2);
+  }
 
-
-// Fetch Drivers
-async function loadDrivers() {
-  const { data: Drivers, error } = await supabase
-    .from('Drivers')
-    .select(`
-      id,
-      driver_name,
-      contact,
-      plate_no,
-      email
-    `);
-  document.getElementById('output').textContent = error ? 'Error: ' + error.message : JSON.stringify(Drivers, null, 2);
-}
+  // Example: Call loadDrivers() to fetch data
+  loadDrivers();
 
 </script>
 

@@ -313,32 +313,139 @@ function submitCardForm(){
 /* INIT */
 recalc();
 
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY; //  actual key
-const supabase = createClient(supabaseUrl, supabaseKey)
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this env variable is set
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Fetch vendor data
+// Fetch a single user (as in your example)
 async function fetchUser() {
-  const { data: user, error } = await supabase
-    .from('User')
-    .select(`
-  cardType,
-  cardNumber,
- cvv,
- securityCode
+  try {
+    const { data: user, error } = await supabase
+      .from('User')
+      .select(`
+        cardType,
+        cardNumber,
+        cvv,
+        securityCode
+      `)
+      .single();
 
-`);
-
-  if (error) {
-    console.error('Error fetching user:', error);
+    if (error) {
+      console.error('Error fetching user:', error);
+      return null;
+    }
+    if (!user) {
+      console.warn('No user data found.');
+      return null;
+    }
+    return user;
+  } catch (err) {
+    console.error('Unexpected error fetching user:', err);
     return null;
   }
-  return User;
+}
 
+// Fetch all users
+async function fetchAllUsers() {
+  const { data, error } = await supabase
+    .from('User')
+    .select('*');
+  if (error) {
+    console.error('Error fetching users:', error);
+    return [];
   }
-  
+  return data;
+}
 
+// Fetch user by email or username
+async function fetchUserBy(field, value) {
+  const { data, error } = await supabase
+    .from('User')
+    .select('*')
+    .eq(field, value)
+    .single();
+  if (error) {
+    console.error(`Error fetching user by ${field}:`, error);
+    return null;
+  }
+  return data;
+}
+
+// Insert a new user
+async function insertUser(userData) {
+  const { data, error } = await supabase
+    .from('User')
+    .insert([userData])
+    .single();
+  if (error) {
+    console.error('Error inserting user:', error);
+    return null;
+  }
+  return data;
+}
+
+// Batch insert multiple users
+async function insertMultipleUsers(usersArray) {
+  const { data, error } = await supabase
+    .from('User')
+    .insert(usersArray);
+  if (error) {
+    console.error('Error inserting multiple users:', error);
+    return [];
+  }
+  return data;
+}
+
+// Update user by ID
+async function updateUser(id, updates) {
+  const { data, error } = await supabase
+    .from('User')
+    .update(updates)
+    .eq('id', id)
+    .single();
+  if (error) {
+    console.error('Error updating user:', error);
+    return null;
+  }
+  return data;
+}
+
+// Batch update users
+async function updateMultipleUsers(updatesArray) {
+  const results = [];
+  for (const { id, ...updates } of updatesArray) {
+    const result = await updateUser(id, updates);
+    results.push(result);
+  }
+  return results;
+}
+
+// Delete user by ID
+async function deleteUser(id) {
+  const { error } = await supabase
+    .from('User')
+    .delete()
+    .eq('id', id);
+  if (error) {
+    console.error('Error deleting user:', error);
+    return false;
+  }
+  return true;
+}
+
+// Export functions for use elsewhere
+export {
+  fetchUser,
+  fetchAllUsers,
+  fetchUserBy,
+  insertUser,
+  insertMultipleUsers,
+  updateUser,
+  updateMultipleUsers,
+  deleteUser,
+};
 </script>
 
 </body>

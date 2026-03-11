@@ -89,7 +89,7 @@
     <!-- Buttons for Driver and Admin -->
     <div id="buttonContainer">
       <button class="redirectBtn" id="driverBtn">Driver</button>
-      <button class="redirectBtn" id="adminBtn">Admin</button>
+   
     </div>
   </div>
 </div>
@@ -108,10 +108,9 @@
 </div>
 
 <script>
-
-   // Function to send SMS via backend API
-  function sendSms(toNumber, message) {
-  fetch('http://localhost:3000/send-sms', {
+// Function to send SMS via backend API
+function sendSms(toNumber, message) {
+  fetch('http://localhost:5501/send-sms', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -120,37 +119,60 @@
   })
   .then(response => response.json())
   .then(data => {
-    if(data.success) {
-      // Show success notification
+    if (data.success) {
       showNotification('SMS sent successfully.', 'success');
     } else {
-      // Show failure notification with error message
-      showNotification('Failed to send SMS: ' + data.error, 'error');
+      showNotification('Failed to send SMS: ' + (data.error || 'Unknown error'), 'error');
     }
   })
   .catch(() => {
-    // Show error notification if fetch fails
     showNotification('Error sending SMS.', 'error');
   });
 }
 
 // Helper function to display notifications
 function showNotification(message, type) {
-  // Create a notification element
+  // Create notification element
   const notification = document.createElement('div');
   notification.innerText = message;
   notification.className = `notification ${type}`; // style based on type
-  
-  // Append to body or a specific container
+
+  // Style the notification (can be customized further)
+  Object.assign(notification.style, {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    padding: '10px 20px',
+    margin: '10px',
+    backgroundColor: type === 'success' ? '#4BB543' : '#FF4136',
+    color: '#fff',
+    borderRadius: '5px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+    zIndex: 9999,
+    fontFamily: 'Arial, sans-serif',
+    fontSize: '14px',
+    opacity: 0,
+    transition: 'opacity 0.3s ease'
+  });
+
+  // Append to body
   document.body.appendChild(notification);
-  
-  // Remove after 3 seconds
+
+  // Animate fade-in
+  requestAnimationFrame(() => {
+    notification.style.opacity = 1;
+  });
+
+  // Remove after 3 seconds with fade-out
   setTimeout(() => {
-    document.body.removeChild(notification);
-  }, 3000);
+    notification.style.opacity = 0;
+    notification.addEventListener('transitionend', () => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    });
+  }, 5501);
 }
-
-
 
   // Admin credentials
   const adminUsername = 'crunchtimeadmin';
@@ -232,9 +254,7 @@ function showNotification(message, type) {
         alert('Login successful! Accessing driver dashboard...');
         // Redirect based on userType
         if (userType === 'driver') {
-          window.location.href='http://127.0.0.1:5501/driver-app/client/public/index.html                 ';
-        } else if (userType === 'admin') {
-          window.location.href='http://127.0.0.1:5500/driver-app/admin/admin_dashboard.html';
+          window.location.href='http://127.0.0.1:5501/vendor-app/client/public/mainpage.html                 ';
         }
       } else {
         alert('Your account is still pending approval. Please wait.');
@@ -265,7 +285,7 @@ document.getElementById('loginBtn').addEventListener('click', () => {
       localStorage.setItem('currentUser', JSON.stringify(driverData));
       if (driverApproved) {
         // Redirect directly if approved
-        window.location.href='http://127.0.0.1:5500/driver-app/index.html';
+        window.location.href='http://127.0.0.1:5501/driver-app/mainpage.html';
       } else {
         generateAndSendOtp();
         showOtpModal();
@@ -287,7 +307,7 @@ document.getElementById('loginBtn').addEventListener('click', () => {
 // Buttons for Driver and Admin
 document.getElementById('driverBtn')?.addEventListener('click', () => {
   // Redirect directly to driver app page
-  window.location.href='http://127.0.0.1:5501/driver-app/client/public/index.html';
+  window.location.href='http://127.0.0.1:5501/driver-app/client/public/mainpage.html';
 });
 document.getElementById('adminBtn')?.addEventListener('click', () => {
   userType = 'admin';
@@ -298,6 +318,92 @@ document.getElementById('adminBtn')?.addEventListener('click', () => {
 window.onload = () => {
   loadLoginPage();
 };
+
+// Validation functions
+function validateUsername(username) {
+  if (!username) {
+    alert('Username cannot be empty.');
+    return false;
+  }
+  // Example: username must be at least 4 characters
+  if (username.length < 4) {
+    alert('Username must be at least 4 characters long.');
+    return false;
+  }
+  // Add more rules if needed
+  return true;
+}
+
+function validatePassword(password) {
+  if (!password) {
+    alert('Password cannot be empty.');
+    return false;
+  }
+  // Example rules for password:
+  // At least 8 characters, contains uppercase, lowercase, number, special char
+  const minLength = 8;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[!@#\$%\^&\*]/.test(password);
+
+  if (password.length < minLength) {
+    alert('Password must be at least 8 characters long.');
+    return false;
+  }
+  if (!hasUpper) {
+    alert('Password must contain at least one uppercase letter.');
+    return false;
+  }
+  if (!hasLower) {
+    alert('Password must contain at least one lowercase letter.');
+    return false;
+  }
+  if (!hasNumber) {
+    alert('Password must contain at least one number.');
+    return false;
+  }
+  if (!hasSpecial) {
+    alert('Password must contain at least one special character (!@#$%^&*).');
+    return false;
+  }
+  return true;
+}
+
+document.getElementById('loginBtn').addEventListener('click', () => {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value.trim();
+
+  if (!userType) {
+    alert('Please select Driver or Admin login.');
+    return;
+  }
+  
+  // Validate username/email
+  if (!validateUsername(email)) {
+    return;
+  }
+  // Validate password
+  if (!validatePassword(password)) {
+    return;
+  }
+
+  // Existing credential checks...
+  if (userType === 'driver') {
+    if (driverData.email && driverData.email.toLowerCase() === email && driverData.password === password) {
+      localStorage.setItem('currentUser', JSON.stringify(driverData));
+      if (driverApproved) {
+        window.location.href='http://127.0.0.1:5501/driver-app/mainpage.html';
+      } else {
+        generateAndSendOtp();
+        showOtpModal();
+      }
+    } else {
+      alert('Invalid driver credentials.');
+    }
+  } 
+  userType = null;
+});
 </script>
 </body>
 </html>

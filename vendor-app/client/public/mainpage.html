@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vendor App</title>
+<!-- Font Awesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
+<style>
+  body { font-family: sans-serif; background:#f0f0f0; margin:0; }
+  .header { position: fixed; top:0; width:100%; height:60px; background:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 20px; box-shadow:0 2px 4px rgba(0,0,0,0.1); z-index:999; }
+  .vendor-text { font-weight:bold; color:red; font-size:1.2em; }
+  .menu-container { display: flex; align-items: center; position: relative; margin-left: -20px; }
+  .profile-btn { background:#ff0000; color:#fff; padding:8px 12px; border:none; border-radius:50px; cursor:pointer; }
+  .dropdown { display:none; position:absolute; right:20px; top:60px; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.2); min-width:200px; z-index:1000; }
+  .dropdown.show { display:block; }
+  .dropdown a { display:block; padding:10px 15px; text-decoration:none; color:#333; }
+  .dropdown a:hover { background:#f0f0f0; }
+  .container { margin-top:80px; padding:20px; max-width:1200px; margin-left:auto; margin-right:auto; background:#fff; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+  /* Buttons */
+  .section { margin-top:20px; }
+  .red-button { background-color: #f60202; color: #fff; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; margin: 10px 0; }
+  /* Forms */
+  .form-container { background: #fff; padding: 20px; border-radius: 8px; max-width: 500px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .form-container input, .form-container select, .form-container textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+  /* Table styles */
+  table { width:100%; border-collapse:collapse; margin-top:10px; }
+  th, td { border:1px solid #ccc; padding:8px; }
+  th { background:#f0f0f0; }
+  /* Payment status badges */
+  .badge { padding: 4px 8px; border-radius: 4px; color: #fff; font-weight: bold; font-size: 0.9em; display:inline-block; }
+  .status-success { background-color: #4CAF50; }
+  .status-pending { background-color: #FFC107; }
+</style>
+</head>
+<body>
+
+<!-- Notification Message -->
+<div id="notificationMessage"></div>
+
+<!-- Header -->
+<div class="header">
+  <div class="vendor-text">Vendor</div>
+  <div class="menu-container">
+    <button class="profile-btn" id="profileBtn" onclick="toggleDropdown()">
+      <i class="fas fa-user-circle"></i> Menu
+    </button>
+    <div class="dropdown" id="profileDropdown">
+      <a href="#" onclick="showManagement('items'); return false;">Manage Items</a>
+      <a href="#" onclick="showManagement('orders'); return false;">Manage Orders</a>
+      <a href="#" onclick="showManagement('payment'); return false;">Payment History</a>
+      <a href="#" onclick="logout(); return false;">Logout</a>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Management Buttons -->
+  <div class="management-buttons">
+    <button class="red-button" onclick="showSection('menuUpload')">Upload Restaurant Menu</button>
+    <button class="red-button" onclick="showSection('restaurantInfo')">Enter Restaurant Info</button>
+    <button class="red-button" onclick="showSection('addItem')">Add Item</button>
+    <button class="red-button" onclick="showSection('addOrder')">Add Order</button>
+    <button class="red-button" onclick="showManagement('payment')">Payment History</button>
+  </div>
+
+  <!-- Sections -->
+  <div id="section-menuUpload" class="section" style="display:none;">
+    <h3>Upload Restaurant Menu (PDF)</h3>
+    <div class="form-container">
+      <input type="text" id="restaurantName" placeholder="Restaurant Name" />
+      <input type="file" id="menuFile" accept="application/pdf" />
+      <button class="red-button" onclick="uploadMenu()">Upload Menu</button>
+    </div>
+  </div>
+
+  <div id="section-restaurantInfo" class="section" style="display:none;">
+    <h3>Enter Restaurant Details</h3>
+    <div class="form-container">
+      <input type="text" id="restName" placeholder="Restaurant Name" />
+      <input type="text" id="contact" placeholder="Contact" />
+      <input type="text" id="website" placeholder="Website" />
+      <input type="text" id="address" placeholder="Address" />
+      <button class="red-button" onclick="saveRestaurantInfo()">Save Details</button>
+    </div>
+  </div>
+
+  <!-- Add Item -->
+<div id="section-addItem" class="section" style="display:none;">
+  <h3>Add Menu Item</h3>
+  <div class="form-container">
+    <input type="text" id="itemVendor" placeholder="Restaurant / Vendor Name" />
+    <input type="text" id="itemName" placeholder="Item Name (e.g. Chicken Burger)" />
+    <textarea id="itemDescription" placeholder="Item Description"></textarea>
+    <select id="itemCategory">
+      <option value="">Select Category</option>
+      <option value="Fast Food">Fast Food</option>
+      <option value="Burgers">Burgers</option>
+      <option value="Pizza">Pizza</option>
+      <option value="Healthy">Healthy</option>
+      <option value="Asian">Asian</option>
+    </select>
+    <input type="number" id="itemPrice" placeholder="Price (ZAR)" />
+    <input type="number" id="itemDiscount" placeholder="Discount % (optional)" />
+    <input type="text" id="itemPortion" placeholder="Portion Size (e.g. Large)" />
+    <input type="number" id="prepTime" placeholder="Prep Time (minutes)" />
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <label><input type="checkbox" id="isVeg"> Vegetarian</label>
+      <label><input type="checkbox" id="isSpicy"> Spicy</label>
+    </div>
+    <select id="itemStock">
+      <option value="In Stock">In Stock</option>
+      <option value="Out of Stock">Out of Stock</option>
+    </select>
+    <button class="red-button" onclick="addItem()">Save Item</button>
+  </div>
+</div>
+
+<!-- Add Order -->
+<div id="section-addOrder" class="section" style="display:none;">
+  <h3>Add Order</h3>
+  <div class="form-container">
+    <input type="text" id="orderId" placeholder="Order ID" />
+    <input type="text" id="orderUserName" placeholder="User Name" />
+    <input type="email" id="orderUserEmail" placeholder="User Email" />
+    <input type="number" id="orderAmount" placeholder="Amount" />
+    <!-- Additional fields for vendor info -->
+    <input type="text" id="vendorName" placeholder="Vendor Name" />
+    <input type="tel" id="vendorContact" placeholder="Vendor Contact Number" />
+    <input type="text" id="deliveryAddress" placeholder="Delivery Address" />
+    <button class="red-button" onclick="saveOrder()">Save Order</button>
+  </div>
+</div>
+
+<!-- Payment History -->
+<div id="section-payment" class="section" style="display:none;">
+  <h3>Payment History</h3>
+  <button class="red-button" onclick="fetchPayments()">Refresh</button>
+  <div id="paymentHistoryContainer"></div>
+</div>
+
+<!-- Manage sections -->
+<div id="section-items" class="section" style="display:none;">
+  <h3>Items</h3>
+  <div id="itemsTable"></div>
+</div>
+<div id="section-orders" class="section" style="display:none;">
+  <h3>Orders</h3>
+  <div id="ordersTable"></div>
+</div>
+<div id="section-users" class="section" style="display:none;">
+  <h3>Users</h3>
+  <div id="usersTable"></div>
+</div>
+</div>
+
+<script>
+// Utility to show a loading indicator
+function showLoading() {
+  let loader = document.getElementById('loadingIndicator');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'loadingIndicator';
+    loader.innerHTML = 'Loading...'; // Style as needed
+    loader.style.position = 'fixed';
+    loader.style.top = '50%';
+    loader.style.left = '50%';
+    loader.style.transform = 'translate(-50%, -50%)';
+    loader.style.padding = '20px';
+    loader.style.backgroundColor = '#fff';
+    loader.style.border = '1px solid #ccc';
+    loader.style.borderRadius = '8px';
+    loader.style.zIndex = '99999';
+    document.body.appendChild(loader);
+  }
+  loader.style.display = 'block';
+}
+
+function hideLoading() {
+  const loader = document.getElementById('loadingIndicator');
+  if (loader) {
+    loader.style.display = 'none';
+  }
+}
+
+// Function to show notifications, with fade-out
+function showNotificationMessage(text, color = '#333') {
+  let box = document.getElementById('notificationMessage');
+
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'notificationMessage';
+    box.style.position = 'fixed';
+    box.style.bottom = '20px';
+    box.style.left = '50%';
+    box.style.transform = 'translateX(-50%)';
+    box.style.padding = '12px 20px';
+    box.style.borderRadius = '8px';
+    box.style.color = '#fff';
+    box.style.fontSize = '14px';
+    box.style.zIndex = '9999';
+    box.style.transition = 'opacity 0.3s ease';
+    document.body.appendChild(box);
+  }
+
+  box.style.backgroundColor = color;
+  box.innerText = text;
+  box.style.opacity = '1';
+
+  if (showNotificationMessage.timeoutId) {
+    clearTimeout(showNotificationMessage.timeoutId);
+  }
+
+  showNotificationMessage.timeoutId = setTimeout(() => {
+    box.style.opacity = '0';
+    setTimeout(() => {
+      if (box) box.remove();
+    }, 300);
+  }, 4000);
+}
+
+// Cancel current notification
+function cancelNotification() {
+  if (showNotificationMessage.timeoutId) {
+    clearTimeout(showNotificationMessage.timeoutId);
+  }
+  const box = document.getElementById('notificationMessage');
+  if (box) {
+    box.style.opacity = '0';
+    setTimeout(() => box.remove(), 300);
+  }
+}
+
+// Validate phone number format
+function isValidPhoneNumber(phoneNumber) {
+  const pattern = /^\+?\d{10,15}$/; // Basic international number pattern
+  return pattern.test(phoneNumber);
+}
+
+// Updated sendTwilioNotification with async/await, retries, validation, and loading indicator
+async function sendTwilioNotification(phoneNumber, message, callback = null, retries = 3) {
+  if (!phoneNumber || !message) {
+    showNotificationMessage('Phone number or message missing', '#f44336');
+    if (callback && typeof callback === 'function') callback(false, { error: 'Missing data' });
+    return;
+  }
+
+  if (!isValidPhoneNumber(phoneNumber)) {
+    showNotificationMessage('Invalid phone number format', '#f44336');
+    if (callback && typeof callback === 'function') callback(false, { error: 'Invalid phone number' });
+    return;
+  }
+
+  showLoading();
+
+  let attempt = 0;
+  let success = false;
+  let responseData = null;
+
+  while (attempt < retries && !success) {
+    attempt++;
+    try {
+      showNotificationMessage(`Sending notification... (Attempt ${attempt})`, '#2196F3');
+
+      const response = await fetch('/send-twilio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: phoneNumber, message }),
+      });
+
+      if (!response.ok) throw new Error('Server error');
+
+      const data = await response.json();
+
+      if (data.success === true) {
+        showNotificationMessage('Notification sent successfully!', '#4CAF50');
+        success = true;
+        responseData = data;
+        if (callback && typeof callback === 'function') callback(true, data);
+        break; // Exit loop on success
+      } else {
+        showNotificationMessage(data.error || 'Failed to send notification.', '#f44336');
+        responseData = data;
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      showNotificationMessage('Network error. Please try again.', '#f44336');
+    }
+    if (!success && attempt < retries) {
+      await new Promise(res => setTimeout(res, 2000)); // wait before retry
+    }
+  }
+
+  hideLoading();
+
+  if (!success && callback && typeof callback === 'function') callback(false, responseData);
+  return { success, data: responseData };
+}
+
+// Initialize Supabase with your actual key
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY; // actual key
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+// Toggle dropdown menu
+function toggleDropdown() {
+  document.getElementById('profileDropdown').classList.toggle('show');
+}
+
+// Show specific management section
+function showManagement(type) {
+  document.querySelectorAll('.section').forEach(s => s.style.display='none');
+  if (type==='items') { 
+    document.getElementById('section-items').style.display='block'; 
+    renderItems(); 
+  }
+  if (type==='orders') { 
+    document.getElementById('section-orders').style.display='block'; 
+    renderOrders(); 
+  }
+  if (type==='users') { 
+    document.getElementById('section-users').style.display='block'; 
+    renderUsers(); 
+  }
+  if (type==='payment') { 
+    fetchPayments(); 
+    document.getElementById('section-payment').style.display='block'; 
+  }
+}
+
+// Show specific section
+function showSection(sectionId) {
+  document.querySelectorAll('.section').forEach(s => s.style.display='none');
+  document.getElementById('section-' + sectionId).style.display='block';
+}
+
+// Upload Menu
+async function uploadMenu() {
+  const restaurantName = document.getElementById('restaurantName').value.trim();
+  const fileInput = document.getElementById('menuFile');
+  if (!restaurantName || !fileInput.files.length) {
+    alert('Please enter restaurant name and select a PDF file.');
+    return;
+  }
+  const file = fileInput.files[0];
+  try {
+    const filePath = `menus/${restaurantName}_${Date.now()}.pdf`;
+    const { data, error } = await supabase.storage.from('menus').upload(filePath, file);
+    if (error) throw error;
+    await supabase.from('restaurant_menus').insert({ restaurant_name: restaurantName, file_path: filePath });
+    alert('Menu uploaded successfully!');
+  } catch (err) {
+    console.error('Upload error:', err);
+    alert('Error uploading menu: ' + err.message);
+  }
+}
+
+// Save Restaurant Info
+async function saveRestaurantInfo() {
+  const name = document.getElementById('restName').value.trim();
+  const contact = document.getElementById('contact').value.trim();
+  const website = document.getElementById('website').value.trim();
+  const address = document.getElementById('address').value.trim();
+  if (!name || !contact || !website || !address) {
+    alert('Please fill in all fields.');
+    return;
+  }
+  try {
+    await supabase.from('restaurants').insert({ name, contact, website, address });
+    alert('Restaurant details saved!');
+  } catch (err) {
+    console.error('Error saving info:', err);
+    alert('Error saving details: ' + err.message);
+  }
+}
+
+// Add Item
+async function addItem() {
+  const vendor = document.getElementById('itemVendor').value.trim();
+  const itemName = document.getElementById('itemName').value.trim();
+  const price = parseFloat(document.getElementById('itemPrice').value);
+  const stockStatus = document.getElementById('itemStock').value;
+  if (!vendor || !itemName || isNaN(price)) {
+    alert('Please fill all fields correctly.');
+    return;
+  }
+  try {
+    await supabase.from('items').insert({ vendor, item_name: itemName, price, stock_status: stockStatus });
+    alert('Item added!');
+    renderItems();
+  } catch (err) {
+    console.error('Add item error:', err);
+    alert('Error adding item: ' + err.message);
+  }
+}
+
+// Save Order (renamed from second addOrder)
+async function saveOrder() {
+  const orderId = document.getElementById('orderId').value.trim();
+  const userName = document.getElementById('orderUserName').value.trim();
+  const userEmail = document.getElementById('orderUserEmail').value.trim();
+  const amount = parseFloat(document.getElementById('orderAmount').value);
+  const vendorName = document.getElementById('vendorName').value.trim();
+  const vendorContact = document.getElementById('vendorContact').value.trim();
+  const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
+
+  if (!orderId || !userName || !userEmail || isNaN(amount)) {
+    alert('Please fill all fields correctly.');
+    return;
+  }
+  try {
+    await supabase.from('orders').insert({ order_id: orderId, user_name: userName, user_email: userEmail, vendor_name: vendorName, vendor_contact: vendorContact, delivery_address: deliveryAddress, amount });
+    alert('Order added!');
+    renderOrders();
+  } catch (err) {
+    console.error('Add order error:', err);
+    alert('Error adding order: ' + err.message);
+  }
+}
+
+// Add User
+async function addUser() {
+  const email = document.getElementById('userEmail').value.trim();
+  const name = document.getElementById('userName').value.trim();
+
+  if (!email || !name) {
+    alert('Please fill all fields.');
+    return;
+  }
+  try {
+    await supabase.from('users').insert({ email, name });
+    alert('User added!');
+    renderUsers();
+  } catch (err) {
+    console.error('Add user error:', err);
+    alert('Error adding user: ' + err.message);
+  }
+}
+
+// Render functions
+async function renderItems() {
+  const { data, error } = await supabase.from('items').select('*');
+  if (error) {
+    document.getElementById('itemsTable').innerHTML = '<p>Error loading items.</p>';
+    return;
+  }
+  if (data.length === 0) {
+    document.getElementById('itemsTable').innerHTML = '<p>No items available.</p>';
+    return;
+  }
+  let html = `<table><thead><tr><th>Vendor</th><th>Name</th><th>Price</th><th>Status</th></tr></thead><tbody>`;
+  data.forEach(item => {
+    html += `<tr>
+      <td>${item.vendor}</td>
+      <td>${item.item_name}</td>
+      <td>ZAR ${item.price.toFixed(2)}</td>
+      <td>${item.stock_status}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('itemsTable').innerHTML = html;
+}
+
+async function renderOrders() {
+  const { data, error } = await supabase.from('orders').select('*');
+  if (error) {
+    document.getElementById('ordersTable').innerHTML = '<p>Error loading orders.</p>';
+    return;
+  }
+  if (data.length === 0) {
+    document.getElementById('ordersTable').innerHTML = '<p>No orders available.</p>';
+    return;
+  }
+  let html = `<table><thead><tr><th>Order ID</th><th>User</th><th>Email</th><th>Method</th><th>Amount</th></tr></thead><tbody>`;
+  data.forEach(order => {
+    html += `<tr>
+      <td>${order.order_id}</td>
+      <td>${order.user_name}</td>
+      <td>${order.user_email}</td>
+      <td>${order.payment_method}</td>
+      <td>ZAR ${order.amount.toFixed(2)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('ordersTable').innerHTML = html;
+}
+
+async function renderUsers() {
+  const { data, error } = await supabase.from('users').select('*');
+  if (error) {
+    document.getElementById('usersTable').innerHTML = '<p>Error loading users.</p>';
+    return;
+  }
+  if (data.length === 0) {
+    document.getElementById('usersTable').innerHTML = '<p>No users available.</p>';
+    return;
+  }
+  let html = `<table><thead><tr><th>Email</th><th>Name</th></tr></thead><tbody>`;
+  data.forEach(user => {
+    html += `<tr>
+      <td>${user.email}</td>
+      <td>${user.name}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('usersTable').innerHTML = html;
+}
+
+// Helper function to render payments (used by multiple functions)
+function renderPayments(data) {
+  const container = document.getElementById('paymentHistoryContainer');
+
+  let html = `
+    <table class="payment-table">
+      <thead>
+        <tr>
+          <th>Payment ID</th>
+          <th>Order Details</th>
+          <th>Customer</th>
+          <th>Method</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  data.forEach(p => {
+    const statusClass = p.status?.toLowerCase() === 'completed' || p.status?.toLowerCase() === 'success' 
+                        ? 'status-success' : 'status-pending';
+
+    html += `
+      <tr>
+        <td style="font-family: monospace; font-size: 12px;">#${p.payment_id.slice(0, 8)}...</td>
+        <td>
+            <strong>Order:</strong> #${p.order_id}<br>
+            <small style="color: #666;">Ref: ${p.payment_reference || 'N/A'}</small>
+        </td>
+        <td>
+            <strong>${p.user_name || 'Guest'}</strong><br>
+            <small>${p.user_email || ''}</small>
+        </td>
+        <td>${p.payment_method}</td>
+        <td style="font-weight: bold;">R ${parseFloat(p.amount).toFixed(2)}</td>
+        <td>${new Date(p.payment_date).toLocaleDateString()} <br> 
+            <small>${new Date(p.payment_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+        </td>
+        <td><span class="badge ${statusClass}">${p.status.toUpperCase()}</span></td>
+      </tr>
+    `;
+  });
+
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+}
+
+// Fetch all payments
+async function fetchPayments() {
+  const container = document.getElementById('paymentHistoryContainer');
+  container.innerHTML = '<p style="text-align:center; padding:20px;">⌛ Loading history...</p>';
+
+  const { data, error } = await supabase
+    .from('payment_history')
+    .select('*')
+    .order('payment_date', { ascending: false });
+
+  if (error) {
+    console.error('Supabase Error:', error);
+    container.innerHTML = `<p style="color:red;">❌ Error loading payment history: ${error.message}</p>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = '<p style="text-align:center; padding:20px;">📭 No payment history available.</p>';
+    return;
+  }
+
+  renderPayments(data);
+}
+
+// Filter payments by method (e.g., PayFast)
+async function filterPaymentsByMethod(method) {
+  const container = document.getElementById('paymentHistoryContainer');
+  container.innerHTML = `<p style="text-align:center; padding:20px;">⌛ Loading payments for method: ${method}...</p>`;
+
+  const { data, error } = await supabase
+    .from('payment_history')
+    .select('*')
+    .eq('payment_method', method)
+    .order('payment_date', { ascending: false });
+
+  if (error) {
+    console.error('Supabase Error:', error);
+    container.innerHTML = `<p style="color:red;">❌ Error loading filtered payments: ${error.message}</p>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `<p style="text-align:center; padding:20px;">📭 No payments found for method: ${method}.</p>`;
+    return;
+  }
+
+  renderPayments(data);
+}
+
+// Export current payment table to CSV
+function exportPaymentsToCSV() {
+  const table = document.querySelector('.payment-table');
+  if (!table) {
+    alert('No data to export.');
+    return;
+  }
+
+  const rows = Array.from(table.querySelectorAll('tr'));
+  const csvContent = rows.map(row => {
+    const cells = Array.from(row.querySelectorAll('th, td'));
+    return cells.map(cell => `"${cell.innerText.replace(/"/g, '""')}"`).join(',');
+  }).join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'payment_history.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Refresh the payment data
+async function refreshPayments() {
+  await fetchPayments();
+}
+
+// Search payments by customer name or order ID
+async function searchPayments(query) {
+  const container = document.getElementById('paymentHistoryContainer');
+  container.innerHTML = `<p style="text-align:center; padding:20px;">⌛ Searching for "${query}"...</p>`;
+
+  const { data, error } = await supabase
+    .from('payment_history')
+    .select('*')
+    .or(`user_name.ilike.%${query}%,order_id.ilike.%${query}%`)
+    .order('payment_date', { ascending: false });
+
+  if (error) {
+    console.error('Supabase Error:', error);
+    container.innerHTML = `<p style="color:red;">❌ Error during search: ${error.message}</p>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `<p style="text-align:center; padding:20px;">📭 No payments found for "${query}".</p>`;
+    return;
+  }
+
+  renderPayments(data);
+}
+
+// Example event listener setup (adjust button IDs as needed)
+document.getElementById('filterPayFastBtn').addEventListener('click', () => filterPaymentsByMethod('PayFast'));
+document.getElementById('filterCreditCardBtn').addEventListener('click', () => filterPaymentsByMethod('Credit Card'));
+document.getElementById('exportBtn').addEventListener('click', exportPaymentsToCSV);
+document.getElementById('refreshBtn').addEventListener('click', () => fetchPayments());
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  if (e.target.value.length > 2) {
+    searchPayments(e.target.value);
+  }
+});
+
+// Initial fetch to display all payments on page load
+fetchPayments();
+
+// Initialize default view
+window.onload = () => {
+  showManagement('items');
+};
+
+// Logout function (optional)
+function logout() {
+  // Implement your logout logic here
+  alert('Logged out');
+}
+</script>
+</body>
+</html>

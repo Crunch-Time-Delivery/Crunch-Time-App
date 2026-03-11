@@ -1,3 +1,5 @@
+import { createClient } from '@supabase/supabase-js';
+
 function Connection() {
   const { useState } = React;
 
@@ -6,7 +8,7 @@ function Connection() {
   const [showSuccess, setShowSuccess] = React.useState(false);
 
   const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = process.env.SUPABASE_KEY; // Replace with your actual key
+  const supabaseKey = process.env.SUPABASE_KEY; // Ensure this env variable is set
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   const handleResetPassword = async () => {
@@ -15,7 +17,7 @@ function Connection() {
       return;
     }
     try {
-      const { data, error } = await supabase.auth.api.resetPasswordForEmail(email);
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) {
         alert('Error: ' + error.message);
       } else {
@@ -27,23 +29,48 @@ function Connection() {
     }
   };
 
-  // The JSX remains the same...
   return (
     <div>
       {/* Trigger button */}
-      <button onClick={() => setShowModal(true)} style={{ padding: '10px 20px', backgroundColor: 'red', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+      <button
+        onClick={() => setShowModal(true)}
+        style={{
+          padding: '10px 20px',
+          backgroundColor: 'red',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+        }}
+      >
         Forgot Password
       </button>
 
       {/* Modal for email input */}
       {showModal && (
-        <div style={{
-          display: 'flex', position: 'fixed', zIndex: 2000, top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center'
-        }}>
-          <div style={{
-            backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '300px', textAlign: 'center'
-          }}>
+        <div
+          style={{
+            display: 'flex',
+            position: 'fixed',
+            zIndex: 2000,
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#fff',
+              padding: '20px',
+              borderRadius: '8px',
+              width: '300px',
+              textAlign: 'center',
+            }}
+          >
             <h2>Reset Password</h2>
             <input
               type="email"
@@ -62,7 +89,7 @@ function Connection() {
                   color: '#fff',
                   border: 'none',
                   borderRadius: '5px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
                 }}
               >
                 Send Reset Email
@@ -75,7 +102,7 @@ function Connection() {
                 background: 'none',
                 border: 'none',
                 color: 'blue',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               Cancel
@@ -86,13 +113,29 @@ function Connection() {
 
       {/* Success modal */}
       {showSuccess && (
-        <div style={{
-          display: 'flex', position: 'fixed', zIndex: 2000, top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center'
-        }}>
-          <div style={{
-            backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '300px', textAlign: 'center'
-          }}>
+        <div
+          style={{
+            display: 'flex',
+            position: 'fixed',
+            zIndex: 2000,
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#fff',
+              padding: '20px',
+              borderRadius: '8px',
+              width: '300px',
+              textAlign: 'center',
+            }}
+          >
             <h2>Check your email</h2>
             <p>If the email exists, a password reset link has been sent.</p>
             <button
@@ -104,7 +147,7 @@ function Connection() {
                 color: '#fff',
                 border: 'none',
                 borderRadius: '5px',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               Close
