@@ -110,7 +110,7 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
   <input type="hidden" name="return_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html">
   <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/user-app/client/public/index.html">
   <input type="hidden" name="notify_url" value="https://example.com/notify">
-
+<input type="hidden" name="payment_method" value="cc">
   <div class="card">
 
     <!-- Instant EFT -->
@@ -162,6 +162,8 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
     </div>
 
   </div>
+
+  
 </form>
 
 <div class="bottom-bar" onclick="payNow()">
@@ -179,6 +181,361 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 </div>
 
 <script>
+function generateSignature(data, passPhrase = null) {
+    // Create parameter string
+    let pfOutput = '';
+    for (const [key, val] of Object.entries(data)) {
+        if (val !== '') {
+            pfOutput += `${key}=${encodeURIComponent(val.trim())}&`;
+        }
+    }
+    // Remove last ampersand
+    let getString = pfOutput.slice(0, -1);
+    if (passPhrase !== null) {
+        getString += `&passphrase=${encodeURIComponent(passPhrase.trim())}`;
+    }
+    // MD5 hashing requires a library in JavaScript
+    // Using crypto-js library for md5
+    const CryptoJS = require('crypto-js');
+    return CryptoJS.MD5(getString).toString();
+}
+// Construct variables
+const cartTotal = 10.00; // This amount needs to be sourced from your application
+const passphrase = 'jt7NOE43FZPn';
+const data = {
+    // Merchant details
+    merchant_id: '10000100',
+    merchant_key: '46f0cd694581a',
+    return_url: 'http://www.yourdomain.co.za/return.php',
+    cancel_url: 'http://www.yourdomain.co.za/cancel.php',
+    notify_url: 'http://www.yourdomain.co.za/notify.php',
+    // Buyer details
+    name_first: 'First Name',
+    name_last: 'Last Name',
+    email_address: 'test@test.com',
+    // Transaction details
+    m_payment_id: '1234', // Unique payment ID to pass through to notify_url
+    amount: cartTotal.toFixed(2),
+    item_name: 'Order#123'
+};
+
+function generateSignature(data, passphrase) {
+    // Sort data by keys
+    const sortedKeys = Object.keys(data).sort();
+    // Create query string
+    const queryString = sortedKeys.map(key => `${key}=${encodeURIComponent(data[key])}`).join('&');
+    // Append passphrase if provided
+    const stringToHash = passphrase ? `${queryString}&passphrase=${encodeURIComponent(passphrase)}` : queryString;
+
+    // Use crypto module to create md5 hash
+    const crypto = require('crypto');
+    return crypto.createHash('md5').update(stringToHash).digest('hex');
+}
+
+const signature = generateSignature(data, passphrase);
+data.signature = signature;
+
+// If in testing mode make use of either sandbox.payfast.co.za or www.payfast.co.za
+const testingMode = true;
+const pfHost = testingMode ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
+
+let htmlForm = `<form action="https://${pfHost}/eng/process" method="post">`;
+for (const [name, value] of Object.entries(data)) {
+    htmlForm += `<input name="${name}" type="hidden" value='${value}' />`;
+}
+htmlForm += '<input type="submit" value="Pay Now" /></form>';
+
+console.log(htmlForm);
+// Tell Payfast that this page is reachable by sending a 200 status
+// (In Node.js/Express, you would do: res.status(200).send();)
+// Here we just simulate the logic part
+
+const SANDBOX_MODE = true;
+const pfHost_pfHost = SANDBOX_MODE ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
+
+// Posted variables from ITN (assuming Express.js request body)
+const pfData = { ...req.body };
+
+// Strip any slashes in data
+for (const key in pfData) {
+    if (typeof pfData[key] === 'string') {
+        pfData[key] = pfData[key].replace(/\\(.)/g, '$1');
+    }
+}
+
+// Convert posted variables to a string
+let pfParamString = '';
+for (const key in pfData) {
+    if (key !== 'signature') {
+        pfParamString += `${key}=${encodeURIComponent(pfData[key])}&`;
+    } else {
+        break;
+    }
+}
+
+pfParamString = pfParamString.slice(0, -1);
+function pfValidSignature(pfData, pfParamString, pfPassphrase = null) {
+    // Calculate security signature
+    let tempParamString;
+    if (pfPassphrase === null) {
+        tempParamString = pfParamString;
+    } else {
+        tempParamString = pfParamString + '&passphrase=' + encodeURIComponent(pfPassphrase);
+    }
+
+    const crypto = require('crypto');
+    const signature = crypto.createHash('md5').update(tempParamString).digest('hex');
+    return pfData.signature === signature;
+}
+const dns = require('dns').promises;
+const url = require('url');
+
+async function pfValidIP(req) {
+    const validHosts = [
+        'www.payfast.co.za',
+        'sandbox.payfast.co.za',
+        'w1w.payfast.co.za',
+        'w2w.payfast.co.za',
+    ];
+
+    let validIps = [];
+
+    for (const pfHostname of validHosts) {
+        try {
+            const ips = await dns.resolve4(pfHostname);
+            validIps = validIps.concat(ips);
+        } catch (e) {
+            // ignore errors for hosts that can't be resolved
+        }
+    }
+
+    // Remove duplicates
+    validIps = [...new Set(validIps)];
+
+    const referrer = req.headers['referer'] || req.headers['referrer'];
+    if (!referrer) return false;
+
+    const referrerHost = url.parse(referrer).hostname;
+    if (!referrerHost) return false;
+
+    let referrerIp;
+    try {
+        const addresses = await dns.resolve4(referrerHost);
+        referrerIp = addresses[0];
+    } catch (e) {
+        return false;
+    }
+
+    return validIps.includes(referrerIp);
+}
+const axios = require('axios');
+const { HttpsProxyAgent } = require('https-proxy-agent');
+
+/**
+ * pfValidServerConfirmation
+ *
+ * @param {string} pfParamString - The parameter string to validate
+ * @param {string} pfHost - The PayFast host (defaults to sandbox)
+ * @param {string|null} pfProxy - Optional proxy string
+ * @returns {Promise<boolean>} - Returns true if valid, false otherwise
+ */
+async function pfValidServerConfirmation( pfParamString, pfHost = 'sandbox.payfast.co.za', pfProxy = null ) {
+    // Use cURL (if available)
+    // In Node.js, we check if the required 'axios' module is available.
+    // This maps to the PHP check: in_array( 'curl', get_loaded_extensions(), true )
+    let curlAvailable = false;
+    try {
+        if (require.resolve('axios')) {
+            curlAvailable = true;
+        }
+    } catch (e) {
+        curlAvailable = false;
+    }
+
+    if( curlAvailable ) {
+        // Variable initialization
+        const url = 'https://' + pfHost + '/eng/query/validate';
+
+        // Create default cURL object
+        // In JavaScript/Axios, we prepare a configuration object for the request
+        const config = {
+            url: url,
+            method: 'post',
+            // Set cURL options - Use curl_setopt for greater PHP compatibility
+            // Base settings
+            headers: {
+                'User-Agent': null // curl_setopt( $ch, CURLOPT_USERAGENT, NULL );
+            },
+            responseType: 'text',   // curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            // curl_setopt( $ch, CURLOPT_HEADER, false ); is default in Axios (headers are separated from data)
+            
+            // SSL Settings
+            // Node.js verifies certificates by default (SSL_VERIFYPEER = true, SSL_VERIFYHOST = 2)
+            httpsAgent: new (require('https').Agent)({
+                rejectUnauthorized: true
+            }),
+
+            // Standard settings
+            // curl_setopt( $ch, CURLOPT_URL, $url ); (Already set in config.url)
+            // curl_setopt( $ch, CURLOPT_POST, true ); (Already set in config.method)
+            data: pfParamString // curl_setopt( $ch, CURLOPT_POSTFIELDS, $pfParamString );
+        };
+
+        // Handle Proxy
+        if( pfProxy !== null && pfProxy !== '' ) {
+            // curl_setopt( $ch, CURLOPT_PROXY, $pfProxy );
+            config.httpsAgent = new HttpsProxyAgent(pfProxy);
+            config.proxy = false; // Disable internal axios proxy logic to use the agent
+        }
+
+        try {
+            // Execute cURL
+            const axiosResponse = await axios(config);
+            const response = axiosResponse.data;
+            
+            // curl_close( $ch ); (Handled automatically by axios/node)
+            
+            if (response === 'VALID') {
+                return true;
+            }
+        } catch (error) {
+            // If the request fails, we return false to match PHP behavior
+            return false;
+        }
+    }
+    return false;
+}
+/**
+ * Validates payment data by comparing the cart total with the gross amount.
+ * 
+ * @param {number|string} $cartTotal - The total amount in the cart.
+ * @param {Object} $pfData - The data object containing 'amount_gross'.
+ * @returns {boolean} - Returns true if the difference is within the allowed threshold (0.01).
+ */
+function pfValidPaymentData( $cartTotal, $pfData ) {
+    return !(Math.abs(Number($cartTotal) - Number($pfData['amount_gross'])) > 0.01);
+}
+const crypto = require('crypto');
+const axios = require('axios');
+
+/**
+ * PayFast Validation Functions
+ * These functions provide the necessary logic for the payment verification process.
+ */
+
+/**
+ * Validates the signature of the data received from PayFast.
+ * 
+ * @param {Object} pfData - The data received from PayFast (usually req.body).
+ * @param {string} pfParamString - The URL-encoded string of parameters received (excluding the signature).
+ * @param {string|null} pfPassphrase - The passphrase set in your PayFast account.
+ * @returns {boolean} - Returns true if the signature is valid.
+ */
+function pfValidSignature(pfData, pfParamString, pfPassphrase = null) {
+    let tempParamString = pfParamString;
+
+    if (pfPassphrase !== null) {
+        tempParamString += '&passphrase=' + encodeURIComponent(pfPassphrase.trim()).replace(/%20/g, '+');
+    }
+
+    const signature = crypto.createHash('md5').update(tempParamString).digest('hex');
+
+    return (signature === pfData['signature']);
+}
+
+/**
+ * Validates that the request is coming from a valid PayFast IP address.
+ * 
+ * @param {string} clientIp - The IP address of the requester (e.g., req.ip).
+ * @returns {boolean} - Returns true if the IP is valid.
+ */
+function pfValidIP(clientIp) {
+    const validHosts = [
+        'www.payfast.co.za',
+        'sandbox.payfast.co.za',
+        'w1w.payfast.co.za',
+        'w2w.payfast.co.za'
+    ];
+
+    const validIps = [
+        '196.33.227.224',
+        '176.34.250.255',
+        '54.123.40.154',
+        '54.70.245.245',
+        '54.72.31.200',
+        '54.171.247.143'
+    ];
+
+    // In a real implementation, you might want to perform a DNS lookup on validHosts
+    // to verify the IP, but checking against the known static list is the standard method.
+    return validIps.includes(clientIp);
+}
+
+/**
+ * Validates that the payment amount matches the expected cart total.
+ * 
+ * @param {number|string} cartTotal - The expected total amount from the local system.
+ * @param {Object} pfData - The data received from PayFast.
+ * @returns {boolean} - Returns true if the amounts match.
+ */
+function pfValidPaymentData(cartTotal, pfData) {
+    // PayFast returns amount_gross as a string. We cast both to float for comparison.
+    return (Math.abs(parseFloat(cartTotal) - parseFloat(pfData['amount_gross'])) < 0.01);
+}
+
+/**
+ * Performs a server-to-server confirmation with PayFast to verify the transaction.
+ * 
+ * @param {string} pfParamString - The URL-encoded string of parameters received.
+ * @param {string} pfHost - The PayFast host (e.g., 'www.payfast.co.za' or 'sandbox.payfast.co.za').
+ * @returns {Promise<boolean>} - Returns true if the server confirms the transaction is valid.
+ */
+async function pfValidServerConfirmation(pfParamString, pfHost) {
+    try {
+        const url = `https://${pfHost}/eng/query/validate`;
+        const response = await axios.post(url, pfParamString, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        // PayFast returns 'VALID' if the transaction is authentic
+        return response.data === 'VALID';
+    } catch (error) {
+        console.error('PayFast server confirmation failed:', error.message);
+        return false;
+    }
+}
+
+/**
+ * MAIN EXECUTION BLOCK
+ * This is the direct translation of the provided PHP snippet.
+ */
+
+// These variables are assumed to be populated from the incoming request (ITN)
+// and your application's database/session state.
+const pfData_ = {}; // Populate from req.body
+const pfParamString_ = ""; // Populate with the raw body string (excluding signature)
+const cartTotal_ = 0.00; // Expected total from your DB
+const pfHost_ = "sandbox.payfast.co.za"; // or "www.payfast.co.za"
+const clientIp = ""; // Populate from req.ip or req.connection.remoteAddress
+
+// Wrap in an async function to handle the asynchronous server confirmation
+(async () => {
+    const check1 = pfValidSignature(pfData, pfParamString);
+    const check2 = pfValidIP(clientIp);
+    const check3 = pfValidPaymentData(cartTotal, pfData);
+    const check4 = await pfValidServerConfirmation(pfParamString, pfHost);
+
+    if (check1 && check2 && check3 && check4) {
+        // All checks have passed, the payment is successful
+        console.log("Payment successful");
+    } else {
+        // Some checks have failed, check payment manually and log for investigation
+        console.log("Payment failed verification checks");
+    }
+})();
+
 /* ================= CARD FORM TOGGLE ================= */
 function toggleCardForm(show) {
   document.getElementById("cardForm").classList.toggle("hidden", !show);
@@ -235,7 +592,7 @@ function submitCardForm() {
 /* ================= GENERATE HASH AND SUBMIT ================= */
 function generateAndSubmitHash(paymentMethod) {
   const pfAmount = document.getElementById("pf_amount").value;
-  const merchantKey = document.querySelector('input[name="merchant_key"]').value;
+  const merchantKey = document.querySelector('input[name="q1cd2rdny4a53"]').value;
 
   const fields = {
     amount: pfAmount,
