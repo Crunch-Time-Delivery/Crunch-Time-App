@@ -211,18 +211,33 @@
           <button style="background-color:red; color:#fff;">Withdraw</button>
         </div>
       </div>
-      <!-- Total Income and Amounts for Income, Expense, Withdraw with % -->
-      <div style="margin-top:20px; padding-left:20px;">
-        <h2>Total Income: <span id="incomeAmount">R10,000</span>
-          <span class="percentage-change" id="incomePerc"></span>
-        </h2>
-        <h2>Expense: <span id="expenseAmount">R5,000</span>
-          <span class="percentage-change" id="expensePerc"></span>
-        </h2>
-        <h2>Withdraw: <span id="withdrawAmount">R2,000</span>
-          <span class="percentage-change" id="withdrawPerc"></span>
-        </h2>
-      </div>
+     <!-- Total Income and Amounts for Income, Expense, Withdraw with % -->
+<div style="margin-top:20px; padding-left:20px;">
+  <h2>Total Income: <span id="incomeAmount">R10,000</span>
+    <span class="percentage-change" id="incomePerc"></span>
+  </h2>
+  <h2>Expense: <span id="expenseAmount">R5,000</span>
+    <span class="percentage-change" id="expensePerc"></span>
+  </h2>
+  <h2>Withdraw: <span id="withdrawAmount">R2,000</span>
+    <span class="percentage-change" id="withdrawPerc"></span>
+  </h2>
+
+  <!-- PayFast Payment Button -->
+  <form action="https://www.payfast.co.za/eng/eng/process" method="post">
+    <!-- Replace with your PayFast Merchant ID and other required fields -->
+    <input type="hidden" name="merchant_id" value="10000100" />
+    <input type="hidden" name="merchant_key" value="46f0cd694581a" />
+    <input type="hidden" name="return_url" value="http://127.0.0.1:5501/admin/index.html" />
+    <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/admin/index.html" />
+    <input type="hidden" name="notify_url" value="https://yourwebsite.com/payment-notify" />
+    <input type="hidden" name="amount" value="2000" /> <!-- Amount to pay, e.g., R2000 -->
+    <input type="hidden" name="item_name" value="Withdrawal Payment" />
+     <input type="hidden" name="item_name" value="incomeAmount" />
+      <input type="hidden" name="item_name" value="expenseAmount" />
+    <button type="submit">Payment History</button>
+  </form>
+</div>
       
       <!-- Performance Section -->
       <div class="performance-section" style="margin-top:20px; padding:0 20px;">

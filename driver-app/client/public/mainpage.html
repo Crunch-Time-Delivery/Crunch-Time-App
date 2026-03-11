@@ -437,7 +437,7 @@ async function loadDriverHistoryPayment() {
     }
 
     let html = `<h1>Payment History</h1>`;
-    payments.forEach(p => {
+    for (const p of payments) {
       html += `
         <div class="card" style="margin-bottom:10px; padding:10px; border:1px solid #ccc;">
           <div><strong>Payment ID:</strong> ${p.id}</div>
@@ -446,11 +446,31 @@ async function loadDriverHistoryPayment() {
           <button onclick="trackPayFast('${p.id}')">Track Payment</button>
         </div>
       `;
-    });
+    }
     container.innerHTML = html;
   } catch (error) {
     console.error('Error loading payment history:', error);
     container.innerHTML = `<p>Error loading payment history. Please try again later.</p>`;
+  }
+}
+
+// Example function to track payment and update history
+async function trackPayFast(paymentId) {
+  try {
+    // Call your backend to get latest payment status from PayFast
+    const response = await fetch(`/update-payfast-status/${paymentId}`); // Your API endpoint
+    if (!response.ok) {
+      throw new Error(`Failed to update payment status: ${response.statusText}`);
+    }
+    const result = await response.json();
+
+    // Optionally, refresh the payment history after updating
+    await loadDriverHistoryPayment();
+
+    alert(`Payment ${paymentId} status updated: ${result.status}`);
+  } catch (error) {
+    console.error('Error tracking payment:', error);
+    alert('Failed to update payment status. Please try again.');
   }
 }
 
@@ -468,8 +488,9 @@ async function trackPayFast(paymentId) {
 
     const data = await response.json();
 
-    if (data.status) {
-      alert(`Payment ID: ${paymentId}\nStatus: ${data.status}\nDetails: ${data.details}`);
+    // Check if response contains expected fields
+    if (data && data.status) {
+      alert(`Payment ID: ${paymentId}\nStatus: ${data.status}\nDetails: ${data.details || 'N/A'}`);
     } else {
       alert(`Payment ID: ${paymentId} - No status information available.`);
     }
