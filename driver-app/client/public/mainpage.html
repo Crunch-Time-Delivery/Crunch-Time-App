@@ -474,31 +474,6 @@ async function trackPayFast(paymentId) {
   }
 }
 
-async function trackPayFast(paymentId) {
-  try {
-    const response = await fetch('/verify-payfast', { // Your verification API endpoint
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paymentId }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    // Check if response contains expected fields
-    if (data && data.status) {
-      alert(`Payment ID: ${paymentId}\nStatus: ${data.status}\nDetails: ${data.details || 'N/A'}`);
-    } else {
-      alert(`Payment ID: ${paymentId} - No status information available.`);
-    }
-  } catch (error) {
-    console.error('Error verifying payment:', error);
-    alert('Error verifying payment. Please try again.');
-  }
-}
 function loadOrderView() {
   const container = document.getElementById('innerContent');
   if (!container) {
