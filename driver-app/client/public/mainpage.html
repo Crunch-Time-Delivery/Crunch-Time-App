@@ -463,8 +463,7 @@ async function trackPayFast(paymentId) {
       throw new Error(`Failed to update payment status: ${response.statusText}`);
     }
     const result = await response.json();
-
-    // Optionally, refresh the payment history after updating
+   // Optionally, refresh the payment history after updating
     await loadDriverHistoryPayment();
 
     alert(`Payment ${paymentId} status updated: ${result.status}`);
