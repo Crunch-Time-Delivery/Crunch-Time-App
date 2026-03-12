@@ -190,6 +190,8 @@ async function sendMessage() {
   document.getElementById(typingId).remove();
   addMessage(reply, "bot");
 }
+
+// Function to generate response from DeepAI API
 async function generateDeepAiResponse(message) {
   const apiKey = 'quickstart-QUdJIGlzIGNvbWJlZC4'; // Replace with your actual API key for production
   const url = 'https://api.deepai.org/api/text-generator';
@@ -203,13 +205,12 @@ async function generateDeepAiResponse(message) {
       },
       body: JSON.stringify({
         text: message,
-        // You can add parameters like max_tokens if supported
+        // Additional parameters can be added here if supported
       }),
     });
 
     const data = await response.json();
 
-    // Check if the response contains the generated text
     if (data && data.output) {
       return data.output;
     } else {
@@ -221,15 +222,14 @@ async function generateDeepAiResponse(message) {
   }
 }
 
-// Example Usage
-generateDeepAiResponse("Hello, how are you?").then(reply => console.log(reply));
+// Function to add a message to the chat window
 function addMessage(text, type, save = true, id = null) {
   const messagesDiv = document.getElementById("messages");
   const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   
   const div = document.createElement("div");
   div.className = `msg ${type}`;
-  if(id) div.id = id;
+  if (id) div.id = id;
   div.innerHTML = `${text} <span class="time">${time}</span>`;
   
   messagesDiv.appendChild(div);
@@ -241,12 +241,69 @@ function addMessage(text, type, save = true, id = null) {
   return div;
 }
 
-// PERSISTENCE FUNCTIONS
-function saveMessageToHistory(msgObj) {
-  let history = JSON.parse(localStorage.getItem("chat_history")) || [];
-  history.push(msgObj);
-  localStorage.setItem("chat_history", JSON.stringify(history));
+// Function to fetch supplementary data
+async function fetchAdditionalData(endpoint) {
+  try {
+    const response = await fetch(endpoint);
+    if (!response.ok) throw new Error('Network response was not ok');
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return null;
+  }
 }
+
+// Function to clear all messages
+function clearMessages() {
+  const messagesDiv = document.getElementById("messages");
+  messagesDiv.innerHTML = '';
+  localStorage.removeItem('messageHistory');
+}
+
+// Function to save messages to local storage
+function saveMessageToHistory(message) {
+  let history = JSON.parse(localStorage.getItem('messageHistory')) || [];
+  history.push(message);
+  localStorage.setItem('messageHistory', JSON.stringify(history));
+}
+
+// Function to load message history from local storage
+function loadMessageHistory() {
+  const history = JSON.parse(localStorage.getItem('messageHistory')) || [];
+  history.forEach(msg => {
+    addMessage(msg.text, msg.type, false, null);
+  });
+}
+
+// Function to simulate typing indicator
+function simulateTyping(duration = 2000) {
+  const chatContainer = document.getElementById('messages');
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'msg typing';
+  typingDiv.innerHTML = 'Bot is typing... <span class="dots">...</span>';
+  chatContainer.appendChild(typingDiv);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+
+  return new Promise(resolve => {
+    setTimeout(() => {
+      chatContainer.removeChild(typingDiv);
+      resolve();
+    }, duration);
+  });
+}
+
+// Function to automatically reply after receiving a message
+async function autoReply(userMessage) {
+  await simulateTyping();
+  const reply = await generateDeepAiResponse(userMessage);
+  addMessage(reply, 'bot');
+}
+
+// Call loadMessageHistory on page load to display saved messages
+window.onload = () => {
+  loadMessageHistory();
+};
 
 function loadChatHistory() {
   let history = JSON.parse(localStorage.getItem("chat_history")) || [];
