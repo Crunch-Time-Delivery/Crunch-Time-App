@@ -1,59 +1,53 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Checkout</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#f5f5f5}
-.hidden{display:none}
-.container{max-width:420px;margin:auto;padding-bottom:90px}
-.header{background:#fff;padding:15px;font-weight:bold;text-align:center}
-.map img{width:100%;height:200px;object-fit:cover}
-.card,.tips{background:#fff;margin:12px;padding:14px;border-radius:14px}
-.address{display:flex;justify-content:space-between;align-items:center}
-.voucher{background:#ffb84d;padding:14px;margin:12px;border-radius:10px;text-align:center;font-weight:bold;color:#fff;cursor:pointer}
-
-.summary-row{display:flex;justify-content:space-between;margin-bottom:6px}
-.total-row{border-top:1px dashed #ddd;padding-top:8px;font-weight:bold;font-size:16px}
-
-.method{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
-.method-left{display:flex;align-items:center;gap:10px}
-.method img{width:32px}
-
-.bottom-bar{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:420px;background:red;color:#fff;
-  padding:16px;display:flex;justify-content:space-between;
-  font-weight:bold;cursor:pointer
+body {margin:0;font-family:Arial;background:#f5f5f5}
+/* Your existing CSS remains unchanged */
+.hidden { display:none; }
+.container { max-width:420px; margin:auto; padding-bottom:90px; }
+.header { background:#fff; padding:15px; font-weight:bold; text-align:center; }
+/* ... rest of your CSS ... */
+.map img { width:100%; height:200px; object-fit:cover; }
+.card, .tips { background:#fff; margin:12px; padding:14px; border-radius:14px; }
+.address { display:flex; justify-content:space-between; align-items:center; }
+.voucher { background:#ffb84d; padding:14px; margin:12px; border-radius:10px; text-align:center; font-weight:bold; color:#fff; cursor:pointer; }
+.summary-row { display:flex; justify-content:space-between; margin-bottom:6px; }
+.total-row { border-top:1px dashed #ddd; padding-top:8px; font-weight:bold; font-size:16px; }
+.method { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; }
+.method-left { display:flex; align-items:center; gap:10px; }
+.method img { width:32px; }
+.bottom-bar {
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:420px; background:red; color:#fff;
+  padding:16px; display:flex; justify-content:space-between;
+  font-weight:bold; cursor:pointer;
 }
-
 /* Tips */
-.tip-options{display:flex;gap:10px;margin-top:10px}
-.tip-btn{
-  flex:1;padding:10px;border-radius:10px;
-  border:1px solid #ddd;background:#fff;
-  cursor:pointer;font-weight:bold
+.tip-options { display:flex; gap:10px; margin-top:10px; }
+.tip-btn {
+  flex:1; padding:10px; border-radius:10px;
+  border:1px solid #ddd; background:#fff;
+  cursor:pointer; font-weight:bold;
 }
-.tip-btn.active{background:red;color:#fff;border-color:red}
-
+.tip-btn.active { background:red; color:#fff; border-color:red; }
 /* Popup */
-.popup-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.5);
-  display:none;align-items:center;justify-content:center;z-index:1000
+.popup-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.5);
+  display:none; align-items:center; justify-content:center; z-index:1000;
 }
-.popup{
-  background:#fff;padding:16px;width:280px;border-radius:12px
+.popup {
+  background:#fff; padding:16px; width:280px; border-radius:12px;
 }
-.popup input,.popup button{
-  width:100%;padding:10px;margin-top:10px
+.popup input, .popup button {
+  width:100%; padding:10px; margin-top:10px;
 }
-
 </style>
 </head>
-
 <body>
 
 <div class="container">
@@ -61,7 +55,7 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 
 <!-- MAP -->
 <div class="map">
-<img id="staticMap" src="" alt="Delivery Map">
+<img id="staticMap" src="" alt="Delivery Map" />
 </div>
 
 <!-- ADDRESS -->
@@ -95,607 +89,112 @@ body{margin:0;font-family:Arial;background:#f5f5f5}
 <div class="summary-row total-row"><span>Total</span><span id="total">R0.00</span></div>
 </div>
 
-
-<!-- PAYMENT METHODS + PAYFAST FORM -->
+<!-- PAYMENT FORM + Methods -->
 <form id="payfastForm" method="POST" action="https://sandbox.payfast.co.za/eng/process">
 
   <!-- PayFast hidden fields -->
-  <input type="hidden" name="merchant_id" value="10000100">
-  <input type="hidden" name="merchant_key" value="46f0cd694581a">
-  <input type="hidden" name="amount" id="pf_amount" value="150.00">
-  <input type="hidden" name="item_name" value="CrunchTime Order">
-  <input type="hidden" name="item_description" value="Food delivery checkout">
-  <input type="hidden" name="payment_method" id="pf_method" value="eft">
-  <input type="hidden" name="signature" id="pf_signature">
-  <input type="hidden" name="return_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html">
-  <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/user-app/client/public/index.html">
-  <input type="hidden" name="notify_url" value="https://example.com/notify">
-<input type="hidden" name="payment_method" value="cc">
-  <div class="card">
+<input type="hidden" name="merchant_id" value="10000100" />
+  <input type="hidden" name="merchant_key" value="46f0cd694581a" />
+  <input type="hidden" name="amount" id="pf_amount" value="150.00" />
+  <input type="hidden" name="item_name" value="CrunchTime Order" />
+  <input type="hidden" name="item_description" value="Food delivery checkout" />
+  <input type="hidden" name="payment_method" id="pf_method" value="eft" />
+  <input type="hidden" name="signature" id="pf_signature" />
+  <input type="hidden" name="return_url" value="http://127.0.0.1:5501/user-app/client/public/checkout_order.html" />
+  <input type="hidden" name="cancel_url" value="http://127.0.0.1:5501/user-app/client/public/index.html" />
+  <input type="hidden" name="notify_url" value="https://example.com/notify" />
 
+  <!-- Payment methods -->
+  <div class="card">
     <!-- Instant EFT -->
     <div class="method">
       <div class="method-left">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" />
         Instant EFT (Company Account)
       </div>
       <input type="radio" name="paymethod" value="eft" checked onchange="toggleCardForm(false)">
     </div>
-
     <div style="font-size:12px;color:#555;margin-bottom:10px;">
       Bank: ABSA • Account Name: CrunchTime • Acc #: 1234567890
     </div>
-
     <!-- Card Payment -->
     <div class="method">
       <div class="method-left">
-        <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png">
+        <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png" />
         Card Payment (Visa / MasterCard / Amex)
       </div>
       <input type="radio" name="paymethod" value="cc" onchange="toggleCardForm(true)">
     </div>
-
-    <!-- Card Input Form -->
+    <!-- Card Input Form (hidden toggle) -->
     <div class="card hidden" id="cardForm">
       <strong>Enter Card Details</strong>
-
-      <input type="text"
-             id="cardNumber"
-             placeholder="Card Number"
-             maxlength="19"
-             oninput="formatCardNumber(this)">
-
-      <input type="text" placeholder="Cardholder Name">
-
+      <input type="text" id="cardNumber" placeholder="Card Number" maxlength="19" oninput="formatCardNumber(this)">
+      <input type="text" placeholder="Cardholder Name" />
       <div style="display:flex;gap:10px">
-        <input type="text" placeholder="MM/YY" maxlength="5">
-        <input type="password" placeholder="CVV" maxlength="4">
+        <input type="text" placeholder="MM/YY" maxlength="5" />
+        <input type="password" placeholder="CVV" maxlength="4" />
       </div>
-
       <small style="color:#777">🔒 Secure payment processed by PayFast</small>
-
-      <button type="button"
-              onclick="submitCardForm()"
-              style="margin-top:10px;background:red;color:#fff;padding:10px;border:none;width:100%;border-radius:6px;cursor:pointer;">
+      <button type="button" onclick="submitCardForm()" style="margin-top:10px;background:red;color:#fff;padding:10px;border:none;width:100%;border-radius:6px;cursor:pointer;">
         Submit Card & Pay
       </button>
     </div>
-
   </div>
-
-  
 </form>
 
 <div class="bottom-bar" onclick="payNow()">
-<span>Place Order</span>
-<span id="barTotal">R0.00</span>
+  <span>Place Order</span>
+  <span id="barTotal">R0.00</span>
 </div>
 
 <!-- Voucher Popup -->
 <div class="popup-overlay" id="voucherPopup">
-<div class="popup">
-<strong>Enter Voucher Code</strong>
-<input id="voucherCode" placeholder="SAVE20">
-<button onclick="applyVoucher()">Apply</button>
+  <div class="popup">
+    <strong>Enter Voucher Code</strong>
+    <input id="voucherCode" placeholder="SAVE20" />
+    <button onclick="applyVoucher()">Apply</button>
+  </div>
 </div>
-</div>
+
+<!-- Scripts -->
 <script src="https://www.payfast.co.za/onsite/engine.js"></script>
+
 <script>
+// Utility functions
 function generateSignature(data, passPhrase = null) {
-    // Create parameter string
     let pfOutput = '';
     for (const [key, val] of Object.entries(data)) {
         if (val !== '') {
             pfOutput += `${key}=${encodeURIComponent(val.trim())}&`;
         }
     }
-    // Remove last ampersand
     let getString = pfOutput.slice(0, -1);
     if (passPhrase !== null) {
         getString += `&passphrase=${encodeURIComponent(passPhrase.trim())}`;
     }
-    // MD5 hashing requires a library in JavaScript
-    // Using crypto-js library for md5
-    const CryptoJS = require('crypto-js');
+    // For MD5 hashing, we use CryptoJS
     return CryptoJS.MD5(getString).toString();
 }
-// Construct variables
-const cartTotal = 10.00; // This amount needs to be sourced from your application
-const passphrase = 'jt7NOE43FZPn';
-const data = {
-    // Merchant details
-    merchant_id: '10000100',
-    merchant_key: '46f0cd694581a',
-    return_url: 'http://www.yourdomain.co.za/return.php',
-    cancel_url: 'http://www.yourdomain.co.za/cancel.php',
-    notify_url: 'http://www.yourdomain.co.za/notify.php',
-    // Buyer details
-    name_first: 'First Name',
-    name_last: 'Last Name',
-    email_address: 'test@test.com',
-    // Transaction details
-    m_payment_id: '1234', // Unique payment ID to pass through to notify_url
-    amount: cartTotal.toFixed(2),
-    item_name: 'Order#123'
-};
 
-function generateSignature(data, passphrase) {
-    // Sort data by keys
-    const sortedKeys = Object.keys(data).sort();
-    // Create query string
-    const queryString = sortedKeys.map(key => `${key}=${encodeURIComponent(data[key])}`).join('&');
-    // Append passphrase if provided
-    const stringToHash = passphrase ? `${queryString}&passphrase=${encodeURIComponent(passphrase)}` : queryString;
-
-    // Use crypto module to create md5 hash
-    const crypto = require('crypto');
-    return crypto.createHash('md5').update(stringToHash).digest('hex');
-}
-
-const signature = generateSignature(data, passphrase);
-data.signature = signature;
-
-// If in testing mode make use of either sandbox.payfast.co.za or www.payfast.co.za
-const testingMode = true;
-const pfHost = testingMode ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
-
-let htmlForm = `<form action="https://${pfHost}/eng/process" method="post">`;
-for (const [name, value] of Object.entries(data)) {
-    htmlForm += `<input name="${name}" type="hidden" value='${value}' />`;
-}
-htmlForm += '<input type="submit" value="Pay Now" /></form>';
-
-console.log(htmlForm);
-// Tell Payfast that this page is reachable by sending a 200 status
-// (In Node.js/Express, you would do: res.status(200).send();)
-// Here we just simulate the logic part
-
-const SANDBOX_MODE = true;
-const pfHost_pfHost = SANDBOX_MODE ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
-
-// Posted variables from ITN (assuming Express.js request body)
-const pfData = { ...req.body };
-
-// Strip any slashes in data
-for (const key in pfData) {
-    if (typeof pfData[key] === 'string') {
-        pfData[key] = pfData[key].replace(/\\(.)/g, '$1');
-    }
-}
-
-// Convert posted variables to a string
-let pfParamString = '';
-for (const key in pfData) {
-    if (key !== 'signature') {
-        pfParamString += `${key}=${encodeURIComponent(pfData[key])}&`;
-    } else {
-        break;
-    }
-}
-
-pfParamString = pfParamString.slice(0, -1);
-function pfValidSignature(pfData, pfParamString, pfPassphrase = null) {
-    // Calculate security signature
-    let tempParamString;
-    if (pfPassphrase === null) {
-        tempParamString = pfParamString;
-    } else {
-        tempParamString = pfParamString + '&passphrase=' + encodeURIComponent(pfPassphrase);
-    }
-
-    const crypto = require('crypto');
-    const signature = crypto.createHash('md5').update(tempParamString).digest('hex');
-    return pfData.signature === signature;
-}
-const dns = require('dns').promises;
-const url = require('url');
-
-async function pfValidIP(req) {
-    const validHosts = [
-        'www.payfast.co.za',
-        'sandbox.payfast.co.za',
-        'w1w.payfast.co.za',
-        'w2w.payfast.co.za',
-    ];
-
-    let validIps = [];
-
-    for (const pfHostname of validHosts) {
-        try {
-            const ips = await dns.resolve4(pfHostname);
-            validIps = validIps.concat(ips);
-        } catch (e) {
-            // ignore errors for hosts that can't be resolved
-        }
-    }
-
-    // Remove duplicates
-    validIps = [...new Set(validIps)];
-
-    const referrer = req.headers['referer'] || req.headers['referrer'];
-    if (!referrer) return false;
-
-    const referrerHost = url.parse(referrer).hostname;
-    if (!referrerHost) return false;
-
-    let referrerIp;
-    try {
-        const addresses = await dns.resolve4(referrerHost);
-        referrerIp = addresses[0];
-    } catch (e) {
-        return false;
-    }
-
-    return validIps.includes(referrerIp);
-}
-const axios = require('axios');
-const { HttpsProxyAgent } = require('https-proxy-agent');
-
-/**
- * pfValidServerConfirmation
- *
- * @param {string} pfParamString - The parameter string to validate
- * @param {string} pfHost - The PayFast host (defaults to sandbox)
- * @param {string|null} pfProxy - Optional proxy string
- * @returns {Promise<boolean>} - Returns true if valid, false otherwise
- */
-async function pfValidServerConfirmation( pfParamString, pfHost = 'sandbox.payfast.co.za', pfProxy = null ) {
-    // Use cURL (if available)
-    // In Node.js, we check if the required 'axios' module is available.
-    // This maps to the PHP check: in_array( 'curl', get_loaded_extensions(), true )
-    let curlAvailable = false;
-    try {
-        if (require.resolve('axios')) {
-            curlAvailable = true;
-        }
-    } catch (e) {
-        curlAvailable = false;
-    }
-
-    if( curlAvailable ) {
-        // Variable initialization
-        const url = 'https://' + pfHost + '/eng/query/validate';
-
-        // Create default cURL object
-        // In JavaScript/Axios, we prepare a configuration object for the request
-        const config = {
-            url: url,
-            method: 'post',
-            // Set cURL options - Use curl_setopt for greater PHP compatibility
-            // Base settings
-            headers: {
-                'User-Agent': null // curl_setopt( $ch, CURLOPT_USERAGENT, NULL );
-            },
-            responseType: 'text',   // curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-            // curl_setopt( $ch, CURLOPT_HEADER, false ); is default in Axios (headers are separated from data)
-            
-            // SSL Settings
-            // Node.js verifies certificates by default (SSL_VERIFYPEER = true, SSL_VERIFYHOST = 2)
-            httpsAgent: new (require('https').Agent)({
-                rejectUnauthorized: true
-            }),
-
-            // Standard settings
-            // curl_setopt( $ch, CURLOPT_URL, $url ); (Already set in config.url)
-            // curl_setopt( $ch, CURLOPT_POST, true ); (Already set in config.method)
-            data: pfParamString // curl_setopt( $ch, CURLOPT_POSTFIELDS, $pfParamString );
-        };
-
-        // Handle Proxy
-        if( pfProxy !== null && pfProxy !== '' ) {
-            // curl_setopt( $ch, CURLOPT_PROXY, $pfProxy );
-            config.httpsAgent = new HttpsProxyAgent(pfProxy);
-            config.proxy = false; // Disable internal axios proxy logic to use the agent
-        }
-
-        try {
-            // Execute cURL
-            const axiosResponse = await axios(config);
-            const response = axiosResponse.data;
-            
-            // curl_close( $ch ); (Handled automatically by axios/node)
-            
-            if (response === 'VALID') {
-                return true;
-            }
-        } catch (error) {
-            // If the request fails, we return false to match PHP behavior
-            return false;
-        }
-    }
-    return false;
-}
-/**
- * Validates payment data by comparing the cart total with the gross amount.
- * 
- * @param {number|string} $cartTotal - The total amount in the cart.
- * @param {Object} $pfData - The data object containing 'amount_gross'.
- * @returns {boolean} - Returns true if the difference is within the allowed threshold (0.01).
- */
-function pfValidPaymentData( $cartTotal, $pfData ) {
-    return !(Math.abs(Number($cartTotal) - Number($pfData['amount_gross'])) > 0.01);
-}
-const crypto = require('crypto');
-const axios = require('axios');
-
-/**
- * PayFast Validation Functions
- * These functions provide the necessary logic for the payment verification process.
- */
-
-/**
- * Validates the signature of the data received from PayFast.
- * 
- * @param {Object} pfData - The data received from PayFast (usually req.body).
- * @param {string} pfParamString - The URL-encoded string of parameters received (excluding the signature).
- * @param {string|null} pfPassphrase - The passphrase set in your PayFast account.
- * @returns {boolean} - Returns true if the signature is valid.
- */
-function pfValidSignature(pfData, pfParamString, pfPassphrase = null) {
-    let tempParamString = pfParamString;
-
-    if (pfPassphrase !== null) {
-        tempParamString += '&passphrase=' + encodeURIComponent(pfPassphrase.trim()).replace(/%20/g, '+');
-    }
-
-    const signature = crypto.createHash('md5').update(tempParamString).digest('hex');
-
-    return (signature === pfData['signature']);
-}
-
-/**
- * Validates that the request is coming from a valid PayFast IP address.
- * 
- * @param {string} clientIp - The IP address of the requester (e.g., req.ip).
- * @returns {boolean} - Returns true if the IP is valid.
- */
-function pfValidIP(clientIp) {
-    const validHosts = [
-        'www.payfast.co.za',
-        'sandbox.payfast.co.za',
-        'w1w.payfast.co.za',
-        'w2w.payfast.co.za'
-    ];
-
-    const validIps = [
-        '196.33.227.224',
-        '176.34.250.255',
-        '54.123.40.154',
-        '54.70.245.245',
-        '54.72.31.200',
-        '54.171.247.143'
-    ];
-
-    // In a real implementation, you might want to perform a DNS lookup on validHosts
-    // to verify the IP, but checking against the known static list is the standard method.
-    return validIps.includes(clientIp);
-}
-
-/**
- * Validates that the payment amount matches the expected cart total.
- * 
- * @param {number|string} cartTotal - The expected total amount from the local system.
- * @param {Object} pfData - The data received from PayFast.
- * @returns {boolean} - Returns true if the amounts match.
- */
-function pfValidPaymentData(cartTotal, pfData) {
-    // PayFast returns amount_gross as a string. We cast both to float for comparison.
-    return (Math.abs(parseFloat(cartTotal) - parseFloat(pfData['amount_gross'])) < 0.01);
-}
-
-/**
- * Performs a server-to-server confirmation with PayFast to verify the transaction.
- * 
- * @param {string} pfParamString - The URL-encoded string of parameters received.
- * @param {string} pfHost - The PayFast host (e.g., 'www.payfast.co.za' or 'sandbox.payfast.co.za').
- * @returns {Promise<boolean>} - Returns true if the server confirms the transaction is valid.
- */
-async function pfValidServerConfirmation(pfParamString, pfHost) {
-    try {
-        const url = `https://${pfHost}/eng/query/validate`;
-        const response = await axios.post(url, pfParamString, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-
-        // PayFast returns 'VALID' if the transaction is authentic
-        return response.data === 'VALID';
-    } catch (error) {
-        console.error('PayFast server confirmation failed:', error.message);
-        return false;
-    }
-}
-
-/**
- * MAIN EXECUTION BLOCK
- * This is the direct translation of the provided PHP snippet.
- */
-
-// These variables are assumed to be populated from the incoming request (ITN)
-// and your application's database/session state.
-const pfData_ = {}; // Populate from req.body
-const pfParamString_ = ""; // Populate with the raw body string (excluding signature)
-const cartTotal_ = 0.00; // Expected total from your DB
-const pfHost_ = "sandbox.payfast.co.za"; // or "www.payfast.co.za"
-const clientIp = ""; // Populate from req.ip or req.connection.remoteAddress
-
-// Wrap in an async function to handle the asynchronous server confirmation
-(async () => {
-    const check1 = pfValidSignature(pfData, pfParamString);
-    const check2 = pfValidIP(clientIp);
-    const check3 = pfValidPaymentData(cartTotal, pfData);
-    const check4 = await pfValidServerConfirmation(pfParamString, pfHost);
-
-    if (check1 && check2 && check3 && check4) {
-        // All checks have passed, the payment is successful
-        console.log("Payment successful");
-    } else {
-        // Some checks have failed, check payment manually and log for investigation
-        console.log("Payment failed verification checks");
-    }
-})();
-const passPhrase = 'jt7NOE43FZPn';
-
-const data = {
-  merchant_id: '10000100',
-  merchant_key: '46f0cd694581a',
-  // ... other data fields
-};
-
-// Function to convert data object to URL-encoded string
-function dataToString(dataObject) {
-  const params = [];
-  for (const key in dataObject) {
-    if (dataObject.hasOwnProperty(key)) {
-      const val = dataObject[key];
-      if (val !== '') {
-        params.push(`${key}=${encodeURIComponent(val.trim())}`);
-      }
-    }
-  }
-  return params.join('&');
-}
-
-// Placeholder for your signature generation function
-function generateSignature(data, passPhrase) {
-  // Implement your signature logic here, e.g., hashing
-  // For example:
-  // return sha256(dataToString(data) + passPhrase);
-  return 'your_signature'; // Replace this with actual implementation
-}
-
-// Function to generate payment identifier
-async function generatePaymentIdentifier(pfParamString, pfProxy = null) {
-  const url = 'https://www.payfast.co.za/onsite/process';
-
-  const options = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: pfParamString,
-  };
-
-  // If you need to use a proxy, fetch API alone doesn't support it directly.
-  // You might need to set up a proxy server or use a library like axios with proxy support.
-  
-  try {
-    const response = await fetch(url, options);
-    const responseText = await response.text();
-
-    console.log(responseText); // Show raw response for debugging
-
-    const rsp = JSON.parse(responseText);
-    if (rsp.uuid) {
-      return rsp.uuid;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error fetching payment identifier:', error);
-    return null;
-  }
-}
-
-// Generate signature and add to data
-data.signature = generateSignature(data, passPhrase);
-
-// Convert data to parameter string
-const pf_ParamString= dataToString(data);
-
-// Generate payment identifier
-generatePaymentIdentifier(pfParamString).then(identifier => {
-  console.log('Payment Identifier:', identifier);
+// On page load, retrieve cart total
+window.addEventListener('DOMContentLoaded', () => {
+  const savedSubtotal = localStorage.getItem('cartTotal');
+  let savedAmount = parseFloat(savedSubtotal);
+  if (isNaN(savedAmount)) savedAmount = 0;
+  subtotal = savedAmount;
+  document.getElementById('subtotal').innerText = "R" + subtotal.toFixed(2);
+  recalc();
 });
-/* ================= CARD FORM TOGGLE ================= */
-function toggleCardForm(show) {
-  document.getElementById("cardForm").classList.toggle("hidden", !show);
-}
 
-/* ================= CARD NUMBER FORMAT ================= */
-function formatCardNumber(input) {
-  input.value = input.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
-}
-
-/* ================= CALCULATE HASH ================= */
-function generateHash(fields, merchantKey) {
-  // Concatenate the fields in PayFast recommended order: key=value&key=value...
-  let str = Object.keys(fields)
-    .filter(k => fields[k] !== undefined && fields[k] !== "")
-    .sort()
-    .map(k => `${k}=${fields[k]}`)
-    .join("&");
-
-  // Append merchant key at the end
-  str += `&merchant_key=${merchantKey}`;
-
-  // Simple JS hash (SHA-256) using crypto API
-  return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str))
-    .then(buf => {
-      // convert ArrayBuffer to hex string
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-    });
-}
-// Define the function if it doesn't exist
-window.payfast_do_onsite_payment = function(data) {
-  // Your logic here
-  console.log("Processing payment with UUID:", data.uuid);
-  // Add your payment processing code
-};
-
-/* ================= PAYFLOW ================= */
-function payNow() {
-  const selectedMethod = document.querySelector('input[name="paymethod"]:checked').value;
-  document.getElementById("pf_method").value = selectedMethod;
-
-  if (selectedMethod === "cc") {
-    // Show card form first
-    toggleCardForm(true);
-    return; // stop auto-submit until user enters card details
-  }
-
-  // EFT can submit directly
-  generateAndSubmitHash(selectedMethod);
-}
-
-function submitCardForm() {
-  const selectedMethod = "cc";
-  document.getElementById("pf_method").value = selectedMethod;
-  document.getElementById("cardForm").classList.add("hidden");
-
-  generateAndSubmitHash(selectedMethod);
-}
-
-/* ================= GENERATE HASH AND SUBMIT ================= */
-function generateAndSubmitHash(paymentMethod) {
-  const pfAmount = document.getElementById("pf_amount").value;
-  const merchantKey = document.querySelector('input[name="q1cd2rdny4a53"]').value;
-
-  const fields = {
-    amount: pfAmount,
-    item_name: "CrunchTime Order",
-    item_description: "Food delivery checkout",
-    payment_method: paymentMethod
-  };
-
-  generateHash(fields, merchantKey).then(hash => {
-    document.getElementById("pf_signature").value = hash;
-    document.getElementById("payfastForm").submit();
-  });
-}
-
-/* ================= LOCATION ================= */
-document.getElementById("deliveryAddress").innerText =
-  localStorage.getItem("deliveryAddress") || "17 Bishop Park Way";
-
-/* ================= CHECKOUT ================= */
-let subtotal = 170;
+// Variables
+let subtotal = 0; // will be set from localStorage
 let discount = 0;
 let tip = 0;
 const serviceFee = 10;
 const deliveryFee = 20;
 
-function recalc(){
+/* Recalculate total */
+function recalc() {
   const total = subtotal - discount + serviceFee + deliveryFee + tip;
   document.getElementById("subtotal").innerText = "R" + subtotal.toFixed(2);
   document.getElementById("discount").innerText = "-R" + discount.toFixed(2);
@@ -705,182 +204,115 @@ function recalc(){
   document.getElementById("pf_amount").value = total.toFixed(2);
 }
 
-function setTip(amount, btn){
+/* Tip selection */
+function setTip(amount, btn) {
   tip = amount;
-  document.querySelectorAll(".tip-btn").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   recalc();
 }
 
-function openVoucher(){
-  document.getElementById("voucherPopup").style.display="flex";
+/* Voucher input */
+function openVoucher() {
+  document.getElementById("voucherPopup").style.display = "flex";
 }
-
-function applyVoucher(){
-  if(document.getElementById("voucherCode").value.toUpperCase()==="SAVE20"){
+function applyVoucher() {
+  if (document.getElementById("voucherCode").value.toUpperCase() === "SAVE20") {
     discount = 20;
   }
-  document.getElementById("voucherPopup").style.display="none";
+  document.getElementById("voucherPopup").style.display = "none";
   recalc();
 }
 
-/* ================= PAYFLOW ================= */
-function payNow(){
+/* Toggle Card Form */
+function toggleCardForm(show) {
+  document.getElementById("cardForm").classList.toggle("hidden", !show);
+}
+
+/* Format Card Number */
+function formatCardNumber(input) {
+  input.value = input.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
+}
+
+/* PayNow - main trigger */
+function payNow() {
   recalc();
   const selectedMethod = document.querySelector('input[name="paymethod"]:checked').value;
-  if(selectedMethod === 'cc'){
-    // show card form popup first
+  if (selectedMethod === 'cc') {
     toggleCardForm(true);
-    return; // stop auto-submit
+    return;
   }
   document.getElementById("pf_method").value = selectedMethod;
   document.getElementById("payfastForm").submit();
 }
 
-function submitCardForm(){
+/* Submit Card Payment */
+function submitCardForm() {
   const selectedMethod = 'cc';
   document.getElementById("pf_method").value = selectedMethod;
-  document.getElementById("cardForm").classList.add("hidden");
+  toggleCardForm(false);
   document.getElementById("payfastForm").submit();
 }
 
-/* INIT */
+/* Set tip buttons active state */
+function setTip(amount, btn) {
+  tip = amount;
+  document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  recalc();
+}
+
+/* Apply voucher */
+function applyVoucher() {
+  if (document.getElementById("voucherCode").value.toUpperCase() === "SAVE20") {
+    discount = 20;
+  }
+  document.getElementById("voucherPopup").style.display = "none";
+  recalc();
+}
+
+/* Generate Signature for PayFast */
+function generateSignature(data, passphrase) {
+  const sortedKeys = Object.keys(data).sort();
+  const queryString = sortedKeys.map(k => `${k}=${encodeURIComponent(data[k])}`).join('&');
+  const stringToHash = passphrase ? `${queryString}&passphrase=${encodeURIComponent(passphrase)}` : queryString;
+  // Use crypto API for MD5
+  return CryptoJS.MD5(stringToHash).toString();
+}
+
+/* Prepare and set signature for form submission */
+function preparePayFastSignature() {
+  const data = {
+    merchant_id: '10000100',
+    merchant_key: '46f0cd694581a',
+    amount: document.getElementById('pf_amount').value,
+    item_name: 'CrunchTime Order',
+    item_description: 'Food delivery checkout',
+    payment_method: document.querySelector('input[name="paymethod"]:checked').value
+  };
+  const passphrase = 'jt7NOE43FZPn';
+  const signature = generateSignature(data, passphrase);
+  document.getElementById('pf_signature').value = signature;
+}
+
+/* On form submission, generate signature */
+document.getElementById('payfastForm').addEventListener('submit', (e) => {
+  preparePayFastSignature();
+});
+
+// Card form toggle
+function toggleCardForm(show) {
+  document.getElementById("cardForm").classList.toggle("hidden", !show);
+}
+
+/* Card number formatting */
+function formatCardNumber(input) {
+  input.value = input.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
+}
+
+// Initial recalc
 recalc();
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Ensure this env variable is set
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Fetch a single user (as in your example)
-async function fetchUser() {
-  try {
-    const { data: user, error } = await supabase
-      .from('User')
-      .select(`
-        cardType,
-        cardNumber,
-        cvv,
-        securityCode
-      `)
-      .single();
-
-    if (error) {
-      console.error('Error fetching user:', error);
-      return null;
-    }
-    if (!user) {
-      console.warn('No user data found.');
-      return null;
-    }
-    return user;
-  } catch (err) {
-    console.error('Unexpected error fetching user:', err);
-    return null;
-  }
-}
-
-// Fetch all users
-async function fetchAllUsers() {
-  const { data, error } = await supabase
-    .from('User')
-    .select('*');
-  if (error) {
-    console.error('Error fetching users:', error);
-    return [];
-  }
-  return data;
-}
-
-// Fetch user by email or username
-async function fetchUserBy(field, value) {
-  const { data, error } = await supabase
-    .from('User')
-    .select('*')
-    .eq(field, value)
-    .single();
-  if (error) {
-    console.error(`Error fetching user by ${field}:`, error);
-    return null;
-  }
-  return data;
-}
-
-// Insert a new user
-async function insertUser(userData) {
-  const { data, error } = await supabase
-    .from('User')
-    .insert([userData])
-    .single();
-  if (error) {
-    console.error('Error inserting user:', error);
-    return null;
-  }
-  return data;
-}
-
-// Batch insert multiple users
-async function insertMultipleUsers(usersArray) {
-  const { data, error } = await supabase
-    .from('User')
-    .insert(usersArray);
-  if (error) {
-    console.error('Error inserting multiple users:', error);
-    return [];
-  }
-  return data;
-}
-
-// Update user by ID
-async function updateUser(id, updates) {
-  const { data, error } = await supabase
-    .from('User')
-    .update(updates)
-    .eq('id', id)
-    .single();
-  if (error) {
-    console.error('Error updating user:', error);
-    return null;
-  }
-  return data;
-}
-
-// Batch update users
-async function updateMultipleUsers(updatesArray) {
-  const results = [];
-  for (const { id, ...updates } of updatesArray) {
-    const result = await updateUser(id, updates);
-    results.push(result);
-  }
-  return results;
-}
-
-// Delete user by ID
-async function deleteUser(id) {
-  const { error } = await supabase
-    .from('User')
-    .delete()
-    .eq('id', id);
-  if (error) {
-    console.error('Error deleting user:', error);
-    return false;
-  }
-  return true;
-}
-
-// Export functions for use elsewhere
-export {
-  fetchUser,
-  fetchAllUsers,
-  fetchUserBy,
-  insertUser,
-  insertMultipleUsers,
-  updateUser,
-  updateMultipleUsers,
-  deleteUser,
-};
 </script>
-
 </body>
 </html>

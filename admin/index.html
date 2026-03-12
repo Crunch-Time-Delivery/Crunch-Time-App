@@ -951,7 +951,29 @@ async function sendTwilioSms(to, message) {
     updateMonthlyData('January');
     loadDrivers();
     loadVendors();
-  };
+  };// Example: Load admin credentials
+async function loadAdmins() {
+  const res = await fetch('http://localhost:3000/api/admins');
+  const admins = await res.json();
+  console.log('Admins:', admins);
+  // Use data as needed, e.g., update UI
+}
+
+// Example: Add new admin
+async function addNewAdmin() {
+  const email = document.getElementById('newAdminEmail').value.trim();
+  const username = document.getElementById('newAdminUsername').value.trim();
+  const password = document.getElementById('newAdminPassword').value.trim();
+  if (email && username && password) {
+    const res = await fetch('http://localhost:3000/api/admins', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const newAdmin = await res.json();
+    alert('New admin added: ' + newAdmin.username);
+  }
+}
 </script>
 <!-- Import your supabase client setup (from your code) -->
 <script src="supabaseClient.js" async></script>

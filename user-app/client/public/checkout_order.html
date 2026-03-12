@@ -77,7 +77,6 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
 <!-- The top pin message -->
 <div id="topPinMessage">
   <h3>Order PIN: <span id="orderPin">Loading...</span></h3>
-  
 </div>
 
 <!-- Main app content -->
@@ -137,7 +136,7 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
 <!-- Notification container -->
 <div id="notification" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:8px; display:none; z-index:9999;"></div>
 
-<!-- Load Google Maps API -->
+<!-- Load Google Maps API with your API key -->
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap"></script>
 
 <script>
@@ -229,14 +228,13 @@ function generatePIN() {
 }
 
 function initMap() {
-  const defaultLocation = { lat: 0, lng: 0 };
+  const defaultLocation = { lat: -33.9249, lng: 18.4241 }; // Example: Cape Town
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 12,
     center: defaultLocation,
   });
   trackDriver();
 }
-
 
 function startTracking() {
   fetchAndUpdateLocation(); // Initial fetch
