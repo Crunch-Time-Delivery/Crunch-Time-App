@@ -9,7 +9,7 @@ const path = require('path');
 const crypto = require('crypto'); // Needed for signature hashing
 
 const app = express();
-const PORT = 3000;
+const PORT = 5501;
 
 // Middleware
 app.use(cors());
