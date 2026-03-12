@@ -965,7 +965,7 @@ async function addNewAdmin() {
   const username = document.getElementById('newAdminUsername').value.trim();
   const password = document.getElementById('newAdminPassword').value.trim();
   if (email && username && password) {
-    const res = await fetch('http://localhost:3000/api/admins', {
+    const res = await fetch('http://localhost:5501/api/admins', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
