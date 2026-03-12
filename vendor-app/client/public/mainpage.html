@@ -508,28 +508,33 @@ async function renderUsers() {
   document.getElementById('usersTable').innerHTML = html;
 }
 
-// Helper function to render payments (used by multiple functions)
-function renderPayments(data) {
+// Helper function to render payments with pagination
+let currentPage = 1;
+const pageSize = 10; // Number of records per page
+
+function renderPayments(data, totalCount = null, page = 1) {
   const container = document.getElementById('paymentHistoryContainer');
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   let html = `
-    <table class="payment-table">
-      <thead>
-        <tr>
-          <th>Payment ID</th>
-          <th>Order Details</th>
-          <th>Customer</th>
-          <th>Method</th>
-          <th>Amount</th>
-          <th>Date</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div class="payment-table-wrapper">
+      <table class="payment-table" id="paymentTable">
+        <thead>
+          <tr>
+            <th>Payment ID</th>
+            <th>Order Details</th>
+            <th>Customer</th>
+            <th>Method</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
   `;
 
   data.forEach(p => {
-    const statusClass = p.status?.toLowerCase() === 'completed' || p.status?.toLowerCase() === 'success' 
+    const statusClass = p.status?.toLowerCase() === 'completed' || p.status?.toLowerCase() === 'success'
                         ? 'status-success' : 'status-pending';
 
     html += `
@@ -553,19 +558,68 @@ function renderPayments(data) {
     `;
   });
 
-  html += `</tbody></table>`;
+  html += `</tbody></table></div>`;
+
+  // Pagination controls
+  html += `
+    <div class="pagination-controls">
+      <button ${page === 1 ? 'disabled' : ''} onclick="changePage(${page - 1})">Previous</button>
+      <span>Page ${page} of ${totalPages}</span>
+      <button ${page === totalPages ? 'disabled' : ''} onclick="changePage(${page + 1})">Next</button>
+    </div>
+  `;
+
   container.innerHTML = html;
 }
 
-// Fetch all payments
-async function fetchPayments() {
+// Function to change page
+function changePage(page) {
+  currentPage = page;
+  fetchPayments(); // Fetch data for new page
+}
+
+// Fetch all payments with pagination
+async function fetchPayments({ page = 1, filters = {} } = {}) {
   const container = document.getElementById('paymentHistoryContainer');
   container.innerHTML = '<p style="text-align:center; padding:20px;">⌛ Loading history...</p>';
 
-  const { data, error } = await supabase
+  // Show loading spinner
+  showLoadingSpinner();
+
+  // Prepare query
+  let query = supabase
     .from('payment_history')
-    .select('*')
-    .order('payment_date', { ascending: false });
+    .select('*');
+
+  // Apply filters
+  if (filters.payment_method) {
+    query = query.eq('payment_method', filters.payment_method);
+  }
+  if (filters.status) {
+    query = query.eq('status', filters.status);
+  }
+  if (filters.startDate && filters.endDate) {
+    query = query.gte('payment_date', filters.startDate).lte('payment_date', filters.endDate);
+  }
+  // Count total records for pagination
+  const { count, error: countError } = await query
+    .order('payment_date', { ascending: false })
+    .range((page - 1) * pageSize, page * pageSize - 1)
+    .count();
+
+  if (countError) {
+    console.error('Supabase Error:', countError);
+    hideLoadingSpinner();
+    container.innerHTML = `<p style="color:red;">❌ Error loading payment history: ${countError.message}</p>`;
+    return;
+  }
+
+  // Fetch actual data with limit
+  const { data, error } = await query
+    .order('payment_date', { ascending: false })
+    .range((page - 1) * pageSize, page * pageSize - 1);
+
+  hideLoadingSpinner();
 
   if (error) {
     console.error('Supabase Error:', error);
@@ -578,41 +632,59 @@ async function fetchPayments() {
     return;
   }
 
-  renderPayments(data);
+  renderPayments(data, count, page);
 }
 
-// Filter payments by method (e.g., PayFast)
-async function filterPaymentsByMethod(method) {
-  const container = document.getElementById('paymentHistoryContainer');
-  container.innerHTML = `<p style="text-align:center; padding:20px;">⌛ Loading payments for method: ${method}...</p>`;
-
-  const { data, error } = await supabase
-    .from('payment_history')
-    .select('*')
-    .eq('payment_method', method)
-    .order('payment_date', { ascending: false });
-
-  if (error) {
-    console.error('Supabase Error:', error);
-    container.innerHTML = `<p style="color:red;">❌ Error loading filtered payments: ${error.message}</p>`;
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    container.innerHTML = `<p style="text-align:center; padding:20px;">📭 No payments found for method: ${method}.</p>`;
-    return;
-  }
-
-  renderPayments(data);
+// Show/hide loading spinner
+function showLoadingSpinner() {
+  const spinner = document.getElementById('loadingSpinner');
+  if (spinner) spinner.style.display = 'block';
 }
 
-// Export current payment table to CSV
+function hideLoadingSpinner() {
+  const spinner = document.getElementById('loadingSpinner');
+  if (spinner) spinner.style.display = 'none';
+}
+
+// Filter by method, status, date range (with input elements)
+async function applyFilters() {
+  const method = document.getElementById('filterMethod').value;
+  const status = document.getElementById('filterStatus').value;
+  const startDate = document.getElementById('filterStartDate').value;
+  const endDate = document.getElementById('filterEndDate').value;
+
+  const filters = {};
+  if (method !== 'All') filters.payment_method = method;
+  if (status !== 'All') filters.status = status;
+  if (startDate && endDate) {
+    filters.startDate = startDate;
+    filters.endDate = endDate;
+  }
+
+  currentPage = 1; // Reset to first page
+  await fetchPayments({ page: currentPage, filters });
+}
+
+// Clear all filters
+function clearFilters() {
+  document.getElementById('filterMethod').value = 'All';
+  document.getElementById('filterStatus').value = 'All';
+  document.getElementById('filterStartDate').value = '';
+  document.getElementById('filterEndDate').value = '';
+  currentPage = 1;
+  fetchPayments();
+}
+
+// Export current table to CSV with filename prompt
 function exportPaymentsToCSV() {
   const table = document.querySelector('.payment-table');
   if (!table) {
     alert('No data to export.');
     return;
   }
+
+  const filename = prompt('Enter filename for CSV:', 'payment_history');
+  if (!filename) return;
 
   const rows = Array.from(table.querySelectorAll('tr'));
   const csvContent = rows.map(row => {
@@ -625,55 +697,47 @@ function exportPaymentsToCSV() {
   
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'payment_history.csv';
+  a.download = `${filename}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-// Refresh the payment data
-async function refreshPayments() {
-  await fetchPayments();
-}
-
-// Search payments by customer name or order ID
-async function searchPayments(query) {
-  const container = document.getElementById('paymentHistoryContainer');
-  container.innerHTML = `<p style="text-align:center; padding:20px;">⌛ Searching for "${query}"...</p>`;
-
-  const { data, error } = await supabase
-    .from('payment_history')
-    .select('*')
-    .or(`user_name.ilike.%${query}%,order_id.ilike.%${query}%`)
-    .order('payment_date', { ascending: false });
-
-  if (error) {
-    console.error('Supabase Error:', error);
-    container.innerHTML = `<p style="color:red;">❌ Error during search: ${error.message}</p>`;
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    container.innerHTML = `<p style="text-align:center; padding:20px;">📭 No payments found for "${query}".</p>`;
-    return;
-  }
-
-  renderPayments(data);
-}
-
-// Example event listener setup (adjust button IDs as needed)
-document.getElementById('filterPayFastBtn').addEventListener('click', () => filterPaymentsByMethod('PayFast'));
-document.getElementById('filterCreditCardBtn').addEventListener('click', () => filterPaymentsByMethod('Credit Card'));
+// Event listeners for filter controls
+document.getElementById('filterBtn').addEventListener('click', applyFilters);
+document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
 document.getElementById('exportBtn').addEventListener('click', exportPaymentsToCSV);
-document.getElementById('refreshBtn').addEventListener('click', () => fetchPayments());
-document.getElementById('searchInput').addEventListener('input', (e) => {
-  if (e.target.value.length > 2) {
-    searchPayments(e.target.value);
-  }
-});
 
-// Initial fetch to display all payments on page load
+// Initial fetch
 fetchPayments();
+async function markPaymentAsPaid(paymentId) {
+  try {
+    const { data, error } = await supabase
+      .from('payment_history')
+      .update({ status: 'Completed' })
+      .eq('payment_id', paymentId);
 
+    if (error) throw error;
+
+    alert(`Payment ${paymentId} marked as paid.`);
+    fetchPayments(); // Refresh data
+  } catch (err) {
+    console.error('Error updating payment:', err);
+    alert('Failed to update payment status.');
+  }
+}async function refreshPaymentStats() {
+  try {
+    const { data, error } = await supabase
+      .from('payment_history')
+      .select('amount');
+
+    if (error) throw error;
+
+    const totalAmount = data.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+    document.getElementById('totalPayments').innerText = `Total Payments: R ${totalAmount.toFixed(2)}`;
+  } catch (err) {
+    console.error('Error fetching stats:', err);
+  }
+}
 // Initialize default view
 window.onload = () => {
   showManagement('items');
