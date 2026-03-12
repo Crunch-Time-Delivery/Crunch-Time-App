@@ -1,76 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Search Delivery Location</title>
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 20px;
-  background: #f5f5f5;
-}
-.search-location-container {
-  max-width: 600px;
-  margin: auto;
-  background: #fff;
-  padding: 16px;
-  border-radius: 12px;
-}
-.title-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-h1 {
-  margin: 0;
-  font-size: 22px;
-  flex: 1;
-}
-.red-column {
-  width: 20px;
-  height: 20px;
-  background: red;
-  border-radius: 4px;
-}
-form {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-}
-input[type="text"] {
-  flex: 1;
-  padding: 10px;
-  font-size: 16px;
-}
-button {
-  padding: 10px 16px;
-  font-size: 16px;
-  cursor: pointer;
-}
-#map {
-  height: 400px; /* Ensure height is set for visible map */
-  width: 100%;
-  margin-top: 15px;
-  border-radius: 10px;
-  /* Optional: add a border or shadow for better appearance */
-  /* border: 2px solid #ccc; */
-}
-.buttons-group {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-  justify-content: center;
-}
-#coordinates {
-  margin-top: 10px;
-  font-size: 14px;
-  text-align: center;
-  font-family: monospace;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Delivery Location</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    .search-location-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    /* Flex container for title and red column */
+    .title-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    /* Title styling */
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      flex: 1;
+    }
+    /* Red column styling */
+    .red-column {
+      width: 20px;
+      height: 20px;
+      background-color: red;
+      margin-left: 10px;
+      border-radius: 3px;
+    }
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 8px;
+      font-size: 16px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #map {
+      height: 400px;
+      width: 100%;
+      margin-top: 20px;
+    }
+    .buttons-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+    #coordinates {
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
 
