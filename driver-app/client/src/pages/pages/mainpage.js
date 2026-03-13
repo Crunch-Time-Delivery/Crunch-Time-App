@@ -1,0 +1,428 @@
+document.addEventListener('DOMContentLoaded', () => {
+  const menuContainer = document.getElementById('menuContainer');
+  const menuButton = document.getElementById('menuButton');
+  const dropdown = document.getElementById('dropdownMenu');
+
+  // Bind menu toggle
+  menuButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menuContainer.classList.toggle('show');
+  });
+  document.addEventListener('click', () => {
+    menuContainer.classList.remove('show');
+  });
+  dropdown.addEventListener('click', (e) => e.stopPropagation());
+
+  // Bind other menu links
+  document.getElementById('orderViewLink').onclick = e => { e.preventDefault(); loadOrderView(); };
+  document.getElementById('driverHistoryPayment').onclick = e => { e.preventDefault(); loadDriverHistoryPayment(); };
+});
+
+// ================= SMS NOTIFICATIONS =================
+// Function to display notification messages
+function showNotificationMessage(text, color = '#333') {
+  let box = document.getElementById('notificationMessage');
+
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'notificationMessage';
+    box.style.position = 'fixed';
+    box.style.bottom = '20px';
+    box.style.left = '50%';
+    box.style.transform = 'translateX(-50%)';
+    box.style.padding = '12px 20px';
+    box.style.borderRadius = '8px';
+    box.style.color = '#fff';
+    box.style.fontSize = '14px';
+    box.style.zIndex = '9999';
+    box.style.transition = 'opacity 0.3s ease';
+    document.body.appendChild(box);
+  }
+
+  box.style.backgroundColor = color;
+  box.innerText = text;
+  box.style.opacity = '1';
+
+  // Clear any existing timeout
+  if (showNotificationMessage.timeoutId) {
+    clearTimeout(showNotificationMessage.timeoutId);
+  }
+
+  // Remove the notification after 4 seconds
+  showNotificationMessage.timeoutId = setTimeout(() => {
+    box.style.opacity = '0';
+    // Optionally, you can remove the element after fade out
+    setTimeout(() => {
+      if (box) box.remove();
+    }, 300);
+  }, 4000);
+}
+
+// Function to send Twilio notification
+function sendTwilioNotification(phoneNumber, message, callback = null) {
+  if (!phoneNumber || !message) {
+    showNotificationMessage('Phone number or message missing', '#f44336');
+    return;
+  }
+  
+  showNotificationMessage('Sending notification...', '#2196F3');
+
+  fetch('/send-twilio', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ phoneNumber, message })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+      if (callback && typeof callback === 'function') callback(true, data);
+    } else {
+      showNotificationMessage('Failed to send notification.', '#f44336');
+      if (callback && typeof callback === 'function') callback(false, data);
+    }
+  })
+  .catch(() => {
+    showNotificationMessage('Error sending notification.', '#f44336');
+    if (callback && typeof callback === 'function') callback(false);
+  });
+}
+
+// Function to handle checkout order
+function checkout_order(orderId, driverPhoneNumber) {
+  const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
+  notifyDriver(driverPhoneNumber, message);
+}
+
+// Function to notify driver via Twilio SMS
+function notifyDriver(phoneNumber, message) {
+  showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
+
+  sendTwilioNotification(phoneNumber, message, (success, data) => {
+    if (success) {
+      showNotificationMessage(`Driver notified successfully!`, '#4CAF50');
+    } else {
+      showNotificationMessage(`Failed to notify driver.`, '#f44336');
+    }
+  });
+}
+
+/* ===========================
+   New Utility Functions
+   =========================== */
+
+// Cancel any pending notification
+function cancelNotification() {
+  if (showNotificationMessage.timeoutId) {
+    clearTimeout(showNotificationMessage.timeoutId);
+  }
+  const box = document.getElementById('notificationMessage');
+  if (box) {
+    box.style.opacity = '0';
+    setTimeout(() => box.remove(), 300);
+  }
+}
+
+// Validate phone number format (basic)
+function isValidPhoneNumber(phoneNumber) {
+  const pattern = /^\+?\d{10,15}$/; // Basic pattern for international numbers
+  return pattern.test(phoneNumber);
+}
+
+// Send multiple notifications in parallel
+function sendBulkNotifications(notificationsArray) {
+  notificationsArray.forEach(({ phoneNumber, message }) => {
+    if (isValidPhoneNumber(phoneNumber)) {
+      notifyDriver(phoneNumber, message);
+    } else {
+      showNotificationMessage(`Invalid phone number: ${phoneNumber}`, '#f44336');
+    }
+  });
+}
+
+// Retry notification with a specified number of attempts
+function notifyDriverWithRetry(phoneNumber, message, retries = 3) {
+  const attempt = (n) => {
+    sendTwilioNotification(phoneNumber, message, (success) => {
+      if (!success && n > 0) {
+        setTimeout(() => attempt(n - 1), 2000); // Retry after 2 seconds
+      } else if (success) {
+        showNotificationMessage(`Driver notified successfully!`, '#4CAF50');
+      } else {
+        showNotificationMessage(`Failed to notify driver after retries.`, '#f44336');
+      }
+    });
+  };
+  attempt(retries);
+}
+
+// Show a loading indicator
+function showLoadingIndicator() {
+  let loader = document.getElementById('loadingIndicator');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'loadingIndicator';
+    loader.innerHTML = 'Loading...'; // Style as needed
+    loader.style.position = 'fixed';
+    loader.style.top = '50%';
+    loader.style.left = '50%';
+    loader.style.transform = 'translate(-50%, -50%)';
+    loader.style.padding = '20px';
+    loader.style.backgroundColor = '#fff';
+    loader.style.border = '1px solid #ccc';
+    loader.style.borderRadius = '8px';
+    loader.style.zIndex = '99999';
+    document.body.appendChild(loader);
+  }
+  loader.style.display = 'block';
+}
+
+// Hide the loading indicator
+function hideLoadingIndicator() {
+  const loader = document.getElementById('loadingIndicator');
+  if (loader) {
+    loader.style.display = 'none';
+  }
+}
+
+// ================= Map Function =================
+let map; // Declare map globally
+let userMarker;
+
+function initMap() {
+  const pickup = { lat: -33.9249, lng: 18.4241 }; // Restaurant
+  const dropoff = { lat: -33.9289, lng: 18.4174 }; // Customer
+
+  const mapElement = document.getElementById("map");
+  if (!mapElement) {
+    console.error("Map element not found");
+    return;
+  }
+
+  // Initialize the map centered at pickup point
+  map = new google.maps.Map(mapElement, { zoom: 13, center: pickup });
+
+  // Add markers for pickup and dropoff points
+  new google.maps.Marker({ position: pickup, map, label: 'Pickup Point', title: 'Restaurant Pickup' });
+  new google.maps.Marker({ position: dropoff, map, label: 'Drop-off Point', title: 'Customer Drop-off' });
+
+  // Handle geolocation updates
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+      (position) => {
+        const pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+
+        // Initialize userMarker if it doesn't exist
+        if (!userMarker) {
+          userMarker = new google.maps.Marker({ 
+            position: pos, 
+            map, 
+            title: "You are here!", 
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 6,
+              fillColor: '#4285F4',
+              fillOpacity: 1,
+              strokeColor: 'white',
+              strokeWeight: 2
+            } 
+          });
+        } else {
+          // Update marker position
+          userMarker.setPosition(pos);
+        }
+
+        // Center the map on user's location
+        // Use map.getCenter() only if the map has been initialized
+        if (map) {
+          map.setCenter(pos);
+        }
+
+        // Save location in hidden input if it exists
+        const locationInput = document.getElementById("user_location_id");
+        if (locationInput) {
+          locationInput.value = `${pos.lat},${pos.lng}`;
+        }
+      },
+      () => {
+        // Error handler if geolocation fails
+        const infoWindow = new google.maps.InfoWindow();
+        // Use existing map center or default to pickup if map not initialized
+        const center = map ? map.getCenter() : { lat: 0, lng: 0 };
+        infoWindow.setPosition(center);
+        infoWindow.setContent("Error: The Geolocation service failed.");
+        infoWindow.open(map);
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+    );
+  } else {
+    // Browser doesn't support geolocation
+    const infoWindow = new google.maps.InfoWindow();
+    const center = map ? map.getCenter() : { lat: 0, lng: 0 };
+    infoWindow.setPosition(center);
+    infoWindow.setContent("Error: Your browser doesn't support geolocation.");
+    infoWindow.open(map);
+  }
+}
+function updateDriverLocation() {
+  fetch(`/api/driver-location?driverId=${driverId}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      const driverLocation = {
+        lat: data.latitude,
+        lng: data.longitude,
+      };
+
+      // Create marker if it doesn't exist
+      if (!driverMarker) {
+        driverMarker = new google.maps.Marker({
+          position: driverLocation,
+          map: map,
+          title: "Driver's Location",
+        });
+      } else {
+        // Update existing marker position
+        driverMarker.setPosition(driverLocation);
+      }
+
+      // Optional: animate map center change
+      map.setCenter(driverLocation);
+    })
+    .catch(error => {
+      console.error("Error fetching driver location:", error);
+    });
+}
+// ================== Load Content Functions ==================
+function loadMainPage() {
+  document.getElementById('innerContent').innerHTML = `
+    <h1>Welcome Driver</h1>
+    <p>Select an option from the menu.</p>
+  `;
+}
+async function loadDriverHistoryPayment() {
+  const container = document.getElementById('innerContent');
+  container.innerHTML = `<div class="loading">Loading payment history…</div>`;
+  
+  // Simulate delay
+  await new Promise(res => setTimeout(res, 1000));
+
+  try {
+    // Fetch actual payment history from your backend or PayFast API
+    const response = await fetch('/get-payfast-payments'); // Replace with your API endpoint
+    if (!response.ok) {
+      throw new Error(`Failed to fetch payments: ${response.statusText}`);
+    }
+    const payments = await response.json();
+
+    if (!payments || payments.length === 0) {
+      container.innerHTML = `<p>No payment history available.</p>`;
+      return;
+    }
+
+    let html = `<h1>Payment History</h1>`;
+    for (const p of payments) {
+      html += `
+        <div class="card" style="margin-bottom:10px; padding:10px; border:1px solid #ccc;">
+          <div><strong>Payment ID:</strong> ${p.id}</div>
+          <div><strong>Amount:</strong> R ${p.amount.toFixed(2)}</div>
+          <div><strong>Status:</strong> ${p.status}</div>
+          <button onclick="trackPayFast('${p.id}')">Track Payment</button>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+  } catch (error) {
+    console.error('Error loading payment history:', error);
+    container.innerHTML = `<p>Error loading payment history. Please try again later.</p>`;
+  }
+}
+
+// Example function to track payment and update history
+async function trackPayFast(paymentId) {
+  try {
+    // Call your backend to get latest payment status from PayFast
+    const response = await fetch(`/update-payfast-status/${paymentId}`); // Your API endpoint
+    if (!response.ok) {
+      throw new Error(`Failed to update payment status: ${response.statusText}`);
+    }
+    const result = await response.json();
+   // Optionally, refresh the payment history after updating
+    await loadDriverHistoryPayment();
+
+    alert(`Payment ${paymentId} status updated: ${result.status}`);
+  } catch (error) {
+    console.error('Error tracking payment:', error);
+    alert('Failed to update payment status. Please try again.');
+  }
+}
+
+function loadOrderView() {
+  const container = document.getElementById('innerContent');
+  if (!container) {
+    console.error('Container element not found');
+    return;
+  }
+
+  const order = {
+    id: 'ORD-10045',
+    customer: 'John Smith',
+    verification: '482913',
+    date: '2026-01-21',
+    pickup: 'Pizza Palace, Cape Town',
+    dropoff: '12 Long Street, Cape Town',
+    total: 245.00,
+    items: [
+      { name: 'Large Pizza', qty: 1, price: 120 },
+      { name: 'Chicken Wings', qty: 2, price: 45 },
+      { name: 'Cooldrink', qty: 1, price: 35 }
+    ]
+  };
+
+  container.innerHTML = `
+    <h2 style="color: red; border-left: 4px solid red; padding-left: 10px;">Order View</h2>
+    <div class="card">
+      <div class="row"><strong>Order ID:</strong> ${order.id}</div>
+      <div class="row"><strong>Customer:</strong> ${order.customer}</div>
+      <div class="row"><strong>Verification:</strong> ${order.verification}</div>
+      <div class="row"><strong>Date:</strong> ${order.date}</div>
+    </div>
+    <div class="card">
+      <h3 style="color: red; border-left: 4px solid red; padding-left: 10px;">Order Items</h3>
+      ${order.items.map(i => `
+        <div class="row">
+          <span>${i.name} (x${i.qty})</span>
+          <span>R ${(i.qty * i.price).toFixed(2)}</span>
+        </div>
+      `).join('')}
+      <div class="total"><strong>Total:</strong> R ${order.total.toFixed(2)}</div>
+    </div>
+    <div class="card">
+      <h3 style="color: red; border-left: 4px solid red; padding-left: 10px;">Delivery Route</h3>
+      <p><strong>Pick-up:</strong> ${order.pickup}</p>
+      <p><strong>Drop-off:</strong> ${order.dropoff}</p>
+      <div id="map" style="height: 200px; width: 100%; margin-top: 10px; border: 1px solid #ccc;"></div>
+      <button style="margin-top: 10px;">Accept / Decline</button>
+    </div>`;
+
+  // Initialize the map after the content is loaded
+  initMap();
+}
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(reg => console.log('Service worker registered:', reg))
+      .catch(err => console.log('Service worker registration failed:', err));
+  });
+}
