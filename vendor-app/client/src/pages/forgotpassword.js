@@ -2,7 +2,7 @@
 
   // Function to send SMS via backend API
   function sendSms(toNumber, message) {
-    fetch('http://localhost:3000/send-sms', {
+    fetch('http://localhost:5501/send-sms', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

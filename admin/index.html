@@ -953,7 +953,7 @@ async function sendTwilioSms(to, message) {
     loadVendors();
   };// Example: Load admin credentials
 async function loadAdmins() {
-  const res = await fetch('http://localhost:3000/api/admins');
+  const res = await fetch('http://localhost:5501/api/admins');
   const admins = await res.json();
   console.log('Admins:', admins);
   // Use data as needed, e.g., update UI
