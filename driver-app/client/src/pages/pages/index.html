@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>React Dashboard</title>
+  <!-- React and ReactDOM from CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel for JSX in browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Put your styles here (move from dangerouslySetInnerHTML if desired) */
+    body {
+      margin: 0;
+      background-color: red;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      position: relative;
+    }
+    /* Style for the middle image */
+    .middle-image {
+      max-width: 80%;
+      height: auto;
+    }
+    /* Style for the bottom image link */
+    .bottom-link {
+      position: absolute;
+      bottom: 20px; /* spacing from bottom */
+    }
+    .bottom-link img {
+      max-width: 150px;
+      height: auto;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- React root container -->
+  <div id="root"></div>
+
+  <!-- Your React code -->
+  <script type="text/babel">
+    // Define your React component
+    function App() {
+      return (
+        <>
+          {/* Image logo center display */}
+          <img
+            src="img/Screenshot (264).jpg"
+            alt="Middle Image"
+            className="middle-image"
+          />
+          {/* Clickable bottom image to direct driver to welcome page */}
+          <a
+            href="http://127.0.0.1:5501/driver-app/client/public/welcomeDriverPage.html"
+            className="bottom-link"
+          >
+            <img src="img/Screenshot (265).jpg" alt="Bottom Image" />
+          </a>
+        </>
+      );
+    }
+
+    // Render the App component into the root div
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
