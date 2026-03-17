@@ -706,9 +706,23 @@ function exportPaymentsToCSV() {
 document.getElementById('filterBtn').addEventListener('click', applyFilters);
 document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
 document.getElementById('exportBtn').addEventListener('click', exportPaymentsToCSV);
+// 1. Fetch payment history data
+async function fetchPayments() {
+  try {
+    const { data, error } = await supabase
+      .from('payment_history')
+      .select('*');
 
-// Initial fetch
-fetchPayments();
+    if (error) throw error;
+    // Render or process your data here, e.g., populate a table
+    console.log('Payment Records:', data);
+    // Example: update UI with data
+  } catch (err) {
+    console.error('Error fetching payments:', err);
+  }
+}
+
+// 2. Mark a payment as paid
 async function markPaymentAsPaid(paymentId) {
   try {
     const { data, error } = await supabase
@@ -717,14 +731,16 @@ async function markPaymentAsPaid(paymentId) {
       .eq('payment_id', paymentId);
 
     if (error) throw error;
-
     alert(`Payment ${paymentId} marked as paid.`);
     fetchPayments(); // Refresh data
   } catch (err) {
     console.error('Error updating payment:', err);
     alert('Failed to update payment status.');
   }
-}async function refreshPaymentStats() {
+}
+
+// 3. Refresh total payment stats
+async function refreshPaymentStats() {
   try {
     const { data, error } = await supabase
       .from('payment_history')
@@ -738,6 +754,56 @@ async function markPaymentAsPaid(paymentId) {
     console.error('Error fetching stats:', err);
   }
 }
+
+// 4. Initiate a PayFast payment (client-side form submission)
+function initiatePayFastPayment(amount, itemName, merchantId, merchantKey, notifyUrl, returnUrl, cancelUrl) {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'https://sandbox.payfast.co.za/eng/process'; // Use production URL in live
+
+  form.appendChild(createHiddenInput('merchant_id', merchantId));
+  form.appendChild(createHiddenInput('merchant_key', merchantKey));
+  form.appendChild(createHiddenInput('return_url', returnUrl));
+  form.appendChild(createHiddenInput('cancel_url', cancelUrl));
+  form.appendChild(createHiddenInput('notify_url', notifyUrl));
+  form.appendChild(createHiddenInput('amount', amount));
+  form.appendChild(createHiddenInput('item_name', itemName));
+
+  document.body.appendChild(form);
+  form.submit();
+}
+
+function createHiddenInput(name, value) {
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = name;
+  input.value = value;
+  return input;
+}
+
+// 5. Verify payment status (optional, typically server-side)
+async function verifyPayFastPayment(paymentID) {
+  // Usually done server-side, but a stub for client-side trigger
+  try {
+    const response = await fetch('/api/verify-payfast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paymentID }),
+    });
+    const result = await response.json();
+    if (result.status === 'verified') {
+      alert('Payment verified successfully.');
+      // Update your database status if needed
+    } else {
+      alert('Payment verification failed.');
+    }
+  } catch (err) {
+    console.error('Error verifying payment:', err);
+  }
+}
+
+// 6. Call fetchPayments initially
+fetchPayments();
 // Initialize default view
 window.onload = () => {
   showManagement('items');
