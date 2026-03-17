@@ -578,73 +578,120 @@ function changePage(page) {
   fetchPayments(); // Fetch data for new page
 }
 
-// Fetch all payments with pagination
+const pageSize = 10; // Set your desired number of records per page
+
+// Function to show a loading spinner (implement as needed)
+function showLoadingSpinner() {
+  // For example, show a spinner or overlay
+}
+
+// Function to hide the loading spinner
+function hideLoadingSpinner() {
+  // Hide the spinner or overlay
+}
+
+// Function to render payment data into your container
+function renderPayments(data, totalCount, currentPage) {
+  const container = document.getElementById('paymentHistoryContainer');
+  let html = '';
+
+  html += `<table class="payment-table" style="width:100%; border-collapse:collapse;">`;
+  html += `
+    <thead>
+      <tr>
+        <th>Payment ID</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Payment Method</th>
+        <th>Payment Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
+
+  data.forEach(p => {
+    html += `
+      <tr>
+        <td>${p.payment_id}</td>
+        <td>R ${parseFloat(p.amount).toFixed(2)}</td>
+        <td>${p.status}</td>
+        <td>${p.payment_method}</td>
+        <td>${new Date(p.payment_date).toLocaleString()}</td>
+        <td>
+          <button onclick="trackPayFast('${p.payment_id}')">Track</button>
+          ${p.status !== 'Completed' ? `<button onclick="markPaymentAsPaid('${p.payment_id}')">Mark Paid</button>` : ''}
+        </td>
+      </tr>
+    `;
+  });
+  html += `</tbody></table>`;
+
+  // Pagination controls
+  const totalPages = Math.ceil(totalCount / pageSize);
+  html += `<div style="margin-top:10px; text-align:center;">`;
+  if (currentPage > 1) {
+    html += `<button onclick="fetchPayments({ page: ${currentPage - 1} })">Previous</button>`;
+  }
+  html += ` Page ${currentPage} of ${totalPages} `;
+  if (currentPage < totalPages) {
+    html += `<button onclick="fetchPayments({ page: ${currentPage + 1} })">Next</button>`;
+  }
+  html += `</div>`;
+
+  container.innerHTML = html;
+}
+
+// Main fetch function with pagination and filters
 async function fetchPayments({ page = 1, filters = {} } = {}) {
   const container = document.getElementById('paymentHistoryContainer');
   container.innerHTML = '<p style="text-align:center; padding:20px;">⌛ Loading history...</p>';
 
-  // Show loading spinner
   showLoadingSpinner();
 
-  // Prepare query
-  let query = supabase
-    .from('payment_history')
-    .select('*');
+  try {
+    // Build base query
+    let query = supabase
+      .from('payment_history')
+      .select('*', { count: 'exact' }); // get total count
 
-  // Apply filters
-  if (filters.payment_method) {
-    query = query.eq('payment_method', filters.payment_method);
-  }
-  if (filters.status) {
-    query = query.eq('status', filters.status);
-  }
-  if (filters.startDate && filters.endDate) {
-    query = query.gte('payment_date', filters.startDate).lte('payment_date', filters.endDate);
-  }
-  // Count total records for pagination
-  const { count, error: countError } = await query
-    .order('payment_date', { ascending: false })
-    .range((page - 1) * pageSize, page * pageSize - 1)
-    .count();
+    // Apply filters
+    if (filters.payment_method) {
+      query = query.eq('payment_method', filters.payment_method);
+    }
+    if (filters.status) {
+      query = query.eq('status', filters.status);
+    }
+    if (filters.startDate && filters.endDate) {
+      query = query.gte('payment_date', filters.startDate).lte('payment_date', filters.endDate);
+    }
 
-  if (countError) {
-    console.error('Supabase Error:', countError);
+    // Count total records for pagination
+    const { count, error: countError } = await query
+      .order('payment_date', { ascending: false })
+      .range(0, 0); // just get count
+
+    if (countError) throw countError;
+
+    // Fetch the actual page data
+    const { data, error } = await query
+      .order('payment_date', { ascending: false })
+      .range((page - 1) * pageSize, page * pageSize - 1);
+
     hideLoadingSpinner();
-    container.innerHTML = `<p style="color:red;">❌ Error loading payment history: ${countError.message}</p>`;
-    return;
+
+    if (error) throw error;
+
+    renderPayments(data, count, page);
+  } catch (err) {
+    hideLoadingSpinner();
+    console.error('Error loading payment history:', err);
+    container.innerHTML = `<p style="color:red;">❌ Error loading payment history: ${err.message}</p>`;
   }
-
-  // Fetch actual data with limit
-  const { data, error } = await query
-    .order('payment_date', { ascending: false })
-    .range((page - 1) * pageSize, page * pageSize - 1);
-
-  hideLoadingSpinner();
-
-  if (error) {
-    console.error('Supabase Error:', error);
-    container.innerHTML = `<p style="color:red;">❌ Error loading payment history: ${error.message}</p>`;
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    container.innerHTML = '<p style="text-align:center; padding:20px;">📭 No payment history available.</p>';
-    return;
-  }
-
-  renderPayments(data, count, page);
 }
 
-// Show/hide loading spinner
-function showLoadingSpinner() {
-  const spinner = document.getElementById('loadingSpinner');
-  if (spinner) spinner.style.display = 'block';
-}
-
-function hideLoadingSpinner() {
-  const spinner = document.getElementById('loadingSpinner');
-  if (spinner) spinner.style.display = 'none';
-}
+// Call this on page load or refresh
+fetchPayments();
 
 // Filter by method, status, date range (with input elements)
 async function applyFilters() {
