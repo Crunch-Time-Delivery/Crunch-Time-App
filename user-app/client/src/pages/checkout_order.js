@@ -75,35 +75,28 @@ function notifyDriver(phoneNumber, message) {
   });
 }
 
-let map;
-let driverMarker;
-const driverId = "123"; // Your driver ID
-let trackingInterval;
+
 
 // Function to generate a random 6-digit PIN
 function generatePIN() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
-
+let map;
+let driverMarker = null;
+let trackingInterval = null; // To store the setInterval ID
+const driverId = null; // Your driver ID
+// Initialize the map
 function initMap() {
   const defaultLocation = { lat: -33.9249, lng: 18.4241 }; // Example: Cape Town
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 12,
     center: defaultLocation,
   });
-  trackDriver();
+  // Optionally, start tracking automatically or call startTracking() separately
+  startTracking();
 }
 
-function startTracking() {
-  fetchAndUpdateLocation(); // Initial fetch
-  // Set interval for periodic updates
-  trackingInterval = setInterval(fetchAndUpdateLocation, 10000);
-}
-
-function stopTracking() {
-  clearInterval(trackingInterval);
-}
-
+// Fetch driver location from API and update marker
 function fetchAndUpdateLocation() {
   fetch(`/api/driver-location?driverId=${driverId}`)
     .then(res => {
@@ -113,7 +106,7 @@ function fetchAndUpdateLocation() {
     .then(data => {
       const loc = { lat: data.latitude, lng: data.longitude };
       if (!driverMarker) {
-        driverMarker = new google.maps.Marker({ position: loc, map: map, title: "Driver's Location" });
+        driverMarker = new google.maps.Marker({ position: loc, map: map, title: "Driver's Location", icon: getDriverIcon() });
       } else {
         driverMarker.setPosition(loc);
       }
@@ -131,7 +124,7 @@ function startBrowserGeolocation() {
       position => {
         const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
         if (!driverMarker) {
-          driverMarker = new google.maps.Marker({ position: loc, map: map, title: "Driver's Location" });
+          driverMarker = new google.maps.Marker({ position: loc, map: map, title: "Driver's Location", icon: getDriverIcon() });
         } else {
           driverMarker.setPosition(loc);
         }
@@ -146,6 +139,33 @@ function startBrowserGeolocation() {
     console.error('Geolocation is not supported by this browser.');
   }
 }
+
+// Start periodic fetching of driver location
+function startTracking() {
+  fetchAndUpdateLocation(); // Initial fetch
+  trackingInterval = setInterval(fetchAndUpdateLocation, 10000); // Every 10 seconds
+}
+
+// Stop periodic tracking
+function stopTracking() {
+  if (trackingInterval) {
+    clearInterval(trackingInterval);
+    trackingInterval = null;
+  }
+}
+
+// Utility function to get custom driver icon (optional)
+function getDriverIcon() {
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    scale: 8,
+    fillColor: '#FF0000',
+    fillOpacity: 1,
+    strokeColor: 'white',
+    strokeWeight: 2
+  };
+}
+
 
 async function fetchRestaurantName() {
   const res = await fetch('/api/restaurant-name');
