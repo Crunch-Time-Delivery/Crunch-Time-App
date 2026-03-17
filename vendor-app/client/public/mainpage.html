@@ -510,11 +510,13 @@ async function renderUsers() {
 
 // Helper function to render payments with pagination
 let currentPage = 1;
-const pageSize = 10; // Number of records per page
+const pageSize_
+ = 10; // Number of records per page
 
 function renderPayments(data, totalCount = null, page = 1) {
   const container = document.getElementById('paymentHistoryContainer');
-  const totalPages = Math.ceil(totalCount / pageSize);
+  const totalPages = Math.ceil(totalCount / pageSize_
+);
 
   let html = `
     <div class="payment-table-wrapper">
