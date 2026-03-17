@@ -186,10 +186,14 @@ function hideLoadingIndicator() {
     loader.style.display = 'none';
   }
 }
-
 // ================= Map Function =================
 let map; // Declare map globally
 let userMarker;
+let pickupMarker;
+let dropoffMarker;
+let driverMarker;
+let routePolyline; // For displaying route
+let destination = null; // Will hold the current destination coordinates
 
 function initMap() {
   const pickup = { lat: -33.9249, lng: 18.4241 }; // Restaurant
@@ -205,8 +209,11 @@ function initMap() {
   map = new google.maps.Map(mapElement, { zoom: 13, center: pickup });
 
   // Add markers for pickup and dropoff points
-  new google.maps.Marker({ position: pickup, map, label: 'Pickup Point', title: 'Restaurant Pickup' });
-  new google.maps.Marker({ position: dropoff, map, label: 'Drop-off Point', title: 'Customer Drop-off' });
+  pickupMarker = new google.maps.Marker({ position: pickup, map, label: 'Pickup', title: 'Restaurant Pickup' });
+  dropoffMarker = new google.maps.Marker({ position: dropoff, map, label: 'Drop-off', title: 'Customer Drop-off' });
+
+  // Initialize destination as the dropoff point
+  setDestination(dropoff);
 
   // Handle geolocation updates
   if (navigator.geolocation) {
@@ -238,7 +245,6 @@ function initMap() {
         }
 
         // Center the map on user's location
-        // Use map.getCenter() only if the map has been initialized
         if (map) {
           map.setCenter(pos);
         }
@@ -248,11 +254,13 @@ function initMap() {
         if (locationInput) {
           locationInput.value = `${pos.lat},${pos.lng}`;
         }
+
+        // Update driver location on server and optionally update route
+        updateDriverLocation(pos);
       },
       () => {
         // Error handler if geolocation fails
         const infoWindow = new google.maps.InfoWindow();
-        // Use existing map center or default to pickup if map not initialized
         const center = map ? map.getCenter() : { lat: 0, lng: 0 };
         infoWindow.setPosition(center);
         infoWindow.setContent("Error: The Geolocation service failed.");
@@ -269,38 +277,89 @@ function initMap() {
     infoWindow.open(map);
   }
 }
-function updateDriverLocation() {
-  fetch(`/api/driver-location?driverId=${driverId}`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Server responded with status ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      const driverLocation = {
-        lat: data.latitude,
-        lng: data.longitude,
-      };
 
-      // Create marker if it doesn't exist
-      if (!driverMarker) {
-        driverMarker = new google.maps.Marker({
-          position: driverLocation,
-          map: map,
-          title: "Driver's Location",
-        });
-      } else {
-        // Update existing marker position
-        driverMarker.setPosition(driverLocation);
-      }
+// Function to set or update the destination marker
+function setDestination(latlng) {
+  destination = latlng;
+  if (dropoffMarker) {
+    dropoffMarker.setPosition(latlng);
+  } else {
+    dropoffMarker = new google.maps.Marker({ position: latlng, map, label: 'Destination', title: 'Delivery Destination' });
+  }
+  // Optionally, draw route from driver to destination
+  drawRoute();
+}
 
-      // Optional: animate map center change
-      map.setCenter(driverLocation);
-    })
-    .catch(error => {
-      console.error("Error fetching driver location:", error);
+// Function to update driver location marker and route
+function updateDriverLocation(pos) {
+  if (!driverMarker) {
+    driverMarker = new google.maps.Marker({
+      position: pos,
+      map: map,
+      title: "Driver's Location",
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 8,
+        fillColor: '#FF0000',
+        fillOpacity: 1,
+        strokeColor: 'white',
+        strokeWeight: 2
+      }
     });
+  } else {
+    driverMarker.setPosition(pos);
+  }
+
+  // Optionally, update the route
+  drawRoute();
+
+  // Center map on driver
+  map.setCenter(pos);
+}
+
+// Function to draw route from driver to destination
+function drawRoute() {
+  if (!driverMarker || !destination) return;
+
+  // Remove previous route if exists
+  if (routePolyline) {
+    routePolyline.setMap(null);
+  }
+
+  const directionsService = new google.maps.DirectionsService();
+  const directionsRenderer = new google.maps.DirectionsRenderer({ map: map, suppressMarkers: true });
+
+  directionsService.route(
+    {
+      origin: driverMarker.getPosition(),
+      destination: destination,
+      travelMode: google.maps.TravelMode.DRIVING
+    },
+    (response, status) => {
+      if (status === google.maps.DirectionsStatus.OK) {
+        if (routePolyline) {
+          routePolyline.setMap(null);
+        }
+        // Draw the route
+        routePolyline = new google.maps.Polyline({
+          path: response.routes[0].overview_path,
+          geodesic: true,
+          strokeColor: '#0000FF',
+          strokeOpacity: 0.7,
+          strokeWeight: 5,
+        });
+        routePolyline.setMap(map);
+      } else {
+        console.error('Directions request failed due to ' + status);
+      }
+    }
+  );
+}
+
+// Function to dynamically update the destination (e.g., if customer changes drop-off location)
+function updateDestination(newLat, newLng) {
+  const newLatLng = { lat: newLat, lng: newLng };
+  setDestination(newLatLng);
 }
 // ================== Load Content Functions ==================
 function loadMainPage() {
