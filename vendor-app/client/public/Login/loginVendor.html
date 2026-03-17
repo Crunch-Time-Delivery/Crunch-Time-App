@@ -331,7 +331,7 @@ document.getElementById('loginBtn').addEventListener('click', () => {
   const password = document.getElementById('loginPassword').value.trim();
 
   if (!userType) {
-    alert('Please select Driver or Admin login.');
+    alert('Please select Vendor login.');
     return;
   }
   
@@ -345,7 +345,7 @@ document.getElementById('loginBtn').addEventListener('click', () => {
   }
 
   // Existing credential checks...
-  if (userType === 'driver') {
+  if (userType === 'vendor') {
     if (driverData.email && driverData.email.toLowerCase() === email && driverData.password === password) {
       localStorage.setItem('currentUser', JSON.stringify(driverData));
       if (driverApproved) {
