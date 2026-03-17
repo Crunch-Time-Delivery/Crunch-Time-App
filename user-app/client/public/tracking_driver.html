@@ -92,91 +92,138 @@
   <div id="status" class="status">No location selected.</div>
 </div>
 
-<!-- Google Maps API - Replace YOUR_API_KEY with your actual API key -->
+<!-- Google Maps API -  actual API key -->
 <script>
-  const API_KEY = ' AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q '; // Replace with your API key
-  const DUMMY_ORDER_ID = 'ORDER1234567890';
+  const API_KEY = 'AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q'; // Replace with your actual API key
+const ORDER_ID = null; // Set your order ID here or dynamically
 
-  let map, driverMarker, customerMarker;
-  let tracking = false;
-  let intervalId = null;
-  let customerLat = 37.7850, customerLng = -122.4383; // Default customer location
+let map, driverMarker, customerMarker;
+let tracking = false;
+let intervalId = null;
+let customerLat = 37.7850, customerLng = -122.4383; // Default customer location
 
-  // Initialize map with default center
-  function initMap() {
-    let centerCoords = { lat: 0, lng: 0 };
-    const currentOrderId = document.getElementById('orderId').value.trim();
+// Initialize the map
+function initMap() {
+  let centerCoords = { lat: 0, lng: 0 };
+  const currentOrderId = document.getElementById('orderId')?.value.trim();
 
-    if (currentOrderId === DUMMY_ORDER_ID) {
-      centerCoords = { lat: -33.9249, lng: 18.4241 }; // Cape Town
-    }
-
-    map = new google.maps.Map(document.getElementById('map'), {
-      zoom: 14,
-      center: centerCoords,
-      mapTypeId: 'roadmap',
-      disableDefaultUI: false,
-      zoomControl: true,
-    });
-
-    // Customer Marker
-    customerMarker = new google.maps.Marker({
-      map: map,
-      title: "You are here",
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 9,
-        fillColor: '#4285f4',
-        fillOpacity: 1,
-        strokeColor: '#fff',
-        strokeWeight: 2
-      }
-    });
-
-    // Driver Marker
-    driverMarker = new google.maps.Marker({
-      map: map,
-      title: "Driver",
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 11,
-        fillColor: '#d32f2f',
-        fillOpacity: 1,
-        strokeColor: '#fff',
-        strokeWeight: 3
-      }
-    });
-
-    updateCustomerMarker();
+  if (currentOrderId && currentOrderId === ORDER_ID) {
+    centerCoords = { lat: -33.9249, lng: 18.4241 }; // Cape Town
   }
 
-  function updateCustomerMarker() {
-    if (customerMarker) {
-      customerMarker.setPosition({ lat: customerLat, lng: customerLng });
-      map.panTo({ lat: customerLat, lng: customerLng });
-    }
-  }
+  map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 14,
+    center: centerCoords,
+    mapTypeId: 'roadmap',
+    disableDefaultUI: false,
+    zoomControl: true,
+  });
 
-  function updateDriverLocation(lat, lng) {
-    const pos = { lat: parseFloat(lat), lng: parseFloat(lng) };
+  // Initialize customer marker
+  customerMarker = new google.maps.Marker({
+    map: map,
+    title: "Customer Location",
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 9,
+      fillColor: '#4285f4',
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 2
+    }
+  });
+
+  // Initialize driver marker
+  driverMarker = new google.maps.Marker({
+    map: map,
+    title: "Driver",
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 11,
+      fillColor: '#d32f2f',
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 3
+    }
+  });
+
+  // Load initial customer location
+  updateCustomerMarker();
+
+  // Optionally, start fetching driver's location periodically
+  startTracking();
+}
+
+// Update customer marker position
+function updateCustomerMarker() {
+  if (customerMarker) {
+    customerMarker.setPosition({ lat: customerLat, lng: customerLng });
+    // Optional: pan to customer location
+    map.panTo({ lat: customerLat, lng: customerLng });
+  }
+}
+
+// Update driver marker position
+function updateDriverLocation(lat, lng) {
+  const pos = { lat: parseFloat(lat), lng: parseFloat(lng) };
+  if (driverMarker) {
     driverMarker.setPosition(pos);
     map.panTo(pos);
     map.setZoom(15);
   }
+}
 
-  // Geolocation for customer
-  function updateCustomerLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          customerLat = pos.coords.latitude;
-          customerLng = pos.coords.longitude;
-          updateCustomerMarker();
-        },
-        () => console.warn("Geolocation denied")
-      );
-    }
+// Fetch customer location via browser geolocation
+function updateCustomerLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        customerLat = pos.coords.latitude;
+        customerLng = pos.coords.longitude;
+        updateCustomerMarker();
+      },
+      () => {
+        console.warn("Geolocation permission denied or unavailable");
+      }
+    );
   }
+}
+
+// Fetch driver location from your API
+function fetchDriverLocation() {
+  fetch(`/api/driver-location?driverId=${driverId}`)
+    .then(res => {
+      if (!res.ok) throw new Error('Network response was not ok');
+      return res.json();
+    })
+    .then(data => {
+      updateDriverLocation(data.latitude, data.longitude);
+    })
+    .catch(error => {
+      console.error('Error fetching driver location:', error);
+    });
+}
+
+// Start periodic driver location updates
+function startTracking() {
+  if (tracking) return; // Avoid multiple intervals
+  fetchDriverLocation(); // Initial fetch
+  intervalId = setInterval(fetchDriverLocation, 10000); // Every 10 seconds
+  tracking = true;
+}
+
+// Stop tracking
+function stopTracking() {
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+    tracking = false;
+  }
+}
+
+// Optionally, update customer location periodically
+// Call this function if you want to keep customer location updated
+// setInterval(updateCustomerLocation, 15000);
 
   // Start tracking
  document.addEventListener('DOMContentLoaded', () => {
