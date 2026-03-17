@@ -973,9 +973,49 @@ async function addNewAdmin() {
     const newAdmin = await res.json();
     alert('New admin added: ' + newAdmin.username);
   }
+} async function restaurnat_name(){
+ const restaurant_name = document.getElementById('restaurant_name').value.trim();
+  
+  if (!restaurant_name ) {
+    alert('Please fill all fields.');
+    return;
+  }
+  try {
+    await supabase.from('vendors').insert({ email});
+    renderVendors();
+    
+  } catch (err) {
+    console.error('vendors error:', err);
+    alert('Vendor error: ' + err.message);
+  }
 }
+async function restaurant_menu() {
+  const restaurant_menu = document.getElementById(' restaurant_menu').value.trim();
+
+  if (!restaurant_menu ) {
+    alert('Please fill all fields.');
+    return;
+  }
+  try {
+    await supabase.from('vendors').insert({ email});
+    renderVendors();
+    
+  } catch (err) {
+    console.error('vendors error:', err);
+    alert('Vendor error: ' + err.message);
+  }
+}// Render functions
+async function renderVendors() {
+  const { data, error } = await supabase.from('vendors').select('*');
+  if (error) {
+    document.getElementById('itemsTable').innerHTML = '<p>Error loading items.</p>';
+    return;
+  }
+  if (data.length === 0) {
+    document.getElementById('itemsTable').innerHTML = '<p>No items available.</p>';
+    return;
+  } }
 </script>
-<!-- Import your supabase client setup (from your code) -->
 <script src="supabaseClient.js" async></script>
 <script src="payfast-track.js" async></script>
 
