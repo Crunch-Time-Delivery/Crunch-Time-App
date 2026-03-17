@@ -253,17 +253,17 @@ document.getElementById('loginBtn').addEventListener('click', () => {
   const password = document.getElementById('loginPassword').value.trim();
 
   if (!userType) {
-    alert('Please select Driver or Admin login.');
+    alert('Please select User');
     return;
   }
 
-  if (userType === 'driver') {
+  if (userType === 'user') {
     // Check driver credentials
     if (userData.email && userData.email.toLowerCase() === email && userData.password === password) {
       localStorage.setItem('currentUser', JSON.stringify(userData));
       if (userApproved) {
         // Redirect directly if approved
-        window.location.href='http://127.0.0.1:5500/user-app/mainpage.html';
+        window.location.href='http://127.0.0.1:5500/user-app/client/public/mainpage.html';
       } else {
         generateAndSendOtp();
         showOtpModal();
