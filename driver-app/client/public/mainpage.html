@@ -480,12 +480,12 @@ async function loadDriverHistoryPayment() {
   const container = document.getElementById('innerContent');
   container.innerHTML = `<div class="loading">Loading payment history…</div>`;
   
-  // Simulate delay
+  // Simulate delay for UX
   await new Promise(res => setTimeout(res, 1000));
-
+  
   try {
-    // Fetch actual payment history from your backend or PayFast API
-    const response = await fetch('/get-payfast-payments'); // Replace with your API endpoint
+    // Fetch payment history from your backend API
+    const response = await fetch('/get-payfast-payments'); // Replace with your actual API endpoint
     if (!response.ok) {
       throw new Error(`Failed to fetch payments: ${response.statusText}`);
     }
@@ -496,12 +496,13 @@ async function loadDriverHistoryPayment() {
       return;
     }
 
+    // Build HTML for payment list
     let html = `<h1>Payment History</h1>`;
     for (const p of payments) {
       html += `
         <div class="card" style="margin-bottom:10px; padding:10px; border:1px solid #ccc;">
           <div><strong>Payment ID:</strong> ${p.id}</div>
-          <div><strong>Amount:</strong> R ${p.amount.toFixed(2)}</div>
+          <div><strong>Amount:</strong> R ${parseFloat(p.amount).toFixed(2)}</div>
           <div><strong>Status:</strong> ${p.status}</div>
           <button onclick="trackPayFast('${p.id}')">Track Payment</button>
         </div>
@@ -514,16 +515,17 @@ async function loadDriverHistoryPayment() {
   }
 }
 
-// Example function to track payment and update history
+// Function to track or update the status of a payment
 async function trackPayFast(paymentId) {
   try {
-    // Call your backend to get latest payment status from PayFast
-    const response = await fetch(`/update-payfast-status/${paymentId}`); // Your API endpoint
+    // Call your backend API to verify or update the payment status from PayFast
+    const response = await fetch(`/update-payfast-status/${paymentId}`); // Replace with your API
     if (!response.ok) {
       throw new Error(`Failed to update payment status: ${response.statusText}`);
     }
     const result = await response.json();
-   // Optionally, refresh the payment history after updating
+
+    // Refresh payment history after update
     await loadDriverHistoryPayment();
 
     alert(`Payment ${paymentId} status updated: ${result.status}`);
