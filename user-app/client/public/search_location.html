@@ -108,13 +108,13 @@ let map, marker, geocoder;
 const DEFAULT_POS = { lat: -33.9249, lng: 18.4241 }; // Cape Town
 
 function initMap() {
-  // Initialize map
+  // Initialize the map centered at DEFAULT_POS
   map = new google.maps.Map(document.getElementById("map"), {
     center: DEFAULT_POS,
     zoom: 13
   });
 
-  // Initialize marker
+  // Initialize a draggable marker
   marker = new google.maps.Marker({
     map: map,
     position: DEFAULT_POS,
@@ -127,33 +127,21 @@ function initMap() {
   // Load saved location if available
   loadSavedLocation();
 
-  // Search form submit handler
+  // Handle form submission for address search
   document.getElementById("locationForm").addEventListener("submit", e => {
     e.preventDefault();
     const address = document.getElementById("locationInput").value.trim();
-    if (!address) return;
-
-    geocoder.geocode({ address }, (results, status) => {
-      if (status !== "OK" || !results[0]) {
-        alert("Location not found. Please check the address.");
-        return;
-      }
-      const result = results[0];
-      const pos = {
-        lat: result.geometry.location.lat(),
-        lng: result.geometry.location.lng()
-      };
-      saveLocation(pos, result.formatted_address);
-      updateMap(pos, result.formatted_address);
-      document.getElementById("user_location_id").value = `${pos.lat},${pos.lng}`;
-      alert("Location set and saved!");
-    });
+    if (!address) {
+      alert("Please enter an address.");
+      return;
+    }
+    geocodeAddress(address);
   });
 
-  // Use current location button
+  // Handle "Use current location" button
   document.getElementById("locateBtn").addEventListener("click", () => {
     if (!navigator.geolocation) {
-      alert("Geolocation not supported");
+      alert("Geolocation is not supported by your browser.");
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -162,20 +150,80 @@ function initMap() {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-        geocoder.geocode({ location: pos }, (results, status) => {
-          if (status !== "OK" || !results[0]) {
-            alert("Unable to get address for your location");
-            return;
-          }
-          const address = results[0].formatted_address;
-          saveLocation(pos, address);
-          updateMap(pos, address);
-          document.getElementById("user_location_id").value = `${pos.lat},${pos.lng}`;
-        });
+        reverseGeocodeLocation(pos);
       },
-      () => alert("Permission denied or error")
+      error => {
+        alert("Unable to retrieve your location. Please check permissions.");
+        console.error(error);
+      }
     );
   });
+}
+
+// Geocode an address and update map
+function geocodeAddress(address) {
+  geocoder.geocode({ address }, (results, status) => {
+    if (status !== "OK" || !results[0]) {
+      alert("Location not found. Please check the address.");
+      return;
+    }
+    const result = results[0];
+    const pos = {
+      lat: result.geometry.location.lat(),
+      lng: result.geometry.location.lng()
+    };
+    saveLocation(pos, result.formatted_address);
+    updateMap(pos, result.formatted_address);
+    document.getElementById("user_location_id").value = `${pos.lat},${pos.lng}`;
+    alert("Location set and saved!");
+  });
+}
+
+// Reverse geocode a location to get address
+function reverseGeocodeLocation(pos) {
+  geocoder.geocode({ location: pos }, (results, status) => {
+    if (status !== "OK" || !results[0]) {
+      alert("Unable to get address for your location");
+      return;
+    }
+    const address = results[0].formatted_address;
+    saveLocation(pos, address);
+    updateMap(pos, address);
+    document.getElementById("user_location_id").value = `${pos.lat},${pos.lng}`;
+  });
+}
+
+// Update the map marker and center
+function updateMap(pos, address) {
+  marker.setPosition(pos);
+  map.setCenter(pos);
+  // Optionally, update marker info window or other UI elements
+  // e.g., marker.setTitle(address);
+}
+
+// Save location data (implement as needed)
+function saveLocation(pos, address) {
+  // Save to localStorage or your backend
+  localStorage.setItem("savedLocation", JSON.stringify({ position: pos, address: address }));
+}
+
+// Load saved location (if any)
+function loadSavedLocation() {
+  const saved = localStorage.getItem("savedLocation");
+  if (saved) {
+    const data = JSON.parse(saved);
+    if (data && data.position) {
+      updateMap(data.position, data.address);
+      document.getElementById("locationInput").value = data.address || "";
+      document.getElementById("user_location_id").value = `${data.position.lat},${data.position.lng}`;
+    }
+  } const coordsStr = localStorage.getItem("deliveryCoords");
+  const address = localStorage.getItem("deliveryAddress");
+  if (coordsStr && address) {
+    const coords = JSON.parse(coordsStr);
+    updateMap(coords, address);
+  }
+}
 
   // Reset map button inside initMap
   document.getElementById("resetBtn").addEventListener("click", () => {
@@ -186,17 +234,9 @@ function initMap() {
     document.getElementById("coordinates").innerText = "No location selected.";
     document.getElementById("user_location_id").value = "";
   });
-}
 
-// Load saved location from local storage
-function loadSavedLocation() {
-  const coordsStr = localStorage.getItem("deliveryCoords");
-  const address = localStorage.getItem("deliveryAddress");
-  if (coordsStr && address) {
-    const coords = JSON.parse(coordsStr);
-    updateMap(coords, address);
-  }
-}
+
+
 
 // Update map and marker
 function updateMap(pos, address) {
