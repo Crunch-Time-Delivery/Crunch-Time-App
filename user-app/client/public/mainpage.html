@@ -634,6 +634,204 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('Service Worker registration failed', err));
   });
 }
+// Show specific management section
+function showManagement(type) {
+  document.querySelectorAll('.section').forEach(s => s.style.display='none');
+  if (type==='items') { 
+    document.getElementById('section-items').style.display='block'; 
+    renderItems(); 
+  }
+  if (type==='orders') { 
+    document.getElementById('section-orders').style.display='block'; 
+    renderOrders(); 
+  }
+  if (type==='users') { 
+    document.getElementById('section-users').style.display='block'; 
+    renderUsers(); 
+  }
+  if (type==='payment') { 
+    fetchPayments(); 
+    document.getElementById('section-payment').style.display='block'; 
+  }
+}
+
+// Show specific section
+function showSection(sectionId) {
+  document.querySelectorAll('.section').forEach(s => s.style.display='none');
+  document.getElementById('section-' + sectionId).style.display='block';
+}
+
+// Upload Menu
+async function uploadMenu() {
+  const restaurantName = document.getElementById('restaurantName').value.trim();
+  const fileInput = document.getElementById('menuFile');
+  if (!restaurantName || !fileInput.files.length) {
+    alert('Please enter restaurant name and select a PDF file.');
+    return;
+  }
+  const file = fileInput.files[0];
+  try {
+    const filePath = `menus/${restaurantName}_${Date.now()}.pdf`;
+    const { data, error } = await supabase.storage.from('menus').upload(filePath, file);
+    if (error) throw error;
+    await supabase.from('restaurant_menus').insert({ restaurant_name: restaurantName, file_path: filePath });
+    alert('Menu uploaded successfully!');
+  } catch (err) {
+    console.error('Upload error:', err);
+    alert('Error uploading menu: ' + err.message);
+  }
+}
+
+// Save Restaurant Info
+async function saveRestaurantInfo() {
+  const name = document.getElementById('restName').value.trim();
+  const contact = document.getElementById('contact').value.trim();
+  const website = document.getElementById('website').value.trim();
+  const address = document.getElementById('address').value.trim();
+  if (!name || !contact || !website || !address) {
+    alert('Please fill in all fields.');
+    return;
+  }
+  try {
+    await supabase.from('restaurants').insert({ name, contact, website, address });
+    alert('Restaurant details saved!');
+  } catch (err) {
+    console.error('Error saving info:', err);
+    alert('Error saving details: ' + err.message);
+  }
+}
+
+// Add Item
+async function addItem() {
+  const vendor = document.getElementById('itemVendor').value.trim();
+  const itemName = document.getElementById('itemName').value.trim();
+  const price = parseFloat(document.getElementById('itemPrice').value);
+  const stockStatus = document.getElementById('itemStock').value;
+  if (!vendor || !itemName || isNaN(price)) {
+    alert('Please fill all fields correctly.');
+    return;
+  }
+  try {
+    await supabase.from('items').insert({ vendor, item_name: itemName, price, stock_status: stockStatus });
+    alert('Item added!');
+    renderItems();
+  } catch (err) {
+    console.error('Add item error:', err);
+    alert('Error adding item: ' + err.message);
+  }
+}
+
+// Save Order (renamed from second addOrder)
+async function saveOrder() {
+  const orderId = document.getElementById('orderId').value.trim();
+  const userName = document.getElementById('orderUserName').value.trim();
+  const userEmail = document.getElementById('orderUserEmail').value.trim();
+  const amount = parseFloat(document.getElementById('orderAmount').value);
+  const vendorName = document.getElementById('vendorName').value.trim();
+  const vendorContact = document.getElementById('vendorContact').value.trim();
+  const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
+
+  if (!orderId || !userName || !userEmail || isNaN(amount)) {
+    alert('Please fill all fields correctly.');
+    return;
+  }
+  try {
+    await supabase.from('orders').insert({ order_id: orderId, user_name: userName, user_email: userEmail, vendor_name: vendorName, vendor_contact: vendorContact, delivery_address: deliveryAddress, amount });
+    alert('Order added!');
+    renderOrders();
+  } catch (err) {
+    console.error('Add order error:', err);
+    alert('Error adding order: ' + err.message);
+  }
+}
+
+// Add User
+async function addUser() {
+  const email = document.getElementById('userEmail').value.trim();
+  const name = document.getElementById('userName').value.trim();
+
+  if (!email || !name) {
+    alert('Please fill all fields.');
+    return;
+  }
+  try {
+    await supabase.from('users').insert({ email, name });
+    alert('User added!');
+    renderUsers();
+  } catch (err) {
+    console.error('Add user error:', err);
+    alert('Error adding user: ' + err.message);
+  }
+}
+
+// Render functions
+async function renderItems() {
+  const { data, error } = await supabase.from('items').select('*');
+  if (error) {
+    document.getElementById('itemsTable').innerHTML = '<p>Error loading items.</p>';
+    return;
+  }
+  if (data.length === 0) {
+    document.getElementById('itemsTable').innerHTML = '<p>No items available.</p>';
+    return;
+  }
+  let html = `<table><thead><tr><th>Vendor</th><th>Name</th><th>Price</th><th>Status</th></tr></thead><tbody>`;
+  data.forEach(item => {
+    html += `<tr>
+      <td>${item.vendor}</td>
+      <td>${item.item_name}</td>
+      <td>ZAR ${item.price.toFixed(2)}</td>
+      <td>${item.stock_status}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('itemsTable').innerHTML = html;
+}
+
+async function renderOrders() {
+  const { data, error } = await supabase.from('orders').select('*');
+  if (error) {
+    document.getElementById('ordersTable').innerHTML = '<p>Error loading orders.</p>';
+    return;
+  }
+  if (data.length === 0) {
+    document.getElementById('ordersTable').innerHTML = '<p>No orders available.</p>';
+    return;
+  }
+  let html = `<table><thead><tr><th>Order ID</th><th>User</th><th>Email</th><th>Method</th><th>Amount</th></tr></thead><tbody>`;
+  data.forEach(order => {
+    html += `<tr>
+      <td>${order.order_id}</td>
+      <td>${order.user_name}</td>
+      <td>${order.user_email}</td>
+      <td>${order.payment_method}</td>
+      <td>ZAR ${order.amount.toFixed(2)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('ordersTable').innerHTML = html;
+}
+
+async function renderUsers() {
+  const { data, error } = await supabase.from('users').select('*');
+  if (error) {
+    document.getElementById('usersTable').innerHTML = '<p>Error loading users.</p>';
+    return;
+  }
+  if (data.length === 0) {
+    document.getElementById('usersTable').innerHTML = '<p>No users available.</p>';
+    return;
+  }
+  let html = `<table><thead><tr><th>Email</th><th>Name</th></tr></thead><tbody>`;
+  data.forEach(user => {
+    html += `<tr>
+      <td>${user.email}</td>
+      <td>${user.name}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('usersTable').innerHTML = html;
+}
 </script>
 <script src="smsAndEmailAPI.js"async></script>
 
