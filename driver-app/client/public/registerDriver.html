@@ -109,7 +109,6 @@ form input[type="file"] {
   font-weight: bold;
 }
 
-/* ===== UTIL ===== */
 .hidden {
   display: none;
 }
@@ -121,7 +120,6 @@ form input[type="file"] {
 }
 </style>
 </head>
-
 <body>
 
 <div class="page-wrapper">
@@ -130,36 +128,33 @@ form input[type="file"] {
 
   <div class="card">
     <div class="header">
-      <img src="img/screenshot (251).jpg" alt="Welcome">
+      <img src="img/screenshot (251).jpg" alt="Welcome" />
       <h1>Register as a Driver</h1>
     </div>
 
     <form id="driverForm">
-
       <div class="section-title">Personal Details</div>
-
       <label>Upload Selfie</label>
-      <input type="file" id="driverPhoto" accept="image/*" required>
+      <input type="file" id="driverPhoto" accept="image/*" required />
 
       <label>Full Name</label>
-      <input type="text" id="driverName" required>
+      <input type="text" id="driverName" required />
 
       <label>Email</label>
-      <input type="email" id="driverEmail" required>
+      <input type="email" id="driverEmail" required />
 
       <label>Password</label>
-      <input type="password" id="driverPassword" required>
+      <input type="password" id="driverPassword" required />
 
       <label>Phone Number</label>
-      <input type="tel" id="driverPhone" required>
+      <input type="tel" id="driverPhone" required />
 
       <label>ID Number</label>
-      <input type="text" id="driverID" required>
+      <input type="text" id="driverID" required />
 
       <div class="section-title">Bank Details</div>
-
       <label>Bank Account Number</label>
-      <input type="text" id="bankDetails" required>
+      <input type="text" id="bankDetails" required />
 
       <label>Bank Name</label>
       <select id="bankName" required>
@@ -173,30 +168,26 @@ form input[type="file"] {
 
       <div id="otherBankDiv" class="hidden">
         <label>Specify Bank</label>
-        <input type="text" id="otherBank">
+        <input type="text" id="otherBank" />
       </div>
 
       <div class="section-title">Vehicle Information</div>
-
       <label>Driver License</label>
-      <input type="file" id="driverLicense" accept="image/*" required>
+      <input type="file" id="driverLicense" accept="image/*" required />
 
       <label>Car Color</label>
-      <input type="text" id="carColor" required>
+      <input type="text" id="carColor" required />
 
       <label>Car Type</label>
-      <input type="text" id="carType" required>
+      <input type="text" id="carType" required />
 
       <label>Car Photo</label>
-      <input type="file" id="carPhoto" accept="image/*" required>
+      <input type="file" id="carPhoto" accept="image/*" required />
 
       <label>Car Registration Number</label>
-      <input type="text" id="carRegNumber" required>
+      <input type="text" id="carRegNumber" required />
 
-      <button type="submit" class="action-btn">
-        Submit Registration
-      </button>
-
+      <button type="submit" class="action-btn">Submit Registration</button>
     </form>
   </div>
 </div>
@@ -208,9 +199,7 @@ function showNotificationMessage(message, color = '#4CAF50') {
   notif.innerHTML = `<div style="background:${color}">${message}</div>`;
   notif.style.display = 'block';
 
-  setTimeout(() => {
-    notif.style.display = 'none';
-  }, 3000);
+  setTimeout(() => { notif.style.display = 'none'; }, 3000);
 }
 
 /* ===== BANK TOGGLE ===== */
@@ -219,10 +208,49 @@ document.getElementById('bankName').addEventListener('change', e => {
     .classList.toggle('hidden', e.target.value !== 'Other');
 });
 
-/* ===== FORM SUBMIT (UI ONLY) ===== */
+/* ===== Generate a unique driverId ===== */
+function generateDriverId() {
+  const timestamp = Date.now();
+  const randomNum = Math.floor(Math.random() * 10000);
+  return `DRIVER-${timestamp}-${randomNum}`;
+}
+
+/* ===== FORM SUBMIT ===== */
 document.getElementById('driverForm').addEventListener('submit', e => {
   e.preventDefault();
-  showNotificationMessage('Submitting registration...');
+  showNotificationMessage('Registering driver...');
+
+  // Generate driverId
+  const driverId = generateDriverId();
+
+  // Create live connection link
+  const liveLink = `https://yourdomain.com/connection/${driverId}`;
+
+  // Show confirm dialog
+  if (confirm(`Driver ID: ${driverId}\nLive Connection Link: ${liveLink}\n\nClick OK to proceed to login.`)) {
+    // Save driverId for later retrieval
+    localStorage.setItem('driverId', driverId);
+    // Redirect to login page
+    window.location.href = 'http://127.0.0.1:5501/driver-app/client/public/Login/loginDriver.html';
+  }
+
+  // Send form data to backend (placeholder example)
+  const formData = new FormData();
+  formData.append('driverId', driverId);
+  formData.append('name', document.getElementById('driverName').value);
+  // Append other form data as needed...
+
+  fetch('/api/register-driver', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    // You can handle success here, but redirect happens instantly
+  })
+  .catch(error => {
+    showNotificationMessage('Error during registration', '#f44336');
+  });
 });
 </script>
 
