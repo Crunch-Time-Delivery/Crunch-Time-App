@@ -9,8 +9,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
 <style>
-/* Your existing styles plus new styles for top pin message */
-
+/* Styles for the page and top pin message */
 * { box-sizing: border-box; }
 body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
 .app { width: 100vw; min-height: 100vh; display: flex; flex-direction: column; }
@@ -52,7 +51,6 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
   width: 90%;
   cursor: default;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  z-index: 10000;
 }
 #topPinMessage h3 {
   margin: 0;
@@ -70,13 +68,28 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
   font-size: 1.2em;
   cursor: pointer;
 }
+
+/* Custom CSS for driver label overlay */
+#driverLabelOverlay {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 14px;
+  color: #000;
+  border: 1px solid #ccc;
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+}
 </style>
 </head>
 <body>
 
 <!-- The top pin message -->
-<div id="topPinMessage">
+<div id="topPinMessage" style="display:none;">
   <h3>Order PIN: <span id="orderPin">Loading...</span></h3>
+  <button onclick="hidePinMessage()"><i class="fa fa-times"></i></button>
 </div>
 
 <!-- Main app content -->
@@ -89,7 +102,7 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
         The courier is on their way to you
     </div>
     <!-- Map container -->
-    <div class="map" id="map" style="height: 50vh; width: 100%;"></div>
+    <div class="map" id="map" style="height: 50vh; width: 100%; position: relative;"></div>
     <div class="driver-panel">
         <div class="driver-row">
             <div class="driver-avatar">
@@ -136,207 +149,123 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
 <!-- Notification container -->
 <div id="notification" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:8px; display:none; z-index:9999;"></div>
 
-<!-- Load Google Maps API with your API key -->
+<!-- Load Google Maps API -->
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap"></script>
 
 <script>
-// Function to display notification messages
-function showNotificationMessage(text, color = '#333') {
-  let box = document.getElementById('notificationMessage');
-
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'notificationMessage';
-    box.style.position = 'fixed';
-    box.style.bottom = '20px';
-    box.style.left = '50%';
-    box.style.transform = 'translateX(-50%)';
-    box.style.padding = '12px 20px';
-    box.style.borderRadius = '8px';
-    box.style.color = '#fff';
-    box.style.fontSize = '14px';
-    box.style.zIndex = '9999';
-    document.body.appendChild(box);
-  }
-
-  box.style.backgroundColor = color;
-  box.innerText = text;
-
-  // Remove the notification after 4 seconds
-  setTimeout(() => box.remove(), 4000);
-}
-
-// Function to send Twilio notification
-function sendTwilioNotification(phoneNumber, message, callback = null) {
-  if (!phoneNumber || !message) {
-    showNotificationMessage('Phone number or message missing', '#f44336');
-    return;
-  }
-  
-  showNotificationMessage('Sending notification...', '#2196F3');
-
-  fetch('/send-twilio', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ phoneNumber, message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      showNotificationMessage('Notification sent successfully!', '#4CAF50');
-      if (callback && typeof callback === 'function') callback(true, data);
-    } else {
-      showNotificationMessage('Failed to send notification.', '#f44336');
-      if (callback && typeof callback === 'function') callback(false, data);
-    }
-  })
-  .catch(() => {
-    showNotificationMessage('Error sending notification.', '#f44336');
-    if (callback && typeof callback === 'function') callback(false);
-  });
-}
-
-// Function to handle checkout order
-function checkout_order(orderId, driverPhoneNumber) {
-  const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
-  notifyDriver(driverPhoneNumber, message);
-}
-
-// Function to notify driver via Twilio SMS
-function notifyDriver(phoneNumber, message) {
-  showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
-
-  sendTwilioNotification(phoneNumber, message, (success, data) => {
-    if (success) {
-      showNotificationMessage(`Driver notified successfully!`, '#4CAF50');
-    } else {
-      showNotificationMessage(`Failed to notify driver.`, '#f44336');
-    }
-  });
-}
-
-// Function to generate a random 6-digit PIN
+// Utility for PIN display
 function generatePIN() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
-let map;
-let driverMarker = null;
-let trackingInterval = null; // To store the setInterval ID
-const driverId = null; // Your driver ID
-// Initialize the map
-function initMap() {
-  const defaultLocation = { lat: -33.9249, lng: 18.4241 }; // Example: Cape Town
-  map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 12,
-    center: defaultLocation,
-  });
-  // Optionally, start tracking automatically or call startTracking() separately
-  startTracking();
-}
-
-// Fetch driver location from API and update marker
-function fetchAndUpdateLocation() {
-  fetch(`/api/driver-location?driverId=${driverId}`)
-    .then(res => {
-      if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
-    })
-    .then(data => {
-      const loc = { lat: data.latitude, lng: data.longitude };
-      if (!driverMarker) {
-        driverMarker = new google.maps.Marker({ position: loc, map: map, title: "Driver's Location", icon: getDriverIcon() });
-      } else {
-        driverMarker.setPosition(loc);
-      }
-      map.setCenter(loc);
-    })
-    .catch(error => {
-      console.error('Error fetching driver location:', error);
-    });
-}
-
-// Optional: Use browser geolocation for real-time tracking
-function startBrowserGeolocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(
-      position => {
-        const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
-        if (!driverMarker) {
-          driverMarker = new google.maps.Marker({ position: loc, map: map, title: "Driver's Location", icon: getDriverIcon() });
-        } else {
-          driverMarker.setPosition(loc);
-        }
-        map.setCenter(loc);
-      },
-      error => {
-        console.error('Geolocation error:', error);
-      },
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-    );
-  } else {
-    console.error('Geolocation is not supported by this browser.');
-  }
-}
-
-// Start periodic fetching of driver location
-function startTracking() {
-  fetchAndUpdateLocation(); // Initial fetch
-  trackingInterval = setInterval(fetchAndUpdateLocation, 10000); // Every 10 seconds
-}
-
-// Stop periodic tracking
-function stopTracking() {
-  if (trackingInterval) {
-    clearInterval(trackingInterval);
-    trackingInterval = null;
-  }
-}
-
-// Utility function to get custom driver icon (optional)
-function getDriverIcon() {
-  return {
-    path: google.maps.SymbolPath.CIRCLE,
-    scale: 8,
-    fillColor: '#FF0000',
-    fillOpacity: 1,
-    strokeColor: 'white',
-    strokeWeight: 2
-  };
-}
-
-async function fetchRestaurantName() {
-  const res = await fetch('/api/restaurant-name');
-  const data = await res.json();
-  document.getElementById('restaurantName').innerText = data.name || 'Your Restaurant';
-}
-
-function goBack() { window.history.back(); }
-function callDriver() { window.location.href = "tel:+27781234567"; }
-function chatDriver() { window.open("https://wa.me/27781234567", "_blank"); }
-
-function showTab(tab) {
-  document.getElementById("progress").classList.remove("active");
-  document.getElementById("info").classList.remove("active");
-  document.getElementById("tabProgress").classList.remove("active");
-  document.getElementById("tabInfo").classList.remove("active");
-  document.getElementById(tab).classList.add("active");
-  document.getElementById("tab" + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add("active");
-}
-
-// Show the top pin message (initially hidden)
-function showPinMessage() {
+function showPinMessage(pin) {
+  document.getElementById('orderPin').innerText = pin;
   document.getElementById('topPinMessage').style.display = 'block';
 }
+function hidePinMessage() {
+  document.getElementById('topPinMessage').style.display = 'none';
+}
 
-// Generate and display the PIN
+// Map initialization
+let map, driverMarker, driverLabelOverlay;
+function initMap() {
+  const defaultLoc = { lat: -33.9249, lng: 18.4241 };
+  map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 12,
+    center: defaultLoc,
+  });
+  // Create the overlay for label
+  createDriverLabelOverlay();
+}
+
+function createDriverLabelOverlay() {
+  const overlayDiv = document.createElement('div');
+  overlayDiv.id = 'driverLabelOverlay';
+  overlayDiv.innerText = 'Driver';
+  overlayDiv.style.display = 'none'; // hidden initially
+  document.getElementById('map').appendChild(overlayDiv);
+}
+
+// Main onload
 window.onload = () => {
-  fetchRestaurantName();
-  const pin = generatePIN();
-  document.getElementById('orderPin').innerText = pin;
-  showPinMessage(); // Show pin message at top
+  const orderId = 'ORDER-' + Date.now();
+  const orderPin = generatePIN();
+  showPinMessage(orderPin);
+  console.log('Order ID:', orderId);
+  console.log('Order PIN:', orderPin);
+  console.log('Live connection URL:', `https://yourdomain.com/connection/${orderId}`);
+
+  // Get driverId from URL param
+  const params = new URLSearchParams(window.location.search);
+  const driverId = params.get('driverId');
+
+  // Initialize map
+  initMap();
+
+  // Start tracking driver if driverId exists
+  if (driverId) {
+    startTrackingDriver(driverId);
+  }
 };
+
+// Function to track driver
+function startTrackingDriver(driverId) {
+  fetchAndUpdateDriverLocation(driverId); // initial
+  window.driverTrackingInterval = setInterval(() => {
+    fetchAndUpdateDriverLocation(driverId);
+  }, 10000); // every 10 sec
+}
+
+function fetchAndUpdateDriverLocation(driverId) {
+  fetch(`/api/driver-location?driverId=${driverId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.lat && data.lng) {
+        const pos = { lat: data.lat, lng: data.lng };
+        if (!driverMarker) {
+          driverMarker = new google.maps.Marker({
+            position: pos,
+            map: map,
+            icon: {
+              url: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
+              scaledSize: new google.maps.Size(40, 40),
+            },
+            title: 'Driver Location'
+          });
+        } else {
+          driverMarker.setPosition(pos);
+        }
+        // Move the overlay label
+        moveDriverLabel(pos);
+        // Center map on driver
+        map.setCenter(pos);
+      }
+    })
+    .catch(err => console.error('Error fetching driver location:', err));
+}
+
+function moveDriverLabel(position) {
+  const overlayDiv = document.getElementById('driverLabelOverlay');
+  if (!overlayDiv) return;
+  // Convert latlng to pixel position
+  const point = new google.maps.Point(0, 0);
+  const scale = Math.pow(2, map.getZoom());
+  const projection = map.getProjection();
+  if (!projection) return;
+
+  const latLngPoint = new google.maps.LatLng(position.lat, position.lng);
+  const pixel = projection.fromLatLngToPoint(latLngPoint);
+  const pixelX = pixel.x * scale;
+  const pixelY = pixel.y * scale;
+
+  // Set CSS position of overlay
+  const mapDiv = document.getElementById('map');
+  const rect = mapDiv.getBoundingClientRect();
+
+  // Position relative to map container
+  overlayDiv.style.left = `${pixelX - rect.left}px`;
+  overlayDiv.style.top = `${pixelY - rect.top}px`;
+  overlayDiv.style.display = 'block';
+}
 </script>
 </body>
 </html>
