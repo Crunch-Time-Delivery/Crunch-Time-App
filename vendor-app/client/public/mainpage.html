@@ -157,7 +157,83 @@
 </div>
 
 <script>
-// Utility to show a loading indicator
+function saveInStorage() {
+  // Get the current active section element
+  const sections = document.querySelectorAll('.section');
+  let activeSection = null;
+  sections.forEach(sec => {
+    if (sec.style.display !== 'none') {
+      activeSection = sec;
+    }
+  });
+  
+  // Initialize an object to hold form data
+  let data = {};
+  
+  if (!activeSection) {
+    alert('No active section found.');
+    return;
+  }
+  
+  // Collect data based on section ID
+  switch (activeSection.id) {
+    case 'section-menuUpload':
+      data.restaurantName = document.getElementById('restaurantName').value;
+      // For file input, just store the filename or a placeholder (files can't be stored directly)
+      const fileInput = document.getElementById('menuFile');
+      data.menuFileName = fileInput.files.length > 0 ? fileInput.files[0].name : null;
+      break;
+      
+    case 'section-restaurantInfo':
+      data.restName = document.getElementById('restName').value;
+      data.contact = document.getElementById('contact').value;
+      data.website = document.getElementById('website').value;
+      data.address = document.getElementById('address').value;
+      break;
+      
+    case 'section-addItem':
+      data.itemVendor = document.getElementById('itemVendor').value;
+      data.itemName = document.getElementById('itemName').value;
+      data.itemDescription = document.getElementById('itemDescription').value;
+      data.itemCategory = document.getElementById('itemCategory').value;
+      data.itemPrice = document.getElementById('itemPrice').value;
+      data.itemDiscount = document.getElementById('itemDiscount').value;
+      data.itemPortion = document.getElementById('itemPortion').value;
+      data.prepTime = document.getElementById('prepTime').value;
+      data.isVeg = document.getElementById('isVeg').checked;
+      data.isSpicy = document.getElementById('isSpicy').checked;
+      data.itemStock = document.getElementById('itemStock').value;
+      break;
+      
+    case 'section-addOrder':
+      data.orderId = document.getElementById('orderId').value;
+      data.orderUserName = document.getElementById('orderUserName').value;
+      data.orderUserEmail = document.getElementById('orderUserEmail').value;
+      data.orderAmount = document.getElementById('orderAmount').value;
+      data.vendorName = document.getElementById('vendorName').value;
+      data.vendorContact = document.getElementById('vendorContact').value;
+      data.deliveryAddress = document.getElementById('deliveryAddress').value;
+      break;
+      
+    default:
+      alert('Unknown section');
+      return;
+  }
+  
+  // Generate a unique ID for the live link, e.g., timestamp or UUID
+  const vendorId = 'ID-' + Date.now();
+  
+  // Save data to localStorage
+  localStorage.setItem(`sectionData_${vendorId}`, JSON.stringify(data));
+  
+  // Generate the live connection link (adjust domain and path as needed)
+  const liveLink = `https://yourdomain.com/connection/${vendorId}`;
+  
+  // For demonstration, we'll log it or alert
+  console.log('Live connection link:', liveLink);
+  alert('Data saved! Live connection: ' + liveLink);
+}
+
 function showLoading() {
   let loader = document.getElementById('loadingIndicator');
   if (!loader) {
