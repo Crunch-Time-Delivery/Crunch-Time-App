@@ -385,6 +385,34 @@ body {
 
 <!-- JavaScript: core functions from both snippets -->
 <script>
+
+function updateVendor(){
+const listContainer = document.getElementById('vendorList');
+  listContainer.innerHTML = '';
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith('sectionData_')) {
+      const vendorId = key.substring('sectionData_'.length);
+      const data = JSON.parse(localStorage.getItem(key));
+
+      const li = document.createElement('li');
+      li.style.padding = '8px';
+      li.style.borderBottom = '1px solid #eee';
+
+      let displayText = `ID: ${vendorId}`;
+      if (data.restaurantName) {
+        displayText += ` | Restaurant: ${data.restaurantName}`;
+      } else if (data.restName) {
+        displayText += ` | Restaurant: ${data.restName}`;
+      } else if (data.itemName) {
+        displayText += ` | Item: ${data.itemName}`;
+      }
+
+      li.innerText = displayText;
+      listContainer.appendChild(li);
+    }
+  }
+}
 function selectCategory(category) {
   // Hide all lists first
   document.getElementById("fastfoodList").style.display = "none";
