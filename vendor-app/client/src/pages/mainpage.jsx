@@ -143,7 +143,30 @@
         <button className="red-button" onclick="addItem()">
           Save Item
         </button>
-      </div>
+      </div><h2>Update Categories</h2>
+<form id="categoryForm" onSubmit={handleSubmit}>
+  <label htmlFor="category">Category Name:</label>
+  <input
+    type="text"
+    id="category"
+    name="category"
+    required
+    value={category}
+    onChange={(e) => setCategory(e.target.value)}
+  />
+
+  <label htmlFor="listId">List Element ID:</label>
+  <input
+    type="text"
+    id="listId"
+    name="listId"
+    required
+    value={listId}
+    onChange={(e) => setListId(e.target.value)}
+  />
+
+  <button type="submit">Update Category</button>
+</form>
     </div>
     {/* Add Order */}
     <div id="section-addOrder" className="section" style={{ display: "none" }}>
