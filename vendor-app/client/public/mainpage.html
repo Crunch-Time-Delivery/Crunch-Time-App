@@ -287,8 +287,8 @@ function hideLoading() {
     loader.style.display = 'none';
   }
 }
-
-// Function to show notifications, with fade-out
+// ================= SMS NOTIFICATIONS =================
+// Function to display notification messages
 function showNotificationMessage(text, color = '#333') {
   let box = document.getElementById('notificationMessage');
 
@@ -312,96 +312,71 @@ function showNotificationMessage(text, color = '#333') {
   box.innerText = text;
   box.style.opacity = '1';
 
+  // Clear any existing timeout
   if (showNotificationMessage.timeoutId) {
     clearTimeout(showNotificationMessage.timeoutId);
   }
 
+  // Remove the notification after 4 seconds
   showNotificationMessage.timeoutId = setTimeout(() => {
     box.style.opacity = '0';
+    // Optionally, you can remove the element after fade out
     setTimeout(() => {
       if (box) box.remove();
     }, 300);
   }, 4000);
 }
 
-// Cancel current notification
-function cancelNotification() {
-  if (showNotificationMessage.timeoutId) {
-    clearTimeout(showNotificationMessage.timeoutId);
-  }
-  const box = document.getElementById('notificationMessage');
-  if (box) {
-    box.style.opacity = '0';
-    setTimeout(() => box.remove(), 300);
-  }
-}
-
-// Validate phone number format
-function isValidPhoneNumber(phoneNumber) {
-  const pattern = /^\+?\d{10,15}$/; // Basic international number pattern
-  return pattern.test(phoneNumber);
-}
-
-// Updated sendTwilioNotification with async/await, retries, validation, and loading indicator
-async function sendTwilioNotification(phoneNumber, message, callback = null, retries = 3) {
+// Function to send Twilio notification
+function sendTwilioNotification(phoneNumber, message, callback = null) {
   if (!phoneNumber || !message) {
     showNotificationMessage('Phone number or message missing', '#f44336');
-    if (callback && typeof callback === 'function') callback(false, { error: 'Missing data' });
     return;
   }
+  
+  showNotificationMessage('Sending notification...', '#2196F3');
 
-  if (!isValidPhoneNumber(phoneNumber)) {
-    showNotificationMessage('Invalid phone number format', '#f44336');
-    if (callback && typeof callback === 'function') callback(false, { error: 'Invalid phone number' });
-    return;
-  }
-
-  showLoading();
-
-  let attempt = 0;
-  let success = false;
-  let responseData = null;
-
-  while (attempt < retries && !success) {
-    attempt++;
-    try {
-      showNotificationMessage(`Sending notification... (Attempt ${attempt})`, '#2196F3');
-
-      const response = await fetch('/send-twilio', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: phoneNumber, message }),
-      });
-
-      if (!response.ok) throw new Error('Server error');
-
-      const data = await response.json();
-
-      if (data.success === true) {
-        showNotificationMessage('Notification sent successfully!', '#4CAF50');
-        success = true;
-        responseData = data;
-        if (callback && typeof callback === 'function') callback(true, data);
-        break; // Exit loop on success
-      } else {
-        showNotificationMessage(data.error || 'Failed to send notification.', '#f44336');
-        responseData = data;
-      }
-    } catch (error) {
-      console.error('Error sending notification:', error);
-      showNotificationMessage('Network error. Please try again.', '#f44336');
+  fetch('/send-twilio', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ phoneNumber, message })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+      if (callback && typeof callback === 'function') callback(true, data);
+    } else {
+      showNotificationMessage('Failed to send notification.', '#f44336');
+      if (callback && typeof callback === 'function') callback(false, data);
     }
-    if (!success && attempt < retries) {
-      await new Promise(res => setTimeout(res, 2000)); // wait before retry
-    }
-  }
-
-  hideLoading();
-
-  if (!success && callback && typeof callback === 'function') callback(false, responseData);
-  return { success, data: responseData };
+  })
+  .catch(() => {
+    showNotificationMessage('Error sending notification.', '#f44336');
+    if (callback && typeof callback === 'function') callback(false);
+  });
 }
 
+// Function to handle checkout order
+function checkout_order(orderId, driverPhoneNumber) {
+  const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
+  notifyDriver(driverPhoneNumber, message);
+}
+
+// Function to notify driver via Twilio SMS
+function notifyDriver(phoneNumber, message) {
+  showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
+
+  sendTwilioNotification(phoneNumber, message, (success, data) => {
+    if (success) {
+      showNotificationMessage(`Driver notified successfully!`, '#4CAF50');
+    } else {
+      showNotificationMessage(`Failed to notify driver.`, '#f44336');
+    }
+  });
+}
 // Initialize Supabase with your actual key
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
 const supabaseKey = process.env.SUPABASE_KEY; // actual key

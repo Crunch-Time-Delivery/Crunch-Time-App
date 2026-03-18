@@ -536,130 +536,96 @@
   let adminPassword = 'crunchtimeadmin';
 
   let isAuthenticated = false;
-// ================== UTILITY FUNCTIONS ==================
-// Function to simulate sending an email
-function sendEmail(to, subject, body) {
-  alert(`Simulated Email to ${to}:\nSubject: ${subject}\n${body}`);
-}
 
-// Function to simulate sending a notification
-function sendNotification(to, message) {
-  alert(`Simulated Notification to ${to}:\n${message}`);
-}
+// ================= SMS NOTIFICATIONS =================
+// Function to display notification messages
+function showNotificationMessage(text, color = '#333') {
+  let box = document.getElementById('notificationMessage');
 
-// Function to show a visual notification message on the webpage
-function showNotificationMessage(message, color = '#4CAF50') {
-  let notif = document.getElementById('notification');
-
-  if (!notif) {
-    notif = document.createElement('div');
-    notif.id = 'notification';
-    notif.style.position = 'fixed';
-    notif.style.top = '20px';
-    notif.style.right = '20px';
-    notif.style.zIndex = '9999';
-    notif.style.transition = 'opacity 0.5s ease';
-    document.body.appendChild(notif);
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'notificationMessage';
+    box.style.position = 'fixed';
+    box.style.bottom = '20px';
+    box.style.left = '50%';
+    box.style.transform = 'translateX(-50%)';
+    box.style.padding = '12px 20px';
+    box.style.borderRadius = '8px';
+    box.style.color = '#fff';
+    box.style.fontSize = '14px';
+    box.style.zIndex = '9999';
+    box.style.transition = 'opacity 0.3s ease';
+    document.body.appendChild(box);
   }
 
-  notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; border-radius:4px; max-width:300px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">${message}</div>`;
-  notif.style.opacity = '1';
+  box.style.backgroundColor = color;
+  box.innerText = text;
+  box.style.opacity = '1';
 
-  // Clear previous timeout if exists
+  // Clear any existing timeout
   if (showNotificationMessage.timeoutId) {
     clearTimeout(showNotificationMessage.timeoutId);
   }
 
-  // Fade out after 3 seconds
+  // Remove the notification after 4 seconds
   showNotificationMessage.timeoutId = setTimeout(() => {
-    notif.style.opacity = '0';
-    // Remove element after fade out
+    box.style.opacity = '0';
+    // Optionally, you can remove the element after fade out
     setTimeout(() => {
-      if (notif) notif.remove();
-    }, 500);
-  }, 3000);
+      if (box) box.remove();
+    }, 300);
+  }, 4000);
 }
 
-// Function to cancel current notification immediately
-function cancelNotification() {
-  if (showNotificationMessage.timeoutId) {
-    clearTimeout(showNotificationMessage.timeoutId);
-  }
-  const notif = document.getElementById('notification');
-  if (notif) {
-    notif.style.opacity = '0';
-    setTimeout(() => notif.remove(), 500);
-  }
-}
-
-// Utility to show a loading indicator
-function showLoading() {
-  let loader = document.getElementById('loading');
-  if (!loader) {
-    loader = document.createElement('div');
-    loader.id = 'loading';
-    loader.innerHTML = 'Loading...';
-    loader.style.position = 'fixed';
-    loader.style.top = '50%';
-    loader.style.left = '50%';
-    loader.style.transform = 'translate(-50%, -50%)';
-    loader.style.padding = '20px';
-    loader.style.backgroundColor = '#fff';
-    loader.style.border = '1px solid #ccc';
-    loader.style.borderRadius = '8px';
-    loader.style.zIndex = '99999';
-    document.body.appendChild(loader);
-  }
-  loader.style.display = 'block';
-}
-
-function hideLoading() {
-  const loader = document.getElementById('loading');
-  if (loader) {
-    loader.style.display = 'none';
-  }
-}
-
-// Validate phone number format
-function isValidPhoneNumber(phone) {
-  const pattern = /^\+?\d{10,15}$/; // Basic international pattern
-  return pattern.test(phone);
-}
-
-// Async function to send SMS via Twilio through your backend API
-async function sendTwilioSms(to, message) {
-  if (!to || !message) {
+// Function to send Twilio notification
+function sendTwilioNotification(phoneNumber, message, callback = null) {
+  if (!phoneNumber || !message) {
     showNotificationMessage('Phone number or message missing', '#f44336');
     return;
   }
-  if (!isValidPhoneNumber(to)) {
-    showNotificationMessage('Invalid phone number format', '#f44336');
-    return;
-  }
+  
+  showNotificationMessage('Sending notification...', '#2196F3');
 
-  showLoading();
-  showNotificationMessage('Sending SMS...');
-
-  try {
-    const response = await fetch('/notify/sms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to, message }),
-    });
-    if (!response.ok) throw new Error('Network response was not ok');
-
-    const data = await response.json();
+  fetch('/send-twilio', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ phoneNumber, message })
+  })
+  .then(res => res.json())
+  .then(data => {
     if (data.success) {
-      showNotificationMessage('SMS sent successfully!', '#4CAF50');
+      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+      if (callback && typeof callback === 'function') callback(true, data);
     } else {
-      showNotificationMessage(`Failed to send SMS: ${data.error || 'Unknown error'}`, '#f44336');
+      showNotificationMessage('Failed to send notification.', '#f44336');
+      if (callback && typeof callback === 'function') callback(false, data);
     }
-  } catch (error) {
-    console.error('Error sending SMS:', error);
-    showNotificationMessage('Error sending SMS.', '#f44336');
-  } finally {
-    hideLoading();
-  }
+  })
+  .catch(() => {
+    showNotificationMessage('Error sending notification.', '#f44336');
+    if (callback && typeof callback === 'function') callback(false);
+  });
+}
+
+// Function to handle checkout order
+function checkout_order(orderId, driverPhoneNumber) {
+  const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
+  notifyDriver(driverPhoneNumber, message);
+}
+
+// Function to notify driver via Twilio SMS
+function notifyDriver(phoneNumber, message) {
+  showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
+
+  sendTwilioNotification(phoneNumber, message, (success, data) => {
+    if (success) {
+      showNotificationMessage(`Driver notified successfully!`, '#4CAF50');
+    } else {
+      showNotificationMessage(`Failed to notify driver.`, '#f44336');
+    }
+  });
 }
 
 // Usage examples

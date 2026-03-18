@@ -153,7 +153,97 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap"></script>
 
 <script>
-// Utility for PIN display
+
+// ================= SMS NOTIFICATIONS =================
+// Function to display notification messages
+function showNotificationMessage(text, color = '#333') {
+  let box = document.getElementById('notificationMessage');
+
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'notificationMessage';
+    box.style.position = 'fixed';
+    box.style.bottom = '20px';
+    box.style.left = '50%';
+    box.style.transform = 'translateX(-50%)';
+    box.style.padding = '12px 20px';
+    box.style.borderRadius = '8px';
+    box.style.color = '#fff';
+    box.style.fontSize = '14px';
+    box.style.zIndex = '9999';
+    box.style.transition = 'opacity 0.3s ease';
+    document.body.appendChild(box);
+  }
+
+  box.style.backgroundColor = color;
+  box.innerText = text;
+  box.style.opacity = '1';
+
+  // Clear any existing timeout
+  if (showNotificationMessage.timeoutId) {
+    clearTimeout(showNotificationMessage.timeoutId);
+  }
+
+  // Remove the notification after 4 seconds
+  showNotificationMessage.timeoutId = setTimeout(() => {
+    box.style.opacity = '0';
+    // Optionally, you can remove the element after fade out
+    setTimeout(() => {
+      if (box) box.remove();
+    }, 300);
+  }, 4000);
+}
+
+// Function to send Twilio notification
+function sendTwilioNotification(phoneNumber, message, callback = null) {
+  if (!phoneNumber || !message) {
+    showNotificationMessage('Phone number or message missing', '#f44336');
+    return;
+  }
+  
+  showNotificationMessage('Sending notification...', '#2196F3');
+
+  fetch('/send-twilio', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ phoneNumber, message })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+      if (callback && typeof callback === 'function') callback(true, data);
+    } else {
+      showNotificationMessage('Failed to send notification.', '#f44336');
+      if (callback && typeof callback === 'function') callback(false, data);
+    }
+  })
+  .catch(() => {
+    showNotificationMessage('Error sending notification.', '#f44336');
+    if (callback && typeof callback === 'function') callback(false);
+  });
+}
+
+// Function to handle checkout order
+function checkout_order(orderId, driverPhoneNumber) {
+  const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
+  notifyDriver(driverPhoneNumber, message);
+}
+
+// Function to notify driver via Twilio SMS
+function notifyDriver(phoneNumber, message) {
+  showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
+
+  sendTwilioNotification(phoneNumber, message, (success, data) => {
+    if (success) {
+      showNotificationMessage(`Driver notified successfully!`, '#4CAF50');
+    } else {
+      showNotificationMessage(`Failed to notify driver.`, '#f44336');
+    }
+  });
+}
 function generatePIN() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
