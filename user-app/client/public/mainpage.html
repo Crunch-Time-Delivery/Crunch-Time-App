@@ -385,7 +385,51 @@ body {
 
 <!-- JavaScript: core functions from both snippets -->
 <script>
+// Shared data structure for categories
+const categoriesData = {
+  'Fast Food': 'fastfoodList',
+  'Burgers': 'burgersList',
+  'Asian': 'asianList',
+  'Pizza': 'pizzaList'
+};
 
+// Function to initialize category buttons with live connection
+function setupCategoryFilters() {
+  Object.keys(categoriesData).forEach(category => {
+    const buttons = document.querySelectorAll(`button[onclick="selectCategory('${category}')"]`);
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectCategory(category);
+      });
+    });
+  });
+}
+
+// Function to handle category selection
+function selectCategory(categoryName) {
+  // Hide all lists
+  Object.values(categoriesData).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  // Show selected category list
+  const selectedId = categoriesData[categoryName];
+  if (selectedId) {
+    document.getElementById(selectedId).style.display = 'block';
+  }
+}
+
+// Function to update categories dynamically (called from vendor page)
+function updateCategory(category, listId) {
+  categoriesData[category] = listId;
+  // Re-setup the buttons to reflect new categories (optional)
+  setupCategoryFilters();
+}
+
+// Call setup on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  setupCategoryFilters();
+});
 function updateVendor(){
 const listContainer = document.getElementById('vendorList');
   listContainer.innerHTML = '';

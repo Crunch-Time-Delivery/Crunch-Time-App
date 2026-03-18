@@ -115,7 +115,16 @@
       <option value="Out of Stock">Out of Stock</option>
     </select>
     <button class="red-button" onclick="addItem()">Save Item</button>
-  </div>
+  </div><h2>Update Categories</h2>
+<form id="categoryForm">
+  <label for="category">Category Name:</label>
+  <input type="text" id="category" name="category" required />
+
+  <label for="listId">List Element ID:</label>
+  <input type="text" id="listId" name="listId" required />
+
+  <button type="submit">Update Category</button>
+</form>
 </div>
 
 <!-- Add Order -->
@@ -233,7 +242,25 @@ function saveInStorage() {
   console.log('Live connection link:', liveLink);
   alert('Data saved! Live connection: ' + liveLink);
 }
+ // Function to update categories in the main data structure
+  document.getElementById('categoryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const category = document.getElementById('category').value.trim();
+    const listId = document.getElementById('listId').value.trim();
 
+    // Save update to localStorage or directly update the shared object
+    // For simplicity, store in localStorage
+    let categoriesData = JSON.parse(localStorage.getItem('categoriesData')) || {
+      'Fast Food': 'fastfoodList',
+      'Burgers': 'burgersList',
+      'Asian': 'asianList',
+      'Pizza': 'pizzaList'
+    };
+
+    categoriesData[category] = listId;
+    localStorage.setItem('categoriesData', JSON.stringify(categoriesData));
+    alert(`Category "${category}" updated to list ID "${listId}"`);
+  });
 function showLoading() {
   let loader = document.getElementById('loadingIndicator');
   if (!loader) {
