@@ -1,3 +1,6 @@
+
+
+
 import React, { useState } from 'react'
 // Import your components & hooks here
 import { Auth } from './components/Auth.jsx'
@@ -59,57 +62,7 @@ function App() {
         </>
       )}
 
-      {showAdminPopup && (
-        <div className="modal" style={{ display: 'flex' }}>
-          <div className="modal-box" style={{ width: 400, overflowY: 'auto' }}>
-            {/* AdminPopup content */}
-            <h3>Admin Update</h3>
-            <div>
-              <label>Change Username:</label>
-              <input id="newUsername" />
-            </div>
-            <div>
-              <label>Change Password:</label>
-              <input id="newPassword" type="password" />
-            </div>
-            <button
-              onClick={() => {
-                const username = document.getElementById('newUsername').value
-                const password = document.getElementById('newPassword').value
-                // Save logic
-                showNotificationMessage('Credentials updated.')
-                setShowAdminPopup(false)
-              }}
-            >
-              Save Credentials
-            </button>
-            <button onClick={() => setShowAdminPopup(false)} style={{ marginTop: 10, background: 'red', color: '#fff', width: '100%' }}>Close</button>
-          </div>
-        </div>
-      )}
-      {showRolePopup && (
-        <div className="modal" style={{ display: 'flex' }}>
-          <div className="modal-box" style={{ width: '90%', maxHeight: '90%', overflowY: 'auto' }}>
-            {/* RolePopup content */}
-            <h3>Role Management</h3>
-            {/* ... */}
-            <button style={{ marginTop: 15, background: 'red', color: '#fff', width: '100%', padding: 10 }} onClick={() => setShowRolePopup(false)}>Close</button>
-          </div>
-        </div>
-      )}
-      {showRoleInfoPopup && (
-        <div className="modal" style={{ display: 'flex' }}>
-          <div className="modal-box" style={{ width: '90%', maxHeight: '90%', overflowY: 'auto' }}>
-            {/* RoleInfoPopup content */}
-            <h3>Role Information</h3>
-            <p>Email: {currentRole.email}</p>
-            <p>Role: {currentRole.roleType}</p>
-            <button style={{ marginTop: 10, background: 'red', color: '#fff', width: '100%', padding: 10 }} onClick={() => setShowRoleInfoPopup(false)}>Close</button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+    
+
 
 export default App
