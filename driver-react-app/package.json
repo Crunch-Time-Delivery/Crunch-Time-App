@@ -1,0 +1,12 @@
+{
+  "name": "react-dashboard",
+  "version": "1.0.0",
+  "description": "React dashboard with components and hooks",
+  "scripts": {
+    "start": "serve ./ --single"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}

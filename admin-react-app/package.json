@@ -1,0 +1,12 @@
+{
+  "name": "react-dashboard-components",
+  "version": "1.0.0",
+  "description": "React components for Dashboard",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo \"Build step if needed\"",
+    "start": "echo \"Start script\""
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

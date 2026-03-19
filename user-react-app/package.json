@@ -1,0 +1,16 @@
+{
+  "name": "react-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "crypto-js": "^4.1.1",
+    "leaflet": "^1.9.3",
+    "supabase": "^1.35.6"
+  },
+  "scripts": {
+    "start": "webpack serve --mode development",
+    "build": "webpack --mode production"
+  }
+}
