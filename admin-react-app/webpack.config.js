@@ -1,28 +1,13 @@
+// webpack.config.js
+const path = require('path'); //
 
-const path = require('path');
-
-module.exports = {
-  mode: 'development', // or 'production'
-  entry: './src/index.js', // your main JS file
+module.exports = { //
+  entry: './src/index.js', // The starting point of your application
   output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist'), // output directory
+    filename: 'main.bundle.js', // The name for the generated bundle
+    path: path.resolve(__dirname, 'dist'), // The output directory
   },
-  resolve: {
-    extensions: ['.js', '.jsx'], // support jsx if used
-  },
-  module: {
-    rules: [
-      {
-        test: /\.(js|jsx)$/, // match both js and jsx files
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react'], // include react preset if using JSX
-          },
-        },
-      },
-    ],
-  },
+  // Add other configurations like loaders, plugins, and mode as needed
+  mode: 'development', // or 'production' or 'none'
 };
+
