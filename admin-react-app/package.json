@@ -4,8 +4,8 @@
   "description": "React components for Dashboard",
   "main": "index.js",
   "scripts": {
-    "build": "echo \"Build step if needed\"",
-    "start": "echo \"Start script\""
+    "build": "webpack",
+    "start": "webpack serve --open"
   },
   "dependencies": {},
   "devDependencies": {}

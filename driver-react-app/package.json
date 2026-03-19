@@ -1,12 +1,12 @@
 {
-  "name": "react-dashboard",
+  "name": "react-dashboard-components",
   "version": "1.0.0",
-  "description": "React dashboard with components and hooks",
+  "description": "React components for Dashboard",
+  "main": "index.js",
   "scripts": {
-    "start": "serve ./ --single"
+    "build": "webpack",
+    "start": "webpack serve --open"
   },
-  "dependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }

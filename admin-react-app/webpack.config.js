@@ -1,24 +1,28 @@
+
 const path = require('path');
 
 module.exports = {
-  entry: './index.js', // Your main JavaScript file
+  mode: 'development', // or 'production'
+  entry: './src/index.js', // your main JS file
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js', // The bundled output file
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist'), // output directory
+  },
+  resolve: {
+    extensions: ['.js', '.jsx'], // support jsx if used
   },
   module: {
     rules: [
       {
-        test: /\.js$/, // Regex to match .js files
-        exclude: /node_modules/, // Exclude the node_modules directory
+        test: /\.(js|jsx)$/, // match both js and jsx files
+        exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env']
-          }
-        }
-      }
-    ]
+            presets: ['@babel/preset-env', '@babel/preset-react'], // include react preset if using JSX
+          },
+        },
+      },
+    ],
   },
-  mode: 'development' // or 'production'
 };
