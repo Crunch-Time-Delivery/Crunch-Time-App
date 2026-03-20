@@ -1,13 +1,25 @@
-
 // webpack.config.js
-const path = require('path'); //
+const path = require('path');
 
-module.exports = { //
-  entry: './src/index.js', // The starting point of your application
+module.exports = {
+  mode: 'development',
+  entry: './src/index.js',
   output: {
-    filename: 'main.bundle.js', // The name for the generated bundle
-    path: path.resolve(__dirname, 'dist'), // The output directory
+    filename: 'main.bundle.js',
+    path: path.resolve(__dirname, 'dist'),
   },
-  // Add other configurations like loaders, plugins, and mode as needed
-  mode: 'development', // or 'production' or 'none'
+  module: {
+    rules: [
+      {
+        test: /\.jsx?$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+        },
+      },
+    ],
+  },
+  resolve: {
+    extensions: ['.js', '.jsx'],
+  },
 };
