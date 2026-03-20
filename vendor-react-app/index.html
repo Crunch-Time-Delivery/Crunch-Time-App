@@ -10,7 +10,7 @@
   <!-- Babel for JSX in browser -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    /* Put your styles here (move from dangerouslySetInnerHTML if desired) */
+    /* Global styles */
     body {
       margin: 0;
       background-color: red;
@@ -21,17 +21,20 @@
       height: 100vh;
       position: relative;
     }
+
     /* Style for the middle image */
     .middle-image {
       max-width: 80%;
       height: auto;
     }
+
     /* Style for the bottom image link */
-.bottom-link {
-  position: absolute;
-  bottom: 20px; /* spacing from bottom */
-  left:1.5 ; /* positions the element at the left edge of its positioned ancestor */
-}
+    .bottom-link {
+      position: absolute;
+      bottom: 20px; /* spacing from bottom */
+      left: 1.5px; /* adjusted from 'left: 1.5' */
+    }
+
     .bottom-link img {
       max-width: 150px;
       height: auto;
@@ -43,34 +46,27 @@
   <!-- React root container -->
   <div id="root"></div>
 
-  <!-- Your React code -->
+  <!-- React code -->
   <script type="text/babel">
-    // Define your React component
     function App() {
-      return (<>
-  <meta charSet="UTF-8" />
-  <title>onBorading Page</title>
-  <style
-    dangerouslySetInnerHTML={{
-      __html:
-        "\n    body {\n      margin: 0;\n      background-color: red;\n      display: flex;\n      flex-direction: column;\n      justify-content: center;\n      align-items: center;\n      height: 100vh;\n      position: relative;\n    }\n    /* Style for the middle image */\n    .middle-image {\n      max-width: 80%;\n      height: auto;\n    }\n    /* Style for the bottom image link */\n    .bottom-link {\n      position: absolute;\n      bottom: 20px; /* spacing from bottom */\n    }\n    .bottom-link img {\n      max-width: 150px;\n      height: auto;\n      cursor: pointer;\n    }\n  "
-    }}
-  />
-  {/* image logo centre display */}
-  <img
-    src="img/converted-image.jpg"
-    alt="Middle Image"
-    className="middle-image"
-  />
-  {/* Clickable bottom image */}
-  <a
-    href="http://127.0.0.1:5501/vendor-app/client/public/welocmeVendorPage.html  "
-    className="bottom-link"
-  >
-    <img src="img/Screenshot (265).jpg" alt="Bottom Image" />
-  </a>
-</>
- );
+      return (
+        <>
+          {/* Image logo centered */}
+          <img
+            src="img/converted-image.jpg"
+            alt="Middle Image"
+            className="middle-image"
+          />
+
+          {/* Clickable bottom image link */}
+          <a
+            href="http://127.0.0.1:5501/vendor-app/client/public/welocmeVendorPage.html"
+            className="bottom-link"
+          >
+            <img src="img/Screenshot (265).jpg" alt="Bottom Image" />
+          </a>
+        </>
+      );
     }
 
     // Render the App component into the root div
