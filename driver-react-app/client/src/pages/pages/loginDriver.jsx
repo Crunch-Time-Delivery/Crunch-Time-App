@@ -81,6 +81,60 @@ function App() {
     generateOTP();
     alert('OTP resent.');
   };
+function OTPComponent() {
+  const [phone, setPhone] = useState('');
+  const [code, setCode] = useState('');
+  const [message, setMessage] = useState('');
+
+  const sendOTP = async () => {
+    try {
+      await fetch('/send-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: phone }),
+      });
+      setMessage('Code Sent!');
+    } catch (error) {
+      setMessage('Failed to send code.');
+    }
+  };
+
+  const verifyOTP = async () => {
+    try {
+      const response = await fetch('/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: phone, code: code }),
+      });
+      const result = await response.json();
+      setMessage(result.verified ? 'Verified!' : 'Invalid Code');
+    } catch (error) {
+      setMessage('Verification failed.');
+    }
+  };
+
+  return (
+    <div>
+      <input
+        type="text"
+        placeholder="Phone number"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+      />
+      <button onClick={sendOTP}>Send OTP</button>
+
+      <input
+        type="text"
+        placeholder="Enter OTP"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+      />
+      <button onClick={verifyOTP}>Verify OTP</button>
+
+      {message && <p>{message}</p>}
+    </div>
+  );
+}
 
   const handlePasswordReset = () => {
     alert('Password reset link sent (simulate).');

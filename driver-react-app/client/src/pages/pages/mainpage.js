@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('driverHistoryPayment').onclick = e => { e.preventDefault(); loadDriverHistoryPayment(); };
 });
 
+
 // ================= SMS NOTIFICATIONS =================
 // Function to display notification messages
 function showNotificationMessage(text, color = '#333') {

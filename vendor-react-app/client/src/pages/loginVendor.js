@@ -139,6 +139,27 @@ function showNotification(message, type) {
       alert('Incorrect OTP.');
     }
   }
+async function sendOTP() {
+    const phone = document.getElementById('phone').value;
+    await fetch('/send-verification', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ phoneNumber: phone })
+    });
+    alert('Code Sent!');
+}
+
+async function verifyOTP() {
+    const phone = document.getElementById('phone').value;
+    const code = document.getElementById('code').value;
+    const response = await fetch('/verify-otp', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ phoneNumber: phone, code: code })
+    });
+    const result = await response.json();
+    alert(result.verified ? 'Verified!' : 'Invalid Code');
+}
 
   // Validation functions
 function validateUsername(username) {
