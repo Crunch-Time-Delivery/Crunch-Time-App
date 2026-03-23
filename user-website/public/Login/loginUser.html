@@ -3,397 +3,251 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>User Login</title>  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+<title>User Login & Registration</title>
 <style>
-  /* Modal styles */
+  /* Basic styling for modals and buttons */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+  }
   .modal {
     display: none; 
     position: fixed; 
     z-index: 2000; 
-    left: 0;
-    top: 0;
-    width: 100%; 
-    height: 100%; 
-    overflow: auto; 
+    left: 0; top: 0;
+    width: 100%; height: 100%; overflow: auto;
     background-color: rgba(0,0,0,0.4);
   }
   .modal-content {
-    background-color: #fff;
-    margin: 15% auto; 
-    padding: 20px;
-    border-radius: 8px;
-    width: 300px;
-    text-align: center;
+    background: #fff; margin: 15% auto; padding: 20px; border-radius: 8px; width: 350px; text-align: center;
   }
-  .modal input {
-    width: 80%;
-    padding: 8px;
-    margin-top: 10px;
+  input[type="email"], input[type="password"], input[type="text"] {
+    width: 80%; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px;
   }
-  .modal button {
-    margin-top: 15px;
-    padding: 8px 12px;
-    cursor: pointer;
+  button {
+    margin-top: 15px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;
   }
-  /* Buttons styling for Driver and Admin */
-  #buttonContainer {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
-    justify-content: center;
+  #notification {
+    position: fixed; top: 20px; right: 20px; padding: 10px 20px; border-radius: 4px; display: none; z-index: 9999;
   }
-  .redirectBtn {
-    background-color: red;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  /* Optional: hover effect */
-  .redirectBtn:hover {
-    opacity: 0.8;
-  }
-  /* Style for the Forgot Password link */
-  #loginForgotPassword {
-    display: block;
-    text-align: center;
-    margin: 10px auto;
-    cursor: pointer;
-    color: blue;
-    text-decoration: underline;
-    font-size: 14px;
-  }
+  #notification.success { background-color: #4CAF50; color: #fff; }
+  #notification.error { background-color: #f44336; color: #fff; }
 </style>
+<!-- Include Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 </head>
 <body>
 
-<!-- Container for dynamic content -->
-<div id="innerContent"></div>
+<!-- Notification container -->
+<div id="notification"></div>
 
-<!-- Login Modal Structure -->
-<div id="loginModal" class="modal">
-  <div class="modal-content">
-    <img src="img/screenshot (251).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
-    <h2>Welcome</h2>
-    <h3>Login</h3>
-    <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
-    <label>Email Address</label>
-    <input type="email" id="loginEmail" placeholder="Email" />
-    <label>Password</label>
-    <input type="password" id="loginPassword" placeholder="Password" />
-    <!-- Updated Forgot Password link -->
-    <a id="loginForgotPassword" href="http://127.0.0.1:5501/user-app/client/public/Login/forgotpassword.html " target="_blank">Forgot Password</a>
-    <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" id="loginBtn">Login</button>
-    <!-- Buttons for Driver and Admin -->
-    <div id="buttonContainer">
-      <button class="redirectBtn" id="driverBtn">User</button>
-   
-    </div>
+<!-- Main Content: Login/Register Modal -->
+<div id="authModal" class="modal">
+  <div class="modal-content" id="authContainer">
+    <h2 id="authTitle">Login</h2>
+    <div id="authForm"></div>
+    <button id="authActionBtn">Login</button>
+    <p><a href="#" id="toggleAuth">Don't have an account? Register</a></p>
+    <p><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>
   </div>
 </div>
 
-<!-- OTP Modal -->
+<!-- OTP Verification Modal -->
 <div id="otpModal" class="modal">
   <div class="modal-content">
-    <h3>Verify Account</h3>
-    <p>Please enter the OTP number sent to your email to reset your password</p>
+    <h3>OTP Verification</h3>
+    <p>Enter the 4-digit code sent to your email or phone.</p>
     <input type="text" id="otpInput" maxlength="4" placeholder="Enter OTP" />
-    <div style="margin-top:10px;">
-      <button id="verifyOtpBtn">Confirm</button>
-      <button id="resendOtpBtn">Resend OTP</button>
-    </div>
+    <button id="verifyOtpBtn">Verify</button>
+    <button id="resendOtpBtn">Resend OTP</button>
+  </div>
+</div>
+
+<!-- Password Reset Skeleton Modal -->
+<div id="resetPasswordModal" class="modal">
+  <div class="modal-content">
+    <h3>Reset Password</h3>
+    <p>Enter your email to receive reset instructions.</p>
+    <input type="email" id="resetEmail" placeholder="Email" />
+    <button id="sendResetBtn">Send Reset Email</button>
   </div>
 </div>
 
 <script>
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'; // your URL
+const supabaseKey = 'YOUR_SUPABASE_PUBLIC_ANON_KEY'; // replace with your key
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-   // Function to send SMS via backend API
-  function sendSms(toNumber, message) {
-  fetch('http://localhost:3000/send-sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to: toNumber, message: message })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if(data.success) {
-      // Show success notification
-      showNotification('SMS sent successfully.', 'success');
-    } else {
-      // Show failure notification with error message
-      showNotification('Failed to send SMS: ' + data.error, 'error');
-    }
-  })
-  .catch(() => {
-    // Show error notification if fetch fails
-    showNotification('Error sending SMS.', 'error');
-  });
+let currentUser = null;
+let otpCode = '';
+let otpTimer = null;
+
+const notification = document.getElementById('notification');
+
+// Utility for notifications
+function showNotification(msg, type='success') {
+  notification.innerText = msg;
+  notification.className = type;
+  notification.style.display = 'block';
+  setTimeout(() => { notification.style.display = 'none'; }, 3000);
 }
 
-// Helper function to display notifications
-function showNotification(message, type) {
-  // Create a notification element
-  const notification = document.createElement('div');
-  notification.innerText = message;
-  notification.className = `notification ${type}`; // style based on type
-  
-  // Append to body or a specific container
-  document.body.appendChild(notification);
-  
-  // Remove after 3 seconds
-  setTimeout(() => {
-    document.body.removeChild(notification);
-  }, 3000);
+// Modal control
+function showModal(id) { document.getElementById(id).style.display='block'; }
+function hideModal(id) { document.getElementById(id).style.display='none'; }
+
+// User data stored in localStorage for demo
+function getUserData() {
+  return JSON.parse(localStorage.getItem('registeredUsers')) || [];
+}
+function saveUserData(user) {
+  const users = getUserData();
+  users.push(user);
+  localStorage.setItem('registeredUsers', JSON.stringify(users));
 }
 
+// Build registration/login form
+let isRegister = false;
+function buildAuthForm() {
+  const container = document.getElementById('authForm');
+  container.innerHTML = '';
 
-
-  // Admin credentials
-  const adminUsername = 'crunchtimeadmin';
-  const adminPassword = 'crunchtimeadmin12';
-
-  // Load driver data
-  const driverData = JSON.parse(localStorage.getItem('registeredUser')) || {};
-  let driverApproved = false; // For demo, default false; set true when approved
-  let generatedOtp = '';
-  let otpVerified = false;
-
-  // Variable to track login type
-  let userType = null;
-
-  function loadLoginPage() {
-    showModal('loginModal');
+  if (isRegister) {
+    document.getElementById('authTitle').innerText = 'Register';
+    document.getElementById('authActionBtn').innerText = 'Register';
+    document.getElementById('toggleAuth').innerText = 'Already have an account? Login';
+    container.innerHTML = `
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="Email" />
+      <label>Password</label>
+      <input type="password" id="authPassword" placeholder="Password" />
+      <label>Role</label>
+      <select id="authRole">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select>
+    `;
+  } else {
+    document.getElementById('authTitle').innerText = 'Login';
+    document.getElementById('authActionBtn').innerText = 'Login';
+    document.getElementById('toggleAuth').innerText = "Don't have an account? Register";
+    container.innerHTML = `
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="Email" />
+      <label>Password</label>
+      <input type="password" id="authPassword" placeholder="Password" />
+    `;
   }
+}
+buildAuthForm();
 
-  // Utility functions to show/hide modals
-  function showModal(modalId) {
-    document.getElementById(modalId).style.display='block';
-  }
+// Toggle between Login/Register
+document.getElementById('toggleAuth').addEventListener('click', e => {
+  e.preventDefault();
+  isRegister = !isRegister;
+  buildAuthForm();
+});
 
-  function hideModal(modalId) {
-    document.getElementById(modalId).style.display='none';
-  }
-
-  // Generate and send OTP
-  function generateAndSendOtp() {
-    generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    alert(`OTP sent to Email: ${driverData.email}. (OTP: ${generatedOtp})`);
-
-    // Send OTP via your backend endpoint (which uses Twilio)
-  fetch('/send-otp', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      phoneNumber: driverData.contact, // or the phone number you want to send to
-      otp: generatedOtp
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      alert(`OTP sent to ${driverData.contact}.`);
-    } else {
-      alert('Failed to send OTP.');
+// Login/Register submit handler
+document.getElementById('authActionBtn').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim().toLowerCase();
+  const password = document.getElementById('authPassword').value.trim();
+  if (isRegister) {
+    // Register new user
+    const role = document.getElementById('authRole').value;
+    const users = getUserData();
+    if (users.some(u => u.email === email)) {
+      showNotification('Email already registered.', 'error');
+      return;
     }
-  })
-  .catch(() => {
-    alert('Error sending OTP.');
-  });
-
-  }
-
-  // Show OTP modal
-  function showOtpModal() {
-    document.getElementById('otpModal').style.display='block';
-    document.getElementById('otpInput').value='';
-    otpVerified=false;
-  }
-
-  // Hide OTP modal
-  function hideOtpModal() {
-    document.getElementById('otpModal').style.display='none';
-  }
-
-  // OTP verification handlers
-  document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
-    const enteredOtp = document.getElementById('otpInput').value.trim();
-    if (enteredOtp===generatedOtp) {
-      otpVerified=true;
-      alert('OTP verified! Awaiting admin approval...');
-      hideOtpModal();
-
-      if (driverApproved) {
-        alert('Login successful! Accessing driver dashboard...');
-        // Redirect based on userType
-        if (userType === 'driver') {
-          window.location.href='http://127.0.0.1:5501/user-app/client/public/mainpage.html                 ';
-        } 
+    saveUserData({ email, password, role, approved: role !== 'user' }); // admin auto-approve for demo
+    showNotification('Registration successful. Please login.');
+    isRegister = false;
+    buildAuthForm();
+  } else {
+    // Login process
+    const users = getUserData();
+    const user = users.find(u => u.email === email);
+    if (!user || user.password !== password) {
+      showNotification('Invalid credentials.', 'error');
+      return;
+    }
+    currentUser = user;
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    if (user.role === 'admin') {
+      window.location.href = 'admin_dashboard.html'; // your admin page
+    } else if (user.role === 'user') {
+      if (user.approved) {
+        window.location.href = 'user_mainpage.html'; // your user page
       } else {
-        alert('Your account is still pending approval. Please wait.');
+        generateAndSendOtp(user);
+        showModal('otpModal');
       }
-    } else {
-      alert('Incorrect OTP. Please try again.');
     }
-  });
-
-  document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
-    generateAndSendOtp();
-    alert('OTP resent.');
-  });
-
-  // Handle login button click
-document.getElementById('loginBtn').addEventListener('click', () => {
-  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const password = document.getElementById('loginPassword').value.trim();
-
-  if (!userType) {
-    alert('Please select User');
-    return;
   }
-
-  if (userType === 'user') {
-    // Check driver credentials
-    if (userData.email && userData.email.toLowerCase() === email && userData.password === password) {
-      localStorage.setItem('currentUser', JSON.stringify(userData));
-      if (userApproved) {
-        // Redirect directly if approved
-        window.location.href='http://127.0.0.1:5500/user-app/client/public/mainpage.html';
-      } else {
-        generateAndSendOtp();
-        showOtpModal();
-      }
-    } else {
-      alert('Invalid driver credentials.');
-    }
-  } 
-  // Reset userType after login attempt
-  userType = null;
-});
-// Buttons for Driver and Admin
-document.getElementById('driverBtn')?.addEventListener('click', () => {
-  // Redirect directly to driver app page
-  window.location.href='http://127.0.0.1:5501/user-app/client/public/mainpage.html';
-});
-document.getElementById('adminBtn')?.addEventListener('click', () => {
-  userType = 'admin';
-  showModal('loginModal');
 });
 
-// Initialize
-window.onload = () => {
-  loadLoginPage();
-};
-
-// Validation functions
-function validateUsername(username) {
-  if (!username) {
-    alert('Username cannot be empty.');
-    return false;
-  }
-  // Example: username must be at least 4 characters
-  if (username.length < 4) {
-    alert('Username must be at least 4 characters long.');
-    return false;
-  }
-  // Add more rules if needed
-  return true;
+// OTP Verification logic (placeholder for Twilio integration)
+function generateAndSendOtp(user) {
+  otpCode = Math.floor(1000 + Math.random() * 9000).toString();
+  alert(`OTP sent to ${user.email} (simulate). OTP: ${otpCode}`);
+  // TODO: Call your backend API to send OTP via Twilio
 }
 
-function validatePassword(password) {
-  if (!password) {
-    alert('Password cannot be empty.');
-    return false;
-  }
-  // Example rules for password:
-  // At least 8 characters, contains uppercase, lowercase, number, special char
-  const minLength = 8;
-  const hasUpper = /[A-Z]/.test(password);
-  const hasLower = /[a-z]/.test(password);
-  const hasNumber = /[0-9]/.test(password);
-  const hasSpecial = /[!@#\$%\^&\*]/.test(password);
-
-  if (password.length < minLength) {
-    alert('Password must be at least 8 characters long.');
-    return false;
-  }
-  if (!hasUpper) {
-    alert('Password must contain at least one uppercase letter.');
-    return false;
-  }
-  if (!hasLower) {
-    alert('Password must contain at least one lowercase letter.');
-    return false;
-  }
-  if (!hasNumber) {
-    alert('Password must contain at least one number.');
-    return false;
-  }
-  if (!hasSpecial) {
-    alert('Password must contain at least one special character (!@#$%^&*).');
-    return false;
-  }
-  return true;
-}
-
-document.getElementById('loginBtn').addEventListener('click', () => {
-  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const password = document.getElementById('loginPassword').value.trim();
-
-  if (!userType) {
-    alert('Please select User login.');
-    return;
-  }
-  
-  // Validate username/email
-  if (!validateUsername(email)) {
-    return;
-  }
-  // Validate password
-  if (!validatePassword(password)) {
-    return;
-  }
-
-  // Existing credential checks...
-  if (userType === 'driver') {
-    if (userData.email && userData.email.toLowerCase() === email && userData.password === password) {
-      localStorage.setItem('currentUser', JSON.stringify(userData));
-      if (driverApproved) {
-        window.location.href='http://127.0.0.1:5500/user-app/mainpage.html';
-      } else {
-        generateAndSendOtp();
-        showOtpModal();
-      }
-    } else {
-      alert('Invalid driver credentials.');
+document.getElementById('verifyOtpBtn').addEventListener('click', () => {
+  const entered = document.getElementById('otpInput').value.trim();
+  if (entered === otpCode) {
+    alert('OTP verified! Your account is now approved.');
+    // Mark user as approved
+    currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    currentUser.approved = true;
+    // Save updated user data
+    const users = getUserData();
+    const index = users.findIndex(u => u.email === currentUser.email);
+    if (index !== -1) {
+      users[index] = currentUser;
+      localStorage.setItem('registeredUsers', JSON.stringify(users));
     }
-  } 
-  userType = null;
+    hideModal('otpModal');
+    // Redirect to user page
+    window.location.href='user_mainpage.html';
+  } else {
+    alert('Incorrect OTP.');
+  }
 });
 
-// Fetch vendor data
-async function fetchUser() {
-  const { data: user, error } = await supabase
-    .from('user')
-    .select(
-      `
-      username,
-      password
-    `
-    );
+document.getElementById('resendOtpBtn').addEventListener('click', () => {
+  if (currentUser) generateAndSendOtp(currentUser);
+});
 
+// Forgot Password link
+document.getElementById('forgotPasswordLink').addEventListener('click', () => {
+  showModal('resetPasswordModal');
+});
+
+// Send password reset
+document.getElementById('sendResetBtn').addEventListener('click', async () => {
+  const email = document.getElementById('resetEmail').value.trim().toLowerCase();
+  if (!email) {
+    showNotification('Please enter your email.', 'error');
+    return;
+  }
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: 'user_reset_password.html' // your reset page
+  });
   if (error) {
-    console.error('Error fetching user:', error);
-    return null;
+    showNotification('Error: ' + error.message, 'error');
+  } else {
+    showNotification('Password reset email sent.');
+    hideModal('resetPasswordModal');
   }
-  return user;
+});
 
-}
+// On page load
+window.onload = () => {
+  // Show login modal initially
+  document.getElementById('authModal').style.display='block';
+};
 </script>
 </body>
 </html>
