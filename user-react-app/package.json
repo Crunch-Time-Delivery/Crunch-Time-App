@@ -1,16 +1,13 @@
 {
-  "name": "react-dashboard",
+  "name": "react-dashboard-components",
   "version": "1.0.0",
-  "private": true,
-  "dependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "crypto-js": "^4.1.1",
-    "leaflet": "^1.9.3",
-    "supabase": "^1.35.6"
-  },
+  "description": "React components for Dashboard",
+  "main": "index.js",
   "scripts": {
-    "start": "webpack serve --mode development",
-    "build": "webpack --mode production"
-  }
+    "install": "npm install cd admin-react-app",
+    "build": "npx webpack --mode production",
+    "start": "webpack serve --open"
+  },
+  "dependencies": {},
+  "devDependencies": {}
 }
