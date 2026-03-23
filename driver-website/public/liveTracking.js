@@ -1,7 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 
-
-
 function LiveTracking({ userLat, userLng, onLocationChange }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -43,7 +41,10 @@ function LiveTracking({ userLat, userLng, onLocationChange }) {
 
     // Cleanup interval on unmount
     return () => {
-      clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
   }, []);
 
@@ -69,7 +70,7 @@ function LiveTracking({ userLat, userLng, onLocationChange }) {
         userMarkerRef.current.setPosition({ lat: userLat, lng: userLng });
       }
 
-      // Optional: Center map on user
+      // Optional: center map on user
       // mapRef.current.panTo({ lat: userLat, lng: userLng });
 
       // Trigger callback if provided
@@ -79,15 +80,7 @@ function LiveTracking({ userLat, userLng, onLocationChange }) {
     }
   }, [userLat, userLng, onLocationChange]);
 
-  // Cleanup map on unmount
-  useEffect(() => {
-    return () => {
-      if (mapRef.current) {
-        // No explicit destroy, just nullify reference
-        mapRef.current = null;
-      }
-    };
-  }, []);
+  // No need for cleanup of mapRef on unmount
 
   return (
     <div style={{ height: '100%', width: '100%' }}>

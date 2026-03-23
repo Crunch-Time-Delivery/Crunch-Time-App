@@ -1,6 +1,12 @@
+// capture_location.jsx
 import React, { useState, useEffect } from 'react';
 
-function CaptureLocation({ onLocationChange }) {
+function CaptureLocation() {
+  // Initialize Supabase with your keys
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey =  process.env.SUPABASE_KEY; // Replace with your actual Supabase anon key
+  const supabase = React.useMemo(() => supabase.createClient(supabaseUrl, supabaseKey), []);
+
   const [coordinates, setCoordinates] = useState(null);
   const [address, setAddress] = useState('');
   const [error, setError] = useState('');
@@ -43,7 +49,7 @@ function CaptureLocation({ onLocationChange }) {
         (position) => {
           const { latitude, longitude } = position.coords;
           setCoordinates({ latitude, longitude });
-          // Optionally, update address as well
+          // Reverse geocode
           fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
             .then(res => res.json())
             .then(data => {
@@ -52,9 +58,7 @@ function CaptureLocation({ onLocationChange }) {
               }
             });
           // Send location to parent if callback exists
-          if (onLocationChange) {
-            onLocationChange(latitude, longitude);
-          }
+          // (Optional: you can implement callback here)
         },
         (err) => {
           console.error('Error watching position:', err);
@@ -67,7 +71,26 @@ function CaptureLocation({ onLocationChange }) {
       );
       return () => navigator.geolocation.clearWatch(watchId);
     }
-  }, [tracking, onLocationChange]);
+  }, [tracking]);
+
+  // Function to save current location to Supabase
+  const saveLocationToSupabase = () => {
+    if (coordinates) {
+      const { latitude, longitude } = coordinates;
+      supabase
+        .from('locations') // Make sure this table exists
+        .insert([{ latitude, longitude }])
+        .then(({ data, error }) => {
+          if (error) {
+            alert('Error saving to database: ' + error.message);
+          } else {
+            alert('Location saved to database!');
+          }
+        });
+    } else {
+      alert('No location data available to save.');
+    }
+  };
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial' }}>
@@ -100,6 +123,23 @@ function CaptureLocation({ onLocationChange }) {
         {tracking ? 'Stop Tracking' : 'Start Tracking'}
       </button>
 
+      {/* Save current location to Supabase */}
+      <button
+        style={{
+          padding: '10px 20px',
+          marginTop: '20px',
+          backgroundColor: 'purple',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          marginLeft: '10px'
+        }}
+        onClick={saveLocationToSupabase}
+      >
+        Save Location to Database
+      </button>
+
       {/* Proceed Button */}
       <button
         style={{
@@ -113,8 +153,7 @@ function CaptureLocation({ onLocationChange }) {
           marginLeft: '10px'
         }}
         onClick={() => {
-          // Redirect to index or admin dashboard
-          window.location.href = 'index.html'; // or admin/admin_dashboard.html
+          window.location.href = 'index.html'; // or your desired page
         }}
       >
         Proceed

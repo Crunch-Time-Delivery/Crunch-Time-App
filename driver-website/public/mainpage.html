@@ -105,6 +105,23 @@ body {
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap" async defer></script>
 
 <script>
+
+
+  import { initMap, setRoute } from './route_display.js';
+
+  // Initialize map
+  initMap('map', [51.505, -0.09], 13);
+
+  // Example route coordinates (array of [lat, lng])
+  const routeCoords = [
+    [51.505, -0.09],
+    [51.51, -0.1],
+    [51.52, -0.12],
+  ];
+
+  // Set route
+  setRoute(routeCoords);
+
 document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menuContainer');
   const menuButton = document.getElementById('menuButton');
