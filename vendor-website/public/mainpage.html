@@ -588,7 +588,7 @@ async function renderUsers() {
 
 // Helper function to render payments with pagination
 let currentPage = 1;
-const pageSize_
+const pageSize__
  = 10; // Number of records per page
 
 function renderPayments(data, totalCount = null, page = 1) {
@@ -721,6 +721,7 @@ function renderPayments(data, totalCount, currentPage) {
 
   container.innerHTML = html;
 }
+const pageSize_ = 10; // or any number you prefer
 
 // Main fetch function with pagination and filters
 async function fetchPayments({ page = 1, filters = {} } = {}) {
@@ -733,7 +734,7 @@ async function fetchPayments({ page = 1, filters = {} } = {}) {
     // Build base query
     let query = supabase
       .from('payment_history')
-      .select('*', { count: 'exact' }); // get total count
+      .select('*', { count: 'exact' });
 
     // Apply filters
     if (filters.payment_method) {
@@ -756,7 +757,7 @@ async function fetchPayments({ page = 1, filters = {} } = {}) {
     // Fetch the actual page data
     const { data, error } = await query
       .order('payment_date', { ascending: false })
-      .range((page - 1) * pageSize, page * pageSize - 1);
+      .range((page - 1) * pageSize, (page * pageSize) - 1);
 
     hideLoadingSpinner();
 
@@ -770,8 +771,61 @@ async function fetchPayments({ page = 1, filters = {} } = {}) {
   }
 }
 
-// Call this on page load or refresh
-fetchPayments();
+// Example of rendering payments and pagination controls
+function renderPayments(data, totalCount, currentPage) {
+  const container = document.getElementById('paymentHistoryContainer');
+
+  if (data.length === 0) {
+    container.innerHTML = '<p>No payment records found.</p>';
+    return;
+  }
+
+  // Render payment records
+  const table = document.createElement('table');
+  table.innerHTML = `
+    <tr>
+      <th>Date</th>
+      <th>Method</th>
+      <th>Status</th>
+      <th>Amount</th>
+    </tr>
+  `;
+
+  data.forEach(payment => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${new Date(payment.payment_date).toLocaleDateString()}</td>
+      <td>${payment.payment_method}</td>
+      <td>${payment.status}</td>
+      <td>${payment.amount}</td>
+    `;
+    table.appendChild(row);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(table);
+
+  // Pagination controls
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const paginationDiv = document.createElement('div');
+  paginationDiv.style.marginTop = '10px';
+
+  if (currentPage > 1) {
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = 'Previous';
+    prevBtn.onclick = () => fetchPayments({ page: currentPage - 1, filters: {} });
+    paginationDiv.appendChild(prevBtn);
+  }
+
+  if (currentPage < totalPages) {
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Next';
+    nextBtn.onclick = () => fetchPayments({ page: currentPage + 1, filters: {} });
+    paginationDiv.appendChild(nextBtn);
+  }
+
+  container.appendChild(paginationDiv);
+}
 
 // Filter by method, status, date range (with input elements)
 async function applyFilters() {
