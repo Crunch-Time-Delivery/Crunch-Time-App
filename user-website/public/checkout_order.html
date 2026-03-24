@@ -8,8 +8,11 @@
 <!-- Font Awesome CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
+
 <style>
-/* Styles for the page and top pin message */
+/* Your existing styles... */
 * { box-sizing: border-box; }
 body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
 .app { width: 100vw; min-height: 100vh; display: flex; flex-direction: column; }
@@ -98,7 +101,7 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
         <i class="fa fa-arrow-left" onclick="goBack()"></i>
         <h2 id="restaurantName">KFC</h2>
     </div>
-    <div class="status">
+    <div class="status" id="orderStatus">
         The courier is on their way to you
     </div>
     <!-- Map container -->
@@ -128,6 +131,11 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
                 <small>Estimated time to delivery</small>
             </div>
         </div>
+        <!-- Additional Order History -->
+        <div id="orderHistoryContainer" style="margin-top:10px; background:#fff; padding:10px; border-radius:8px;">
+          <h4>Order History</h4>
+          <!-- Order history entries will be appended here -->
+        </div>
         <!-- Tabs -->
         <div class="tabs">
             <div id="tabProgress" class="active" onclick="showTab('progress')">Order Progress</div>
@@ -153,12 +161,14 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap"></script>
 
 <script>
+// ======================== Supabase Initialization ========================
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this environment variable is set
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// ================= SMS NOTIFICATIONS =================
-// Function to display notification messages
+// =================== Notification Functions ===================
 function showNotificationMessage(text, color = '#333') {
   let box = document.getElementById('notificationMessage');
-
   if (!box) {
     box = document.createElement('div');
     box.id = 'notificationMessage';
@@ -174,96 +184,52 @@ function showNotificationMessage(text, color = '#333') {
     box.style.transition = 'opacity 0.3s ease';
     document.body.appendChild(box);
   }
-
   box.style.backgroundColor = color;
   box.innerText = text;
   box.style.opacity = '1';
-
-  // Clear any existing timeout
-  if (showNotificationMessage.timeoutId) {
-    clearTimeout(showNotificationMessage.timeoutId);
-  }
-
-  // Remove the notification after 4 seconds
+  if (showNotificationMessage.timeoutId) clearTimeout(showNotificationMessage.timeoutId);
   showNotificationMessage.timeoutId = setTimeout(() => {
     box.style.opacity = '0';
-    // Optionally, you can remove the element after fade out
-    setTimeout(() => {
-      if (box) box.remove();
-    }, 300);
+    setTimeout(() => { if (box) box.remove(); }, 300);
   }, 4000);
 }
 
-// Function to send Twilio notification
 function sendTwilioNotification(phoneNumber, message, callback = null) {
   if (!phoneNumber || !message) {
     showNotificationMessage('Phone number or message missing', '#f44336');
     return;
   }
-  
   showNotificationMessage('Sending notification...', '#2196F3');
-
   fetch('/send-twilio', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phoneNumber, message })
   })
   .then(res => res.json())
   .then(data => {
     if (data.success) {
       showNotificationMessage('Notification sent successfully!', '#4CAF50');
-      if (callback && typeof callback === 'function') callback(true, data);
+      if (callback) callback(true, data);
     } else {
       showNotificationMessage('Failed to send notification.', '#f44336');
-      if (callback && typeof callback === 'function') callback(false, data);
+      if (callback) callback(false, data);
     }
   })
   .catch(() => {
     showNotificationMessage('Error sending notification.', '#f44336');
-    if (callback && typeof callback === 'function') callback(false);
+    if (callback) callback(false);
   });
 }
 
-// Function to handle checkout order
-function checkout_order(orderId, driverPhoneNumber) {
-  const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
-  notifyDriver(driverPhoneNumber, message);
-}
-
-// Function to notify driver via Twilio SMS
-function notifyDriver(phoneNumber, message) {
-  showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
-
-  sendTwilioNotification(phoneNumber, message, (success, data) => {
-    if (success) {
-      showNotificationMessage(`Driver notified successfully!`, '#4CAF50');
-    } else {
-      showNotificationMessage(`Failed to notify driver.`, '#f44336');
-    }
-  });
-}
-function generatePIN() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-function showPinMessage(pin) {
-  document.getElementById('orderPin').innerText = pin;
-  document.getElementById('topPinMessage').style.display = 'block';
-}
-function hidePinMessage() {
-  document.getElementById('topPinMessage').style.display = 'none';
-}
-
-// Map initialization
+// =================== Map and Driver Tracking ===================
 let map, driverMarker, driverLabelOverlay;
+
 function initMap() {
   const defaultLoc = { lat: -33.9249, lng: 18.4241 };
   map = new google.maps.Map(document.getElementById('map'), {
     zoom: 12,
     center: defaultLoc,
   });
-  // Create the overlay for label
   createDriverLabelOverlay();
 }
 
@@ -271,38 +237,99 @@ function createDriverLabelOverlay() {
   const overlayDiv = document.createElement('div');
   overlayDiv.id = 'driverLabelOverlay';
   overlayDiv.innerText = 'Driver';
-  overlayDiv.style.display = 'none'; // hidden initially
+  overlayDiv.style.display = 'none';
   document.getElementById('map').appendChild(overlayDiv);
 }
 
-// Main onload
+function moveDriverLabel(position) {
+  const overlayDiv = document.getElementById('driverLabelOverlay');
+  if (!overlayDiv || !map.getProjection()) return;
+  const latLng = new google.maps.LatLng(position.lat, position.lng);
+  const scale = Math.pow(2, map.getZoom());
+  const projection = map.getProjection();
+  const point = projection.fromLatLngToPoint(latLng);
+  const pixelX = point.x * scale;
+  const pixelY = point.y * scale;
+  const mapDiv = document.getElementById('map');
+  const rect = mapDiv.getBoundingClientRect();
+  overlayDiv.style.left = `${pixelX - rect.left}px`;
+  overlayDiv.style.top = `${pixelY - rect.top}px`;
+  overlayDiv.style.display = 'block';
+}
+
+// On page load
 window.onload = () => {
-  const orderId = 'ORDER-' + Date.now();
+  const orderId = 'ORDER-' + Date.now(); // Or dynamically set
   const orderPin = generatePIN();
   showPinMessage(orderPin);
   console.log('Order ID:', orderId);
   console.log('Order PIN:', orderPin);
   console.log('Live connection URL:', `https://yourdomain.com/connection/${orderId}`);
 
-  // Get driverId from URL param
+  // Your driverId extraction logic
   const params = new URLSearchParams(window.location.search);
   const driverId = params.get('driverId');
 
-  // Initialize map
   initMap();
 
-  // Start tracking driver if driverId exists
   if (driverId) {
     startTrackingDriver(driverId);
   }
+
+  // Load order status and history from database
+  loadOrderStatus(orderId);
+  loadOrderHistory(orderId);
 };
 
-// Function to track driver
+// Function to fetch and update order status
+async function loadOrderStatus(orderId) {
+  const { data, error } = await supabase
+    .from('order_status')
+    .select('*')
+    .eq('order_id', orderId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching order status:', error);
+    return;
+  }
+
+  document.getElementById('orderStatus').innerText = data.status || 'Status not available';
+
+  // Additional updates (e.g., delivery time)
+  if (data.estimated_time) {
+    document.getElementById('deliveryTime').innerText = data.estimated_time;
+  }
+}
+
+// Function to fetch and display order history
+async function loadOrderHistory(orderId) {
+  const { data, error } = await supabase
+    .from('order_history')
+    .select('*')
+    .eq('order_id', orderId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching order history:', error);
+    return;
+  }
+
+  const container = document.getElementById('orderHistoryContainer');
+  container.innerHTML = '<h4>Order History</h4>';
+  data.forEach(item => {
+    const div = document.createElement('div');
+    div.innerText = `${item.action} at ${new Date(item.created_at).toLocaleString()}`;
+    container.appendChild(div);
+  });
+}
+
+// Tracking driver location
 function startTrackingDriver(driverId) {
-  fetchAndUpdateDriverLocation(driverId); // initial
+  fetchAndUpdateDriverLocation(driverId);
   window.driverTrackingInterval = setInterval(() => {
     fetchAndUpdateDriverLocation(driverId);
-  }, 10000); // every 10 sec
+  }, 10000);
 }
 
 function fetchAndUpdateDriverLocation(driverId) {
@@ -324,37 +351,46 @@ function fetchAndUpdateDriverLocation(driverId) {
         } else {
           driverMarker.setPosition(pos);
         }
-        // Move the overlay label
         moveDriverLabel(pos);
-        // Center map on driver
         map.setCenter(pos);
       }
     })
     .catch(err => console.error('Error fetching driver location:', err));
 }
 
-function moveDriverLabel(position) {
-  const overlayDiv = document.getElementById('driverLabelOverlay');
-  if (!overlayDiv) return;
-  // Convert latlng to pixel position
-  const point = new google.maps.Point(0, 0);
-  const scale = Math.pow(2, map.getZoom());
-  const projection = map.getProjection();
-  if (!projection) return;
+// Function to generate PIN
+function generatePIN() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
-  const latLngPoint = new google.maps.LatLng(position.lat, position.lng);
-  const pixel = projection.fromLatLngToPoint(latLngPoint);
-  const pixelX = pixel.x * scale;
-  const pixelY = pixel.y * scale;
+// Show PIN message
+function showPinMessage(pin) {
+  document.getElementById('orderPin').innerText = pin;
+  document.getElementById('topPinMessage').style.display = 'block';
+}
+function hidePinMessage() {
+  document.getElementById('topPinMessage').style.display = 'none';
+}
 
-  // Set CSS position of overlay
-  const mapDiv = document.getElementById('map');
-  const rect = mapDiv.getBoundingClientRect();
+// Placeholder for goBack, callDriver, chatDriver
+function goBack() { window.history.back(); }
+function callDriver() { alert('Calling driver...'); }
+function chatDriver() { alert('Chat with driver...'); }
 
-  // Position relative to map container
-  overlayDiv.style.left = `${pixelX - rect.left}px`;
-  overlayDiv.style.top = `${pixelY - rect.top}px`;
-  overlayDiv.style.display = 'block';
+// Example function to simulate checkout order and notify driver
+function checkout_order(orderId, driverPhoneNumber) {
+  const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
+  notifyDriver(driverPhoneNumber, message);
+}
+function notifyDriver(phoneNumber, message) {
+  showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
+  sendTwilioNotification(phoneNumber, message, (success, data) => {
+    if (success) {
+      showNotificationMessage(`Driver notified successfully!`, '#4CAF50');
+    } else {
+      showNotificationMessage(`Failed to notify driver.`, '#f44336');
+    }
+  });
 }
 </script>
 </body>
