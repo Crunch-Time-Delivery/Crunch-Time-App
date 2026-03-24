@@ -322,7 +322,52 @@ function handlePayFastCallback() {
 function toggleCardForm(show) {
   document.getElementById("cardForm").classList.toggle("hidden", !show);
 }
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this environment variable is set
 
+const supabase = createClient(supabaseUrl, supabaseKey);
+// Backend process and redirect
+function backendProcessAndRedirect() {
+  const formData = new FormData(document.getElementById('payfastForm'));
+  const dataObj = {};
+  formData.forEach((value, key) => { dataObj[key] = value; });
+
+  fetch('/process-payment', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(dataObj)
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.success) {
+      document.getElementById('payfastForm').submit();
+    } else {
+      alert('Payment failed: ' + result.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error processing payment.');
+  });
+}
+
+// Optional: handle callback
+function handlePayFastCallback() {
+  console.log('Received callback from PayFast');
+}
+
+// Example: Save order to Supabase
+async function saveOrderToSupabase(orderData) {
+  const { data, error } = await supabase
+    .from('orders')
+    .insert([orderData]);
+
+  if (error) {
+    console.error('Error saving order:', error);
+  } else {
+    console.log('Order saved:', data);
+  }
+}
 // Initial recalc
 recalc();
 
