@@ -1,12 +1,18 @@
 {
-  "name": "react-dashboard-components",
+  "name": "my-vite-react-app",
   "version": "1.0.0",
-  "description": "React components for Dashboard",
-  "main": "index.js",
+  "description": "A Vite + React project",
   "scripts": {
-   "build": "vite build"
-
+    "dev": "vite",               
+    "build": "vite build",      
+    "preview": "vite preview"   
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^3.0.0",
+    "vite": "^4.0.0"
+  }
 }
