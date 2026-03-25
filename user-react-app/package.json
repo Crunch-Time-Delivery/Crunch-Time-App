@@ -4,9 +4,8 @@
   "description": "React components for Dashboard",
   "main": "index.js",
   "scripts": {
-    "install": "npm install cd admin-react-app",
-    "build": "npx webpack --mode production",
-    "start": "webpack serve --open"
+    "build": "vite build"
+
   },
   "dependencies": {},
   "devDependencies": {}
