@@ -302,7 +302,45 @@ function showLoadingIndicator() {
   }
   loader.style.display = 'block';
 }
+const { createClient } = require('@supabase/supabase-js');
 
+// Initialize Supabase client
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this environment variable is set
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Example function to fetch phone numbers
+async function fetchPhoneNumbers() {
+  const { data, error } = await supabase
+    .from('Drivers') // replace with your table name
+    .select('contact'); // replace with your column name
+
+  if (error) {
+    console.error('Error fetching phone numbers:', error);
+    return [];
+  }
+  return data.map(row => row.phone_number);
+}
+
+// Example function to send SMS to all fetched phone numbers
+async function sendSmsToAll() {
+  const phoneNumbers = await fetchPhoneNumbers();
+
+  for (const number of phoneNumbers) {
+    await sendSMS({ to: number, message: 'Your message here' });
+  }
+}
+
+// Example sendSMS function (replace with your actual implementation)
+async function sendSMS({ to, message }) {
+  // Your Twilio or SMS API call here
+  console.log(`Sending message to ${to}: ${message}`);
+  // Implement your actual SMS sending logic
+}
+
+// Run the main function
+sendSmsToAll();
 // Hide the loading indicator
 function hideLoadingIndicator() {
   const loader = document.getElementById('loadingIndicator');

@@ -186,7 +186,7 @@ body {
   <button>Delivery</button>
   <button>Pickup</button>
   <div class="search-bar">
-    <input type="text" placeholder="Search Crunch Time" />
+    <input type="text"id="searchInput" placeholder="Search Crunch Time" />
   </div>
   <button onclick="window.location.href='http://127.0.0.1:5501/user-app/search_location.html'">Map Location - Pick up now</button>
   <span class="user-icon" onclick="openProfile()">👤</span>
@@ -392,7 +392,34 @@ const categoriesData = {
   'Asian': 'asianList',
   'Pizza': 'pizzaList'
 };
+// Function to filter items based on search input
+  document.getElementById('searchInput').addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const items = document.querySelectorAll('#items-container .item');
 
+    items.forEach(item => {
+      const text = item.textContent.toLowerCase();
+      if (text.includes(query)) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
+
+  // Function to filter by category
+  function selectCategory(category) {
+    const items = document.querySelectorAll('#items-container .item');
+
+    items.forEach(item => {
+      const itemCategory = item.getAttribute('data-category');
+      if (category === 'All' || itemCategory === category) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
 // Function to initialize category buttons with live connection
 function setupCategoryFilters() {
   Object.keys(categoriesData).forEach(category => {

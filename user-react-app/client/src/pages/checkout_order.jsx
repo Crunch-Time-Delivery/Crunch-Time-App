@@ -101,7 +101,53 @@ export default function CheckoutOrder() {
       if (callback) callback(false);
     }
   };
+// Import necessary modules (make sure to install @supabase/supabase-js if not already)
+const { createClient } = require('@supabase/supabase-js');
+// Import your Twilio functions
+const { sendSMS, notifyUser } = require('./twilioFunctions'); // replace with your actual path
 
+// Initialize Supabase client
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this environment variable is set
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Function to fetch phone numbers from Supabase
+async function fetchPhoneNumbers() {
+  const { data, error } = await supabase
+    .from('User') // replace with your table name if different
+    .select('phone_number'); // replace with your column name if different
+
+  if (error) {
+    console.error('Error fetching phone numbers:', error);
+    return [];
+  }
+  return data.map(row => row.phone_number);
+}
+
+// Function to send SMS to all fetched phone numbers
+async function sendSmsToAll() {
+  const phoneNumbers = await fetchPhoneNumbers();
+
+  for (const number of phoneNumbers) {
+    await sendSMS({ to: number, message: 'Your message here' });
+  }
+}
+
+// Function to call all Twilio-related functions
+async function callAllTwilioFunctions() {
+  try {
+    // Send SMS to all numbers from database
+    await sendSmsToAll();
+    // Example of calling another notification function
+    await notifyUser({ userId: 'user123', message: 'Notification message' });
+    console.log('All functions called successfully.');
+  } catch (error) {
+    console.error('Error calling functions:', error);
+  }
+}
+
+// Run the combined process
+callAllTwilioFunctions();
   // Initialize map
   useEffect(() => {
     const map = new window.google.maps.Map(document.getElementById('map'), {

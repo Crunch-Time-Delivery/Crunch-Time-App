@@ -122,7 +122,8 @@
 
   <label for="listId">List Element ID:</label>
   <input type="text" id="listId" name="listId" required />
-
+<input type="file" id="itemImage" accept="image/*" onchange="showImagePreview(event, 'itemImagePreview')"/>
+<img id="itemImagePreview" src="" alt="Image Preview" style="max-width:200px; display:none;"/>
   <button type="submit">Update Category</button>
 </form>
 </div>
@@ -183,7 +184,18 @@ function saveInStorage() {
     alert('No active section found.');
     return;
   }
-  
+  function showImagePreview(event, previewId) {
+  const reader = new FileReader();
+  const file = event.target.files[0];
+  if (file) {
+    reader.onload = function() {
+      const img = document.getElementById(previewId);
+      img.src = reader.result;
+      img.style.display = 'block';
+    }
+    reader.readAsDataURL(file);
+  }
+}
   // Collect data based on section ID
   switch (activeSection.id) {
     case 'section-menuUpload':
@@ -280,7 +292,21 @@ function showLoading() {
   }
   loader.style.display = 'block';
 }
+function validateForm(fields) {
+  for (const field of fields) {
+    const el = document.getElementById(field);
+    if (!el.value.trim()) {
+      alert(`Please fill out the ${field} field.`);
+      el.focus();
+      return false;
+    }
+  }
+  return true;
+}
 
+function resetForm(formId) {
+  document.getElementById(formId).reset();
+}
 function hideLoading() {
   const loader = document.getElementById('loadingIndicator');
   if (loader) {
@@ -358,6 +384,46 @@ function sendTwilioNotification(phoneNumber, message, callback = null) {
     if (callback && typeof callback === 'function') callback(false);
   });
 }
+
+
+// Example function to fetch phone numbers
+async function fetchPhoneNumbers() {
+  const { data, error } = await supabase
+    .from('vendor') // replace with your table name
+    .select('phone_number'); // replace with your column name
+
+  if (error) {
+    console.error('Error fetching phone numbers:', error);
+    return [];
+  }
+  return data.map(row => row.phone_number);
+}
+
+// Example function to send SMS to all fetched phone numbers
+async function sendSmsToAll() {
+  const phoneNumbers = await fetchPhoneNumbers();
+
+  for (const number of phoneNumbers) {
+    await sendSMS({ to: number, message: 'Your message here' });
+  }
+}
+
+// Example sendSMS function (replace with your actual implementation)
+async function sendSMS({ to, message }) {
+  // Your Twilio or SMS API call here
+  console.log(`Sending message to ${to}: ${message}`);
+  // Implement your actual SMS sending logic
+}
+
+// Run the main function
+sendSmsToAll();
+
+
+
+
+
+
+
 
 // Function to handle checkout order
 function checkout_order(orderId, driverPhoneNumber) {

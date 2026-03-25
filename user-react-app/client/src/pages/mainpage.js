@@ -50,7 +50,34 @@ window.updatePassword = async () => {
     .eq('id', userId);
   alert(error ? 'Password update failed' : 'Password updated');
 }
+// Function to filter items based on search input
+  document.getElementById('searchInput').addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const items = document.querySelectorAll('#items-container .item');
 
+    items.forEach(item => {
+      const text = item.textContent.toLowerCase();
+      if (text.includes(query)) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
+
+  // Function to filter by category
+  function selectCategory(category) {
+    const items = document.querySelectorAll('#items-container .item');
+
+    items.forEach(item => {
+      const itemCategory = item.getAttribute('data-category');
+      if (category === 'All' || itemCategory === category) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
 window.saveCardDetails = async () => {
   const data = {
     card_type: document.getElementById('cardType').value,

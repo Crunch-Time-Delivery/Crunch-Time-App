@@ -18,7 +18,21 @@ function showLoading() {
   }
   loader.style.display = 'block';
 }
+function validateForm(fields) {
+  for (const field of fields) {
+    const el = document.getElementById(field);
+    if (!el.value.trim()) {
+      alert(`Please fill out the ${field} field.`);
+      el.focus();
+      return false;
+    }
+  }
+  return true;
+}
 
+function resetForm(formId) {
+  document.getElementById(formId).reset();
+}
 function hideLoading() {
   const loader = document.getElementById('loadingIndicator');
   if (loader) {
@@ -62,6 +76,55 @@ function showNotificationMessage(text, color = '#333') {
   }, 4000);
 }
 
+const { createClient } = require('@supabase/supabase-js');
+
+// Initialize Supabase client
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this environment variable is set
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Example function to fetch phone numbers
+async function fetchPhoneNumbers() {
+  const { data, error } = await supabase
+    .from('vendor') // replace with your table name
+    .select('phone_number'); // replace with your column name
+
+  if (error) {
+    console.error('Error fetching phone numbers:', error);
+    return [];
+  }
+  return data.map(row => row.phone_number);
+}
+
+// Example function to send SMS to all fetched phone numbers
+async function sendSmsToAll() {
+  const phoneNumbers = await fetchPhoneNumbers();
+
+  for (const number of phoneNumbers) {
+    await sendSMS({ to: number, message: 'Your message here' });
+  }
+}
+
+// Example sendSMS function (replace with your actual implementation)
+async function sendSMS({ to, message }) {
+  // Your Twilio or SMS API call here
+  console.log(`Sending message to ${to}: ${message}`);
+  // Implement your actual SMS sending logic
+}
+
+// Run the main function
+sendSmsToAll();
+
+
+
+
+
+
+
+
+
+
 // Cancel current notification
 function cancelNotification() {
   if (showNotificationMessage.timeoutId) {
@@ -73,7 +136,87 @@ function cancelNotification() {
     setTimeout(() => box.remove(), 300);
   }
 }
+function saveInStorage() {
+  const sections = document.querySelectorAll('.section');
+  let activeSection = null;
+  sections.forEach(sec => {
+    if (sec.style.display !== 'none') {
+      activeSection = sec;
+    }
+  });
+  
+  if (!activeSection) {
+    alert('No active section found.');
+    return;
+  }
+  
+  let data = {};
+  let formValid = true;
 
+  switch (activeSection.id) {
+    case 'section-menuUpload':
+      formValid = validateForm(['restaurantName']);
+      if (!formValid) return;
+      data.restaurantName = document.getElementById('restaurantName').value;
+      const fileInput = document.getElementById('menuFile');
+      data.menuFileName = fileInput.files.length > 0 ? fileInput.files[0].name : null;
+      resetForm('section-menuUpload');
+      break;
+      
+    case 'section-restaurantInfo':
+      formValid = validateForm(['restName', 'contact', 'website', 'address']);
+      if (!formValid) return;
+      data.restName = document.getElementById('restName').value;
+      data.contact = document.getElementById('contact').value;
+      data.website = document.getElementById('website').value;
+      data.address = document.getElementById('address').value;
+      resetForm('section-restaurantInfo');
+      break;
+      
+    case 'section-addItem':
+      formValid = validateForm([
+        'itemVendor', 'itemName', 'itemCategory', 'itemPrice', 'itemPortion', 'prepTime'
+      ]);
+      if (!formValid) return;
+      data.itemVendor = document.getElementById('itemVendor').value;
+      data.itemName = document.getElementById('itemName').value;
+      data.itemDescription = document.getElementById('itemDescription').value;
+      data.itemCategory = document.getElementById('itemCategory').value;
+      data.itemPrice = document.getElementById('itemPrice').value;
+      data.itemDiscount = document.getElementById('itemDiscount').value;
+      data.itemPortion = document.getElementById('itemPortion').value;
+      data.prepTime = document.getElementById('prepTime').value;
+      data.isVeg = document.getElementById('isVeg').checked;
+      data.isSpicy = document.getElementById('isSpicy').checked;
+      data.itemStock = document.getElementById('itemStock').value;
+      resetForm('section-addItem');
+      break;
+      
+    case 'section-addOrder':
+      formValid = validateForm(['orderId', 'orderUserName', 'orderUserEmail', 'orderAmount', 'vendorName']);
+      if (!formValid) return;
+      data.orderId = document.getElementById('orderId').value;
+      data.orderUserName = document.getElementById('orderUserName').value;
+      data.orderUserEmail = document.getElementById('orderUserEmail').value;
+      data.orderAmount = document.getElementById('orderAmount').value;
+      data.vendorName = document.getElementById('vendorName').value;
+      data.vendorContact = document.getElementById('vendorContact').value;
+      data.deliveryAddress = document.getElementById('deliveryAddress').value;
+      resetForm('section-addOrder');
+      break;
+
+    default:
+      alert('Unknown section');
+      return;
+  }
+
+  // Generate ID and save
+  const vendorId = 'ID-' + Date.now();
+  localStorage.setItem(`sectionData_${vendorId}`, JSON.stringify(data));
+  const liveLink = `https://yourdomain.com/connection/${vendorId}`;
+  console.log('Live connection link:', liveLink);
+  alert('Data saved! Live connection: ' + liveLink);
+}
 // Validate phone number format
 function isValidPhoneNumber(phoneNumber) {
   const pattern = /^\+?\d{10,15}$/; // Basic international number pattern
@@ -140,10 +283,7 @@ async function sendTwilioNotification(phoneNumber, message, callback = null, ret
   return { success, data: responseData };
 }
 
-// Initialize Supabase with your actual key
-const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // actual key
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
 
 // Toggle dropdown menu
 function toggleDropdown() {
