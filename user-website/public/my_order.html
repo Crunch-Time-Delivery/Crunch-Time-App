@@ -338,17 +338,59 @@ function addItemFromPopup(item) {
   renderCart();
   closeAddonMenu();
 }
+function setTab(tab) {
+  document.getElementById("inProgress").style.display =
+    tab === "inProgress" ? "block" : "none";
+  document.getElementById("completed").style.display =
+    tab === "completed" ? "block" : "none";
 
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelector(`.tab.${tab === "inProgress" ? "in-progress" : "completed"}`)
+    .classList.add("active");
+
+  // Send notification based on tab
+  if (tab === 'inProgress') {
+    notifyProgressUpdate('inProgress');
+  } else if (tab === 'completed') {
+    notifyProgressUpdate('completed');
+  }
+}
 /* ======== MOCK: Listen to messages from iframe ======== */
 window.addEventListener("message", (e) => {
   if (e.data && e.data.type === "addToCart") {
     addItemFromPopup(e.data.item);
   }
 });
-
+function sendSMSNotification(to, message) {
+  fetch('http://localhost:3000/send-sms', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ to: to, message: message }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      console.log('SMS sent successfully');
+    } else {
+      console.error('Failed to send SMS:', data.error);
+    }
+  })
+  .catch(err => console.error('Error sending SMS:', err));
+}
 /* ======== INIT ======== */
 renderCart();
+function notifyProgressUpdate(status) {
+  const userPhoneNumber = '+1234567890'; // Replace with actual user number
+  let message = '';
 
+  if (status === 'inProgress') {
+    message = 'Your order is now in progress.';
+  } else if (status === 'completed') {
+    message = 'Your order has been completed.';
+  }
+
+  sendSMSNotification(userPhoneNumber, message);
+}
 // Store subtotal in localStorage whenever rendering cart
 // Already handled inside renderCart() above
 </script>
