@@ -5,34 +5,131 @@ const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
 const supabaseKey = process.env.SUPABASE_KEY; // Ensure this is set properly
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Storage configuration
-const storageBucket = 'crunchtime'; // Your storage bucket name
+// Storage
+const storageBucket = 'crunchtime';
 
-// Upload profile picture
+// ======================== CRUD FUNCTIONS ============================ //
+
+// -- Create or Insert a new record
+export async function createRecord(table, data) {
+  try {
+    const { data: newData, error } = await supabase.from(table).insert([data]);
+    if (error) {
+      console.error(`Insert error in ${table}:`, error);
+      return null;
+    }
+    return newData;
+  } catch (err) {
+    console.error(`Unexpected insert error in ${table}:`, err);
+    return null;
+  }
+}
+
+// -- Read or Select records
+export async function readRecords(table, filters = {}) {
+  try {
+    let query = supabase.from(table).select('*');
+    Object.entries(filters).forEach(([field, value]) => {
+      query = query.eq(field, value);
+    });
+    const { data, error } = await query;
+    if (error) {
+      console.error(`Read error in ${table}:`, error);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.error(`Unexpected read error in ${table}:`, err);
+    return null;
+  }
+}
+
+// -- Update record(s)
+export async function updateRecord(table, updates, filters = {}) {
+  try {
+    let query = supabase.from(table).update(updates);
+    Object.entries(filters).forEach(([field, value]) => {
+      query = query.eq(field, value);
+    });
+    const { data, error } = await query;
+    if (error) {
+      console.error(`Update error in ${table}:`, error);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.error(`Unexpected update error in ${table}:`, err);
+    return null;
+  }
+}
+
+// -- Delete record(s)
+export async function deleteRecord(table, filters = {}) {
+  try {
+    let query = supabase.from(table);
+    Object.entries(filters).forEach(([field, value]) => {
+      query = query.eq(field, value);
+    });
+    const { data, error } = await query.delete();
+    if (error) {
+      console.error(`Delete error in ${table}:`, error);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.error(`Unexpected delete error in ${table}:`, err);
+    return null;
+  }
+}
+
+// -- Version Control Example (assuming a 'version' field exists)
+export async function updateVersion(table, id, newVersion) {
+  return await updateRecord(table, { version: newVersion }, { id });
+}
+
+// ======================== Edge Function Calls ============================ //
+
+// Example: Call a Supabase Edge Function for some server-side logic
+export async function callEdgeFunction(functionName, payload) {
+  const url = `${supabaseUrl}/functions/v1/${functionName}`;
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apiKey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    return result;
+  } catch (err) {
+    console.error(`Error calling Edge Function ${functionName}:`, err);
+    return null;
+  }
+}
+
+// ======================== Storage Functions ============================ //
+
+// Upload profile picture (unchanged)
 export async function uploadProfilePicture(file, filename) {
   try {
     const filePath = `profile_pictures/${filename}`;
-
-    // Upload file to storage
     const { data, error: uploadError } = await supabase.storage
       .from(storageBucket)
       .upload(filePath, file);
-
     if (uploadError) {
       console.error('Error uploading profile picture:', uploadError);
       return null;
     }
-
-    // Generate public URL
     const { publicURL, error: urlError } = supabase.storage
       .from(storageBucket)
       .getPublicUrl(filePath);
-
     if (urlError) {
       console.error('Error generating public URL:', urlError);
       return null;
     }
-
     return publicURL;
   } catch (error) {
     console.error('Unexpected error in uploadProfilePicture:', error);
@@ -40,141 +137,19 @@ export async function uploadProfilePicture(file, filename) {
   }
 }
 
-// Fetch Admin data
-export async function fetchAdmin() {
-  try {
-    const { data: admin, error } = await supabase
-      .from('Admin')
-      .select(`
-        id, username, password, Change_Username, Change_Password,
-        "New Admin_Email", "New Admin_Username", income_amount,
-        expense_amount, withdraw_amount, total_income_amount,
-        order_total_amount, restaurant_name, restaurant_menu, establishment
-      `);
+// ======================== Usage Examples ============================ //
 
-    if (error) {
-      console.error('Error fetching admin:', error);
-      return null;
-    }
-    return admin;
-  } catch (error) {
-    console.error('Unexpected error in fetchAdmin:', error);
-    return null;
-  }
-}
+// Creating a new driver
+// createRecord('Driver', { driver_name: 'John Doe', driver_payment: 100, status: 'active' });
 
-// Load Drivers and populate UI
-export async function loadDrivers() {
-  try {
-    const { data, error } = await supabase.from('Driver').select('*');
+// Reading drivers
+// readRecords('Driver', { status: 'active' });
 
-    if (error) {
-      console.error('Error fetching drivers:', error);
-      return;
-    }
+// Updating a driver
+// updateRecord('Driver', { driver_payment: 120 }, { driver_name: 'John Doe' });
 
-    if (data.length >= 2) {
-      document.getElementById('driverName1').innerText = data[0].driver_name;
-      document.getElementById('rideHistory1').innerText = data[0].driver_ride_history;
-      document.getElementById('driverPayment1').innerText = data[0].driver_payment;
-      
-      document.getElementById('driverName2').innerText = data[1].driver_name;
-      document.getElementById('rideHistory2').innerText = data[1].driver_ride_history;
-      document.getElementById('driverPayment2').innerText = data[1].driver_payment;
-    }
-  } catch (error) {
-    console.error('Unexpected error in loadDrivers:', error);
-  }
-}
+// Deleting a driver
+// deleteRecord('Driver', { driver_name: 'John Doe' });
 
-// Load Vendors and populate UI
-export async function loadVendors() {
-  try {
-    const { data, error } = await supabase.from('Vendor').select('*');
-
-    if (error) {
-      console.error('Error fetching vendors:', error);
-      return;
-    }
-
-    if (data.length >= 2) {
-      document.getElementById('vendorName1').innerText = data[0].vendor_name;
-      document.getElementById('vendorItems1').innerText = data[0].items;
-      document.getElementById('vendorHistory1').innerText = data[0].history_orders;
-
-      document.getElementById('vendorName2').innerText = data[1].vendor_name;
-      document.getElementById('vendorItems2').innerText = data[1].items;
-      document.getElementById('vendorHistory2').innerText = data[1].history_orders;
-    }
-  } catch (error) {
-    console.error('Unexpected error in loadVendors:', error);
-  }
-}
-
-// Fetch role management data
-export async function fetchRoleManagement() {
-  try {
-    const { data: roleData, error } = await supabase
-      .from('role_management')
-      .select('user_accounts_email, vendor_accounts_email, driver_accounts_email');
-
-    if (error) {
-      console.error('Error fetching role management:', error);
-      return null;
-    }
-
-    // Map data to a cleaner format
-    return roleData.map(item => ({
-      userEmail: item.user_accounts_email,
-      vendorEmail: item.vendor_accounts_email,
-      driverEmail: item.driver_accounts_email,
-    }));
-  } catch (error) {
-    console.error('Unexpected error in fetchRoleManagement:', error);
-    return null;
-  }
-}
-
-// Handle driver cancellation or status update
-export async function cancelDriver(driverName) {
-  try {
-    alert('Cancel driver: ' + driverName);
-    // Example: update driver status in database
-    const { error } = await supabase
-      .from('Driver')
-      .update({ status: 'canceled' })
-      .eq('driver_name', driverName);
-
-    if (error) {
-      console.error('Error canceling driver:', error);
-    }
-  } catch (error) {
-    console.error('Error in cancelDriver:', error);
-  }
-}
-
-// Initialization on page load
-window.onload = () => {
-  const isAuthenticated = true; // Replace with your actual auth logic
-
-  if (!isAuthenticated) {
-    document.getElementById('loginModal').style.display = 'flex';
-  } else {
-    document.getElementById('loginModal').style.display = 'none';
-  }
-
-  // Initialize charts, data, etc.
-  if (typeof initCharts === 'function') initCharts();
-  if (typeof updateMonthlyData === 'function') updateMonthlyData('January');
-
-  // Load data
-  loadDrivers();
-  loadVendors();
-
-  // Fetch role management data
-  fetchRoleManagement().then(roleEmails => {
-    if (roleEmails) {
-      console.log('Role Emails:', roleEmails);
-    }
-  });
-};
+// Calling an Edge Function
+// callEdgeFunction('processOrder', { orderId: 123, action: 'complete' });
