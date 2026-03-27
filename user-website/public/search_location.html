@@ -121,6 +121,7 @@ function initMap() {
   geocoder = new google.maps.Geocoder();
   loadSavedLocation();
 
+  // Event listeners
   document.getElementById("locationForm").addEventListener("submit", e => {
     e.preventDefault();
     const address = document.getElementById("locationInput").value.trim();
@@ -147,9 +148,36 @@ function initMap() {
     document.getElementById("coordinates").innerText = "No location selected.";
     document.getElementById("user_id_location").value = "";
     document.getElementById("connectionLink").innerText = "";
+    stopLiveTracking(); // Optional: stop live updates when reset
   });
+
+  // Initialize live tracking (if user ID exists)
+  const userId = document.getElementById("user_id_location").value;
+  if (userId) {
+    startLiveTracking(userId);
+  }
 }
 
+// Function to update the map and marker
+function updateMap(position, address) {
+  map.setCenter(position);
+  marker.setPosition(position);
+  // Optionally, update address display
+  document.getElementById("coordinates").innerText = `Lat: ${position.lat}, Lng: ${position.lng}`;
+}
+
+// Save location to localStorage
+function saveLocation(position, address) {
+  localStorage.setItem("deliveryCoords", JSON.stringify(position));
+  localStorage.setItem("deliveryAddress", address);
+}
+
+// Generate a user ID (placeholder function)
+function generateUserId() {
+  return 'user_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Geocode address
 function geocodeAddress(address) {
   geocoder.geocode({ address }, (results, status) => {
     if (status !== "OK" || !results[0]) { alert("Location not found."); return; }
@@ -157,17 +185,18 @@ function geocodeAddress(address) {
       lat: results[0].geometry.location.lat(),
       lng: results[0].geometry.location.lng()
     };
-    const userId = generateUserId(); // generate unique user ID
+    const userId = generateUserId();
     saveLocation(loc, results[0].formatted_address);
     updateMap(loc, results[0].formatted_address);
     document.getElementById("user_id_location").value = userId;
-    // Generate live connection URL
     const liveUrl = `https://yourdomain.com/connection/${userId}`;
     document.getElementById("connectionLink").innerText = liveUrl;
+    startLiveTracking(userId); // Start live tracking for this user
     alert("Location set and saved!");
   });
 }
 
+// Reverse geocode location
 function reverseGeocodeLocation(pos) {
   geocoder.geocode({ location: pos }, (results, status) => {
     if (status !== "OK" || !results[0]) { alert("Unable to get address"); return; }
@@ -178,7 +207,50 @@ function reverseGeocodeLocation(pos) {
     document.getElementById("user_id_location").value = userId;
     const liveUrl = `https://yourdomain.com/connection/${userId}`;
     document.getElementById("connectionLink").innerText = liveUrl;
+    startLiveTracking(userId); // Start live tracking for this user
   });
+}
+
+// --- Live tracking functions ---
+
+let liveTrackingSocket; // WebSocket connection
+
+function startLiveTracking(userId) {
+  // Replace with your actual WebSocket URL
+  const socketUrl = `wss://yourdomain.com/live-tracking/${userId}`;
+  if (liveTrackingSocket) {
+    liveTrackingSocket.close();
+  }
+  liveTrackingSocket = new WebSocket(socketUrl);
+
+  liveTrackingSocket.onopen = () => {
+    console.log("Live tracking socket connected");
+  };
+
+  liveTrackingSocket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.lat && data.lng) {
+      // Update marker position
+      const newPos = { lat: data.lat, lng: data.lng };
+      marker.setPosition(newPos);
+      map.setCenter(newPos);
+    }
+  };
+
+  liveTrackingSocket.onerror = (err) => {
+    console.error("WebSocket error:", err);
+  };
+
+  liveTrackingSocket.onclose = () => {
+    console.log("Live tracking socket closed");
+  };
+}
+
+function stopLiveTracking() {
+  if (liveTrackingSocket) {
+    liveTrackingSocket.close();
+    liveTrackingSocket = null;
+  }
 }
 
 function updateMap(pos, address) {
