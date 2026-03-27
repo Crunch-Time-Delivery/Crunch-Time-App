@@ -1,59 +1,240 @@
-<>
-  <meta charSet="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Orders</title>
-  <style
-    dangerouslySetInnerHTML={{
-      __html:
-        "\n/* Your existing CSS remains unchanged */\n* { box-sizing: border-box; }\nbody {\n  margin: 0;\n  font-family: Arial, sans-serif;\n  background: #f5f5f5;\n}\n\n/* HEADER */\nheader {\n  display: flex;\n  align-items: center;\n  padding: 14px;\n  background: #fff;\n}\nheader button {\n  background: none;\n  border: none;\n  font-size: 20px;\n  cursor: pointer;\n}\nheader h1 {\n  flex: 1;\n  text-align: center;\n  margin: 0;\n  font-size: 18px;\n}\n\n/* TABS */\n.tab-container {\n  display: flex;\n  margin: 15px;\n  background: #eee;\n  border-radius: 14px;\n  overflow: hidden;\n}\n.tab {\n  flex: 1;\n  padding: 12px 0;\n  text-align: center;\n  font-weight: 600;\n  cursor: pointer;\n}\n.tab.active.in-progress {\n  background: red;\n  color: #fff;\n}\n.tab.active.completed {\n  background: #ffcc00;\n}\n\n/* CONTENT */\n.content {\n  margin: 15px;\n}\n\n/* CART CARD */\n.cart-card {\n  background: #fff;\n  border-radius: 18px;\n  padding: 15px;\n  box-shadow: 0 4px 12px rgba(0,0,0,0.08);\n}\n.cart-header {\n  display: flex;\n  justify-content: space-between;\n  margin-bottom: 10px;\n}\n.timer {\n  color: red;\n  font-weight: bold;\n}\n\n/* CART ITEM */\n.cart-item {\n  display: flex;\n  margin-top: 12px;\n}\n.cart-item img {\n  width: 80px;\n  height: 80px;\n  border-radius: 14px;\n  object-fit: cover;\n}\n.item-info {\n  flex: 1;\n  margin-left: 12px;\n}\n.item-top {\n  display: flex;\n  justify-content: space-between;\n}\n.item-title {\n  font-weight: bold;\n}\n.remove-btn {\n  background: none;\n  border: none;\n  color: red;\n  font-weight: bold;\n  cursor: pointer;\n}\n.price-row {\n  margin-top: 4px;\n  font-weight: bold;\n}\n.qty-controls {\n  display: flex;\n  align-items: center;\n  margin-top: 8px;\n}\n.qty-controls button {\n  width: 30px;\n  height: 30px;\n  border: none;\n  border-radius: 8px;\n  background: #eee;\n  font-size: 18px;\n  cursor: pointer;\n}\n.qty-controls span {\n  margin: 0 12px;\n  font-weight: bold;\n}\n\n/* CHECKOUT BAR */\n.checkout-bar {\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #fff;\n  display: flex;\n  justify-content: space-between;\n  padding: 15px;\n  box-shadow: 0 -3px 10px rgba(0,0,0,0.1);\n}\n.checkout-btn, .addon-btn {\n  border: none;\n  padding: 12px 20px;\n  border-radius: 12px;\n  cursor: pointer;\n  font-weight: bold;\n}\n.checkout-btn {\n  background: red;\n  color: #fff;\n}\n.addon-btn {\n  background: #ff0011;\n  color: #fff;\n  margin-right: 10px;\n}\n\n/* MODAL */\n.modal-overlay {\n  display: none;\n  position: fixed;\n  inset: 0;\n  background: rgba(0,0,0,0.6);\n  z-index: 9999;\n  justify-content: center;\n  align-items: center;\n}\n.modal {\n  position: relative;\n  width: 90%;\n  max-width: 500px;\n  height: 80%;\n  background: #fff;\n  border-radius: 16px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n}\n.modal-header {\n  display: flex;\n  justify-content: space-between;\n  padding: 12px;\n  border-bottom: 1px solid #eee;\n}\n.modal iframe {\n  flex: 1;\n  border: none;\n}\n"
-    }}
-  />
-  <header>
-    <button onclick="goBack()">←</button>
-    <h1>My Orders</h1>
-  </header>
-  <div className="tab-container">
-    <div className="tab in-progress active" onclick="setTab('inProgress')">
-      In Progress
-    </div>
-    <div className="tab completed" onclick="setTab('completed')">
-      Completed
-    </div>
-  </div>
-  <div id="inProgress" className="content">
-    <div className="cart-card">
-      <div className="cart-header">
-        <strong>My Cart</strong>
-        <span className="timer">35 min</span>
+import React, { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
+
+function OrdersPage() {
+  const [cart, setCart] = useState([]);
+  const [tab, setTab] = useState('inProgress');
+  const [showAddonModal, setShowAddonModal] = useState(false);
+  const [totalPrice, setTotalPrice] = useState('0.00');
+
+  // Fetch cart items from Supabase on component mount
+  useEffect(() => {
+    fetchCartItems();
+  }, []);
+
+  // Recalculate total whenever cart changes
+  useEffect(() => {
+    const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+    setTotalPrice(total.toFixed(2));
+  }, [cart]);
+
+  const fetchCartItems = async () => {
+    const { data, error } = await supabase.from('cart_items').select('*');
+    if (error) {
+      console.error('Error fetching cart items:', error);
+    } else {
+      setCart(data || []);
+    }
+  };
+
+  const addItemToCart = async (item) => {
+    await supabase.from('cart_items').insert([item]);
+    fetchCartItems(); // refresh cart
+  };
+
+  const handleRemove = async (id) => {
+    await supabase.from('cart_items').delete().eq('id', id);
+    fetchCartItems();
+  };
+
+  const handleQtyChange = async (id, delta) => {
+    const item = cart.find(i => i.id === id);
+    if (!item) return;
+    const newQty = item.qty + delta;
+    if (newQty <= 0) return handleRemove(id);
+    await supabase.from('cart_items').update({ qty: newQty }).eq('id', id);
+    fetchCartItems();
+  };
+
+  // Notification function
+  const sendSMSNotification = (message) => {
+    fetch('http://localhost:3000/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: '+1234567890', message }),
+    });
+  };
+
+  // Handle tab change
+  const handleTabChange = (newTab) => {
+    setTab(newTab);
+    if (newTab === 'inProgress') {
+      sendSMSNotification('Your order is now in progress.');
+    } else if (newTab === 'completed') {
+      sendSMSNotification('Your order has been completed.');
+    }
+  };
+
+  // For demo: a sample function to add an item
+  const handleAddSampleItem = () => {
+    const item = {
+      name: 'Sample Item',
+      price: 10,
+      restaurant: 'Sample Restaurant',
+      qty: 1,
+      image: '', // optional
+    };
+    addItemToCart(item);
+  };
+
+  return (
+    <div>
+      {/* HEADER */}
+      <header style={{ display: 'flex', alignItems: 'center', padding: '14px', background: '#fff' }}>
+        <button onClick={() => window.history.back()}>←</button>
+        <h1 style={{ flex: 1, textAlign: 'center', margin: 0, fontSize: '18px' }}>My Orders</h1>
+      </header>
+
+      {/* TABS */}
+      <div style={{
+        display: 'flex', margin: '15px', background: '#eee', borderRadius: '14px', overflow: 'hidden'
+      }}>
+        <div
+          style={{
+            flex: 1, padding: '12px 0', textAlign: 'center', fontWeight: '600',
+            cursor: 'pointer',
+            backgroundColor: tab === 'inProgress' ? 'red' : 'transparent',
+            color: tab === 'inProgress' ? '#fff' : 'black'
+          }}
+          onClick={() => handleTabChange('inProgress')}
+        >
+          In Progress
+        </div>
+        <div
+          style={{
+            flex: 1, padding: '12px 0', textAlign: 'center', fontWeight: '600',
+            cursor: 'pointer',
+            backgroundColor: tab === 'completed' ? '#ffcc00' : 'transparent'
+          }}
+          onClick={() => handleTabChange('completed')}
+        >
+          Completed
+        </div>
       </div>
-      <div id="cartItems" />
-    </div>
-  </div>
-  <div id="completed" className="content" style={{ display: "none" }}>
-    <p style={{ textAlign: "center", color: "#777" }}>
-      No completed orders yet
-    </p>
-  </div>
-  <div className="checkout-bar">
-    <button className="addon-btn" onclick="openAddonMenu()">
-      + Add-on Menu
-    </button>
-    <strong id="totalPrice">R0.00</strong>
-    <button className="checkout-btn" onclick="goToCheckout()">
-      Checkout
-    </button>
-  </div>
-  {/* ADD-ON MODAL */}
-  <div id="addonModal" className="modal-overlay">
-    <div className="modal">
-      <div className="modal-header">
-        <strong>Select Items</strong>
-        <button onclick="closeAddonMenu()">✕</button>
+
+      {/* CONTENT for In Progress */}
+      {tab === 'inProgress' && (
+        <div style={{ margin: '15px' }}>
+          <div style={{
+            background: '#fff', borderRadius: '18px', padding: '15px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <strong>My Cart</strong>
+              <span style={{ color: 'red', fontWeight: 'bold' }}>35 min</span>
+            </div>
+            {/* Cart Items */}
+            {cart.length === 0 ? (
+              <p style={{ textAlign: 'center', color: '#777' }}>Your cart is empty</p>
+            ) : (
+              cart.map((item) => (
+                <div key={item.id} style={{ display: 'flex', marginTop: '12px' }}>
+                  <img
+                    src={item.image || 'Images/RS KOTA .jpg'}
+                    alt={item.name}
+                    style={{ width: '80px', height: 'auto', borderRadius: '14px', objectFit: 'cover' }}
+                  />
+                  <div style={{ flex: 1, marginLeft: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontWeight: 'bold' }}>{item.name}</div>
+                      <button
+                        style={{ background: 'none', border: 'none', color: 'red', fontWeight: 'bold', cursor: 'pointer' }}
+                        onClick={() => handleRemove(item.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <div>{item.restaurant}</div>
+                    <div style={{ marginTop: '4px', fontWeight: 'bold' }}>R{item.price.toFixed(2)}</div>
+                    {/* Quantity controls */}
+                    <div style={{ display: 'flex', alignItems: 'center', marginTop: '8px', gap: '5px' }}>
+                      <button
+                        style={{ width: '30px', height: '30px', border: 'none', borderRadius: '8px', background: '#eee', fontSize: '18px', cursor: 'pointer' }}
+                        onClick={() => handleQtyChange(item.id, -1)}
+                      >
+                        −
+                      </button>
+                      <span style={{ fontWeight: 'bold' }}>{item.qty}</span>
+                      <button
+                        style={{ width: '30px', height: '30px', border: 'none', borderRadius: '8px', background: '#eee', fontSize: '18px', cursor: 'pointer' }}
+                        onClick={() => handleQtyChange(item.id, 1)}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* CONTENT for Completed */}
+      {tab === 'completed' && (
+        <div style={{ margin: '15px', textAlign: 'center', color: '#777' }}>
+          <p>No completed orders yet</p>
+        </div>
+      )}
+
+      {/* Checkout Bar */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: '#fff', display: 'flex', justifyContent: 'space-between',
+        padding: '15px', boxShadow: '0 -3px 10px rgba(0,0,0,0.1)'
+      }}>
+        <button
+          style={{
+            background: '#ff0011', border: 'none', padding: '12px 20px', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold'
+          }}
+          onClick={() => setShowAddonModal(true)}
+        >
+          + Add-on Menu
+        </button>
+        <strong style={{ alignSelf: 'center' }}>R{totalPrice}</strong>
+        <button
+          style={{
+            background: 'red', border: 'none', padding: '12px 20px', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', color: '#fff'
+          }}
+          onClick={() => window.location.href = 'checkout.html'}
+        >
+          Checkout
+        </button>
       </div>
-      <iframe
-        id="addonIframe"
-        src="http://127.0.0.1:5501/user-app/client/public/restaurant_info.html"
-      />
+
+      {/* ADD-ON MODAL */}
+      {showAddonModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999
+        }}>
+          <div style={{
+            position: 'relative',
+            width: '90%', maxWidth: '500px',
+            height: '80%',
+            background: '#fff',
+            borderRadius: '16px',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', borderBottom: '1px solid #eee' }}>
+              <strong>Select Items</strong>
+              <button onClick={() => setShowAddonModal(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+            </div>
+            <iframe
+              src="http://127.0.0.1:5501/user-app/client/public/restaurant_info.html"
+              style={{ flex: 1, border: 'none' }}
+              title="Addon Menu"
+            ></iframe>
+          </div>
+        </div>
+      )}
+
+      {/* Button to add a sample item for demo purposes */}
+      {/* Remove or replace with actual event from iframe */}
+      <button style={{ margin: '20px' }} onClick={handleAddSampleItem}>Add Sample Item</button>
     </div>
-  </div>
-</>
+  );
+}
+
+export default OrdersPage;

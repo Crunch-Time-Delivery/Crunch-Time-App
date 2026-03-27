@@ -1,182 +1,134 @@
-// capture_location.jsx
-import React, { useState, useEffect } from 'react';
+const { createClient } = supabase; // Assuming supabase is globally available
 
-function CaptureLocation() {
-  // Initialize Supabase with your keys
-  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey =  process.env.SUPABASE_KEY; // Replace with your actual Supabase anon key
-  const supabase = React.useMemo(() => supabase.createClient(supabaseUrl, supabaseKey), []);
+// Replace with your actual Supabase project info
+const supabaseUrl = 'YOUR_SUPABASE_URL'; // e.g., 'https://xyzcompany.supabase.co'
+const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // e.g., 'public-anonymous-key'
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  const [coordinates, setCoordinates] = useState(null);
-  const [address, setAddress] = useState('');
-  const [error, setError] = useState('');
-  const [tracking, setTracking] = useState(false);
+class CaptureLocation extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      map: null,
+      marker: null,
+      currentPosition: null,
+      loading: true,
+      message: '',
+    };
+    this.initMap = this.initMap.bind(this);
+    this.handleSaveLocation = this.handleSaveLocation.bind(this);
+  }
 
-  // Fetch current location and reverse geocode once on mount
-  useEffect(() => {
+  componentDidMount() {
+    // Expose reference for callback
+    if (window.CaptureLocationRef !== this) {
+      window.CaptureLocationRef = this;
+    }
+  }
+
+  initMap() {
+    const defaultPos = { lat: 0, lng: 0 };
+    const mapDiv = document.getElementById('map');
+
+    const map = new google.maps.Map(mapDiv, {
+      center: defaultPos,
+      zoom: 2,
+    });
+
+    // Try to get user's current location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const { latitude, longitude } = position.coords;
-          setCoordinates({ latitude, longitude });
-          // Reverse geocoding
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
-            .then(res => res.json())
-            .then(data => {
-              if (data && data.display_name) {
-                setAddress(data.display_name);
-                // Save to localStorage
-                localStorage.setItem('userLocation', JSON.stringify({ latitude, longitude, address: data.display_name }));
-              }
-            })
-            .catch(() => {
-              setError('Failed to get address.');
-            });
+          const pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          map.setCenter(pos);
+          map.setZoom(14);
+          this.setState({ currentPosition: pos, map: map, loading: false });
+          this.placeMarker(pos);
         },
-        (err) => {
-          setError('Geolocation permission denied.');
+        () => {
+          this.setState({ message: 'Could not get your location', loading: false });
         }
       );
     } else {
-      setError('Geolocation is not supported by this browser.');
+      this.setState({ message: 'Geolocation not supported', loading: false });
     }
-  }, []);
 
-  // Watch position for real-time tracking
-  useEffect(() => {
-    if (tracking && navigator.geolocation) {
-      const watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setCoordinates({ latitude, longitude });
-          // Reverse geocode
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
-            .then(res => res.json())
-            .then(data => {
-              if (data && data.display_name) {
-                setAddress(data.display_name);
-              }
-            });
-          // Send location to parent if callback exists
-          // (Optional: you can implement callback here)
-        },
-        (err) => {
-          console.error('Error watching position:', err);
-        },
+    // Add click listener to map
+    map.addListener('click', (e) => {
+      const clickedPos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+      this.setState({ currentPosition: clickedPos });
+      this.placeMarker(clickedPos);
+    });
+  }
+
+  placeMarker(position) {
+    if (this.state.marker) {
+      this.state.marker.setPosition(position);
+    } else {
+      const marker = new google.maps.Marker({
+        position: position,
+        map: this.state.map,
+      });
+      this.setState({ marker });
+    }
+  }
+
+  async handleSaveLocation() {
+    const { currentPosition } = this.state;
+    if (!currentPosition) {
+      alert('Please select a location on the map.');
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('locations') // Ensure your table exists
+      .insert([
         {
-          enableHighAccuracy: true,
-          maximumAge: 0,
-          timeout: 5000,
-        }
-      );
-      return () => navigator.geolocation.clearWatch(watchId);
-    }
-  }, [tracking]);
+          latitude: currentPosition.lat,
+          longitude: currentPosition.lng,
+          created_at: new Date().toISOString(),
+        },
+      ]);
 
-  // Function to save current location to Supabase
-  const saveLocationToSupabase = () => {
-    if (coordinates) {
-      const { latitude, longitude } = coordinates;
-      supabase
-        .from('locations') // Make sure this table exists
-        .insert([{ latitude, longitude }])
-        .then(({ data, error }) => {
-          if (error) {
-            alert('Error saving to database: ' + error.message);
-          } else {
-            alert('Location saved to database!');
-          }
-        });
+    if (error) {
+      alert('Error saving location: ' + error.message);
     } else {
-      alert('No location data available to save.');
+      alert('Location saved successfully!');
     }
-  };
+  }
 
-  return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h2>Capture Your Location</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {coordinates ? (
-        <div>
-          <p><strong>Latitude:</strong> {coordinates.latitude}</p>
-          <p><strong>Longitude:</strong> {coordinates.longitude}</p>
-          <p><strong>Address:</strong> {address || 'Loading address...'}</p>
-        </div>
-      ) : (
-        !error && <p>Getting your location...</p>
-      )}
-
-      {/* Button to start/stop real-time tracking */}
-      <button
-        style={{
-          padding: '10px 20px',
-          marginTop: '20px',
-          backgroundColor: tracking ? 'orange' : 'blue',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}
-        onClick={() => setTracking(!tracking)}
-      >
-        {tracking ? 'Stop Tracking' : 'Start Tracking'}
-      </button>
-
-      {/* Save current location to Supabase */}
-      <button
-        style={{
-          padding: '10px 20px',
-          marginTop: '20px',
-          backgroundColor: 'purple',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          marginLeft: '10px'
-        }}
-        onClick={saveLocationToSupabase}
-      >
-        Save Location to Database
-      </button>
-
-      {/* Proceed Button */}
-      <button
-        style={{
-          padding: '10px 20px',
-          marginTop: '20px',
-          backgroundColor: 'green',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          marginLeft: '10px'
-        }}
-        onClick={() => {
-          window.location.href = 'index.html'; // or your desired page
-        }}
-      >
-        Proceed
-      </button>
-
-      {/* Go to Search Location */}
-      <button
-        style={{
-          padding: '10px 20px',
-          marginTop: '20px',
-          backgroundColor: 'blue',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          marginLeft: '10px'
-        }}
-        onClick={() => window.location.href = '../user-app/search_location.html'}
-      >
-        Go to Search Location
-      </button>
-    </div>
-  );
+  render() {
+    return React.createElement(
+      'div',
+      { style: { maxWidth: '800px', margin: '0 auto', padding: '10px' } },
+      React.createElement('h2', null, 'Capture Location'),
+      this.state.loading && React.createElement('p', null, 'Loading map...'),
+      this.state.message && React.createElement('p', { style: { color: 'red' } }, this.state.message),
+      React.createElement('div', {
+        id: 'map',
+        style: { width: '100%', height: '400px', border: '1px solid #ccc' },
+      }),
+      this.state.currentPosition &&
+        React.createElement(
+          'div',
+          { style: { marginTop: '10px' } },
+          React.createElement(
+            'p',
+            null,
+            'Selected Coordinates: Latitude: ',
+            this.state.currentPosition.lat.toFixed(5),
+            ', Longitude: ',
+            this.state.currentPosition.lng.toFixed(5)
+          ),
+          React.createElement(
+            'button',
+            { onClick: this.handleSaveLocation },
+            'Save Location'
+          )
+        )
+    );
+  }
 }
-
-export default CaptureLocation;

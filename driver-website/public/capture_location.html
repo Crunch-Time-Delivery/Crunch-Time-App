@@ -20,23 +20,36 @@
 <!-- Your React component -->
 <script type="text/babel" src="capture_location.jsx"></script>
 
-<!-- Render React component -->
+<!-- Load Google Maps with callback -->
 <script type="text/babel">
-  ReactDOM.render(<CaptureLocation />, document.getElementById('root'));
-  // Load Google Maps
+  // Initialize Google Maps after it loads
+  function initMap() {
+    // Trigger React component to initialize map
+    if (window.CaptureLocationRef) {
+      window.CaptureLocationRef.initMap();
+    }
+  }
+
+  // Load Google Maps script dynamically
   (function loadGoogleMaps() {
-    if (typeof google !== 'undefined') return;
+    if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+      // Already loaded
+      initMap();
+      return;
+    }
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap`;
     script.async = true;
     script.defer = true;
-
     script.onerror = () => alert('Failed to load Google Maps. Check API key.');
     document.head.appendChild(script);
   })();
+
+  // Render React component
+  ReactDOM.render(<CaptureLocation ref={(ref) => { window.CaptureLocationRef = ref; }} />, document.getElementById('root'));
 </script>
 
-<!-- Add a navigation link to search_location.html -->
+<!-- Navigation link -->
 <div style="margin-top:20px; text-align:center;">
   <a href="../user-app/search_location.html" style="font-size:16px; color:blue; text-decoration:underline;">Go to Search Location</a>
 </div>

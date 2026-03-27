@@ -250,6 +250,9 @@ function renderCart() {
   if (!cart.length) {
     cartItemsDiv.innerHTML =
       "<p style='text-align:center;color:#777;'>Your cart is empty</p>";
+    totalPriceEl.innerText = "R0.00";
+    localStorage.setItem("cartTotal", "0.00");
+    return;
   }
 
   cart.forEach((item, index) => {
@@ -258,18 +261,18 @@ function renderCart() {
     const div = document.createElement("div");
     div.className = "cart-item";
     div.innerHTML = `
-      <img src="${item.image || 'Images/RS KOTA .jpg'}">
+      <img src="${item.image || 'Images/RS KOTA .jpg'}" alt="${item.name}" style="width:80px;height:auto;">
       <div class="item-info">
-        <div class="item-top">
+        <div class="item-top" style="display:flex;justify-content:space-between;align-items:center;">
           <div class="item-title">${item.name}</div>
-          <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
+          <button class="remove-btn" data-index="${index}">Remove</button>
         </div>
         <div>${item.restaurant}</div>
-        <div class="price-row">R${item.price}</div>
-        <div class="qty-controls">
-          <button onclick="updateQty(${index}, -1)">−</button>
+        <div class="price-row">R${item.price.toFixed(2)}</div>
+        <div class="qty-controls" style="display:flex;align-items:center;gap:5px;">
+          <button class="decrease-qty" data-index="${index}">−</button>
           <span>${item.qty}</span>
-          <button onclick="updateQty(${index}, 1)">+</button>
+          <button class="increase-qty" data-index="${index}">+</button>
         </div>
       </div>
     `;
@@ -277,8 +280,35 @@ function renderCart() {
   });
 
   totalPriceEl.innerText = "R" + total.toFixed(2);
-  // Save total to localStorage for checkout
   localStorage.setItem("cartTotal", total.toFixed(2));
+  attachQuantityButtons();
+  attachRemoveButtons();
+}
+
+/* ======== Attach event listeners for quantity controls ======== */
+function attachQuantityButtons() {
+  document.querySelectorAll('.decrease-qty').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const index = parseInt(btn.getAttribute('data-index'));
+      updateQty(index, -1);
+    });
+  });
+  document.querySelectorAll('.increase-qty').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const index = parseInt(btn.getAttribute('data-index'));
+      updateQty(index, 1);
+    });
+  });
+}
+
+/* ======== Attach event listeners for remove buttons ======== */
+function attachRemoveButtons() {
+  document.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const index = parseInt(btn.getAttribute('data-index'));
+      removeItem(index);
+    });
+  });
 }
 
 /* ======== UPDATE QTY ======== */
@@ -308,6 +338,13 @@ function setTab(tab) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   document.querySelector(`.tab.${tab === "inProgress" ? "in-progress" : "completed"}`)
     .classList.add("active");
+
+  // Send notification based on tab
+  if (tab === 'inProgress') {
+    notifyProgressUpdate('inProgress');
+  } else if (tab === 'completed') {
+    notifyProgressUpdate('completed');
+  }
 }
 
 /* ======== BACK BUTTON ======== */
@@ -333,11 +370,13 @@ function closeAddonMenu() {
 
 /* ======== ADD ITEM FROM POPUP ======== */
 function addItemFromPopup(item) {
-  // Example item structure: {name, price, restaurant, qty, image}
+  // item structure: {name, price, restaurant, qty, image}
   cart.push(item);
   renderCart();
   closeAddonMenu();
 }
+
+/* ======== Tab switch with notifications ======== */
 function setTab(tab) {
   document.getElementById("inProgress").style.display =
     tab === "inProgress" ? "block" : "none";
@@ -355,12 +394,15 @@ function setTab(tab) {
     notifyProgressUpdate('completed');
   }
 }
-/* ======== MOCK: Listen to messages from iframe ======== */
+
+/* ======== Listen to messages from iframe ======== */
 window.addEventListener("message", (e) => {
   if (e.data && e.data.type === "addToCart") {
     addItemFromPopup(e.data.item);
   }
 });
+
+/* ======== SMS Notification Function ======== */
 function sendSMSNotification(to, message) {
   fetch('http://localhost:3000/send-sms', {
     method: 'POST',
@@ -377,8 +419,10 @@ function sendSMSNotification(to, message) {
   })
   .catch(err => console.error('Error sending SMS:', err));
 }
+
 /* ======== INIT ======== */
 renderCart();
+
 function notifyProgressUpdate(status) {
   const userPhoneNumber = '+1234567890'; // Replace with actual user number
   let message = '';
@@ -391,9 +435,6 @@ function notifyProgressUpdate(status) {
 
   sendSMSNotification(userPhoneNumber, message);
 }
-// Store subtotal in localStorage whenever rendering cart
-// Already handled inside renderCart() above
 </script>
-
 </body>
 </html>
