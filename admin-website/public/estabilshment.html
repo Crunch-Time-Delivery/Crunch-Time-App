@@ -39,7 +39,7 @@
 
   /* Dropdown menu styles */
   #menuDropdown {
-    display: none; /* Hidden by default */
+    display: none;
     position: absolute;
     top: 40px;
     left: 0;
@@ -75,7 +75,8 @@
     justify-content: space-between;
     padding: 0 20px;
   }
-/* Profile section styles */
+
+  /* Profile section styles */
   .profile-section {
     display: flex;
     align-items: center;
@@ -85,7 +86,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: #fff; /* Placeholder for profile image */
+    background-color: #fff;
     margin-right: 10px;
   }
 
@@ -175,6 +176,7 @@
   .field {
     font-weight: bold;
     outline: none;
+    padding: 4px 8px;
   }
 
   /* Action links */
@@ -196,7 +198,7 @@
     text-decoration: underline;
   }
 
-  /* Remove button style */
+  /* Buttons */
   .remove-btn {
     margin-left: 10px;
     padding: 6px 12px;
@@ -212,7 +214,6 @@
     background-color: #c0392b;
   }
 
-  /* Add button style */
   #add-btn {
     margin: 20px auto;
     padding: 12px 24px;
@@ -290,8 +291,30 @@
   const container = document.getElementById('info-container');
   const addBtn = document.getElementById('add-btn');
 
-  // Function to create an info box
-  function createInfoBox() {
+  // Fetch data from backend using Supabase
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey =process.env.SUPABASE_KEY;  // Replace with your actual key
+  const { createClient } = window.supabase || {};
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  async function fetchRestaurants() {
+    if (!supabase) {
+      console.warn('Supabase not configured.');
+      return;
+    }
+    const { data, error } = await supabase.from('restaurants').select('*');
+    if (error) {
+      console.error('Error fetching data:', error);
+      return;
+    }
+    // Clear existing boxes
+    container.innerHTML = '';
+    // Render fetched data
+    data.forEach(restaurant => createInfoBox(restaurant));
+  }
+
+  // Function to create an info box, accepting optional data object
+  function createInfoBox(data = {}) {
     const box = document.createElement('div');
     box.className = 'info-box';
 
@@ -301,9 +324,9 @@
 
     const iconDiv = document.createElement('div');
     iconDiv.className = 'icon';
-    iconDiv.innerHTML = '&#128247;'; // Camera icon
+    iconDiv.innerHTML = '&#128247;';
     iconDiv.title = "Click to change image";
-    iconDiv.onclick = () => alert('Image click! Implement image change.');
+    iconDiv.onclick = () => alert('Image change placeholder');
     iconSection.appendChild(iconDiv);
 
     // Details section
@@ -313,15 +336,17 @@
     function createField(label, value) {
       const p = document.createElement('p');
       p.className = 'field';
-      p.contentEditable = true;
-      p.innerText = label + ': ' + value;
+      p.contentEditable = false;
+      p.innerText = value;
+      p.setAttribute('data-label', label);
       return p;
     }
 
-    const nameField = createField('Name', 'Sample Restaurant');
-    const contactField = createField('Contact', '123-456-7890');
-    const websiteField = createField('Website', 'https://example.com');
-    const addressField = createField('Address', '123 Main St');
+    // Assign default or existing data
+    const nameField = createField('Name', data.name || 'Sample Restaurant');
+    const contactField = createField('Contact', data.contact || '123-456-7890');
+    const websiteField = createField('Website', data.website || 'https://example.com');
+    const addressField = createField('Address', data.address || '123 Main St');
 
     detailsDiv.appendChild(nameField);
     detailsDiv.appendChild(contactField);
@@ -332,12 +357,12 @@
     const linksDiv = document.createElement('div');
     linksDiv.className = 'links';
 
+    let isEditing = false;
     const editLink = document.createElement('a');
     editLink.className = 'hyperlink-red';
     editLink.innerText = 'Edit';
-    let isEditing = false;
-    editLink.onclick = (e) => {
-      e.preventDefault();
+
+    editLink.onclick = () => {
       isEditing = !isEditing;
       [nameField, contactField, websiteField, addressField].forEach(f => {
         f.contentEditable = isEditing;
@@ -349,68 +374,60 @@
     const viewLink = document.createElement('a');
     viewLink.className = 'hyperlink-red';
     viewLink.innerText = 'View Menu';
-    viewLink.onclick = (e) => {
-      e.preventDefault();
-      alert('View menu - replace with modal or page navigation.');
+    viewLink.onclick = () => {
+      alert('View menu placeholder');
     };
 
     linksDiv.appendChild(editLink);
     linksDiv.appendChild(viewLink);
 
-    // Remove button
     const removeBtn = document.createElement('button');
     removeBtn.className = 'remove-btn';
     removeBtn.innerText = 'Remove';
     removeBtn.onclick = () => {
-      container.removeChild(box);
+      if (confirm('Are you sure you want to delete this?')) {
+        container.removeChild(box);
+      }
     };
 
-    // Assemble box
+    // Assemble
     box.appendChild(iconSection);
     box.appendChild(detailsDiv);
     box.appendChild(linksDiv);
     box.appendChild(removeBtn);
-
     container.appendChild(box);
   }
 
-  // Initialize with one box
-  createInfoBox();
+  // Load existing data on page load
+  window.onload = () => {
+    fetchRestaurants();
+  };
 
-  // Add new box on button click
+  // Add new info box
   document.getElementById('add-btn').onclick = () => {
     createInfoBox();
   };
 
-  // Search filter
-  document.getElementById('search-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      alert('Searching for: ' + e.target.value);
-      // Implement filtering logic here
-    }
+  // Filter search
+  document.getElementById('search-input').addEventListener('input', () => {
+    const filterText = document.getElementById('search-input').value.toLowerCase();
+    Array.from(container.children).forEach(box => {
+      const name = box.querySelector('.details').children[0].innerText.toLowerCase();
+      const address = box.querySelector('.details').children[3].innerText.toLowerCase();
+      if (name.includes(filterText) || address.includes(filterText)) {
+        box.style.display = '';
+      } else {
+        box.style.display = 'none';
+      }
+    });
   });
 
-  // Example: fetch restaurant data from backend
-  const { createClient } = window.supabase || {}; // Assuming your setup
-  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-  const supabaseKey = process.env.SUPABASE_KEY; // Replace with your key
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  async function fetchRestaurants() {
-    const { data, error } = await supabase.from('restaurants').select('*');
-    if (error) {
-      console.error('Error fetching restaurants:', error);
-      return;
-    }
-    console.log('Restaurants:', data);
-    // You can render data here
+  // Placeholder for section show/hide
+  function showSection(section) {
+    alert(`Section: ${section} (implement as needed)`);
   }
 
-  // Call fetch on page load
-  window.onload = () => {
-    fetchRestaurants();
-  };
+  // Optional: Save edited data back to backend (not implemented here)
 </script>
 </body>
 </html>
