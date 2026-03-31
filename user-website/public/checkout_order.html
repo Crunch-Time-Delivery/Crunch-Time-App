@@ -163,7 +163,7 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
 <script>
 // ======================== Supabase Initialization ========================
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Ensure this environment variable is set
+const supabaseKey =   process.env.SUPABASE_KEY;// Replace with your actual key
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // =================== Notification Functions ===================
@@ -238,35 +238,52 @@ function createDriverLabelOverlay() {
   overlayDiv.id = 'driverLabelOverlay';
   overlayDiv.innerText = 'Driver';
   overlayDiv.style.display = 'none';
+  overlayDiv.style.position = 'absolute'; // Use absolute for overlay
+  overlayDiv.style.padding = '4px 8px';
+  overlayDiv.style.background = 'rgba(255, 255, 255, 0.8)';
+  overlayDiv.style.borderRadius = '4px';
+  overlayDiv.style.border = '1px solid #ccc';
+  overlayDiv.style.fontWeight = 'bold';
+  overlayDiv.style.fontSize = '14px';
+  overlayDiv.style.color = '#000';
   document.getElementById('map').appendChild(overlayDiv);
 }
 
 function moveDriverLabel(position) {
   const overlayDiv = document.getElementById('driverLabelOverlay');
-  if (!overlayDiv || !map.getProjection()) return;
+  if (!overlayDiv || !map.getProjection) return;
+
   const latLng = new google.maps.LatLng(position.lat, position.lng);
   const scale = Math.pow(2, map.getZoom());
   const projection = map.getProjection();
+
+  if (!projection) {
+    // Wait for projection to be ready
+    setTimeout(() => moveDriverLabel(position), 100);
+    return;
+  }
+
   const point = projection.fromLatLngToPoint(latLng);
   const pixelX = point.x * scale;
   const pixelY = point.y * scale;
+
   const mapDiv = document.getElementById('map');
   const rect = mapDiv.getBoundingClientRect();
-  overlayDiv.style.left = `${pixelX - rect.left}px`;
-  overlayDiv.style.top = `${pixelY - rect.top}px`;
+
+  overlayDiv.style.left = `${pixelX - rect.left + mapDiv.offsetLeft}px`;
+  overlayDiv.style.top = `${pixelY - rect.top + mapDiv.offsetTop}px`;
   overlayDiv.style.display = 'block';
 }
 
-// On page load
+// ======================= Page Load & Initialization =======================
 window.onload = () => {
-  const orderId = 'ORDER-' + Date.now(); // Or dynamically set
+  const orderId = 'ORDER-' + Date.now(); // Or get it dynamically
   const orderPin = generatePIN();
   showPinMessage(orderPin);
   console.log('Order ID:', orderId);
   console.log('Order PIN:', orderPin);
-  console.log('Live connection URL:', `https://yourdomain.com/connection/${orderId}`);
 
-  // Your driverId extraction logic
+  // Extract driverId from URL, or set dynamically
   const params = new URLSearchParams(window.location.search);
   const driverId = params.get('driverId');
 
@@ -276,12 +293,11 @@ window.onload = () => {
     startTrackingDriver(driverId);
   }
 
-  // Load order status and history from database
   loadOrderStatus(orderId);
   loadOrderHistory(orderId);
 };
 
-// Function to fetch and update order status
+// ====================== Load Order Status & History ======================
 async function loadOrderStatus(orderId) {
   const { data, error } = await supabase
     .from('order_status')
@@ -296,13 +312,11 @@ async function loadOrderStatus(orderId) {
 
   document.getElementById('orderStatus').innerText = data.status || 'Status not available';
 
-  // Additional updates (e.g., delivery time)
   if (data.estimated_time) {
     document.getElementById('deliveryTime').innerText = data.estimated_time;
   }
 }
 
-// Function to fetch and display order history
 async function loadOrderHistory(orderId) {
   const { data, error } = await supabase
     .from('order_history')
@@ -324,12 +338,12 @@ async function loadOrderHistory(orderId) {
   });
 }
 
-// Tracking driver location
+// =================== Driver Location Tracking ====================
 function startTrackingDriver(driverId) {
   fetchAndUpdateDriverLocation(driverId);
   window.driverTrackingInterval = setInterval(() => {
     fetchAndUpdateDriverLocation(driverId);
-  }, 10000);
+  }, 10000); // every 10 seconds
 }
 
 function fetchAndUpdateDriverLocation(driverId) {
@@ -339,6 +353,7 @@ function fetchAndUpdateDriverLocation(driverId) {
       if (data.lat && data.lng) {
         const pos = { lat: data.lat, lng: data.lng };
         if (!driverMarker) {
+          // Create marker if not exists
           driverMarker = new google.maps.Marker({
             position: pos,
             map: map,
@@ -349,6 +364,7 @@ function fetchAndUpdateDriverLocation(driverId) {
             title: 'Driver Location'
           });
         } else {
+          // Update marker position
           driverMarker.setPosition(pos);
         }
         moveDriverLabel(pos);
@@ -358,12 +374,11 @@ function fetchAndUpdateDriverLocation(driverId) {
     .catch(err => console.error('Error fetching driver location:', err));
 }
 
-// Function to generate PIN
+// ====================== Utility Functions ======================
 function generatePIN() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Show PIN message
 function showPinMessage(pin) {
   document.getElementById('orderPin').innerText = pin;
   document.getElementById('topPinMessage').style.display = 'block';
@@ -372,16 +387,12 @@ function hidePinMessage() {
   document.getElementById('topPinMessage').style.display = 'none';
 }
 
-// Placeholder for goBack, callDriver, chatDriver
+// Placeholder functions
 function goBack() { window.history.back(); }
 function callDriver() { alert('Calling driver...'); }
 function chatDriver() { alert('Chat with driver...'); }
 
-// Example function to simulate checkout order and notify driver
-function checkout_order(orderId, driverPhoneNumber) {
-  const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
-  notifyDriver(driverPhoneNumber, message);
-}
+// Example: Notify driver
 function notifyDriver(phoneNumber, message) {
   showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
   sendTwilioNotification(phoneNumber, message, (success, data) => {
