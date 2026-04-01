@@ -1,6 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { createOrderData } from './orderData.js';
+async function fetchExistingOrders() {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false });
 
+  if (error) {
+    console.error('Error fetching existing orders:', error);
+  } else {
+    // Process existing orders, e.g. display in UI
+    console.log('Existing orders:', data);
+  }
+}
+// Example of inserting into Supabase:
+async function saveOrder() {
+  const order = createOrderData(
+    'ORD123456',
+    'user_abc123',
+    [
+      { name: 'Pizza Margherita', qty: 2, price: 150.00, image: '', restaurant: 'Pizza Place' },
+      { name: 'Coke', qty: 1, price: 20.00, image: '', restaurant: 'Pizza Place' }
+    ],
+    320.00,
+    'inProgress'
+  );
+  
+  const { data, error } = await supabase.from('orders').insert([order]);
+  if (error) {
+    console.error('Error saving order:', error);
+  } else {
+    console.log('Order saved:', data);
+  }
+}
 function OrdersPage() {
   const [cart, setCart] = useState([]);
   const [tab, setTab] = useState('inProgress');
