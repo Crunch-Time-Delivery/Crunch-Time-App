@@ -1,6 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { getChatbotResponse } from './chatbotData.js';
 
+// Inside your sendMessage() or response logic
+const reply = getChatbotResponse(userMessage);
 const CLIENT_ID = '866867707128-mq963ediu3mijf16r27c8e1fgnmp2h3f';
 
 function App() {

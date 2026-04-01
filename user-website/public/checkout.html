@@ -203,6 +203,23 @@ function recalc() {
   document.getElementById("barTotal").innerText = "R" + total.toFixed(2);
   document.getElementById("pf_amount").value = total.toFixed(2);
 }
+const apiKey = 'AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q';
+
+  // Example user_id_location object with latitude and longitude
+  const user_id_location = {
+    latitude: -33.9249,
+    longitude: 18.4241
+  };
+
+  // Extract lat and lng from user_id_location
+  const lat = user_id_location.latitude;
+  const lng = user_id_location.longitude;
+
+  // Generate the static map URL centered on user location
+  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=12&size=600x300&markers=color:red%7C${lat},${lng}&key=${apiKey}`;
+
+  // Set the src attribute of the image
+  document.getElementById('staticMap').src = staticMapUrl;
 
 /* Tip selection */
 function setTip(amount, btn) {

@@ -172,7 +172,10 @@ window.onload = () => {
     disableInput();
   }
 };
+import { getChatbotResponse } from './chatbotData.js';
 
+// Inside your sendMessage() or response logic
+const reply = getChatbotResponse(userMessage);
 // Function to show login modal
 function showSignInModal() {
   document.getElementById('signInModal').style.display = 'flex';
