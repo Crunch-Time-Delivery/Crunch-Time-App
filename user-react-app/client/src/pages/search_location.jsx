@@ -49,17 +49,50 @@ function DeliveryLocationMap() {
     }
   };
 
-  const updateMap = (pos, address = '') => {
-    if (mapInstance.current && markerRef.current) {
-      mapInstance.current.setCenter(pos);
-      markerRef.current.setPosition(pos);
-      mapInstance.current.setZoom(15);
-      setCoordinates(`Lat: ${pos.lat.toFixed(5)}, Lng: ${pos.lng.toFixed(5)}`);
-      if (address) {
-        document.getElementById('locationInput').value = address;
-      }
+function MapComponent() {
+  const mapRef = useRef(null);        // Ref to the map instance
+  const markerRef = useRef(null);     // Ref to the marker instance
+  const coordsRef = useRef(null);     // Ref to the coordinates display element
+  const addressRef = useRef(null);    // Ref to the address input element
+
+  // Call this method with new position and address
+  const updateMap = (pos, address) => {
+    if (!mapRef.current || !markerRef.current) return;
+
+    // Center the map
+    mapRef.current.setCenter(pos);
+    // Set zoom level
+    mapRef.current.setZoom(15);
+    // Move marker
+    markerRef.current.setPosition(pos);
+
+    // Update coordinates display
+    if (coordsRef.current) {
+      coordsRef.current.innerText = `Lat: ${pos.lat.toFixed(5)}, Lng: ${pos.lng.toFixed(5)}`;
+    }
+
+    // Update address input
+    if (address && addressRef.current) {
+      addressRef.current.value = address;
     }
   };
+
+  return (
+    <div>
+      {/* Map container */}
+      <div id="map" style={{ width: '100%', height: '400px' }} />
+
+      {/* Coordinates display */}
+      <div id="coordinates" ref={coordsRef}>Lat: 0, Lng: 0</div>
+
+      {/* Address input */}
+      <input type="text" id="locationInput" ref={addressRef} />
+
+      {/* Example usage: */}
+      {/* <button onClick={() => updateMap({ lat: 37.7749, lng: -122.4194 }, 'San Francisco')}>Update Map</button> */}
+    </div>
+  );
+}
 
   const handleGeocode = (e) => {
     e.preventDefault();
