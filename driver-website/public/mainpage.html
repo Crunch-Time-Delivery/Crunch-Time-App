@@ -440,17 +440,29 @@ function initMap() {
     infoWindow.open(map);
   }
 }
-
 // Function to set or update the destination marker
 function setDestination(latlng) {
   destination = latlng;
+
   if (dropoffMarker) {
     dropoffMarker.setPosition(latlng);
   } else {
-    dropoffMarker = new google.maps.Marker({ position: latlng, map, label: 'Destination', title: 'Delivery Destination' });
+    dropoffMarker = new google.maps.Marker({
+      position: latlng,
+      map,
+      label: 'Destination',
+      title: 'Delivery Destination',
+      icon: {
+        url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+      }
+    });
   }
-  // Optionally, draw route from driver to destination
+
+  // Optional: Draw route from driver to destination
   drawRoute();
+
+  // Optionally, display destination info
+  document.getElementById('destinationInfo').innerText = `Destination set at (${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)})`;
 }
 
 // Function to update driver location marker and route
@@ -458,7 +470,7 @@ function updateDriverLocation(pos) {
   if (!driverMarker) {
     driverMarker = new google.maps.Marker({
       position: pos,
-      map: map,
+      map,
       title: "Driver's Location",
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
@@ -473,13 +485,59 @@ function updateDriverLocation(pos) {
     driverMarker.setPosition(pos);
   }
 
-  // Optionally, update the route
-  drawRoute();
-
   // Center map on driver
   map.setCenter(pos);
+
+  // Optional: Draw route from driver to destination
+  drawRoute();
+
+  // Update driver info display
+  document.getElementById('driverLocation').innerText = `Driver at (${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)})`;
 }
 
+// Function to draw route between driver and destination
+function drawRoute() {
+  if (!driverMarker || !destination) return;
+
+  // Clear existing route if any
+  if (routePolyline) {
+    routePolyline.setMap(null);
+  }
+
+  const directionsService = new google.maps.DirectionsService();
+  const directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: true });
+  
+  directionsRenderer.setMap(map);
+
+  directionsService.route(
+    {
+      origin: driverMarker.getPosition(),
+      destination: destination,
+      travelMode: google.maps.TravelMode.DRIVING
+    },
+    (response, status) => {
+      if (status === google.maps.DirectionsStatus.OK) {
+        // Draw route polyline
+        routePolyline = new google.maps.Polyline({
+          path: response.routes[0].overview_path,
+          geodesic: true,
+          strokeColor: '#0000FF',
+          strokeOpacity: 0.6,
+          strokeWeight: 4,
+        });
+        routePolyline.setMap(map);
+      } else {
+        console.error('Directions request failed due to ' + status);
+      }
+    }
+  );
+}
+
+
+
+// Example usage:
+// setDestination({lat: 40.7128, lng: -74.0060});
+// updateDriverLocation({lat: 40.7127, lng: -74.0059});
 // Function to draw route from driver to destination
 function drawRoute() {
   if (!driverMarker || !destination) return;

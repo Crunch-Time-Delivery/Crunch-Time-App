@@ -250,36 +250,35 @@ function toggleCardForm(show) {
 function formatCardNumber(input) {
   input.value = input.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
 }
-
-/* PayNow - main trigger */
+// Triggered when user clicks "Pay Now"
 function payNow() {
-  recalc();
+  recalc(); // Recalculate totals if necessary
   const selectedMethod = document.querySelector('input[name="paymethod"]:checked').value;
+
   if (selectedMethod === 'cc') {
-    toggleCardForm(true);
+    toggleCardForm(true); // Show card form if credit card selected
     return;
   }
+
   document.getElementById("pf_method").value = selectedMethod;
-  // Prepare signature before submitting
+
+  // Prepare signature and then process payment
   preparePayFastSignature().then(() => {
-    // Call backend process
     backendProcessAndRedirect();
   });
 }
 
-// Submit Card Payment
+// When user submits card form
 function submitCardForm() {
   const selectedMethod = 'cc';
   document.getElementById("pf_method").value = selectedMethod;
-  toggleCardForm(false);
-  // Prepare signature
+  toggleCardForm(false); // Hide card form
   preparePayFastSignature().then(() => {
-    // Call backend process
     backendProcessAndRedirect();
   });
 }
 
-/* Generate Signature for PayFast (async to simulate backend) */
+// Generate signature for PayFast (simulate backend signing)
 async function preparePayFastSignature() {
   const data = {
     merchant_id: '10000100',
@@ -291,20 +290,26 @@ async function preparePayFastSignature() {
   };
   const passphrase = 'jt7NOE43FZPn';
 
-  // Simulate backend signing process
+  // Example signature generation (replace with real method)
   const signature = generateSignature(data, passphrase);
   document.getElementById('pf_signature').value = signature;
   return Promise.resolve();
 }
 
-/* Backend processing and redirect to PayFast */
+// Simulate signature generation (replace with actual crypto if needed)
+function generateSignature(data, passphrase) {
+  const stringToSign = Object.values(data).join(':') + ':' + passphrase;
+  // For demonstration, simple hash (replace with actual crypto)
+  return btoa(stringToSign);
+}
+
+// Send data to backend and redirect to PayFast
 function backendProcessAndRedirect() {
-  // Collect form data
-  const formData = new FormData(document.getElementById('payfastForm'));
+  const form = document.getElementById('payfastForm');
+  const formData = new FormData(form);
   const dataObj = {};
   formData.forEach((value, key) => { dataObj[key] = value; });
 
-  // Send data to your backend (simulate with fetch)
   fetch('/process-payment', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -313,24 +318,22 @@ function backendProcessAndRedirect() {
   .then(response => response.json())
   .then(result => {
     if (result.success) {
-      // Redirect to PayFast
-      document.getElementById('payfastForm').submit();
+      // Submit form to redirect to PayFast
+      form.submit();
     } else {
-      alert('Payment processing failed: ' + result.message);
+      alert('Payment failed: ' + result.message);
     }
   })
   .catch(error => {
-    console.error('Backend processing error:', error);
+    console.error('Error in backend process:', error);
     alert('Error processing payment. Please try again.');
   });
 }
 
-/* Callback Skeleton - handle PayFast notification (simulate) */
+// Optional: handle PayFast callback (simulate)
 function handlePayFastCallback() {
-  // This would be called by your server-side notify_url endpoint
-  // Here, just a placeholder for handling callback data
-  // e.g., verify payment, update order status, etc.
-  console.log('Received callback from PayFast');
+  // This should be called on your server via notify_url
+  console.log('Received PayFast notification/callback');
 }
 
 // Optional: you can set up a server endpoint to handle notify_url and call handlePayFastCallback()

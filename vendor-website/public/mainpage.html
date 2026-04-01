@@ -313,6 +313,8 @@ function hideLoading() {
     loader.style.display = 'none';
   }
 }
+
+
 // ================= SMS NOTIFICATIONS =================
 // Function to display notification messages
 function showNotificationMessage(text, color = '#333') {
@@ -346,20 +348,20 @@ function showNotificationMessage(text, color = '#333') {
   // Remove the notification after 4 seconds
   showNotificationMessage.timeoutId = setTimeout(() => {
     box.style.opacity = '0';
-    // Optionally, you can remove the element after fade out
+    // Optionally, remove the element after fade out
     setTimeout(() => {
       if (box) box.remove();
     }, 300);
   }, 4000);
 }
 
-// Function to send Twilio notification
-function sendTwilioNotification(phoneNumber, message, callback = null) {
+// Function to send Twilio notification with connection ID
+function sendTwilioNotification(phoneNumber, message, connectionId = null, callback = null) {
   if (!phoneNumber || !message) {
     showNotificationMessage('Phone number or message missing', '#f44336');
     return;
   }
-  
+
   showNotificationMessage('Sending notification...', '#2196F3');
 
   fetch('/send-twilio', {
@@ -367,7 +369,11 @@ function sendTwilioNotification(phoneNumber, message, callback = null) {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ phoneNumber, message })
+    body: JSON.stringify({ 
+      phoneNumber, 
+      message, 
+      connectionId // Send connection ID if needed
+    })
   })
   .then(res => res.json())
   .then(data => {
@@ -385,7 +391,6 @@ function sendTwilioNotification(phoneNumber, message, callback = null) {
   });
 }
 
-
 // Example function to fetch phone numbers
 async function fetchPhoneNumbers() {
   const { data, error } = await supabase
@@ -402,24 +407,15 @@ async function fetchPhoneNumbers() {
 // Example function to send SMS to all fetched phone numbers
 async function sendSmsToAll() {
   const phoneNumbers = await fetchPhoneNumbers();
+  const connectionId = 'your-connection-id'; // Replace with your actual connection ID
 
   for (const number of phoneNumbers) {
-    await sendSMS({ to: number, message: 'Your message here' });
+    await sendTwilioNotification(number, 'Your message here', connectionId);
   }
-}
-
-// Example sendSMS function (replace with your actual implementation)
-async function sendSMS({ to, message }) {
-  // Your Twilio or SMS API call here
-  console.log(`Sending message to ${to}: ${message}`);
-  // Implement your actual SMS sending logic
 }
 
 // Run the main function
 sendSmsToAll();
-
-
-
 
 
 

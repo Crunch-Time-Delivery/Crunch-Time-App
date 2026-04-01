@@ -39,8 +39,8 @@ function hideLoading() {
     loader.style.display = 'none';
   }
 }
-
-// Function to show notifications, with fade-out
+// ================= SMS NOTIFICATIONS =================
+// Function to display notification messages
 function showNotificationMessage(text, color = '#333') {
   let box = document.getElementById('notificationMessage');
 
@@ -64,25 +64,56 @@ function showNotificationMessage(text, color = '#333') {
   box.innerText = text;
   box.style.opacity = '1';
 
+  // Clear any existing timeout
   if (showNotificationMessage.timeoutId) {
     clearTimeout(showNotificationMessage.timeoutId);
   }
 
+  // Remove the notification after 4 seconds
   showNotificationMessage.timeoutId = setTimeout(() => {
     box.style.opacity = '0';
+    // Optionally, remove the element after fade out
     setTimeout(() => {
       if (box) box.remove();
     }, 300);
   }, 4000);
 }
 
-const { createClient } = require('@supabase/supabase-js');
+// Function to send Twilio notification with connection ID
+function sendTwilioNotification(phoneNumber, message, connectionId = null, callback = null) {
+  if (!phoneNumber || !message) {
+    showNotificationMessage('Phone number or message missing', '#f44336');
+    return;
+  }
 
-// Initialize Supabase client
-const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Ensure this environment variable is set
+  showNotificationMessage('Sending notification...', '#2196F3');
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+  fetch('/send-twilio', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ 
+      phoneNumber, 
+      message, 
+      connectionId // Send connection ID if needed
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+      if (callback && typeof callback === 'function') callback(true, data);
+    } else {
+      showNotificationMessage('Failed to send notification.', '#f44336');
+      if (callback && typeof callback === 'function') callback(false, data);
+    }
+  })
+  .catch(() => {
+    showNotificationMessage('Error sending notification.', '#f44336');
+    if (callback && typeof callback === 'function') callback(false);
+  });
+}
 
 // Example function to fetch phone numbers
 async function fetchPhoneNumbers() {
@@ -100,22 +131,15 @@ async function fetchPhoneNumbers() {
 // Example function to send SMS to all fetched phone numbers
 async function sendSmsToAll() {
   const phoneNumbers = await fetchPhoneNumbers();
+  const connectionId = 'your-connection-id'; // Replace with your actual connection ID
 
   for (const number of phoneNumbers) {
-    await sendSMS({ to: number, message: 'Your message here' });
+    await sendTwilioNotification(number, 'Your message here', connectionId);
   }
-}
-
-// Example sendSMS function (replace with your actual implementation)
-async function sendSMS({ to, message }) {
-  // Your Twilio or SMS API call here
-  console.log(`Sending message to ${to}: ${message}`);
-  // Implement your actual SMS sending logic
 }
 
 // Run the main function
 sendSmsToAll();
-
 
 
 
