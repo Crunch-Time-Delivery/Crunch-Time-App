@@ -1,10 +1,12 @@
 // config.js
 module.exports = {
-  port: process.env.PORT || 3001,
+  port: process.env.PORT ||  5501,
   twilio: {
-    accountSid: 'YOUR_TWILIO_ACCOUNT_SID',
-    authToken: 'YOUR_TWILIO_AUTH_TOKEN',
-    phoneNumber: 'YOUR_TWILIO_PHONE_NUMBER',
+
+    accountSid: 'AC031642049dd74fcc581b0fd106936a4f   ',
+    authToken: '447e415a2fc483bd2bfbea57451d55d   ',
+    phoneNumber: '+27795349327   ',
+
   },
   email: {
     user: 'your.email@gmail.com',
