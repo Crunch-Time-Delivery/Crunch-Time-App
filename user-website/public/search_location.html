@@ -254,11 +254,26 @@ function stopLiveTracking() {
 }
 
 function updateMap(pos, address) {
+  // Check if map and marker are initialized
+  if (!map || !marker) return;
+
+  // Center the map on the new position
   map.setCenter(pos);
+
+  // Set the zoom level for better detail
   map.setZoom(15);
+
+  // Move the marker to the new position
   marker.setPosition(pos);
-  document.getElementById("coordinates").innerText = `Lat: ${pos.lat.toFixed(5)}, Lng: ${pos.lng.toFixed(5)}`;
-  if (address) document.getElementById("locationInput").value = address;
+
+  // Update the display of coordinates
+  document.getElementById("coordinates").innerText = 
+    `Lat: ${pos.lat.toFixed(5)}, Lng: ${pos.lng.toFixed(5)}`;
+
+  // If address is provided, update the input field
+  if (address) {
+    document.getElementById("locationInput").value = address;
+  }
 }
 
 function saveLocation(pos, address) {
