@@ -330,7 +330,7 @@ function initMap() {
     infoWindow.open(map);
   }
 }
-// Function to set or update the destination marker
+  // Function to set or update the destination marker
 function setDestination(latlng) {
   destination = latlng;
 
@@ -354,7 +354,61 @@ function setDestination(latlng) {
   // Optionally, display destination info
   document.getElementById('destinationInfo').innerText = `Destination set at (${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)})`;
 }
+  // Initialize driver tracking
+      
+      let driverPathCoordinates = [];
+      let driverPathLine = null;
 
+      // Function to fetch and update driver location
+      function fetchAndUpdateDriverLocation() {
+        fetch(`/api/driver-location?driverId=${driverId}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.lat && data.lng) {
+              const pos = { lat: data.lat, lng: data.lng };
+
+              // Create or update driver marker
+              if (!driverMarker) {
+                driverMarker = new google.maps.Marker({
+                  position: pos,
+                  map: map,
+                  icon: {
+                    url: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
+                    scaledSize: new google.maps.Size(40, 40),
+                  },
+                  title: 'Driver Location'
+                });
+              } else {
+                driverMarker.setPosition(pos);
+              }
+
+              // Add position to path
+              driverPathCoordinates.push(pos);
+
+              // Draw or update route path
+              if (!driverPathLine) {
+                driverPathLine = new google.maps.Polyline({
+                  path: driverPathCoordinates,
+                  geodesic: true,
+                  strokeColor: '#FF0000',
+                  strokeOpacity: 1.0,
+                  strokeWeight: 3,
+                  map: map,
+                });
+              } else {
+                driverPathLine.setPath(driverPathCoordinates);
+              }
+
+              // Center map on driver
+              map.setCenter(pos);
+            }
+          })
+          .catch(err => console.error('Error fetching driver location:', err));
+      }
+
+      // Start polling driver location every 10 seconds
+      fetchAndUpdateDriverLocation();
+      setInterval(fetchAndUpdateDriverLocation, 10000);
 // Function to update driver location marker and route
 function updateDriverLocation(pos) {
   if (!driverMarker) {
