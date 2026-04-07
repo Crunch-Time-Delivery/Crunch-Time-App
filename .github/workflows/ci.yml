@@ -24,18 +24,7 @@ jobs:
 
       - name: Validate package.json dependencies
         run: |
-          node -e "
-            const fs = require('fs');
-            const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            const dependencies = {...packageJson.dependencies, ...packageJson.devDependencies};
-            for (const [name, version] of Object.entries(dependencies)) {
-              if (name.startsWith('-')) {
-                console.error(`Invalid package name: '${name}'. Package names cannot start with a hyphen.`);
-                process.exit(1);
-              }
-            }
-            console.log('All package names are valid.');
-          "
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));const deps={...p.dependencies,...p.devDependencies};for(const [n,v] of Object.entries(deps)){if(n.startsWith('-')){console.error(\`Invalid package name: '\${n}'. Package names cannot start with a hyphen.\`);process.exit(1);}}console.log('All package names are valid.');"
 
       - name: Install dependencies
         run: npm install
