@@ -338,7 +338,10 @@ async function loadOrderHistory(orderId) {
   });
 }
 
-// =================== Driver Location Tracking ====================
+// =================== Driver Location Tracking with Route Path ====================
+let driverPathCoordinates = [];
+let driverPathLine = null;
+
 function startTrackingDriver(driverId) {
   fetchAndUpdateDriverLocation(driverId);
   window.driverTrackingInterval = setInterval(() => {
@@ -352,8 +355,9 @@ function fetchAndUpdateDriverLocation(driverId) {
     .then(data => {
       if (data.lat && data.lng) {
         const pos = { lat: data.lat, lng: data.lng };
+
+        // Update or create driver marker
         if (!driverMarker) {
-          // Create marker if not exists
           driverMarker = new google.maps.Marker({
             position: pos,
             map: map,
@@ -364,11 +368,31 @@ function fetchAndUpdateDriverLocation(driverId) {
             title: 'Driver Location'
           });
         } else {
-          // Update marker position
           driverMarker.setPosition(pos);
         }
-        moveDriverLabel(pos);
+
+        // Add new position to path coordinates
+        driverPathCoordinates.push(pos);
+
+        // Draw or update the route path
+        if (!driverPathLine) {
+          driverPathLine = new google.maps.Polyline({
+            path: driverPathCoordinates,
+            geodesic: true,
+            strokeColor: '#FF0000',
+            strokeOpacity: 1.0,
+            strokeWeight: 3,
+            map: map,
+          });
+        } else {
+          driverPathLine.setPath(driverPathCoordinates);
+        }
+
+        // Optional: center map on driver
         map.setCenter(pos);
+
+        // Move label (assuming moveDriverLabel is defined elsewhere)
+        moveDriverLabel(pos);
       }
     })
     .catch(err => console.error('Error fetching driver location:', err));
