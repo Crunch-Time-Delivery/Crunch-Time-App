@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - main  # or your default branch
+      - main  # or your branch name
   pull_request:
 
 jobs:
@@ -21,6 +21,9 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: List npm scripts for debugging
+        run: npm run
 
       - name: Build project
         run: npm run build
