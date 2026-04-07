@@ -2,38 +2,65 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Vendor Login</title>
 <!-- Font Awesome -->
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 <style>
-  * { box-sizing: border-box; margin:0; padding:0; }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
   body {
-    height: 100vh; display: flex; align-items: center; justify-content: center;
-    background-color: #f0f0f0; font-family: Arial, sans-serif;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
   }
   .window-container {
-    background-color: #fff; padding: 30px; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,0.2);
-    max-width: 400px; width:90%;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    max-width: 400px;
+    width: 90%;
   }
-  /* Notification styles */
-  .notification {
-    position: fixed; top:20px; right:20px; padding:12px 20px; border-radius:5px; display:none; z-index:9999;
-  }
-  .notification.success { background:#4CAF50; color:#fff; }
-  .notification.error { background:#f44336; color:#fff; }
-  /* Modal styles */
   .modal {
-    display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-    background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:999;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center; z-index: 999;
   }
   .modal-box {
-    background: #fff; padding:20px; border-radius:8px; max-width:400px; width:90%; text-align:center;
+    background: #fff; padding: 20px; border-radius: 8px; max-width: 350px; width: 100%; text-align: center;
   }
-  input { width:80%; padding:8px; margin:10px 0; border:1px solid #ccc; border-radius:4px; }
+  input {
+    width: 100%; padding: 8px 12px; margin: 8px 0 16px 0; border: 1px solid #ccc; border-radius: 4px;
+  }
   button {
-    padding:10px 20px; margin-top:10px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;
+    width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;
+  }
+  .redirect-btn {
+    background-color: #f80303;
+    color: #fff;
+    margin: 10px;
+    padding: 10px 20px;
+    border-radius: 5px;
+  }
+  .redirect-btn:hover {
+    opacity: 0.8;
+  }
+  label {
+    display: block; margin-top: 10px; font-weight: bold; text-align: left;
+  }
+  #bottomButtons {
+    margin-top: 20px; display: flex; justify-content: center; gap: 10px;
+  }
+  .modal-box img {
+    max-width: 250px; height: auto; margin-bottom: 20px; border-radius: 8px;
   }
 </style>
 </head>
@@ -43,179 +70,226 @@
   <!-- OTP Modal -->
   <div id="otpModal" class="modal" style="display:none;">
     <div class="modal-box">
-      <h3>Verify OTP</h3>
-      <p>Enter the 6-digit code sent to your email/phone</p>
+      <img src="img/screenshot (253).jpg" alt="Welcome Image" />
+      <h3>Verify Account</h3>
+      <p>Please enter the OTP sent to your email to verify your account</p>
+      <p>Enter your OTP code here</p>
       <input id="otpInput" placeholder="OTP" />
-      <button style="background:#f44336; color:#fff;" onclick="verifyOTP()">Verify</button>
+      <p>Didn’t receive code? Request again</p>
+      <button style="background:#f80202; color:#fff;" onclick="verifyOTP()">Confirm</button>
     </div>
   </div>
 
   <!-- Login Modal -->
   <div id="loginModal" class="modal" style="display:flex;">
     <div class="modal-box">
-      <h2>Vendor Login</h2>
-      <label for="username">Email</label>
+      <img src="img/screenshot (253).jpg" alt="Welcome Image" />
+      <h3>Welcome</h3>
+      <p>For vendors Manage your orders in real time. </p>
+      <label>Email Address</label>
       <input id="username" placeholder="Email" />
-      <label for="password">Password</label>
+      <label>Password</label>
       <input id="password" placeholder="Password" type="password" />
-      <div style="text-align:right;"><a id="loginForgotPassword" href="#">Forgot Password?</a></div>
-      <button style="background:#f44336; color:#fff;" id="loginBtn">Login</button>
-      <p>Don't have an account? <a href="#" id="registerLink">Register here</a></p>
+      <!-- Updated Forgot Password link -->
+    <a id="loginForgotPassword" href="http://127.0.0.1:5501/vendor-website/public/Login/forgotpassword.html" target="_blank">Forgot Password</a>
+   
+    <!-- Buttons for Driver and Admin -->
+      <button style="background:#f40101; color:#fff;" onclick="verifyLogin()">Login</button>
+      <p>Don't have an account? Register here</p>
+      <div id="bottomButtons">
+        <button class="redirect-btn" id="vendorBtn">Vendor</button>
+      
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Password Reset Skeleton -->
-<div class="modal" id="passwordResetModal">
-  <div class="modal-box">
-    <h3>Password Reset</h3>
-    <input id="resetEmail" placeholder="Enter your email" />
-    <button id="sendResetBtn" style="background:#f44336; color:#fff;">Send Reset Email</button>
-  </div>
-</div>
-
-<div id="notification" class="notification"></div>
-
 <script>
-const supabaseUrl='https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey='YOUR_SUPABASE_PUBLIC_ANON_KEY'; // replace with your key
-const supabase = supabase.createClient(supabaseUrl,supabaseKey);
 
-let currentUser=null;
-let currentOTP='';
-
-function showNotification(msg, type='success') {
-  const notif = document.getElementById('notification');
-  notif.innerText=msg;
-  notif.className='notification '+type;
-  notif.style.display='block';
-  setTimeout(()=>{ notif.style.display='none'; }, 3000);
-}
-
-function showModal(id) { document.getElementById(id).style.display='flex'; }
-function hideModal(id) { document.getElementById(id).style.display='none'; }
-
-let isRegister=false;
-document.getElementById('registerLink').onclick=(e)=>{
-  e.preventDefault(); isRegister=!isRegister; buildForm(); 
-};
-function buildForm() {
-  const container=document.getElementById('authForm');
-  if (isRegister) {
-    document.querySelector('#authTitle').innerText='Register';
-    document.getElementById('authBtn').innerText='Register';
-    container.innerHTML=`
-      <label>Email</label><input id="regEmail" placeholder="Email"/>
-      <label>Password</label><input id="regPass" placeholder="Password" type="password"/>
-    `;
-  } else {
-    document.querySelector('#authTitle').innerText='Login';
-    document.getElementById('authBtn').innerText='Login';
-    container.innerHTML=`
-      <label>Email</label><input id="regEmail" placeholder="Email"/>
-      <label>Password</label><input id="regPass" placeholder="Password" type="password"/>
-    `;
-  }
-}
-buildForm();
-
-document.getElementById('authBtn').onclick=async()=>{
-  const email=document.getElementById('regEmail').value.trim().toLowerCase();
-  const pass=document.getElementById('regPass').value.trim();
-
-  if (isRegister) {
-    // Register
-    // For demo, store in localStorage
-    let users=JSON.parse(localStorage.getItem('users')) || [];
-    if(users.some(u=>u.email===email)){ showNotification('Email exists','error'); return; }
-    users.push({ email, pass, role:'vendor', approved:false });
-    localStorage.setItem('users', JSON.stringify(users));
-    showNotification('Registration success! Please login.');
-    isRegister=false; buildForm();
-  } else {
-    // Login
-    // check hardcoded admin (remove if not needed)
-    // Check local storage for users
-    const users=JSON.parse(localStorage.getItem('users'))||[];
-    const user=users.find(u=>u.email===email && u.pass===pass);
-    if (user) {
-      currentUser=user;
-      if (user.role==='vendor') {
-        if (user.approved) {
-          window.location='vendor_mainpage.html';
-        } else {
-          generateOTP();
-          showModal('otpModal');
-        }
-      }
+  // Function to send SMS via backend API
+  function sendSms(toNumber, message) {
+  fetch('http://localhost:3000/send-sms', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ to: toNumber, message: message })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if(data.success) {
+      // Show success notification
+      showNotification('SMS sent successfully.', 'success');
     } else {
-      showNotification('Invalid credentials','error');
+      // Show failure notification with error message
+      showNotification('Failed to send SMS: ' + data.error, 'error');
+    }
+  })
+  .catch(() => {
+    // Show error notification if fetch fails
+    showNotification('Error sending SMS.', 'error');
+  });
+}
+
+// Helper function to display notifications
+function showNotification(message, type) {
+  // Create a notification element
+  const notification = document.createElement('div');
+  notification.innerText = message;
+  notification.className = `notification ${type}`; // style based on type
+  
+  // Append to body or a specific container
+  document.body.appendChild(notification);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    document.body.removeChild(notification);
+  }, 3000);
+}
+
+// Check message status
+function checkMessageStatus(messageSid, callback) {
+  fetch('http://localhost:3001/twilio-message-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messageSid }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (callback) callback(data);
+  })
+  .catch(() => {
+    showNotificationMessage('Error fetching message status.', '#f44336');
+  });
+}
+
+// Fetch message logs
+function fetchMessageLogs(limit = 10, callback) {
+  fetch(`http://localhost:3001/twilio-message-logs`)
+    .then(res => res.json())
+    .then(data => {
+      if (callback) callback(data);
+    })
+    .catch(() => {
+      showNotificationMessage('Error fetching message logs.', '#f44336');
+    });
+}
+function onSendSuccess(sid) {
+  console.log(`Message sent successfully. SID: ${sid}`);
+  showNotificationMessage(`Message sent! SID: ${sid}`, '#4CAF50');
+}
+function onSendFailure(error) {
+  console.error('Failed to send message:', error);
+  showNotificationMessage(`Failed to send message: ${error}`, '#f44336');
+}
+function onStatusUpdate(statusData) {
+  console.log('Message status update:', statusData);
+  showNotificationMessage(`Status: ${statusData.status} for SID: ${statusData.sid}`, '#2196F3');
+}
+function onError(errorMsg) {
+  console.error('Error:', errorMsg);
+  showNotificationMessage(`Error: ${errorMsg}`, '#f44336');
+}
+function monitorMessageStatus(sid) {
+  const intervalId = setInterval(() => {
+    checkMessageStatus(sid, (statusData) => {
+      onStatusUpdate(statusData);
+      if (statusData.status === 'delivered' || statusData.status === 'failed') {
+        clearInterval(intervalId);
+      }
+    });
+  }, 5000); // check every 5 seconds
+}
+
+ 
+  let currentOTP = '';
+
+  // Generate OTP
+  function generateOTP() {
+    currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('Generated OTP:', currentOTP); // For demo, show in console
+
+    // Send OTP via your backend endpoint (which uses Twilio)
+  fetch('/send-otp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      phoneNumber: driverData.contact, // or the phone number you want to send to
+      otp: generatedOtp
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(`OTP sent to ${driverData.contact}.`);
+    } else {
+      alert('Failed to send OTP.');
+    }
+  })
+  .catch(() => {
+    alert('Error sending OTP.');
+  });
+
+  }
+
+  window.onload = () => {
+    showLogin();
+
+    // Vendor button - fixed to redirect to specified URL
+    document.getElementById('vendorBtn').addEventListener('click', () => {
+      window.location.href = 'http://127.0.0.1:5501/vendor-website/public/mainpage.html';
+    });
+
+ 
+    
+
+    // Generate OTP initially
+    generateOTP();
+  };
+
+  function showLogin() {
+    document.getElementById('loginModal').style.display='flex';
+  }
+
+  function verifyLogin() {
+    const username = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+
+   
+
+    // Assume shared credentials for vendor and admin
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const user = users.find(u => u.email===username && u.pass===pass);
+    if (user) {
+      // Save user info if needed
+      localStorage.setItem('vendorLoggedIn', 'true');
+      // Show OTP modal for unapproved users
+      generateOTP();
+      showOTP();
+    } else {
+      alert('Invalid credentials.');
     }
   }
-};
 
-function generateOTP() {
-  currentOTP=Math.floor(100000 + Math.random()*900000).toString();
-  alert('Your OTP (for demo): '+currentOTP);
-  // TODO: Call your backend for Twilio SMS
-}
-
-document.getElementById('verifyOtpBtn').onclick=()=>{
-  const inputOtp=document.getElementById('otpInput').value.trim();
-  if (inputOtp===currentOTP) {
-    alert('OTP verified! Account approved.');
-    currentUser.approved=true;
-    // Save update
-    let users=JSON.parse(localStorage.getItem('users'))||[];
-    const idx=users.findIndex(u=>u.email===currentUser.email);
-    if (idx!==-1) { users[idx]=currentUser; }
-    localStorage.setItem('users',JSON.stringify(users));
-    hideModal('otpModal');
-    window.location='vendor_mainpage.html';
-  } else {
-    alert('Incorrect OTP.');
+  function showOTP() {
+    document.getElementById('otpModal').style.display='flex';
   }
-};
 
-document.getElementById('resendOtpBtn').onclick=()=>{
-  generateOTP();
-  alert('OTP resent.');
-};
+  function verifyOTP() {
+    const inputOTP = document.getElementById('otpInput').value.trim();
+    if (inputOTP === currentOTP) {
+      alert('OTP verified! Redirecting...');
+      document.getElementById('otpModal').style.display='none';
 
-document.getElementById('loginForgotPassword').onclick=(e)=>{
-  e.preventDefault(); showModal('passwordResetModal');
-};
-async function sendOTP() {
-    const phone = document.getElementById('phone').value;
-    await fetch('/send-verification', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ phoneNumber: phone })
-    });
-    alert('Code Sent!');
-}
-
-async function verifyOTP() {
-    const phone = document.getElementById('phone').value;
-    const code = document.getElementById('code').value;
-    const response = await fetch('/verify-otp', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ phoneNumber: phone, code: code })
-    });
-    const result = await response.json();
-    alert(result.verified ? 'Verified!' : 'Invalid Code');
-}
-
-document.getElementById('sendResetBtn').onclick=async()=>{
-  const email=document.getElementById('resetEmail').value.trim().toLowerCase();
-  const { data, error }=await supabase.auth.resetPasswordForEmail(email,{ redirectTo:'your-reset-page.html' });
-  if (error) { showNotification('Error: '+error.message,'error'); }
-  else { showNotification('Reset email sent'); hideModal('passwordResetModal'); }
-};
-
-// Show login modal on load
-window.onload=()=>{ document.getElementById('loginModal').style.display='flex'; };
+      // Assuming OTP verification leads to user/vendor page
+      alert('Login successful!');
+      window.location.href='http://127.0.0.1:5501/vendor-website/public/mainpage.html'; // user/vendor page
+    } else {
+      alert('Incorrect OTP.');
+    }
+  }
 </script>
 </body>
 </html>

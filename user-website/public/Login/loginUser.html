@@ -3,272 +3,335 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>User Login & Registration</title>
+<title>User Login</title>
 <style>
-  /* Basic styling for modals and buttons */
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f2f2f2;
-  }
+  /* Modal styles */
   .modal {
     display: none; 
     position: fixed; 
     z-index: 2000; 
-    left: 0; top: 0;
-    width: 100%; height: 100%; overflow: auto;
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
     background-color: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .modal-content {
-    background: #fff; margin: 15% auto; padding: 20px; border-radius: 8px; width: 350px; text-align: center;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    max-width: 90%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: center;
   }
-  input[type="email"], input[type="password"], input[type="text"] {
-    width: 80%; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px;
+  .modal input {
+    width: 80%;
+    padding: 8px;
+    margin-top: 10px;
   }
-  button {
-    margin-top: 15px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;
+  .modal button {
+    margin-top: 15px;
+    padding: 8px 12px;
+    cursor: pointer;
   }
-  #notification {
-    position: fixed; top: 20px; right: 20px; padding: 10px 20px; border-radius: 4px; display: none; z-index: 9999;
+  /* Buttons styling for User and Admin */
+  #buttonContainer {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
   }
-  #notification.success { background-color: #4CAF50; color: #fff; }
-  #notification.error { background-color: #f44336; color: #fff; }
+  .redirectBtn {
+    background-color: red;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .redirectBtn:hover {
+    opacity: 0.8;
+  }
+  .notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 5px;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  z-index: 1000;
+  opacity: 0.9;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.notification.success {
+  background-color: #4CAF50;
+}
+
+.notification.error {
+  background-color: #f44336;
+}
 </style>
-<!-- Include Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 </head>
 <body>
 
-<!-- Notification container -->
-<div id="notification"></div>
-
-<!-- Main Content: Login/Register Modal -->
-<div id="authModal" class="modal">
-  <div class="modal-content" id="authContainer">
-    <h2 id="authTitle">Login</h2>
-    <div id="authForm"></div>
-    <button id="authActionBtn">Login</button>
-    <p><a href="#" id="toggleAuth">Don't have an account? Register</a></p>
-    <p><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>
+<!-- Login Modal Structure -->
+<div id="loginModal" class="modal">
+  <div class="modal-content">
+    <img src="img/screenshot (251).jpg" alt="Welcome Image" style="width:250px; height:auto; margin-bottom:20px;">
+    <h2>Welcome</h2>
+    <h3>Login</h3>
+    <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
+    <label>Email Address</label>
+    <input type="email" id="loginEmail" placeholder="Email" />
+    <label>Password</label>
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <!-- Updated Forgot Password link -->
+    <a id="loginForgotPassword" href="http://127.0.0.1:5501/user-website/public/Login/forgotpassword.html" target="_blank">Forgot Password</a>
+    
+    <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" id="loginBtn">Login</button>
+    <!-- Buttons for User and Admin -->
+    <div id="buttonContainer">
+      <button class="redirectBtn" id="userBtn">User</button>
+      
+    </div>
   </div>
 </div>
 
-<!-- OTP Verification Modal -->
+<!-- OTP Modal -->
 <div id="otpModal" class="modal">
   <div class="modal-content">
-    <h3>OTP Verification</h3>
-    <p>Enter the 4-digit code sent to your email or phone.</p>
+    <h3>Verify Account</h3>
+    <p>Please enter the OTP number sent to your email to reset your password</p>
     <input type="text" id="otpInput" maxlength="4" placeholder="Enter OTP" />
-    <button id="verifyOtpBtn">Verify</button>
-    <button id="resendOtpBtn">Resend OTP</button>
-  </div>
-</div>
-
-<!-- Password Reset Skeleton Modal -->
-<div id="resetPasswordModal" class="modal">
-  <div class="modal-content">
-    <h3>Reset Password</h3>
-    <p>Enter your email to receive reset instructions.</p>
-    <input type="email" id="resetEmail" placeholder="Email" />
-    <button id="sendResetBtn">Send Reset Email</button>
+    <div style="margin-top:10px;">
+      <button id="verifyOtpBtn">Confirm</button>
+      <button id="resendOtpBtn">Resend OTP</button>
+    </div>
   </div>
 </div>
 
 <script>
-const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'; // your URL
-const supabaseKey = 'YOUR_SUPABASE_PUBLIC_ANON_KEY'; // replace with your key
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-let currentUser = null;
-let otpCode = '';
-let otpTimer = null;
-
-const notification = document.getElementById('notification');
-
-// Utility for notifications
-function showNotification(msg, type='success') {
-  notification.innerText = msg;
-  notification.className = type;
-  notification.style.display = 'block';
-  setTimeout(() => { notification.style.display = 'none'; }, 3000);
-}
-
-// Modal control
-function showModal(id) { document.getElementById(id).style.display='block'; }
-function hideModal(id) { document.getElementById(id).style.display='none'; }
-
-// User data stored in localStorage for demo
-function getUserData() {
-  return JSON.parse(localStorage.getItem('registeredUsers')) || [];
-}
-function saveUserData(user) {
-  const users = getUserData();
-  users.push(user);
-  localStorage.setItem('registeredUsers', JSON.stringify(users));
-}
-
-// Build registration/login form
-let isRegister = false;
-function buildAuthForm() {
-  const container = document.getElementById('authForm');
-  container.innerHTML = '';
-
-  if (isRegister) {
-    document.getElementById('authTitle').innerText = 'Register';
-    document.getElementById('authActionBtn').innerText = 'Register';
-    document.getElementById('toggleAuth').innerText = 'Already have an account? Login';
-    container.innerHTML = `
-      <label>Email</label>
-      <input type="email" id="authEmail" placeholder="Email" />
-      <label>Password</label>
-      <input type="password" id="authPassword" placeholder="Password" />
-      <label>Role</label>
-      <select id="authRole">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-      </select>
-    `;
-  } else {
-    document.getElementById('authTitle').innerText = 'Login';
-    document.getElementById('authActionBtn').innerText = 'Login';
-    document.getElementById('toggleAuth').innerText = "Don't have an account? Register";
-    container.innerHTML = `
-      <label>Email</label>
-      <input type="email" id="authEmail" placeholder="Email" />
-      <label>Password</label>
-      <input type="password" id="authPassword" placeholder="Password" />
-    `;
-  }
-}
-buildAuthForm();
-
-// Toggle between Login/Register
-document.getElementById('toggleAuth').addEventListener('click', e => {
-  e.preventDefault();
-  isRegister = !isRegister;
-  buildAuthForm();
-});
-
-// Login/Register submit handler
-document.getElementById('authActionBtn').addEventListener('click', async () => {
-  const email = document.getElementById('authEmail').value.trim().toLowerCase();
-  const password = document.getElementById('authPassword').value.trim();
-  if (isRegister) {
-    // Register new user
-    const role = document.getElementById('authRole').value;
-    const users = getUserData();
-    if (users.some(u => u.email === email)) {
-      showNotification('Email already registered.', 'error');
-      return;
+ // Function to send SMS via backend API
+ function sendSms(toNumber, message) {
+  fetch('http://localhost:3000/send-sms', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ to: toNumber, message: message })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if(data.success) {
+      // Show success notification
+      showNotification('SMS sent successfully.', 'success');
+    } else {
+      // Show failure notification with error message
+      showNotification('Failed to send SMS: ' + data.error, 'error');
     }
-    saveUserData({ email, password, role, approved: role !== 'user' }); // admin auto-approve for demo
-    showNotification('Registration successful. Please login.');
-    isRegister = false;
-    buildAuthForm();
-  } else {
-    // Login process
-    const users = getUserData();
-    const user = users.find(u => u.email === email);
-    if (!user || user.password !== password) {
-      showNotification('Invalid credentials.', 'error');
-      return;
-    }
-    currentUser = user;
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    if (user.role === 'admin') {
-      window.location.href = 'admin_dashboard.html'; // your admin page
-    } else if (user.role === 'user') {
-      if (user.approved) {
-        window.location.href = 'user_mainpage.html'; // your user page
-      } else {
-        generateAndSendOtp(user);
-        showModal('otpModal');
-      }
-    }
-  }
-});
-
-// OTP Verification logic (placeholder for Twilio integration)
-function generateAndSendOtp(user) {
-  otpCode = Math.floor(1000 + Math.random() * 9000).toString();
-  alert(`OTP sent to ${user.email} (simulate). OTP: ${otpCode}`);
-  // TODO: Call your backend API to send OTP via Twilio
-}
-
-document.getElementById('verifyOtpBtn').addEventListener('click', () => {
-  const entered = document.getElementById('otpInput').value.trim();
-  if (entered === otpCode) {
-    alert('OTP verified! Your account is now approved.');
-    // Mark user as approved
-    currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    currentUser.approved = true;
-    // Save updated user data
-    const users = getUserData();
-    const index = users.findIndex(u => u.email === currentUser.email);
-    if (index !== -1) {
-      users[index] = currentUser;
-      localStorage.setItem('registeredUsers', JSON.stringify(users));
-    }
-    hideModal('otpModal');
-    // Redirect to user page
-    window.location.href='user_mainpage.html';
-  } else {
-    alert('Incorrect OTP.');
-  }
-});
-
-document.getElementById('resendOtpBtn').addEventListener('click', () => {
-  if (currentUser) generateAndSendOtp(currentUser);
-});
-
-// Forgot Password link
-document.getElementById('forgotPasswordLink').addEventListener('click', () => {
-  showModal('resetPasswordModal');
-});
-
-// Send password reset
-document.getElementById('sendResetBtn').addEventListener('click', async () => {
-  const email = document.getElementById('resetEmail').value.trim().toLowerCase();
-  if (!email) {
-    showNotification('Please enter your email.', 'error');
-    return;
-  }
-  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'user_reset_password.html' // your reset page
+  })
+  .catch(() => {
+    // Show error notification if fetch fails
+    showNotification('Error sending SMS.', 'error');
   });
-  if (error) {
-    showNotification('Error: ' + error.message, 'error');
-  } else {
-    showNotification('Password reset email sent.');
-    hideModal('resetPasswordModal');
+}
+
+// Helper function to display notifications
+function showNotification(message, type) {
+  // Create a notification element
+  const notification = document.createElement('div');
+  notification.innerText = message;
+  notification.className = `notification ${type}`; // style based on type
+  
+  // Append to body or a specific container
+  document.body.appendChild(notification);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    document.body.removeChild(notification);
+  }, 3000);
+}
+
+// Check message status
+function checkMessageStatus(messageSid, callback) {
+  fetch('http://localhost:3001/twilio-message-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messageSid }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (callback) callback(data);
+  })
+  .catch(() => {
+    showNotificationMessage('Error fetching message status.', '#f44336');
+  });
+}
+
+// Fetch message logs
+function fetchMessageLogs(limit = 10, callback) {
+  fetch(`http://localhost:3001/twilio-message-logs`)
+    .then(res => res.json())
+    .then(data => {
+      if (callback) callback(data);
+    })
+    .catch(() => {
+      showNotificationMessage('Error fetching message logs.', '#f44336');
+    });
+}
+function onSendSuccess(sid) {
+  console.log(`Message sent successfully. SID: ${sid}`);
+  showNotificationMessage(`Message sent! SID: ${sid}`, '#4CAF50');
+}
+function onSendFailure(error) {
+  console.error('Failed to send message:', error);
+  showNotificationMessage(`Failed to send message: ${error}`, '#f44336');
+}
+function onStatusUpdate(statusData) {
+  console.log('Message status update:', statusData);
+  showNotificationMessage(`Status: ${statusData.status} for SID: ${statusData.sid}`, '#2196F3');
+}
+function onError(errorMsg) {
+  console.error('Error:', errorMsg);
+  showNotificationMessage(`Error: ${errorMsg}`, '#f44336');
+}
+function monitorMessageStatus(sid) {
+  const intervalId = setInterval(() => {
+    checkMessageStatus(sid, (statusData) => {
+      onStatusUpdate(statusData);
+      if (statusData.status === 'delivered' || statusData.status === 'failed') {
+        clearInterval(intervalId);
+      }
+    });
+  }, 5000); // check every 5 seconds
+}
+
+
+  const driverData = JSON.parse(localStorage.getItem('registeredUser')) || {};
+  let driverApproved = false; // Set to true when admin approves
+  let generatedOtp = '';
+
+  let userType = null; // 'user' or 'admin'
+
+  // Utility functions
+  function showModal(id) { 
+    document.getElementById(id).style.display='flex'; // Use flex for centering
   }
-});
-async function sendOTP() {
-    const phone = document.getElementById('phone').value;
-    await fetch('/send-verification', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ phoneNumber: phone })
-    });
-    alert('Code Sent!');
-}
+  function hideModal(id) { document.getElementById(id).style.display='none'; }
 
-async function verifyOTP() {
-    const phone = document.getElementById('phone').value;
-    const code = document.getElementById('code').value;
-    const response = await fetch('/verify-otp', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ phoneNumber: phone, code: code })
-    });
-    const result = await response.json();
-    alert(result.verified ? 'Verified!' : 'Invalid Code');
-}
+  // OTP functions
+  function generateAndSendOtp() {
+    generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+    alert(`OTP sent to Email: ${driverData.email}. (OTP: ${generatedOtp})`);
 
-// On page load
-window.onload = () => {
-  // Show login modal initially
-  document.getElementById('authModal').style.display='block';
-};
+    // Send OTP via your backend endpoint (which uses Twilio)
+  fetch('/send-otp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      phoneNumber: driverData.contact, // or the phone number you want to send to
+      otp: generatedOtp
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(`OTP sent to ${driverData.contact}.`);
+    } else {
+      alert('Failed to send OTP.');
+    }
+  })
+  .catch(() => {
+    alert('Error sending OTP.');
+  });
+
+  }
+  function showOtp() {
+    document.getElementById('otpModal').style.display='flex';
+    document.getElementById('otpInput').value='';
+  }
+  function hideOtp() {
+    document.getElementById('otpModal').style.display='none';
+  }
+
+  // Fix for User button to redirect to the specified URL
+  document.getElementById('userBtn').addEventListener('click', () => {
+    window.location.href='http://127.0.0.1:5501/user-website/public/mainpage.html';
+  });
+
+  document.getElementById('adminBtn').addEventListener('click', () => {
+    userType='admin';
+    showModal('loginModal');
+  });
+
+  document.getElementById('loginBtn').addEventListener('click', () => {
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password = document.getElementById('loginPassword').value.trim();
+
+    if (userType === 'user') {
+      // Check driver credentials
+      if (driverData.email && driverData.email.toLowerCase()===email && driverData.password===password) {
+        localStorage.setItem('currentUser', JSON.stringify(driverData));
+        if (driverApproved) {
+          window.location.href='http://127.0.0.1:5501/user-website/public/mainpage.html';
+        } else {
+          generateAndSendOtp();
+          showOtp();
+        }
+      } else {
+        alert('Invalid driver credentials.');
+      }
+    } 
+
+    // Reset userType
+    userType=null;
+  });
+
+  document.getElementById('verifyOtpBtn').addEventListener('click', () => {
+    const enteredOtp = document.getElementById('otpInput').value.trim();
+    if (enteredOtp===generatedOtp) {
+      alert('OTP verified! Please wait for admin approval.');
+      hideOtp();
+      if (driverApproved) {
+        window.location.href='http://127.0.0.1:5501/user-website/public/mainpage.html';
+      } else {
+        alert('Your account is still pending approval.');
+      }
+    } else {
+      alert('Incorrect OTP.');
+    }
+  });
+  document.getElementById('resendOtpBtn').addEventListener('click', () => {
+    generateAndSendOtp();
+    alert('OTP resent.');
+  });
+
+  // Close modal when clicking outside modal content
+  window.onclick = function(event) {
+    const loginModal = document.getElementById('loginModal');
+    const otpModal = document.getElementById('otpModal');
+    if (event.target === loginModal) {
+      hideModal('loginModal');
+    }
+    if (event.target === otpModal) {
+      hideModal('otpModal');
+    }
+  };
+
+  // Show the login modal automatically on page load
+  window.onload = function() {
+    showModal('loginModal');
+  };
 </script>
 </body>
 </html>

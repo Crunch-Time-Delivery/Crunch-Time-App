@@ -1,141 +1,119 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function UserAuth() {
+function UserLogin() {
   const [showLogin, setShowLogin] = useState(true);
   const [showOtp, setShowOtp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
-  const [notification, setNotification] = useState('');
-  const [userRole, setUserRole] = useState(null); // e.g., 'user', 'admin', 'driver'
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [driverData, setDriverData] = useState({});
+  const [driverApproved, setDriverApproved] = useState(false);
+  const [userType, setUserType] = useState(null); // 'user' or 'admin'
 
-  // Hardcoded credentials for testing
-  const hardcodedEmail = 'user@example.com';
-  const hardcodedPassword = 'password123';
+  // Load driver data
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem('registeredUser')) || {};
+    setDriverData(data);
+  }, []);
+
+  const sendSms = (toNumber, message) => {
+    fetch('http://localhost:3000/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: toNumber, message }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      showNotification(data.success ? 'SMS sent successfully.' : 'Failed to send SMS: ' + data.error, data.success ? 'success' : 'error');
+    })
+    .catch(() => {
+      showNotification('Error sending SMS.', 'error');
+    });
+  };
+
+  const generateAndSendOtp = () => {
+    const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
+    setGeneratedOtp(otpCode);
+    alert(`OTP sent to Email: ${driverData.email}. (OTP: ${otpCode})`);
+    // Send OTP via backend
+    fetch('/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: driverData.contact, otp: otpCode }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) alert(`OTP sent to ${driverData.contact}`);
+      else alert('Failed to send OTP.');
+    })
+    .catch(() => alert('Error sending OTP.'));
+  };
 
   const handleLogin = () => {
-    // Verify credentials
-    if (email === hardcodedEmail && password === hardcodedPassword) {
-      // simulate OTP send
-      setNotification('OTP sent to your email');
-      setShowLogin(false);
-      setShowOtp(true);
-    } else {
-      setNotification('Invalid email or password');
+    if (!userType) {
+      alert('Please select User or Admin.');
+      return;
     }
+    if (userType === 'user') {
+      if (driverData.email?.toLowerCase() === email.toLowerCase() && driverData.password === password) {
+        localStorage.setItem('currentUser', JSON.stringify(driverData));
+        if (driverApproved) {
+          window.location.href = 'http://127.0.0.1:5501/user-website/public/mainpage.html';
+        } else {
+          generateAndSendOtp();
+          setShowOtp(true);
+        }
+      } else {
+        alert('Invalid credentials.');
+      }
+    } else if (userType === 'admin') {
+      if (email === 'crunchtimeadmin' && password === 'crunchtimeadmin') {
+        window.location.href='http://127.0.0.1:5501/driver-app/admin/admin_dashboard.html';
+      } else {
+        alert('Invalid admin credentials.');
+      }
+    }
+    setUserType(null);
   };
 
   const verifyOtp = () => {
-    if (otp === '1234') {
-      setNotification('OTP verified! Login successful.');
-      // Set user role based on backend data (here hardcoded)
-      setUserRole('user'); // or 'admin', 'driver' based on your data
-      // Redirect or show role-based content
+    if (otp === generatedOtp) {
+      alert('OTP verified! Please wait for admin approval.');
+      setShowOtp(false);
+      if (driverApproved) {
+        window.location.href='http://127.0.0.1:5501/user-website/public/mainpage.html';
+      } else {
+        alert('Your account is pending approval.');
+      }
     } else {
-      setNotification('Invalid OTP. Please try again.');
+      alert('Incorrect OTP.');
     }
   };
 
-  const handlePasswordRecovery = () => {
-    // Skeleton: connect to backend for password reset
-    setNotification('Password reset link sent to your email');
-  };
-
-  // Role-based access enforcement (example)
-  const renderRoleBasedContent = () => {
-    if (userRole === 'user') {
-      return <h2>Welcome, User!</h2>;
-    } else if (userRole === 'admin') {
-      return <h2>Admin Dashboard</h2>;
-    } else if (userRole === 'driver') {
-      return <h2>Driver Panel</h2>;
-    }
-    return null;
+  const showNotification = (message, type) => {
+    // Implement notification display
+    alert(`${type.toUpperCase()}: ${message}`);
   };
 
   return (
     <>
-      {/* Notification message */}
-      {notification && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 20,
-            right: 20,
-            backgroundColor: '#333',
-            color: '#fff',
-            padding: '10px 20px',
-            borderRadius: 4,
-            zIndex: 999,
-          }}
-        >
-          {notification}
-        </div>
-      )}
-
       {/* Login Modal */}
       {showLogin && (
-        <div className="modal" style={{ display: 'flex' }}>
-          <div className="modal-content">
-            <img
-              src="img/screenshot (251).jpg"
-              alt="Welcome"
-              style={{ width: 250, marginBottom: 20 }}
-            />
+        <div style={modalStyle} onClick={(e) => { if (e.target === e.currentTarget) setShowLogin(false); }}>
+          <div style={modalContentStyle}>
+            <img src="img/screenshot (251).jpg" alt="Welcome" style={{ width: 250, marginBottom: 20 }} />
             <h2>Welcome</h2>
             <h3>Login</h3>
-            <p>Welcome to CrunchTime halal food delivery. Login to start ordering.</p>
+            <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
             <label>Email Address</label>
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <label>Password</label>
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <a
-              href="#"
-              onClick={handlePasswordRecovery}
-              style={{ display: 'block', marginTop: 10, color: 'blue', cursor: 'pointer' }}
-            >
-              Forgot Password
-            </a>
-            <button
-              style={{
-                marginTop: 20,
-                backgroundColor: 'red',
-                color: '#fff',
-                padding: 10,
-                border: 'none',
-                borderRadius: 5,
-                width: '100%',
-                cursor: 'pointer',
-              }}
-              onClick={handleLogin}
-            >
-              Login
-            </button>
-            <div id="buttonContainer" style={{ marginTop: 20, display: 'flex', justifyContent: 'center' }}>
-              <button
-                className="redirectBtn"
-                onClick={() => alert('Register flow here')}
-                style={{
-                  backgroundColor: 'green',
-                  border: 'none',
-                  padding: '10px 20px',
-                  borderRadius: 5,
-                  color: '#fff',
-                  cursor: 'pointer',
-                }}
-              >
-                Register
-              </button>
+            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <a href="http://127.0.0.1:5501/vendor-website/public/Login/forgotpassword.html" target="_blank" rel="noopener noreferrer" style={forgotStyle}>Forgot Password</a>
+            <button style={loginButtonStyle} onClick={handleLogin}>Login</button>
+            <div style={{ marginTop: 10 }}>
+              <button style={redirectBtnStyle} onClick={() => { setUserType('user'); handleLogin(); }}>User</button>
             </div>
           </div>
         </div>
@@ -143,39 +121,73 @@ function UserAuth() {
 
       {/* OTP Modal */}
       {showOtp && (
-        <div className="modal" style={{ display: 'flex' }}>
-          <div className="modal-content">
+        <div style={modalStyle} onClick={(e) => { if (e.target === e.currentTarget) setShowOtp(false); }}>
+          <div style={modalContentStyle}>
             <h3>Verify Account</h3>
-            <p>Please enter the OTP sent to your email to verify your account</p>
-            <input
-              type="text"
-              maxLength={4}
-              placeholder="Enter OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-            />
-            <div style={{ marginTop: 10, display: 'flex', gap: 10, justifyContent: 'center' }}>
-              <button onClick={verifyOtp} style={{ padding: '8px 12px' }}>
-                Confirm
-              </button>
-              <button
-                onClick={() => {
-                  // Resend OTP logic here
-                  setNotification('OTP resent to your email');
-                }}
-                style={{ padding: '8px 12px' }}
-              >
-                Resend OTP
-              </button>
+            <p>Please enter the OTP number sent to your email to reset your password</p>
+            <input type="text" maxLength={4} placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} />
+            <div style={{ marginTop: 10 }}>
+              <button onClick={verifyOtp}>Confirm</button>
+              <button onClick={() => { generateAndSendOtp(); alert('OTP resent.'); }}>Resend OTP</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Role-based content */}
-      {userRole && renderRoleBasedContent()}
+      {/* Trigger button for demo, remove in real app */}
+      {!showLogin && <button onClick={() => setShowLogin(true)}>Show Login</button>}
     </>
   );
 }
 
-export default UserAuth;
+// Styles (inline for simplicity)
+const modalStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'fixed',
+  zIndex: 2000,
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'rgba(0,0,0,0.4)',
+};
+const modalContentStyle = {
+  backgroundColor: '#fff',
+  padding: 20,
+  borderRadius: 8,
+  width: 300,
+  maxWidth: '90%',
+  boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+  textAlign: 'center',
+};
+const loginButtonStyle = {
+  marginTop: 20,
+  backgroundColor: 'red',
+  color: '#fff',
+  padding: 10,
+  border: 'none',
+  borderRadius: 5,
+  width: '100%',
+  cursor: 'pointer',
+};
+const redirectBtnStyle = {
+  backgroundColor: 'red',
+  color: '#fff',
+  border: 'none',
+  padding: '10px 20px',
+  borderRadius: 5,
+  fontWeight: 'bold',
+  cursor: 'pointer',
+};
+const forgotStyle = {
+  display: 'block',
+  margin: '10px auto',
+  cursor: 'pointer',
+  color: 'blue',
+  textDecoration: 'underline',
+  fontSize: 14,
+};
+
+export default UserLogin;

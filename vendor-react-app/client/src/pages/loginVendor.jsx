@@ -1,135 +1,172 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function VendorAuth() {
+function VendorLogin() {
   const [showLogin, setShowLogin] = useState(true);
-  const [showOTP, setShowOTP] = useState(false);
-  const [email, setEmail] = useState('');
+  const [showOtp, setShowOtp] = useState(false);
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [otp, setOtp] = useState('');
-  const [notification, setNotification] = useState({ message: '', type: '' });
+  const [otpInput, setOtpInput] = useState('');
+  const [currentOTP, setCurrentOTP] = useState('');
+  const [userData, setUserData] = useState({});
+  
+  useEffect(() => {
+    // Load users or driverData from local storage or API
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    setUserData(users);
+    // Generate OTP initially
+    generateOTP();
+  }, []);
 
-  // Hardcoded credentials for testing
-  const hardcodedEmail = 'vendor@example.com';
-  const hardcodedPassword = 'password123';
+  const sendSms = (toNumber, message) => {
+    fetch('http://localhost:3000/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: toNumber, message }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.success ? 'SMS sent successfully.' : 'Failed to send SMS: ' + data.error);
+    })
+    .catch(() => alert('Error sending SMS.'));
+  };
+
+  const generateOTP = () => {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    setCurrentOTP(otp);
+    console.log('Generated OTP:', otp); // For demo
+    // Send OTP via backend
+    fetch('/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: userData.contact, otp }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) alert(`OTP sent to ${userData.contact}`);
+      else alert('Failed to send OTP.');
+    })
+    .catch(() => alert('Error sending OTP.'));
+  };
 
   const handleLogin = () => {
-    // Replace with your actual login/auth logic
-    if (email === hardcodedEmail && password === hardcodedPassword) {
-      // Simulate OTP send
-      setNotification({ message: 'OTP sent to your email', type: 'success' });
-      setShowLogin(false);
-      setShowOTP(true);
+    const user = userData.find(u => u.email === username && u.pass === password);
+    if (user) {
+      localStorage.setItem('vendorLoggedIn', 'true');
+      generateOTP();
+      setShowOtp(true);
     } else {
-      setNotification({ message: 'Invalid credentials', type: 'error' });
+      alert('Invalid credentials.');
     }
   };
 
   const verifyOTP = () => {
-    // Replace with your OTP verification logic
-    if (otp === '123456') {
-      setNotification({ message: 'Login successful!', type: 'success' });
-      // Redirect or fetch user data, roles etc.
+    if (otpInput.trim() === currentOTP) {
+      alert('OTP verified! Redirecting...');
+      setShowOtp(false);
+      // Redirect to vendor page
+      window.location.href = 'http://127.0.0.1:5501/vendor-website/public/mainpage.html';
     } else {
-      setNotification({ message: 'Invalid OTP', type: 'error' });
+      alert('Incorrect OTP.');
     }
   };
 
-  const handlePasswordRecovery = () => {
-    // Placeholder for password recovery logic
-    setNotification({ message: 'Password recovery link sent!', type: 'success' });
-  };
-
-  // Role-based access example (placeholder)
-  const userRole = 'vendor'; // fetch this from your backend after login
-
   return (
-    <div className="window-container">
-      {/* Notification */}
-      {notification.message && (
-        <div
-          className={`notification ${notification.type}`}
-          style={{ position: 'fixed', top: 20, right: 20 }}
-        >
-          {notification.message}
-        </div>
-      )}
-
-      {/* OTP Modal */}
-      {showOTP && (
-        <div className="modal" style={{ display: 'flex' }}>
-          <div className="modal-box">
-            <img src="img/screenshot (253).jpg" alt="Welcome Image" />
-            <h3>Verify Account</h3>
-            <p>Please enter the OTP sent to your email to verify your account</p>
-            <input
-              placeholder="OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-            />
-            <button
-              style={{ background: '#f80202', color: '#fff' }}
-              onClick={verifyOTP}
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
-      )}
-
+    <div>
       {/* Login Modal */}
       {showLogin && (
-        <div className="modal" style={{ display: 'flex' }}>
-          <div className="modal-box">
-            <img src="img/screenshot (253).jpg" alt="Welcome Image" />
+        <div style={modalStyle} onClick={(e) => { if(e.target===e.currentTarget) setShowLogin(false); }}>
+          <div style={modalContentStyle}>
+            <img src="img/screenshot (253).jpg" alt="Welcome" style={{ width: 250, marginBottom: 20 }} />
             <h3>Welcome</h3>
-            <p>For vendors, manage your orders in real time.</p>
-            <label htmlFor="email">Email Address</label>
+            <p>For vendors Manage your orders in real time.</p>
+            <label>Email Address</label>
             <input
-              id="email"
               placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
-            <label htmlFor="password">Password</label>
+            <label>Password</label>
             <input
-              id="password"
               placeholder="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
             <a
-              id="loginForgotPassword"
-              href="#"
-              onClick={handlePasswordRecovery}
+              href="http://127.0.0.1:5501/vendor-website/public/Login/forgotpassword.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'block', margin: '10px auto', cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
             >
               Forgot Password
             </a>
-            <button
-              style={{ background: '#f40101', color: '#fff' }}
-              onClick={handleLogin}
-            >
-              Login
-            </button>
+            <button style={loginBtnStyle} onClick={handleLogin}>Login</button>
             <p>Don't have an account? Register here</p>
-            <div id="bottomButtons">
-              <button className="redirect-btn" id="vendorBtn" onClick={() => alert('Register flow here')}>
-                Register
-              </button>
-            </div>
+            <button style={{...redirectBtnStyle, marginTop: 10}} onClick={() => window.location.href='http://127.0.0.1:5501/vendor-website/public/mainpage.html'}>Vendor</button>
           </div>
         </div>
       )}
 
-      {/* Role-based content example */}
-      {userRole === 'vendor' && (
-        <div>
-          <h2>Vendor Dashboard</h2>
-          {/* Your vendor-specific components */}
+      {/* OTP Modal */}
+      {showOtp && (
+        <div style={modalStyle} onClick={(e) => { if(e.target===e.currentTarget) setShowOtp(false); }}>
+          <div style={modalContentStyle}>
+            <h3>Verify Account</h3>
+            <p>Please enter the OTP sent to your email to verify your account</p>
+            <input
+              placeholder="OTP"
+              maxLength={6}
+              value={otpInput}
+              onChange={(e) => setOtpInput(e.target.value)}
+            />
+            <button style={{ ...buttonStyle, backgroundColor:'#f80202' }} onClick={verifyOTP}>Confirm</button>
+            <button style={buttonStyle} onClick={() => { generateOTP(); alert('OTP resent.'); }}>Resend OTP</button>
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-export default VendorAuth;
+// Styles
+const modalStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'fixed',
+  top: 0, left: 0,
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  zIndex: 999,
+};
+const modalContentStyle = {
+  background: '#fff',
+  padding: 20,
+  borderRadius: 8,
+  maxWidth: 350,
+  width: '90%',
+  textAlign: 'center',
+  boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+};
+const buttonStyle = {
+  width: '100%',
+  padding: 10,
+  border: 'none',
+  borderRadius: 4,
+  cursor: 'pointer',
+  fontWeight: 'bold',
+  marginTop: 10,
+};
+const loginBtnStyle = {
+  ...buttonStyle,
+  backgroundColor: '#f40101',
+  color: '#fff',
+};
+const redirectBtnStyle = {
+  ...buttonStyle,
+  backgroundColor: '#f80303',
+  color: '#fff',
+};
+
+export default VendorLogin;

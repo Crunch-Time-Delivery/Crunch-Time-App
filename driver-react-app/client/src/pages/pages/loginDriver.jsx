@@ -1,312 +1,182 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function App() {
-  // Simulated user list
-  const [users, setUsers] = useState([
-    { email: 'driver1@example.com', pass: 'driver123', role: 'driver', approved: false },
-  ]);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [showOTP, setShowOTP] = useState(false);
+function DriverLogin() {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
-  const [generatedOTP, setGeneratedOTP] = useState('');
-  const [isRegister, setIsRegister] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [passInput, setPassInput] = useState('');
-  const [roleInput, setRoleInput] = useState('driver');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [driverData, setDriverData] = useState({});
+  const [driverApproved, setDriverApproved] = useState(false);
+  const [userType, setUserType] = useState(null);
+  
+  // Load driver data from local storage on mount
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem('registeredUser')) || {};
+    setDriverData(data);
+  }, []);
 
-  // Notification state
-  const [notification, setNotification] = useState({ message: '', type: '' });
-  const [showResetModal, setShowResetModal] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
-
-  const showNotification = (msg, type='success') => {
-    setNotification({ message: msg, type });
-    setTimeout(() => setNotification({ message: '', type: '' }), 3000);
+  const showNotification = (message, type) => {
+    // Implement your notification logic or use a library
+    alert(`${type.toUpperCase()}: ${message}`);
   };
 
-  const handleAuth = () => {
-    if (isRegister) {
-      if (users.some(u => u.email === emailInput)) {
-        showNotification('Email already exists', 'error');
-        return;
-      }
-      const newUser = {
-        email: emailInput,
-        pass: passInput,
-        role: roleInput,
-        approved: roleInput !== 'driver'
-      };
-      setUsers([...users, newUser]);
-      showNotification('Registration successful! Please login.');
-      setIsRegister(false);
-    } else {
-      // Remove admin code, only user login
-      const user = users.find(u => u.email === emailInput && u.pass === passInput);
-      if (user) {
-        setCurrentUser(user);
-        if (user.role === 'driver') {
-          if (user.approved) {
-            window.location.href = '/driver_mainpage'; // your driver page
-          } else {
-            generateOTP();
-            setShowOTP(true);
-          }
+  const sendSms = (toNumber, message) => {
+    fetch('http://localhost:3000/send-sms', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ to: toNumber, message }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) showNotification('SMS sent successfully.', 'success');
+      else showNotification('Failed to send SMS: ' + data.error, 'error');
+    })
+    .catch(() => showNotification('Error sending SMS.', 'error'));
+  };
+
+  const generateAndSendOtp = () => {
+    const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
+    setGeneratedOtp(otpCode);
+    alert(`OTP sent to Email: ${driverData.email}. (OTP: ${otpCode})`);
+    fetch('/send-otp', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ phoneNumber: driverData.contact, otp: otpCode }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) alert(`OTP sent to ${driverData.contact}`);
+      else alert('Failed to send OTP.');
+    })
+    .catch(() => alert('Error sending OTP.'));
+  };
+
+  const handleLogin = () => {
+    if (!userType) {
+      alert('Please select Driver or Admin login.');
+      return;
+    }
+    if (userType === 'driver') {
+      if (driverData.email?.toLowerCase() === email.toLowerCase() && driverData.password === password) {
+        localStorage.setItem('currentUser', JSON.stringify(driverData));
+        if (driverApproved) {
+          window.location.href = 'http://127.0.0.1:5500/driver-app/index.html';
+        } else {
+          generateAndSendOtp();
+          setShowOtpModal(true);
         }
       } else {
-        showNotification('Invalid credentials', 'error');
+        alert('Invalid driver credentials.');
+      }
+    } else if (userType === 'admin') {
+      const adminUsername = 'admin';
+      const adminPassword = 'adminpass';
+      if (email === adminUsername && password === adminPassword) {
+        window.location.href='http://127.0.0.1:5501/driver-app/admin/admin_dashboard.html';
+      } else {
+        alert('Invalid admin credentials.');
       }
     }
   };
 
-  const generateOTP = () => {
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOTP(otpCode);
-    alert(`OTP (demo): ${otpCode}`); // Replace with real SMS API
-  };
-
-  const verifyOTP = () => {
-    if (otp === generatedOTP) {
-      alert('OTP verified! Account approved.');
-      const updatedUser = { ...currentUser, approved: true };
-      setCurrentUser(updatedUser);
-      setUsers(prev => prev.map(u => u.email === updatedUser.email ? updatedUser : u));
-      setShowOTP(false);
-      window.location.href = '/driver_mainpage'; // your driver page
+  const verifyOtp = () => {
+    if (otp === generatedOtp) {
+      alert('OTP verified! Awaiting admin approval...');
+      setShowOtpModal(false);
+      if (driverApproved) {
+        alert('Login successful! Accessing driver dashboard...');
+        if (userType === 'driver') {
+          window.location.href='http://127.0.0.1:5501/driver-website/public/mainpage.html';
+        }
+      }
     } else {
       alert('Incorrect OTP.');
     }
   };
 
-  const resendOTP = () => {
-    generateOTP();
-    alert('OTP resent.');
-  };
-function OTPComponent() {
-  const [phone, setPhone] = useState('');
-  const [code, setCode] = useState('');
-  const [message, setMessage] = useState('');
-
-  const sendOTP = async () => {
-    try {
-      await fetch('/send-verification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: phone }),
-      });
-      setMessage('Code Sent!');
-    } catch (error) {
-      setMessage('Failed to send code.');
-    }
-  };
-
-  const verifyOTP = async () => {
-    try {
-      const response = await fetch('/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: phone, code: code }),
-      });
-      const result = await response.json();
-      setMessage(result.verified ? 'Verified!' : 'Invalid Code');
-    } catch (error) {
-      setMessage('Verification failed.');
-    }
-  };
-
   return (
     <div>
-      <input
-        type="text"
-        placeholder="Phone number"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-      />
-      <button onClick={sendOTP}>Send OTP</button>
-
-      <input
-        type="text"
-        placeholder="Enter OTP"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-      />
-      <button onClick={verifyOTP}>Verify OTP</button>
-
-      {message && <p>{message}</p>}
-    </div>
-  );
-}
-
-  const handlePasswordReset = () => {
-    alert('Password reset link sent (simulate).');
-    setShowResetModal(false);
-  };
-
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      {/* Notification */}
-      {notification.message && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          padding: '12px 20px',
-          backgroundColor: notification.type === 'success' ? '#4CAF50' : '#f44336',
-          color: '#fff',
-          borderRadius: '5px',
-          zIndex: 999,
-        }}>
-          {notification.message}
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="modal" style={modalStyle}>
+          <div className="modal-content" style={modalContentStyle}>
+            <img src="img/screenshot (251).jpg" alt="Welcome" style={{width: '250px', marginBottom: '20px'}} />
+            <h2>Welcome</h2>
+            <h3>Login</h3>
+            <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
+            <label>Email Address</label>
+            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <label>Password</label>
+            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <a href="http://127.0.0.1:5501/vendor-website/public/Login/forgotpassword.html" target="_blank" rel="noopener noreferrer" id="loginForgotPassword">Forgot Password</a>
+            <button style={loginButtonStyle} onClick={handleLogin}>Login</button>
+            <div style={{marginTop: '10px'}}>
+              <button style={driverBtnStyle} onClick={() => window.location.href='http://127.0.0.1:5501/driver-website/public/mainpage.html'}>Driver</button>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* Full focus on Login/Register */}
-      <div style={{
-        width: '90%',
-        maxWidth: '500px',
-        background: '#fff',
-        padding: '40px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-      }}>
-        {/* Header */}
-        <h2 style={{ textAlign: 'center' }}>{isRegister ? 'Register' : 'Login'}</h2>
-        {/* Email */}
-        <div style={{ marginBottom: '10px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Email:</label>
-          <input
-            type="email"
-            style={{ width: '100%', padding: '8px' }}
-            value={emailInput}
-            onChange={(e) => setEmailInput(e.target.value)}
-          />
-        </div>
-        {/* Password */}
-        <div style={{ marginBottom: '10px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Password:</label>
-          <input
-            type="password"
-            style={{ width: '100%', padding: '8px' }}
-            value={passInput}
-            onChange={(e) => setPassInput(e.target.value)}
-          />
-        </div>
-        {/* Role selection during registration */}
-        {isRegister && (
-          <div style={{ marginBottom: '10px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Role:</label>
-            <select
-              style={{ width: '100%', padding: '8px' }}
-              value={roleInput}
-              onChange={(e) => setRoleInput(e.target.value)}
-            >
-              <option value="driver">Driver</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-        )}
-        {/* Submit button */}
-        <button
-          onClick={handleAuth}
-          style={{
-            width: '100%',
-            padding: '10px',
-            backgroundColor: 'red',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            marginTop: '10px',
-          }}
-        >
-          {isRegister ? 'Register' : 'Login'}
-        </button>
-        {/* Links */}
-        <div style={{ marginTop: '10px', textAlign: 'center' }}>
-          <a
-            href="#"
-            onClick={(e) => { e.preventDefault(); setIsRegister(!isRegister); }}
-            style={{ display: 'block', marginBottom: '8px', fontSize: '0.9em', color: 'blue' }}
-          >
-            {isRegister ? 'Already have an account? Login' : "Don't have an account? Register"}
-          </a>
-          <a
-            href="#"
-            onClick={(e) => { e.preventDefault(); setShowResetModal(true); }}
-            style={{ fontSize: '0.9em', color: 'blue' }}
-          >
-            Forgot Password?
-          </a>
-        </div>
-      </div>
 
       {/* OTP Modal */}
-      {showOTP && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.4)',
-          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 999,
-        }}>
-          <div style={{
-            background: '#fff', padding: '20px', borderRadius: '8px', maxWidth: '300px', width: '90%', textAlign: 'center',
-          }}>
-            <h3>Verify OTP</h3>
-            <p>Enter the OTP sent to your email/phone</p>
-            <input
-              type="text"
-              maxLength={6}
-              placeholder="OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              style={{ width: '100%', padding: '8px', margin: '10px 0' }}
-            />
-            <button
-              onClick={verifyOTP}
-              style={{
-                width: '100%', padding: '10px', backgroundColor: 'red', color: '#fff', border: 'none', borderRadius: '4px', marginTop: '10px'
-              }}
-            >
-              Confirm
-            </button>
-            <button
-              onClick={resendOTP}
-              style={{
-                width: '100%', padding: '10px', marginTop: '10px', backgroundColor: '#ccc', border: 'none', borderRadius: '4px'
-              }}
-            >
-              Resend OTP
-            </button>
+      {showOtpModal && (
+        <div className="modal" style={modalStyle}>
+          <div className="modal-content" style={modalContentStyle}>
+            <h3>Verify Account</h3>
+            <p>Please enter the OTP number sent to your email to reset your password</p>
+            <input type="text" maxLength={4} placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} />
+            <div style={{marginTop: '10px'}}>
+              <button onClick={verifyOtp}>Confirm</button>
+              <button onClick={() => { generateAndSendOtp(); alert('OTP resent.'); }}>Resend OTP</button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Password Reset Modal Skeleton */}
-      {showResetModal && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.4)',
-          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 999,
-        }}>
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', maxWidth: '300px', width: '90%', textAlign: 'center' }}>
-            <h3>Password Reset</h3>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={resetEmail}
-              onChange={(e) => setResetEmail(e.target.value)}
-              style={{ width: '100%', padding: '8px', margin: '10px 0' }}
-            />
-            <button
-              onClick={handlePasswordReset}
-              style={{
-                width: '100%', padding: '10px', backgroundColor: 'red', color: '#fff', border: 'none', borderRadius: '4px'
-              }}
-            >
-              Send Reset Email
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Trigger to show login modal */}
+      <button onClick={() => setShowLoginModal(true)}>Open Login</button>
     </div>
   );
 }
 
-export default App;
+// Basic inline styles for modal
+const modalStyle = {
+  display: 'block',
+  position: 'fixed',
+  zIndex: 2000,
+  left: 0, top: 0,
+  width: '100%',
+  height: '100%',
+  overflow: 'auto',
+  backgroundColor: 'rgba(0,0,0,0.4)',
+};
+const modalContentStyle = {
+  backgroundColor: '#fff',
+  margin: '15% auto',
+  padding: '20px',
+  borderRadius: '8px',
+  width: '300px',
+  textAlign: 'center',
+};
+const loginButtonStyle = {
+  marginTop: '20px',
+  backgroundColor: 'red',
+  color: '#fff',
+  padding: '10px',
+  border: 'none',
+  borderRadius: '5px',
+  cursor: 'pointer',
+  width: '100%',
+};
+const driverBtnStyle = {
+  backgroundColor: 'red',
+  color: '#fff',
+  border: 'none',
+  padding: '10px 20px',
+  borderRadius: '5px',
+  fontWeight: 'bold',
+  cursor: 'pointer',
+};
+
+export default DriverLogin;
