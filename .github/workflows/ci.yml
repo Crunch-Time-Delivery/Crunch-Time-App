@@ -7,7 +7,7 @@ on:
   pull_request:
 
 env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  ACTIONS_ALLOW_UNSECURE_NODE_VERSION: true
 
 jobs:
   build:
@@ -33,19 +33,23 @@ jobs:
         run: |
           node -e "
             const fs = require('fs');
-            const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            const allDeps = {...(packageJson.dependencies || {}), ...(packageJson.devDependencies || {})};
-            let invalidNames = [];
-            for (const name of Object.keys(allDeps)) {
-              if (name.startsWith('-')) {
-                invalidNames.push(name);
+            try {
+              const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+              const allDeps = {
+                ... (packageJson.dependencies || {}),
+                ... (packageJson.devDependencies || {})
+              };
+              const invalidNames = Object.keys(allDeps).filter(name => name.startsWith('-'));
+              if (invalidNames.length > 0) {
+                console.error('Invalid package names found:');
+                invalidNames.forEach(name => console.error(\`- '\${name}'\`));
+                process.exit(1);
+              } else {
+                console.log('All package names are valid.');
               }
-            }
-            if (invalidNames.length > 0) {
-              console.error('Invalid package names found:', invalidNames.join(', '));
+            } catch (err) {
+              console.error('Error reading or parsing package.json:', err);
               process.exit(1);
-            } else {
-              console.log('All package names are valid.');
             }
           "
 
