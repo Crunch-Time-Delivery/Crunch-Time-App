@@ -141,6 +141,59 @@ async function sendSmsToAll() {
 // Run the main function
 sendSmsToAll();
 
+// Check message status
+function checkMessageStatus(messageSid, callback) {
+  fetch('http://localhost:3001/twilio-message-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messageSid }),
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (callback) callback(data);
+  })
+  .catch(() => {
+    showNotificationMessage('Error fetching message status.', '#f44336');
+  });
+}
+
+// Fetch message logs
+function fetchMessageLogs(limit = 10, callback) {
+  fetch(`http://localhost:3001/twilio-message-logs`)
+    .then(res => res.json())
+    .then(data => {
+      if (callback) callback(data);
+    })
+    .catch(() => {
+      showNotificationMessage('Error fetching message logs.', '#f44336');
+    });
+}
+function onSendSuccess(sid) {
+  console.log(`Message sent successfully. SID: ${sid}`);
+  showNotificationMessage(`Message sent! SID: ${sid}`, '#4CAF50');
+}
+function onSendFailure(error) {
+  console.error('Failed to send message:', error);
+  showNotificationMessage(`Failed to send message: ${error}`, '#f44336');
+}
+function onStatusUpdate(statusData) {
+  console.log('Message status update:', statusData);
+  showNotificationMessage(`Status: ${statusData.status} for SID: ${statusData.sid}`, '#2196F3');
+}
+function onError(errorMsg) {
+  console.error('Error:', errorMsg);
+  showNotificationMessage(`Error: ${errorMsg}`, '#f44336');
+}
+function monitorMessageStatus(sid) {
+  const intervalId = setInterval(() => {
+    checkMessageStatus(sid, (statusData) => {
+      onStatusUpdate(statusData);
+      if (statusData.status === 'delivered' || statusData.status === 'failed') {
+        clearInterval(intervalId);
+      }
+    });
+  }, 5000); // check every 5 seconds
+}
 
 
 
@@ -345,35 +398,101 @@ function showSection(sectionId) {
 async function uploadMenu() {
   const restaurantName = document.getElementById('restaurantName').value.trim();
   const fileInput = document.getElementById('menuFile');
+  
   if (!restaurantName || !fileInput.files.length) {
     alert('Please enter restaurant name and select a PDF file.');
     return;
   }
+  
   const file = fileInput.files[0];
+  
+  // Ensure the file is a PDF
+  if (file.type !== 'application/pdf') {
+    alert('Please select a PDF file.');
+    return;
+  }
+
   try {
-    const filePath = `menus/${restaurantName}_${Date.now()}.pdf`;
-    const { data, error } = await supabase.storage.from('menus').upload(filePath, file);
-    if (error) throw error;
-    await supabase.from('restaurant_menus').insert({ restaurant_name: restaurantName, file_path: filePath });
+    // Create a unique file path
+    const timestamp = Date.now();
+    const sanitizedRestaurantName = restaurantName.replace(/\s+/g, '_').toLowerCase();
+    const filePath = `menus/${sanitizedRestaurantName}_${timestamp}.pdf`;
+
+    // Upload the file to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('menus')
+      .upload(filePath, file);
+      
+    if (uploadError) {
+      throw uploadError;
+    }
+    
+    // Insert record into database
+    const { error: insertError } = await supabase
+      .from('restaurant_menus')
+      .insert({ restaurant_name: restaurantName, file_path: filePath });
+      
+    if (insertError) {
+      throw insertError;
+    }
+
     alert('Menu uploaded successfully!');
   } catch (err) {
     console.error('Upload error:', err);
     alert('Error uploading menu: ' + err.message);
   }
 }
-
-// Save Restaurant Info
+// Save Restaurant Info with validation
 async function saveRestaurantInfo() {
   const name = document.getElementById('restName').value.trim();
   const contact = document.getElementById('contact').value.trim();
   const website = document.getElementById('website').value.trim();
   const address = document.getElementById('address').value.trim();
-  if (!name || !contact || !website || !address) {
-    alert('Please fill in all fields.');
+
+  // Basic validation
+  if (!name) {
+    alert('Please enter the restaurant name.');
     return;
   }
+
+  if (!contact) {
+    alert('Please enter the contact information.');
+    return;
+  }
+
+  // Optional: validate contact format (e.g., phone number or email)
+  const contactPattern = /^[\w\s@.-]+$/; // simple pattern, adjust as needed
+  if (!contactPattern.test(contact)) {
+    alert('Please enter a valid contact.');
+    return;
+  }
+
+  if (!website) {
+    alert('Please enter the website.');
+    return;
+  }
+
+  // Optional: validate website URL format
+  const urlPattern = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-./?%&=]*)?$/;
+  if (!urlPattern.test(website)) {
+    alert('Please enter a valid website URL.');
+    return;
+  }
+
+  if (!address) {
+    alert('Please enter the address.');
+    return;
+  }
+
   try {
-    await supabase.from('restaurants').insert({ name, contact, website, address });
+    const { data, error } = await supabase
+      .from('restaurants')
+      .insert({ name, contact, website, address });
+
+    if (error) {
+      throw error;
+    }
+
     alert('Restaurant details saved!');
   } catch (err) {
     console.error('Error saving info:', err);
@@ -381,44 +500,104 @@ async function saveRestaurantInfo() {
   }
 }
 
-// Add Item
+// Add Item with validation
 async function addItem() {
   const vendor = document.getElementById('itemVendor').value.trim();
   const itemName = document.getElementById('itemName').value.trim();
-  const price = parseFloat(document.getElementById('itemPrice').value);
+  const priceValue = document.getElementById('itemPrice').value.trim();
   const stockStatus = document.getElementById('itemStock').value;
-  if (!vendor || !itemName || isNaN(price)) {
-    alert('Please fill all fields correctly.');
+
+  // Validate fields
+  if (!vendor) {
+    alert('Please enter the vendor.');
     return;
   }
+
+  if (!itemName) {
+    alert('Please enter the item name.');
+    return;
+  }
+
+  if (!priceValue || isNaN(priceValue)) {
+    alert('Please enter a valid price.');
+    return;
+  }
+
+  const price = parseFloat(priceValue);
+
+  // Optional: validate stock status
+  const validStockStatuses = ['In Stock', 'Out of Stock', 'Limited'];
+  if (!validStockStatuses.includes(stockStatus)) {
+    alert('Please select a valid stock status.');
+    return;
+  }
+
   try {
-    await supabase.from('items').insert({ vendor, item_name: itemName, price, stock_status: stockStatus });
+    const { data, error } = await supabase
+      .from('items')
+      .insert({ vendor, item_name: itemName, price, stock_status: stockStatus });
+      
+    if (error) {
+      throw error;
+    }
+
     alert('Item added!');
-    renderItems();
+    renderItems(); // Refresh the items list
   } catch (err) {
     console.error('Add item error:', err);
     alert('Error adding item: ' + err.message);
   }
 }
 
-// Save Order (renamed from second addOrder)
+// Save Order with validation
 async function saveOrder() {
   const orderId = document.getElementById('orderId').value.trim();
   const userName = document.getElementById('orderUserName').value.trim();
   const userEmail = document.getElementById('orderUserEmail').value.trim();
-  const amount = parseFloat(document.getElementById('orderAmount').value);
+  const amountValue = document.getElementById('orderAmount').value.trim();
   const vendorName = document.getElementById('vendorName').value.trim();
   const vendorContact = document.getElementById('vendorContact').value.trim();
   const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
 
-  if (!orderId || !userName || !userEmail || isNaN(amount)) {
-    alert('Please fill all fields correctly.');
+  // Basic validation
+  if (!orderId) {
+    alert('Please enter the order ID.');
     return;
   }
+  if (!userName) {
+    alert('Please enter the user name.');
+    return;
+  }
+  if (!userEmail || !validateEmail(userEmail)) {
+    alert('Please enter a valid email address.');
+    return;
+  }
+  if (!amountValue || isNaN(amountValue)) {
+    alert('Please enter a valid amount.');
+    return;
+  }
+
+  const amount = parseFloat(amountValue);
+
   try {
-    await supabase.from('orders').insert({ order_id: orderId, user_name: userName, user_email: userEmail, vendor_name: vendorName, vendor_contact: vendorContact, delivery_address: deliveryAddress, amount });
+    const { data, error } = await supabase
+      .from('orders')
+      .insert({
+        order_id: orderId,
+        user_name: userName,
+        user_email: userEmail,
+        vendor_name: vendorName,
+        vendor_contact: vendorContact,
+        delivery_address: deliveryAddress,
+        amount
+      });
+
+    if (error) {
+      throw error;
+    }
+
     alert('Order added!');
-    renderOrders();
+    renderOrders(); // Refresh the order list
   } catch (err) {
     console.error('Add order error:', err);
     alert('Error adding order: ' + err.message);
