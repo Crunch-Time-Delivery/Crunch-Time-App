@@ -1,0 +1,19 @@
+{
+  "aws": {
+    "region": "us-east-1",
+    "accessKeyId": "YOUR_AWS_ACCESS_KEY_ID",
+    "secretAccessKey": "YOUR_AWS_SECRET_ACCESS_KEY"
+  },
+  "twilio": {
+    "accountSid": "AC031642049dd74fcc581b0fd106936a4f",
+    "authToken": "1447e415a2fc483bd2bfbea57451d55d"
+  },
+  "payfast": {
+    "merchantId": "10004002",
+    "merchantKey": "q1cd2rdny4a53",
+    "testMode": true
+  },
+  "googleMaps": {
+    "apiKey": "AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q"
+  }
+}
