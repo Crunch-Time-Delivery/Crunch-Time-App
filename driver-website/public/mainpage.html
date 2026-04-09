@@ -592,12 +592,10 @@ async function loadDriverHistoryPayment() {
   const container = document.getElementById('innerContent');
   container.innerHTML = `<div class="loading">Loading payment history…</div>`;
   
-  // Simulate delay for UX
   await new Promise(res => setTimeout(res, 1000));
   
   try {
-    // Fetch payment history from your backend API
-    const response = await fetch('/get-payfast-payments'); // Replace with your actual API endpoint
+    const response = await fetch('/get-payfast-payments'); // Your API endpoint
     if (!response.ok) {
       throw new Error(`Failed to fetch payments: ${response.statusText}`);
     }
@@ -608,7 +606,6 @@ async function loadDriverHistoryPayment() {
       return;
     }
 
-    // Build HTML for payment list
     let html = `<h1>Payment History</h1>`;
     for (const p of payments) {
       html += `
@@ -616,7 +613,9 @@ async function loadDriverHistoryPayment() {
           <div><strong>Payment ID:</strong> ${p.id}</div>
           <div><strong>Amount:</strong> R ${parseFloat(p.amount).toFixed(2)}</div>
           <div><strong>Status:</strong> ${p.status}</div>
+          <div><strong>Date:</strong> ${new Date(p.date).toLocaleString()}</div>
           <button onclick="trackPayFast('${p.id}')">Track Payment</button>
+          <button onclick="loadDriverPaymentDetails('${p.id}')">View Details</button>
         </div>
       `;
     }
@@ -626,16 +625,15 @@ async function loadDriverHistoryPayment() {
     container.innerHTML = `<p>Error loading payment history. Please try again later.</p>`;
   }
 }
+
 async function loadPaymentSummary() {
   const summaryContainer = document.getElementById('paymentSummary');
   summaryContainer.innerHTML = `<div class="loading">Loading payment summary…</div>`;
 
-  // Simulate delay
   await new Promise(res => setTimeout(res, 1000));
 
   try {
-    // Fetch payment summary data
-    const response = await fetch('/get-payfast-payment-summary'); // Replace with your API
+    const response = await fetch('/get-payfast-payment-summary');
     if (!response.ok) {
       throw new Error(`Failed to fetch payment summary: ${response.statusText}`);
     }
@@ -646,7 +644,6 @@ async function loadPaymentSummary() {
       return;
     }
 
-    // Build HTML for payment summary
     let html = `
       <h2>Payment Summary</h2>
       <div><strong>Total Payments:</strong> R ${parseFloat(summaryData.totalPayments).toFixed(2)}</div>
@@ -659,24 +656,44 @@ async function loadPaymentSummary() {
     summaryContainer.innerHTML = `<p>Error loading payment summary. Please try again later.</p>`;
   }
 }
-// Function to track or update the status of a payment
-async function trackPayFast(paymentId) {
+
+// Function to load detailed info for a specific payment
+async function loadDriverPaymentDetails(paymentId) {
+  const container = document.getElementById('innerContent');
+  container.innerHTML = `<div class="loading">Loading payment details…</div>`;
+  
   try {
-    // Call your backend API to verify or update the payment status from PayFast
-    const response = await fetch(`/update-payfast-status/${paymentId}`); // Replace with your API
+    const response = await fetch(`/get-payfast-payment-details/${paymentId}`); // Your API
     if (!response.ok) {
-      throw new Error(`Failed to update payment status: ${response.statusText}`);
+      throw new Error(`Failed to fetch payment details: ${response.statusText}`);
     }
-    const result = await response.json();
+    const details = await response.json();
 
-    // Refresh payment history after update
-    await loadDriverHistoryPayment();
+    if (!details) {
+      container.innerHTML = `<p>No details available for payment ID ${paymentId}.</p>`;
+      return;
+    }
 
-    alert(`Payment ${paymentId} status updated: ${result.status}`);
+    const html = `
+      <h2>Payment Details for ID: ${paymentId}</h2>
+      <p><strong>Amount:</strong> R ${parseFloat(details.amount).toFixed(2)}</p>
+      <p><strong>Status:</strong> ${details.status}</p>
+      <p><strong>Date:</strong> ${new Date(details.date).toLocaleString()}</p>
+      <p><strong>Transaction Reference:</strong> ${details.transactionReference}</p>
+      <p><strong>Customer Name:</strong> ${details.customerName}</p>
+      <p><strong>Customer Email:</strong> ${details.customerEmail}</p>
+      <button onclick="loadDriverHistoryPayment()">Back to Payment History</button>
+    `;
+    container.innerHTML = html;
   } catch (error) {
-    console.error('Error tracking payment:', error);
-    alert('Failed to update payment status. Please try again.');
+    console.error('Error loading payment details:', error);
+    container.innerHTML = `<p>Error loading payment details. Please try again later.</p>`;
   }
+}
+
+// Function to refresh payment history
+async function refreshPaymentHistory() {
+  await loadDriverHistoryPayment();
 }
 function loadOrderView() {
   const container = document.getElementById('innerContent');
