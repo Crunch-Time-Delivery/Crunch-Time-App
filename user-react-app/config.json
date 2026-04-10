@@ -17,3 +17,9 @@
     "apiKey": "AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q"
   }
 }
+{
+  "trackerName": "DriverTracker",
+  "deviceId": "",
+  "initialPosition": ,
+  "region": "us-east-1"
+}
