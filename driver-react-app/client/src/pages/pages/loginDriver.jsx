@@ -62,7 +62,7 @@ function DriverLogin() {
       if (driverData.email?.toLowerCase() === email.toLowerCase() && driverData.password === password) {
         localStorage.setItem('currentUser', JSON.stringify(driverData));
         if (driverApproved) {
-          window.location.href = 'http://127.0.0.1:5500/driver-app/index.html';
+          window.location.href = 'http://127.0.0.1:5501/driver-website/public/mainpage.html';
         } else {
           generateAndSendOtp();
           setShowOtpModal(true);
