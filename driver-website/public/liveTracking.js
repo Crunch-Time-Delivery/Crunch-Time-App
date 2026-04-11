@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { LocationClient, GetDevicePositionCommand } from "@aws-sdk/client-location";
 
 function LiveTracking({ userLat, userLng, onLocationChange }) {
   const mapContainerRef = useRef(null);
@@ -6,9 +7,21 @@ function LiveTracking({ userLat, userLng, onLocationChange }) {
   const driverMarkerRef = useRef(null);
   const userMarkerRef = useRef(null);
   const intervalRef = useRef(null);
+  const awsClientRef = useRef(null);
 
+  // Replace with your AWS Location Service details
+  const AWS_REGION = 'your-aws-region'; // e.g., 'us-east-1'
+  const DEVICE_ID = 'your-device-id'; // Your device ID registered in AWS Location
+  const LOCATION_TRACKER_NAME = 'your-location-tracker-name'; // Your tracker name
+
+  // Initialize AWS SDK client
   useEffect(() => {
-    if (!mapRef.current && window.google && mapContainerRef.current) {
+    awsClientRef.current = new LocationClient({ region: AWS_REGION });
+  }, []);
+
+  // Initialize map and fetch driver position from AWS Location
+ useEffect(() => {
+    if (!mapRef.current && window.google && mapContainerRef.current && awsClientRef.current) {
       // Initialize Google Map
       mapRef.current = new window.google.maps.Map(mapContainerRef.current, {
         center: { lat: -33.9129, lng: 18.4179 },
@@ -26,17 +39,31 @@ function LiveTracking({ userLat, userLng, onLocationChange }) {
         },
       });
 
-      // Simulate driver movement
-      intervalRef.current = setInterval(() => {
-        if (driverMarkerRef.current && mapRef.current) {
-          const currentPos = driverMarkerRef.current.getPosition();
-          const newLat = currentPos.lat() + (Math.random() - 0.5) * 0.01;
-          const newLng = currentPos.lng() + (Math.random() - 0.5) * 0.01;
-          const newLatLng = new window.google.maps.LatLng(newLat, newLng);
-          driverMarkerRef.current.setPosition(newLatLng);
-          mapRef.current.panTo(newLatLng);
+      // Function to fetch device position from AWS Location
+      const fetchDevicePosition = async () => {
+        try {
+          const command = new GetDevicePositionCommand({
+            DeviceId: DEVICE_ID,
+            TrackerName: LOCATION_TRACKER_NAME,
+            // Optional: include PositionFilter to limit data
+          });
+          const response = await awsClientRef.current.send(command);
+          if (response.DevicePositions && response.DevicePositions.length > 0) {
+            const position = response.DevicePositions[0].Position;
+            const [lng, lat] = position; // AWS returns [lng, lat]
+            const latLng = new google.maps.LatLng(lat, lng);
+            // Move driver marker
+            driverMarkerRef.current.setPosition(latLng);
+            mapRef.current.panTo(latLng);
+          }
+        } catch (error) {
+          console.error('Error fetching device position:', error);
         }
-      }, 3000);
+      };
+
+      // Fetch driver position immediately and then periodically
+      fetchDevicePosition();
+      intervalRef.current = setInterval(fetchDevicePosition, 5000); // every 5 seconds
     }
 
     // Cleanup interval on unmount
@@ -46,8 +73,9 @@ function LiveTracking({ userLat, userLng, onLocationChange }) {
         intervalRef.current = null;
       }
     };
-  }, []);
+  }, [awsClientRef.current]);
 
+  // Update user marker if userLat and userLng change
   useEffect(() => {
     if (
       typeof userLat === 'number' &&
@@ -79,8 +107,6 @@ function LiveTracking({ userLat, userLng, onLocationChange }) {
       }
     }
   }, [userLat, userLng, onLocationChange]);
-
-  // No need for cleanup of mapRef on unmount
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
