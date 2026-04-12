@@ -147,52 +147,87 @@ const CheckoutOrder = () => {
     document.getElementById('topPinMessage').style.display = 'none';
   };
 
-  // Utility: Notification
-  const showNotification = (text, color = '#333') => {
-    let box = document.getElementById('notificationMessage');
-    if (!box) {
-      box = document.createElement('div');
-      box.id = 'notificationMessage';
-      box.style.position = 'fixed';
-      box.style.bottom = '20px';
-      box.style.left = '50%';
-      box.style.transform = 'translateX(-50%)';
-      box.style.padding = '12px 20px';
-      box.style.borderRadius = '8px';
-      box.style.color = '#fff';
-      box.style.fontSize = '14px';
-      box.style.zIndex = '9999';
-      box.style.transition = 'opacity 0.3s ease';
-      document.body.appendChild(box);
-    }
-    box.style.backgroundColor = color;
-    box.innerText = text;
-    box.style.opacity = '1';
-    if (showNotification.timeoutId) clearTimeout(showNotification.timeoutId);
-    showNotification.timeoutId = setTimeout(() => {
-      box.style.opacity = '0';
-      setTimeout(() => { if (box) box.remove(); }, 300);
-    }, 4000);
+  // NotificationContainer component to display notifications
+function NotificationContainer() {
+  const [notifications, setNotifications] = useState([]);
+  const containerRef = useRef();
+
+  // Function to add a new notification
+  const addNotification = (text, color = '#333', duration = 4000) => {
+    const id = Date.now() + Math.random();
+    setNotifications(prev => [...prev, { id, text, color, duration }]);
   };
 
-  // Example: Call notification
-  const notifyDriver = (phoneNumber, message) => {
-    showNotification(`Notifying driver at ${phoneNumber}...`, '#2196F3');
-    fetch('/send-twilio', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phoneNumber, message }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          showNotification('Driver notified successfully!', '#4CAF50');
-        } else {
-          showNotification('Failed to notify driver.', '#f44336');
-        }
-      });
+  // Function to remove a notification
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  // Expose addNotification globally or via context as needed
+  // For simplicity, attach to window (not recommended for production)
+  useEffect(() => {
+    window.showNotificationMessage = addNotification;
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        zIndex: 9999,
+        gap: '10px'
+      }}
+    >
+      {notifications.map(({ id, text, color, duration }) => (
+        <NotificationBox
+          key={id}
+          id={id}
+          text={text}
+          color={color}
+          duration={duration}
+          onClose={() => removeNotification(id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function NotificationBox({ id, text, color, duration, onClose }) {
+  const [opacity, setOpacity] = useState(0);
+
+  useEffect(() => {
+    // Animate in
+    requestAnimationFrame(() => setOpacity(1));
+    // Auto dismiss
+    const timer = setTimeout(() => {
+      setOpacity(0);
+      setTimeout(() => onClose(), 300); // fade out duration
+    }, duration);
+    return () => clearTimeout(timer);
+  }, [duration, onClose]);
+
+  return (
+    <div
+      style={{
+        backgroundColor: color,
+        color: '#fff',
+        padding: '12px 20px',
+        borderRadius: '8px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+        opacity: opacity,
+        transform: 'translateY(0)',
+        transition: 'opacity 0.3s ease, transform 0.3s ease'
+      }}
+    >
+      {text}
+    </div>
+  );
+}
   // Callbacks for buttons
   const goBack = () => window.history.back();
   const callDriver = () => alert('Calling driver...');

@@ -167,39 +167,64 @@ const supabaseKey =   process.env.SUPABASE_KEY;// Replace with your actual key
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // =================== Notification Functions ===================
-function showNotificationMessage(text, color = '#333') {
-  let box = document.getElementById('notificationMessage');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'notificationMessage';
-    box.style.position = 'fixed';
-    box.style.bottom = '20px';
-    box.style.left = '50%';
-    box.style.transform = 'translateX(-50%)';
-    box.style.padding = '12px 20px';
-    box.style.borderRadius = '8px';
-    box.style.color = '#fff';
-    box.style.fontSize = '14px';
-    box.style.zIndex = '9999';
-    box.style.transition = 'opacity 0.3s ease';
-    document.body.appendChild(box);
+
+// Show notification message with stacking and auto-dismiss
+function showNotificationMessage(text, color = '#333', duration = 4000) {
+  const containerId = 'notificationContainer';
+  let container = document.getElementById(containerId);
+  if (!container) {
+    container = document.createElement('div');
+    container.id = containerId;
+    container.style.position = 'fixed';
+    container.style.bottom = '20px';
+    container.style.right = '20px';
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'flex-end';
+    container.style.zIndex = '9999';
+    container.style.gap = '10px';
+    document.body.appendChild(container);
   }
-  box.style.backgroundColor = color;
+
+  const box = document.createElement('div');
   box.innerText = text;
-  box.style.opacity = '1';
-  if (showNotificationMessage.timeoutId) clearTimeout(showNotificationMessage.timeoutId);
-  showNotificationMessage.timeoutId = setTimeout(() => {
+  box.style.backgroundColor = color;
+  box.style.color = '#fff';
+  box.style.padding = '12px 20px';
+  box.style.borderRadius = '8px';
+  box.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+  box.style.opacity = '0';
+  box.style.transform = 'translateY(0)';
+  box.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+  container.appendChild(box);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    box.style.opacity = '1';
+    box.style.transform = 'translateY(0)';
+  });
+
+  // Auto-dismiss after specified duration
+  setTimeout(() => {
     box.style.opacity = '0';
-    setTimeout(() => { if (box) box.remove(); }, 300);
-  }, 4000);
+    box.style.transform = 'translateY(-10px)';
+    setTimeout(() => {
+      box.remove();
+      // Remove container if empty
+      if (container.children.length === 0) container.remove();
+    }, 300);
+  }, duration);
 }
 
+// Send Twilio notification with basic error handling
 function sendTwilioNotification(phoneNumber, message, callback = null) {
   if (!phoneNumber || !message) {
     showNotificationMessage('Phone number or message missing', '#f44336');
     return;
   }
   showNotificationMessage('Sending notification...', '#2196F3');
+
   fetch('/send-twilio', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

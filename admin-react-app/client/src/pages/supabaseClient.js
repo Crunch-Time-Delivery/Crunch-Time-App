@@ -89,8 +89,8 @@ export async function updateVersion(table, id, newVersion) {
 
 // ======================== Edge Function Calls ============================ //
 
-// Example: Call a Supabase Edge Function for some server-side logic
-export async function callEdgeFunction(functionName, payload) {
+// Call a Supabase Edge Function with optional payload
+export async function callEdgeFunction(functionName, payload = {}) {
   const url = `${supabaseUrl}/functions/v1/${functionName}`;
   try {
     const response = await fetch(url, {
@@ -102,6 +102,13 @@ export async function callEdgeFunction(functionName, payload) {
       },
       body: JSON.stringify(payload),
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Edge Function ${functionName} responded with status ${response.status}:`, errorText);
+      return null;
+    }
+
     const result = await response.json();
     return result;
   } catch (err) {

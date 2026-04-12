@@ -273,238 +273,245 @@ function saveInStorage() {
     localStorage.setItem('categoriesData', JSON.stringify(categoriesData));
     alert(`Category "${category}" updated to list ID "${listId}"`);
   });
-function showLoading() {
-  let loader = document.getElementById('loadingIndicator');
-  if (!loader) {
-    loader = document.createElement('div');
-    loader.id = 'loadingIndicator';
-    loader.innerHTML = 'Loading...'; // Style as needed
-    loader.style.position = 'fixed';
-    loader.style.top = '50%';
-    loader.style.left = '50%';
-    loader.style.transform = 'translate(-50%, -50%)';
-    loader.style.padding = '20px';
-    loader.style.backgroundColor = '#fff';
-    loader.style.border = '1px solid #ccc';
-    loader.style.borderRadius = '8px';
-    loader.style.zIndex = '99999';
-    document.body.appendChild(loader);
+// Show loading indicator with fade-in effect
+  function showLoading() {
+    let loader = document.getElementById('loadingIndicator');
+    if (!loader) {
+      loader = document.createElement('div');
+      loader.id = 'loadingIndicator';
+      loader.innerHTML = 'Loading...'; // Style as needed
+      loader.style.position = 'fixed';
+      loader.style.top = '50%';
+      loader.style.left = '50%';
+      loader.style.transform = 'translate(-50%, -50%)';
+      loader.style.padding = '20px';
+      loader.style.backgroundColor = '#fff';
+      loader.style.border = '1px solid #ccc';
+      loader.style.borderRadius = '8px';
+      loader.style.zIndex = '99999';
+      loader.style.opacity = '0';
+      loader.style.transition = 'opacity 0.3s ease';
+      document.body.appendChild(loader);
+    }
+    loader.style.display = 'block';
+    // Trigger fade-in
+    setTimeout(() => { loader.style.opacity = '1'; }, 10);
   }
-  loader.style.display = 'block';
-}
-function validateForm(fields) {
-  for (const field of fields) {
-    const el = document.getElementById(field);
-    if (!el.value.trim()) {
-      alert(`Please fill out the ${field} field.`);
-      el.focus();
-      return false;
+
+  // Hide loading indicator with fade-out effect
+  function hideLoading() {
+    const loader = document.getElementById('loadingIndicator');
+    if (loader) {
+      loader.style.opacity = '0';
+      setTimeout(() => { if (loader) loader.style.display = 'none'; }, 300);
     }
   }
-  return true;
-}
 
-function resetForm(formId) {
-  document.getElementById(formId).reset();
-}
-function hideLoading() {
-  const loader = document.getElementById('loadingIndicator');
-  if (loader) {
-    loader.style.display = 'none';
+  // Validate form fields with custom messages
+  function validateForm(fields) {
+    for (const field of fields) {
+      const el = document.getElementById(field.name);
+      if (!el) continue; // Skip if element not found
+      if (!el.value.trim()) {
+        alert(field.message || `Please fill out the ${field.name} field.`);
+        el.focus();
+        return false;
+      }
+    }
+    return true;
   }
-}
 
+  // Reset form by ID
+  function resetForm(formId) {
+    document.getElementById(formId)?.reset();
+  }
 
-// ================= SMS NOTIFICATIONS =================
-// Function to display notification messages
-function showNotificationMessage(text, color = '#333') {
-  let box = document.getElementById('notificationMessage');
+  // Show notifications with stacking and auto-dismiss
+  function showNotificationMessage(text, color = '#333', duration = 4000) {
+    const containerId = 'notificationContainer';
+    let container = document.getElementById(containerId);
+    if (!container) {
+      container = document.createElement('div');
+      container.id = containerId;
+      container.style.position = 'fixed';
+      container.style.bottom = '20px';
+      container.style.right = '20px';
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
+      container.style.alignItems = 'flex-end';
+      container.style.zIndex = '9999';
+      container.style.gap = '10px';
+      document.body.appendChild(container);
+    }
 
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'notificationMessage';
-    box.style.position = 'fixed';
-    box.style.bottom = '20px';
-    box.style.left = '50%';
-    box.style.transform = 'translateX(-50%)';
+    const box = document.createElement('div');
+    box.innerText = text;
+    box.style.backgroundColor = color;
+    box.style.color = '#fff';
     box.style.padding = '12px 20px';
     box.style.borderRadius = '8px';
-    box.style.color = '#fff';
-    box.style.fontSize = '14px';
-    box.style.zIndex = '9999';
-    box.style.transition = 'opacity 0.3s ease';
-    document.body.appendChild(box);
-  }
-
-  box.style.backgroundColor = color;
-  box.innerText = text;
-  box.style.opacity = '1';
-
-  // Clear any existing timeout
-  if (showNotificationMessage.timeoutId) {
-    clearTimeout(showNotificationMessage.timeoutId);
-  }
-
-  // Remove the notification after 4 seconds
-  showNotificationMessage.timeoutId = setTimeout(() => {
+    box.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
     box.style.opacity = '0';
-    // Optionally, remove the element after fade out
+    box.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    container.appendChild(box);
+
+    // Animate in
+    requestAnimationFrame(() => {
+      box.style.opacity = '1';
+      box.style.transform = 'translateY(0)';
+    });
+
+    // Auto-dismiss
     setTimeout(() => {
-      if (box) box.remove();
-    }, 300);
-  }, 4000);
-}
-
-// Function to send Twilio notification with connection ID
-function sendTwilioNotification(phoneNumber, message, connectionId = null, callback = null) {
-  if (!phoneNumber || !message) {
-    showNotificationMessage('Phone number or message missing', '#f44336');
-    return;
+      box.style.opacity = '0';
+      box.style.transform = 'translateY(-10px)';
+      setTimeout(() => {
+        box.remove();
+        // Remove container if empty
+        if (container.children.length === 0) container.remove();
+      }, 300);
+    }, duration);
   }
 
-  showNotificationMessage('Sending notification...', '#2196F3');
-
-  fetch('/send-twilio', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ 
-      phoneNumber, 
-      message, 
-      connectionId // Send connection ID if needed
-    })
-  })
-  .then(res => res.json())
- 
-
-
-.then(data => {
-    if (data.success) {
-      showNotificationMessage('Notification sent successfully!', '#4CAF50');
-      if (callback && typeof callback === 'function') callback(true, data);
-    } else {
-      showNotificationMessage('Failed to send notification.', '#f44336');
-      if (callback && typeof callback === 'function') callback(false, data);
+  // Send Twilio notification with retry logic
+  async function sendTwilioNotification(phoneNumber, message, connectionId = null, retries = 3) {
+    if (!phoneNumber || !message) {
+      showNotificationMessage('Phone number or message missing', '#f44336');
+      return;
     }
-    if (data.success) {
-      onSendSuccess(data.sid);
-    } else {
-      onSendFailure(data.error || 'Unknown error');
-    }
-  })
-  .catch(() => {
-    showNotificationMessage('Error sending notification.', '#f44336');
-    if (callback && typeof callback === 'function') callback(false);
- onError('Network or server error');
-  });
 
-}
+    showNotificationMessage('Sending notification...', '#2196F3');
 
-// Example function to fetch phone numbers
-async function fetchPhoneNumbers() {
-  const { data, error } = await supabase
-    .from('vendor') // replace with your table name
-    .select('phone_number'); // replace with your column name
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch('/send-twilio', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber, message, connectionId })
+        });
+        const data = await response.json();
 
-  if (error) {
-    console.error('Error fetching phone numbers:', error);
-    return [];
-  }
-  return data.map(row => row.phone_number);
-}
-
-// Example function to send SMS to all fetched phone numbers
-async function sendSmsToAll() {
-  const phoneNumbers = await fetchPhoneNumbers();
-  const connectionId = 'your-connection-id'; // Replace with your actual connection ID
-
-  for (const number of phoneNumbers) {
-    await sendTwilioNotification(number, 'Your message here', connectionId);
-  }
-}
-
-// Run the main function
-sendSmsToAll();
-// Send bulk SMS
-async function sendBulkSms(phoneNumbers, message) {
-  for (const number of phoneNumbers) {
-    await sendTwilioNotification(number, message);
-  }
-}
-
-// Check message status
-function checkMessageStatus(messageSid, callback) {
-  fetch('http://localhost:3001/twilio-message-status', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messageSid }),
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (callback) callback(data);
-  })
-  .catch(() => {
-    showNotificationMessage('Error fetching message status.', '#f44336');
-  });
-}
-
-// Fetch message logs
-function fetchMessageLogs(limit = 10, callback) {
-  fetch(`http://localhost:3001/twilio-message-logs`)
-    .then(res => res.json())
-    .then(data => {
-      if (callback) callback(data);
-    })
-    .catch(() => {
-      showNotificationMessage('Error fetching message logs.', '#f44336');
-    });
-}
-function onSendSuccess(sid) {
-  console.log(`Message sent successfully. SID: ${sid}`);
-  showNotificationMessage(`Message sent! SID: ${sid}`, '#4CAF50');
-}
-function onSendFailure(error) {
-  console.error('Failed to send message:', error);
-  showNotificationMessage(`Failed to send message: ${error}`, '#f44336');
-}
-function onStatusUpdate(statusData) {
-  console.log('Message status update:', statusData);
-  showNotificationMessage(`Status: ${statusData.status} for SID: ${statusData.sid}`, '#2196F3');
-}
-function onError(errorMsg) {
-  console.error('Error:', errorMsg);
-  showNotificationMessage(`Error: ${errorMsg}`, '#f44336');
-}
-function monitorMessageStatus(sid) {
-  const intervalId = setInterval(() => {
-    checkMessageStatus(sid, (statusData) => {
-      onStatusUpdate(statusData);
-      if (statusData.status === 'delivered' || statusData.status === 'failed') {
-        clearInterval(intervalId);
+        if (data.success) {
+          showNotificationMessage('Notification sent successfully!', '#4CAF50');
+          if (typeof onSendSuccess === 'function') onSendSuccess(data.sid);
+          return;
+        } else {
+          throw new Error(data.error || 'Unknown error');
+        }
+      } catch (error) {
+        if (attempt === retries) {
+          showNotificationMessage(`Failed to send: ${error.message}`, '#f44336');
+          if (typeof onSendFailure === 'function') onSendFailure(error.message);
+        } else {
+          await new Promise(res => setTimeout(res, 1000 * attempt)); // Exponential backoff
+        }
       }
-    });
-  }, 5000); // check every 5 seconds
-}
-
-// Function to handle checkout order
-function checkout_order(orderId, driverPhoneNumber) {
-  const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
-  notifyDriver(driverPhoneNumber, message);
-}
-
-// Function to notify driver via Twilio SMS
-function notifyDriver(phoneNumber, message) {
-  showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
-
-  sendTwilioNotification(phoneNumber, message, (success, data) => {
-    if (success) {
-      showNotificationMessage(`Driver notified successfully!`, '#4CAF50');
-    } else {
-      showNotificationMessage(`Failed to notify driver.`, '#f44336');
     }
-  });
-}
+  }
+
+  // Fetch phone numbers from database (example)
+  async function fetchPhoneNumbers() {
+    try {
+      const { data, error } = await supabase
+        .from('vendor')
+        .select('phone_number');
+      if (error) throw error;
+      return data.map(row => row.phone_number);
+    } catch (err) {
+      console.error('Error fetching phone numbers:', err);
+      showNotificationMessage('Error fetching phone numbers.', '#f44336');
+      return [];
+    }
+  }
+
+  // Send SMS to all numbers with progress indication
+  async function sendSmsToAll() {
+    const phoneNumbers = await fetchPhoneNumbers();
+    const total = phoneNumbers.length;
+    let successCount = 0;
+    let failCount = 0;
+
+    showNotificationMessage(`Sending messages to ${total} contacts...`, '#2196F3');
+
+    for (let i = 0; i < total; i++) {
+      const number = phoneNumbers[i];
+      try {
+        await sendTwilioNotification(number, 'Your message here', 'your-connection-id');
+        successCount++;
+      } catch {
+        failCount++;
+      }
+      // Optional: update progress
+      showNotificationMessage(`Progress: ${i + 1}/${total} sent`, '#2196F3', 2000);
+    }
+
+    showNotificationMessage(`Completed: ${successCount} succeeded, ${failCount} failed.`, '#4CAF50', 5000);
+  }
+
+  // Check message status periodically
+  function checkMessageStatus(messageSid, callback) {
+    fetch('/twilio-message-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messageSid }),
+    })
+      .then(res => res.json())
+      .then(data => { if (callback) callback(data); })
+      .catch(() => { showNotificationMessage('Error fetching message status.', '#f44336'); });
+  }
+
+  // Fetch message logs
+  function fetchMessageLogs(limit = 10, callback) {
+    fetch(`/twilio-message-logs?limit=${limit}`)
+      .then(res => res.json())
+      .then(data => { if (callback) callback(data); })
+      .catch(() => { showNotificationMessage('Error fetching message logs.', '#f44336'); });
+  }
+
+  // Callbacks for success/failure
+  function onSendSuccess(sid) {
+    console.log(`Message sent successfully. SID: ${sid}`);
+    showNotificationMessage(`Message sent! SID: ${sid}`, '#4CAF50');
+  }
+
+  function onSendFailure(error) {
+    console.error('Failed to send message:', error);
+    showNotificationMessage(`Failed to send message: ${error}`, '#f44336');
+  }
+
+  function onStatusUpdate(statusData) {
+    console.log('Message status update:', statusData);
+    showNotificationMessage(`Status: ${statusData.status} for SID: ${statusData.sid}`, '#2196F3');
+  }
+
+  function onError(errorMsg) {
+    console.error('Error:', errorMsg);
+    showNotificationMessage(`Error: ${errorMsg}`, '#f44336');
+  }
+
+  // Monitor message status
+  function monitorMessageStatus(sid) {
+    const intervalId = setInterval(() => {
+      checkMessageStatus(sid, (statusData) => {
+        onStatusUpdate(statusData);
+        if (statusData.status === 'delivered' || statusData.status === 'failed') {
+          clearInterval(intervalId);
+        }
+      });
+    }, 5000);
+  }
+
+  // Handle checkout order
+  function checkout_order(orderId, driverPhoneNumber) {
+    const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
+    notifyDriver(driverPhoneNumber, message);
+  }
+
+  // Notify driver
+  function notifyDriver(phoneNumber, message) {
+    showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
+    sendTwilioNotification(phoneNumber, message, 'your-connection-id');
+  }
 // Initialize Supabase with your actual key
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
 const supabaseKey = process.env.SUPABASE_KEY; // actual key

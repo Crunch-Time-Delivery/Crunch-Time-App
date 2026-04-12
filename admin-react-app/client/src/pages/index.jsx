@@ -11,7 +11,101 @@ function AdminDashboard() {
   const [profileImage, setProfileImage] = useState('https://via.placeholder.com/40');
 
   const profileImageRef = useRef(null);
+const TwilioNotification = () => {
+  const [notification, setNotification] = useState(null);
+  const timeoutRef = useRef(null);
 
+  const showNotificationMessage = (text, color = '#333') => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    setNotification({ text, color, visible: true });
+
+    timeoutRef.current = setTimeout(() => {
+      setNotification((prev) => ({ ...prev, visible: false }));
+    }, 4000);
+  };
+
+  const sendTwilioNotification = async (phoneNumber, message, callback = null) => {
+    if (!phoneNumber || !message) {
+      showNotificationMessage('Phone number or message missing', '#f44336');
+      return;
+    }
+
+    showNotificationMessage('Sending notification...', '#2196F3');
+
+    try {
+      const response = await fetch('/send-twilio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber, message }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        showNotificationMessage('Notification sent successfully!', '#4CAF50');
+        if (callback) callback(true, data);
+      } else {
+        showNotificationMessage('Failed to send notification.', '#f44336');
+        if (callback) callback(false, data);
+      }
+    } catch (err) {
+      console.error('Error sending Twilio notification:', err);
+      showNotificationMessage('Error sending notification.', '#f44336');
+      if (callback) callback(false, err);
+    }
+  };
+
+  const handleNotifyDriver = (phoneNumber, message) => {
+    showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
+    sendTwilioNotification(phoneNumber, message, (success) => {
+      if (success) {
+        showNotificationMessage('Driver notified successfully!', '#4CAF50');
+      } else {
+        showNotificationMessage('Failed to notify driver.', '#f44336');
+      }
+    });
+  };
+
+  // Example usage: call handleNotifyDriver with phone and message
+  // handleNotifyDriver('+1234567890', 'Your order is ready');
+
+  return (
+    <div>
+      {notification && notification.visible && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            color: '#fff',
+            fontSize: '14px',
+            zIndex: 9999,
+            backgroundColor: notification.color,
+            opacity: 1,
+            transition: 'opacity 0.3s ease',
+          }}
+        >
+          {notification.text}
+        </div>
+      )}
+
+      {/* You can add buttons or inputs here to trigger notifications */}
+      {/* For example: */}
+      {/* 
+      <button onClick={() => handleNotifyDriver('+1234567890', 'Your order is ready')}>
+        Notify Driver
+      </button>
+      */}
+    </div>
+  );
+};
   // Handlers
   const toggleMenuDropdown = () => setMenuOpen(prev => !prev);
   const triggerProfileImageUpload = () => document.getElementById('profileImageInput').click();

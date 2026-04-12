@@ -536,8 +536,8 @@
   let adminPassword = 'crunchtimeadmin';
 
   let isAuthenticated = false;
-
 // ================= SMS NOTIFICATIONS =================
+
 // Function to display notification messages
 function showNotificationMessage(text, color = '#333') {
   let box = document.getElementById('notificationMessage');
@@ -545,16 +545,19 @@ function showNotificationMessage(text, color = '#333') {
   if (!box) {
     box = document.createElement('div');
     box.id = 'notificationMessage';
-    box.style.position = 'fixed';
-    box.style.bottom = '20px';
-    box.style.left = '50%';
-    box.style.transform = 'translateX(-50%)';
-    box.style.padding = '12px 20px';
-    box.style.borderRadius = '8px';
-    box.style.color = '#fff';
-    box.style.fontSize = '14px';
-    box.style.zIndex = '9999';
-    box.style.transition = 'opacity 0.3s ease';
+    Object.assign(box.style, {
+      position: 'fixed',
+      bottom: '20px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      padding: '12px 20px',
+      borderRadius: '8px',
+      color: '#fff',
+      fontSize: '14px',
+      zIndex: '9999',
+      transition: 'opacity 0.3s ease',
+      opacity: '0', // Start hidden
+    });
     document.body.appendChild(box);
   }
 
@@ -570,20 +573,19 @@ function showNotificationMessage(text, color = '#333') {
   // Remove the notification after 4 seconds
   showNotificationMessage.timeoutId = setTimeout(() => {
     box.style.opacity = '0';
-    // Optionally, you can remove the element after fade out
     setTimeout(() => {
       if (box) box.remove();
     }, 300);
   }, 4000);
 }
 
-// Function to send Twilio notification
+// Function to send Twilio notification via serverless endpoint
 function sendTwilioNotification(phoneNumber, message, callback = null) {
   if (!phoneNumber || !message) {
     showNotificationMessage('Phone number or message missing', '#f44336');
     return;
   }
-  
+
   showNotificationMessage('Sending notification...', '#2196F3');
 
   fetch('/send-twilio', {
@@ -591,31 +593,32 @@ function sendTwilioNotification(phoneNumber, message, callback = null) {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ phoneNumber, message })
+    body: JSON.stringify({ phoneNumber, message }),
   })
   .then(res => res.json())
   .then(data => {
     if (data.success) {
       showNotificationMessage('Notification sent successfully!', '#4CAF50');
-      if (callback && typeof callback === 'function') callback(true, data);
+      if (callback) callback(true, data);
     } else {
       showNotificationMessage('Failed to send notification.', '#f44336');
-      if (callback && typeof callback === 'function') callback(false, data);
+      if (callback) callback(false, data);
     }
   })
-  .catch(() => {
+  .catch((err) => {
+    console.error('Error sending Twilio notification:', err);
     showNotificationMessage('Error sending notification.', '#f44336');
-    if (callback && typeof callback === 'function') callback(false);
+    if (callback) callback(false, err);
   });
 }
 
-// Function to handle checkout order
+// Handle checkout order and notify driver
 function checkout_order(orderId, driverPhoneNumber) {
   const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
   notifyDriver(driverPhoneNumber, message);
 }
 
-// Function to notify driver via Twilio SMS
+// Notify driver via Twilio SMS
 function notifyDriver(phoneNumber, message) {
   showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
 
@@ -627,7 +630,6 @@ function notifyDriver(phoneNumber, message) {
     }
   });
 }
-
 // Usage examples
 // sendTwilioSms('+1234567890', 'Hello from the enhanced script!');
 // Example usage:
