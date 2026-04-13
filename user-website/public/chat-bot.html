@@ -134,9 +134,10 @@ body {
 <!-- Sign-in Modal -->
 <div id="signInModal">
   <div id="signInModalContent">
-    <h2>Please Sign In</h2>
+    <button onclick="signIn()">Sign In</button>
+
     <div id="modalSignInButton"></div>
-    <button style="margin-top:20px; padding:10px 20px; border:none; border-radius:5px; background:#ef0606; color:#fff; cursor:pointer;" onclick="closeSignInModal()">Close</button>
+    <button style="margin-top:20px; padding:10px 20px; border:none; border-radius:5px; background:#cac3c3; color:#fff; cursor:pointer;" onclick="closeSignInModal()">Close</button>
   </div>
 </div>
 
@@ -339,7 +340,13 @@ function logout() {
   disableInput();
   localStorage.removeItem('messageHistory');
 }
-
+function signIn() {
+  // Perform sign-in logic here
+  // On success:
+  currentUser = { /* user info */ };
+  document.getElementById('signInModal').style.display = 'none';
+  // Optionally, resume sending message if needed
+}
 // For demonstration, show sign-in modal when clicking "Sign In" button
 // (You can add a dedicated button if needed)
 </script>
