@@ -14,4 +14,4 @@ async function getLiveLocation() {
 }
 
 // Poll for updates every 5 seconds
-setInterval(getLiveLocation, 5000);
+setInterval(getLiveLocation, 5501);
