@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>AI Chat App - Pro</title>
+<title>DeepAI Chatbot</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+<!-- Google Sign-In SDK -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <style>
@@ -23,17 +24,6 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-}
-.top-bar button {
-  background: #fff;
-  color: #ed0808;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 12px;
-  margin-left: 5px;
 }
 .chat-container {
   max-width: 500px;
@@ -101,27 +91,14 @@ body {
   border-radius: 25px;
   cursor: pointer;
 }
-.input-box button:disabled {
-  background: #ccc;
-}
-
-/* Sign-in Modal Styles */
-#signInModal {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-}
-#signInModalContent {
-  background: #fff;
-  padding: 30px;
-  border-radius: 10px;
-  max-width: 400px;
-  width: 80%;
-  text-align: center;
+#signInBtn {
+  margin: 10px;
+  padding: 10px 20px;
+  background: #4285F4;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -132,112 +109,112 @@ body {
 </div>
 
 <!-- Sign-in Modal -->
-<div id="signInModal">
-  <div id="signInModalContent">
-    <button onclick="signIn()">Sign In</button>
-
+<div id="signInModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:200;">
+  <div id="signInModalContent" style="background:#fff; padding:30px; border-radius:10px; text-align:center; min-width:300px;">
     <div id="modalSignInButton"></div>
     <button style="margin-top:20px; padding:10px 20px; border:none; border-radius:5px; background:#cac3c3; color:#fff; cursor:pointer;" onclick="closeSignInModal()">Close</button>
   </div>
 </div>
 
 <div class="chat-container">
+  <div style="text-align:center; padding:10px; background:#ddd;">
+    <button id="signInBtn">Sign in with Google</button>
+    <span id="welcomeMsg" style="display:none;">Welcome, <span id="userName"></span></span>
+    <button id="logoutBtn" style="display:none; margin-left:10px;" onclick="logout()">Logout</button>
+  </div>
   <div class="messages" id="messages"></div>
-  <div class="input-box">
-    <input id="messageInput" disabled placeholder="Please log in…" onkeypress="handleKeyPress(event)" />
-    <button id="sendBtn" disabled onclick="sendMessage()">Send</button>
+  <div class="input-box" id="inputContainer" style="display:none;">
+    <input id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)" />
+    <button id="sendBtn" onclick="sendMessage()">Send</button>
   </div>
 </div>
 
 <script>
 const CLIENT_ID = '866867707128-mq963ediu3mijf16r27c8e1fgnmp2h3f';
 
-let currentUser = null; // Store user info
+let currentUser = null; // user info
 
-window.onload = () => {
-  // Initialize Google Sign-In for main button
+// Initialize Google Sign-In
+function handleGoogleSignIn() {
   google.accounts.id.initialize({
     client_id: CLIENT_ID,
-    callback: handleGoogleSignIn
+    callback: handleCredentialResponse
   });
   google.accounts.id.renderButton(
-    document.getElementById("topBar"),
-    { theme: "outline", size: "medium" }
-  );
-
-  // Load chat history
-  loadChatHistory();
-
-  // Check if user is logged in (simulate)
-  if (!currentUser) {
-    disableInput();
-  }
-};
-import { getChatbotResponse } from './chatbotData.js';
-
-// Inside your sendMessage() or response logic
-const reply = getChatbotResponse(userMessage);
-// Function to show login modal
-function showSignInModal() {
-  document.getElementById('signInModal').style.display = 'flex';
-  // Render Google Sign-In button in modal
-  google.accounts.id.renderButton(
-    document.getElementById('modalSignInButton'),
-    { theme: "outline", size: "medium" }
+    document.getElementById("signInBtn"),
+    { theme: "outline", size: "large" }
   );
 }
-
-// Close modal
-function closeSignInModal() {
-  document.getElementById('signInModal').style.display = 'none';
-}
-
-// Handle Google Sign-In callback
-function handleGoogleSignIn(response) {
+function handleCredentialResponse(response) {
   const payload = parseJwt(response.credential);
   currentUser = {
     name: payload.name,
     avatar: payload.picture
   };
   updateUIAfterLogin();
-  addMessage("Logged in! How can I help you today?", "bot", false);
+  addMessage("Logged in! How can I help you today?", "bot");
   closeSignInModal();
 }
-
-// Parse JWT token
 function parseJwt(token) {
   return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
 }
-
-// Update UI after login
 function updateUIAfterLogin() {
   document.getElementById("topBar").innerHTML = `
     <div style="display:flex;align-items:center;gap:10px">
       <img src="${currentUser.avatar}" style="width:30px;height:30px;border-radius:50%">
       <span>Hi, ${currentUser.name.split(' ')[0]}</span>
     </div>
-    <div style="margin-top:10px; display:flex; gap:10px;">
-      <button onclick="logout()">Logout</button>
-      <button onclick="clearChat()">Clear Chat</button>
-    </div>
+    <button style="margin-top:10px; padding:10px 20px; border:none; border-radius:5px; background:#f00; color:#fff; cursor:pointer;" onclick="logout()">Logout</button>
   `;
+  document.getElementById("inputContainer").style.display = "flex";
+  document.getElementById("signInBtn").style.display = "none";
+  document.getElementById("welcomeMsg").style.display = "inline";
+  document.getElementById("userName").textContent = currentUser.name;
   enableInput();
 }
-
-// Enable message input
+function showSignInModal() {
+  document.getElementById('signInModal').style.display = 'flex';
+  google.accounts.id.renderButton(
+    document.getElementById('modalSignInButton'),
+    { theme: "outline", size: "medium" }
+  );
+}
+function closeSignInModal() {
+  document.getElementById('signInModal').style.display = 'none';
+}
+function logout() {
+  currentUser = null;
+  document.getElementById("topBar").innerHTML = `<div>AI Chat Bot 🤖</div>`;
+  disableInput();
+  localStorage.removeItem('messageHistory');
+  document.getElementById("signInBtn").style.display = "block";
+  document.getElementById("welcomeMsg").style.display = "none";
+  document.getElementById("logoutBtn").style.display = "none";
+}
 function enableInput() {
   document.getElementById("messageInput").disabled = false;
   document.getElementById("messageInput").placeholder = "Type a message...";
   document.getElementById("sendBtn").disabled = false;
-  document.getElementById("messageInput").focus();
 }
-
-// Disable message input
 function disableInput() {
   document.getElementById("messageInput").disabled = true;
   document.getElementById("messageInput").placeholder = "Please log in…";
   document.getElementById("sendBtn").disabled = true;
 }
+
+// Event listener for sign-in button
+document.getElementById("signInBtn").addEventListener("click", handleGoogleSignIn);
+
+// Load chat history
+function loadChatHistory() {
+  const history = JSON.parse(localStorage.getItem('messageHistory')) || [];
+  history.forEach(msg => addMessage(msg.text, msg.type, false));
+}
+window.onload = () => {
+  handleGoogleSignIn();
+  loadChatHistory();
+  if (!currentUser) disableInput();
+};
 
 // Handle key press
 function handleKeyPress(e) {
@@ -250,105 +227,59 @@ async function sendMessage() {
     showSignInModal();
     return;
   }
-  const input = document.getElementById("messageInput");
-  const text = input.value.trim();
+  const inputEl = document.getElementById("messageInput");
+  const text = inputEl.value.trim();
   if (!text) return;
 
   addMessage(text, "user");
-  input.value = "";
+  inputEl.value = "";
 
   const typingId = "typing-" + Date.now();
   addMessage("DeepAI is thinking...", "bot", false, typingId);
 
-  const reply = await generateDeepAiResponse(text);
+  // Call DeepAI API via your backend
+  const reply = await getDeepAIResponse(text);
   document.getElementById(typingId).remove();
   addMessage(reply, "bot");
 }
 
-// Generate response from DeepAI API
-async function generateDeepAiResponse(message) {
-  const apiKey = 'quickstart-QUdJIGlzIGNvbWJlZC4'; // Replace with your API key
-  const url = 'https://api.deepai.org/api/text-generator';
+// Call your backend proxy for DeepAI
+const API_ENDPOINT = 'http://localhost:3000/deepai'; // your server address
 
+async function getDeepAIResponse(message) {
   try {
-    const response = await fetch(url, {
+    const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Api-Key': apiKey,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ text: message }),
+      body: JSON.stringify({ message }),
     });
-
     const data = await response.json();
-
-    if (data && data.output) {
-      return data.output;
-    } else {
-      throw new Error('Invalid response from DeepAI API');
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    return 'Sorry, I encountered an error.';
+    return data.reply || 'Sorry, no response.';
+  } catch (err) {
+    console.error('Error calling DeepAI proxy:', err);
+    return 'Sorry, there was an error.';
   }
 }
 
-// Add message to chat
+// Message display
 function addMessage(text, type, save=true, id=null) {
-  const messagesDiv = document.getElementById("messages");
-  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const div = document.createElement("div");
-  div.className = `msg ${type}`;
-  if (id) div.id = id;
-  div.innerHTML = `${text} <span class="time">${time}</span>`;
-  messagesDiv.appendChild(div);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  const msgDiv = document.createElement("div");
+  msgDiv.className = `msg ${type}`;
+  if (id) msgDiv.id = id;
+  const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  msgDiv.innerHTML = `${text} <span class="time">${timeStr}</span>`;
+  document.getElementById("messages").appendChild(msgDiv);
+  document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
 
   if (save) {
-    saveMessageToHistory({ text, type, time });
+    let history = JSON.parse(localStorage.getItem('messageHistory')) || [];
+    history.push({ text, type, time: timeStr });
+    localStorage.setItem('messageHistory', JSON.stringify(history));
   }
-  return div;
+  return msgDiv;
 }
-
-// Save to local storage
-function saveMessageToHistory(message) {
-  let history = JSON.parse(localStorage.getItem('messageHistory')) || [];
-  history.push(message);
-  localStorage.setItem('messageHistory', JSON.stringify(history));
-}
-
-// Load chat history
-function loadChatHistory() {
-  const history = JSON.parse(localStorage.getItem('messageHistory')) || [];
-  history.forEach(msg => {
-    addMessage(msg.text, msg.type, false);
-  });
-}
-
-// Clear chat
-function clearChat() {
-  if(confirm("Clear all messages?")) {
-    document.getElementById("messages").innerHTML = "";
-    localStorage.removeItem('messageHistory');
-  }
-}
-
-// Logout user
-function logout() {
-  currentUser = null;
-  document.getElementById("topBar").innerHTML = `<div>AI Chat Bot 🤖</div>`;
-  disableInput();
-  localStorage.removeItem('messageHistory');
-}
-function signIn() {
-  // Perform sign-in logic here
-  // On success:
-  currentUser = { /* user info */ };
-  document.getElementById('signInModal').style.display = 'none';
-  // Optionally, resume sending message if needed
-}
-// For demonstration, show sign-in modal when clicking "Sign In" button
-// (You can add a dedicated button if needed)
 </script>
 
 </body>

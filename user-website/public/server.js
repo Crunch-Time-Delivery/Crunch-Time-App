@@ -81,7 +81,30 @@ app.get('/driver-data', authMiddleware, driverApprovedMiddleware, (req, res) => 
 app.get('/admin-data', authMiddleware, adminMiddleware, (req, res) => {
   res.json({ data: 'Sensitive admin data' });
 });
+const DEEP_AI_API_KEY = 'quickstart-QUdJIGlzIGNvbWJlZC4'; // <-- Your real key here
 
-app.listen(3000, () => {
-  console.log('Server running on port 3000');
+app.use(express.json());
+
+// Proxy endpoint to call DeepAI API
+app.post('/deepai', async (req, res) => {
+  const { message } = req.body;
+
+  try {
+    const response = await fetch('https://api.deepai.org/api/text-generator', {
+      method: 'POST',
+      headers: {
+        'Api-Key': DEEP_AI_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ text: message }),
+    });
+    const data = await response.json();
+    res.json({ reply: data.output });
+  } catch (error) {
+    console.error('DeepAI API error:', error);
+    res.status(500).json({ error: 'DeepAI API error' });
+  }
+});
+app.listen(5501, () => {
+  console.log('Server running on port ');
 });

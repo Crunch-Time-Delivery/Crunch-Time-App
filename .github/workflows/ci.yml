@@ -36,8 +36,8 @@ jobs:
             try {
               const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
               const allDeps = {
-                ... (packageJson.dependencies || {}),
-                ... (packageJson.devDependencies || {})
+                ...(packageJson.dependencies || {}),
+                ...(packageJson.devDependencies || {})
               };
               const invalidNames = Object.keys(allDeps).filter(name => name.startsWith('-'));
               if (invalidNames.length > 0) {
