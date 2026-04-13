@@ -32,26 +32,30 @@ jobs:
       - name: Validate package.json dependencies for invalid package names
         run: |
           node -e "
-            const fs = require('fs');
-            try {
-              const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-              const allDeps = {
-                ...(packageJson.dependencies || {}),
-                ...(packageJson.devDependencies || {})
-              };
-              const invalidNames = Object.keys(allDeps).filter(name => name.startsWith('-'));
-              if (invalidNames.length > 0) {
-                console.error('Invalid package names found:');
-                invalidNames.forEach(name => console.error(\`- '\${name}'\`));
-                process.exit(1);
-              } else {
-                console.log('All package names are valid.');
-              }
-            } catch (err) {
-              console.error('Error reading or parsing package.json:', err);
+          const fs = require('fs');
+          try {
+            const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            const allDeps = {
+              ...(packageJson.dependencies || {}),
+              ...(packageJson.devDependencies || {})
+            };
+            const invalidNames = Object.keys(allDeps).filter(name => {
+              // Basic validation: name should not be empty and should match npm package naming rules
+              return !name || /[^a-z0-9\-@./]/i.test(name);
+            });
+            if (invalidNames.length > 0) {
+              console.error('Invalid package names found:');
+              invalidNames.forEach(name => console.error(\`- '\${name}'\`));
               process.exit(1);
+            } else {
+              console.log('All package names are valid.');
             }
+          } catch (err) {
+            console.error('Error reading or parsing package.json:', err);
+            process.exit(1);
+          }
           "
+        shell: /usr/bin/bash -e {0}
 
       - name: Install dependencies
         run: npm install
