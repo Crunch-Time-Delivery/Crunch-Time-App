@@ -37,6 +37,7 @@
     "@babel/preset-env": "^7.29.2",
     "@babel/preset-react": "^7.28.5",
     "babel-loader": "^10.1.1",
+    "serverless-domain-manager": "^10.1.0",
     "supabase": "^2.58.5",
     "webpack": "^5.105.4",
     "webpack-cli": "^6.0.1",
