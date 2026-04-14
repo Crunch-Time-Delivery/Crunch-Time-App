@@ -1,6 +1,5 @@
 // Import AWS SDK
 import AWS from 'aws-sdk';
-
 // Configure AWS SDK with your region and credentials
 AWS.config.update({
   region: 'YOUR_AWS_REGION', // e.g., 'us-east-1'
