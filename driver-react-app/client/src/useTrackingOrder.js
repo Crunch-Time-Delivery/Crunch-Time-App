@@ -5,7 +5,6 @@ AWS.config.update({
   region: 'YOUR_AWS_REGION', // e.g., 'us-east-1'
   credentials: new AWS.Credentials('YOUR_ACCESS_KEY_ID', 'YOUR_SECRET_ACCESS_KEY'),
 });
-
 // Create a Location Service client
 const location = new AWS.Location({ apiVersion: '2020-11-19' });
 
