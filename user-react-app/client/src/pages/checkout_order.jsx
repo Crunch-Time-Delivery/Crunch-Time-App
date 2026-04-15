@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
+import AWS from 'aws-sdk';
 const CheckoutOrder = () => {
   const [orderId, setOrderId] = useState('');
   const [orderPin, setOrderPin] = useState('');
@@ -87,59 +87,85 @@ const CheckoutOrder = () => {
     ]);
   };
 
-  const startTrackingDriver = (driverId) => {
-    fetchAndUpdateDriverLocation(driverId);
-    driverTrackingIntervalRef.current = setInterval(() => {
-      fetchAndUpdateDriverLocation(driverId);
-    }, 10000);
-  };
+ const DriverTracker = ({ map }) => {
+  const driverMarkerRef = useRef(null);
+  const driverPathLineRef = useRef(null);
+  const driverPathCoordinatesRef = useRef([]);
 
-  const fetchAndUpdateDriverLocation = (driverId) => {
-    fetch(`/api/driver-location?driverId=${driverId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.lat && data.lng && mapRef.current) {
-          const pos = { lat: data.lat, lng: data.lng };
+  // Initialize AWS Location
+  useEffect(() => {
+    AWS.config.update({ region: 'us-east-1' }); // your region
+    const location = new AWS.Location({ apiVersion: '2020-11-19' });
+
+    const trackerName = 'YourTrackerName'; // replace with your tracker name
+    const deviceId = 'driver-123'; // replace with your device ID
+
+    // Function to fetch and update driver location
+    const fetchAndUpdateDriverLocation = async () => {
+      const params = {
+        TrackerName: trackerName,
+        DeviceId: deviceId,
+      };
+
+      try {
+        const data = await location.getDevicePosition(params).promise();
+        if (data.Position) {
+          const [lng, lat] = data.Position; // AWS returns [lng, lat]
+          const pos = { lat, lng };
+
+          // Update or create marker
           if (!driverMarkerRef.current) {
-            driverMarkerRef.current = new window.google.maps.Marker({
+            driverMarkerRef.current = new google.maps.Marker({
               position: pos,
-              map: mapRef.current,
+              map: map,
               icon: {
                 url: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
-                scaledSize: new window.google.maps.Size(40, 40),
+                scaledSize: new google.maps.Size(40, 40),
               },
               title: 'Driver Location',
             });
           } else {
             driverMarkerRef.current.setPosition(pos);
           }
-          moveDriverLabel(pos);
-          mapRef.current.setCenter(pos);
+
+          // Add to path coordinates
+          driverPathCoordinatesRef.current.push(pos);
+
+          // Draw or update polyline
+          if (!driverPathLineRef.current) {
+            driverPathLineRef.current = new google.maps.Polyline({
+              path: driverPathCoordinatesRef.current,
+              geodesic: true,
+              strokeColor: '#FF0000',
+              strokeOpacity: 1.0,
+              strokeWeight: 3,
+              map: map,
+            });
+          } else {
+            driverPathLineRef.current.setPath(driverPathCoordinatesRef.current);
+          }
+
+          // Optional: center map
+          map.setCenter(pos);
+
+          // Optional: move label
+          // moveDriverLabel(pos);
         }
-      })
-      .catch(console.error);
-  };
+      } catch (err) {
+        console.error('Error fetching driver location from AWS:', err);
+      }
+    };
 
-  const moveDriverLabel = (position) => {
-    if (!overlayRef.current || !mapRef.current || !mapRef.current.getProjection) return;
-    const latLng = new window.google.maps.LatLng(position.lat, position.lng);
-    const projection = mapRef.current.getProjection();
+    // Start tracking
+    fetchAndUpdateDriverLocation();
+    const intervalId = setInterval(fetchAndUpdateDriverLocation, 10000); // every 10 seconds
 
-    if (!projection) {
-      setTimeout(() => moveDriverLabel(position), 100);
-      return;
-    }
+    // Cleanup on unmount
+    return () => clearInterval(intervalId);
+  }, [map]);
 
-    const scale = Math.pow(2, mapRef.current.getZoom());
-    const point = projection.fromLatLngToPoint(latLng);
-    const pixelX = point.x * scale;
-    const pixelY = point.y * scale;
-
-    const rect = document.getElementById('map').getBoundingClientRect();
-    overlayRef.current.style.left = `${pixelX - rect.left + document.getElementById('map').offsetLeft}px`;
-    overlayRef.current.style.top = `${pixelY - rect.top + document.getElementById('map').offsetTop}px`;
-    overlayRef.current.style.display = 'block';
-  };
+  return null; // This component doesn't render anything itself
+};
 
   const generatePIN = () => Math.floor(100000 + Math.random() * 900000).toString();
 

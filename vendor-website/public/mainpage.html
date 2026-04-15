@@ -1253,11 +1253,25 @@ window.onload = () => {
   showManagement('items');
 };
 
+// In your main server file
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  // Log error, notify support, then exit or restart
+  process.exit(1); // or trigger a restart script
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection:', reason);
+  // Log error, notify support, then exit or restart
+  process.exit(1);
+});
+
+
 // Logout function (optional)
 function logout() {
   // Implement your logout logic here
   alert('Logged out');
 }
-</script>
+</script><script src="path/to/errorHandler.js"></script>
 </body>
 </html>

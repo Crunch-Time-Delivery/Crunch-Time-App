@@ -363,66 +363,87 @@ async function loadOrderHistory(orderId) {
   });
 }
 
-// =================== Driver Location Tracking with Route Path ====================
+
+// =================== Driver Location Tracking with Route Path (AWS Location) ====================
 let driverPathCoordinates = [];
 let driverPathLine = null;
+let driverMarker = null;
 
-function startTrackingDriver(driverId) {
-  fetchAndUpdateDriverLocation(driverId);
+// Initialize AWS Location client
+const AWS = require('aws-sdk');
+AWS.config.update({ region: 'us-east-1' }); // your region
+const location = new AWS.Location({ apiVersion: '2020-11-19' });
+
+// Variables for your tracker and device
+const trackerName = 'YourTrackerName'; // replace with your tracker name
+const deviceId = 'driver-123'; // replace with your device ID
+
+// Function to fetch latest driver location from AWS Location
+async function fetchAndUpdateDriverLocation() {
+  const params = {
+    TrackerName: trackerName,
+    DeviceId: deviceId,
+  };
+
+  try {
+    const data = await location.getDevicePosition(params).promise();
+    if (data.Position) {
+      const [lng, lat] = data.Position; // AWS returns [lng, lat]
+      const pos = { lat: lat, lng: lng };
+
+      // Update or create driver marker
+      if (!driverMarker) {
+        driverMarker = new google.maps.Marker({
+          position: pos,
+          map: map,
+          icon: {
+            url: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
+            scaledSize: new google.maps.Size(40, 40),
+          },
+          title: 'Driver Location'
+        });
+      } else {
+        driverMarker.setPosition(pos);
+      }
+
+      // Add new position to path coordinates
+      driverPathCoordinates.push(pos);
+
+      // Draw or update the route path
+      if (!driverPathLine) {
+        driverPathLine = new google.maps.Polyline({
+          path: driverPathCoordinates,
+          geodesic: true,
+          strokeColor: '#FF0000',
+          strokeOpacity: 1.0,
+          strokeWeight: 3,
+          map: map,
+        });
+      } else {
+        driverPathLine.setPath(driverPathCoordinates);
+      }
+
+      // Optional: center map on driver
+      map.setCenter(pos);
+
+      // Optional: move driver label
+      moveDriverLabel(pos);
+    }
+  } catch (err) {
+    console.error('Error fetching driver location from AWS:', err);
+  }
+}
+
+// Start tracking driver with AWS Location
+function startTrackingDriver() {
+  fetchAndUpdateDriverLocation();
   window.driverTrackingInterval = setInterval(() => {
-    fetchAndUpdateDriverLocation(driverId);
+    fetchAndUpdateDriverLocation();
   }, 10000); // every 10 seconds
 }
 
-function fetchAndUpdateDriverLocation(driverId) {
-  fetch(`/api/driver-location?driverId=${driverId}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.lat && data.lng) {
-        const pos = { lat: data.lat, lng: data.lng };
-
-        // Update or create driver marker
-        if (!driverMarker) {
-          driverMarker = new google.maps.Marker({
-            position: pos,
-            map: map,
-            icon: {
-              url: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
-              scaledSize: new google.maps.Size(40, 40),
-            },
-            title: 'Driver Location'
-          });
-        } else {
-          driverMarker.setPosition(pos);
-        }
-
-        // Add new position to path coordinates
-        driverPathCoordinates.push(pos);
-
-        // Draw or update the route path
-        if (!driverPathLine) {
-          driverPathLine = new google.maps.Polyline({
-            path: driverPathCoordinates,
-            geodesic: true,
-            strokeColor: '#FF0000',
-            strokeOpacity: 1.0,
-            strokeWeight: 3,
-            map: map,
-          });
-        } else {
-          driverPathLine.setPath(driverPathCoordinates);
-        }
-
-        // Optional: center map on driver
-        map.setCenter(pos);
-
-        // Move label (assuming moveDriverLabel is defined elsewhere)
-        moveDriverLabel(pos);
-      }
-    })
-    .catch(err => console.error('Error fetching driver location:', err));
-}
-
+// Call this to begin tracking
+startTrackingDriver();
 // ====================== Utility Functions ======================
 function generatePIN() {
   return Math.floor(100000 + Math.random() * 900000).toString();
