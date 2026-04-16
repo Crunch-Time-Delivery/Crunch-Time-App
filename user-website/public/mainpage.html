@@ -657,11 +657,11 @@ function hideLoadingIndicator() {
 <!-- Profile Modal Scripts and other functions (loadProfile, updatePassword, saveCardDetails, deleteUser, etc.) -->
 <script>
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY; //  actual key
+const supabaseKey = process.env.SUPABASE_KEY; // actual key
 const supabase = createClient(supabaseUrl, supabaseKey)
 const userId = localStorage.getItem('user_id');
 
-// Fetch vendor data
+// Fetch user data
 async function fetchUser() {
   const { data: user, error } = await supabase
     .from('user')
@@ -682,185 +682,33 @@ async function fetchUser() {
       ORDER_ID
     `
     );
-
   if (error) {
     console.error('Error fetching user:', error);
     return null;
   }
   return user;
-
 }
 
-window.openProfile = () => {
-  document.getElementById('profileModal').style.display = 'flex';
-  loadProfile();
+// Initialize real-time subscriptions
+function subscribeToTable(tableName, callback) {
+  return supabase
+    .from(`${tableName}`)
+    .on('*', payload => {
+      console.log(`Change received on ${tableName}: `, payload);
+      callback(payload);
+    })
+    .subscribe();
 }
 
-window.closeProfile = () => {
-  document.getElementById('profileModal').style.display = 'none';
-}
-
-window.updatePassword = async () => {
-  const password = document.getElementById('password').value;
-  const { error } = await supabase
-    .from('User')
-    .update({ password })
-    .eq('id', userId);
-  alert(error ? 'Password update failed' : 'Password updated');
-}
-
-window.saveCardDetails = async () => {
-  const data = {
-    card_type: document.getElementById('cardType').value,
-    card_number: document.getElementById('cardNumber').value,
-    cvv: document.getElementById('cvv').value,
-    security_code: document.getElementById('securityCode').value
-  };
-  const { error } = await supabase.from('User').update(data).eq('id', userId);
-  alert(error ? 'Card save failed' : 'Card saved');
-}
-
-window.deleteUser = async () => {
-  if (!confirm('Delete account permanently?')) return;
-  await supabase.from('User').delete().eq('id', userId);
-  localStorage.clear();
-  location.href = 'http://127.0.0.1:5501/user-app/register_home.html';
-}
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('server_worker.js')
-      .then(reg => console.log('Service Worker registered', reg))
-      .catch(err => console.log('Service Worker registration failed', err));
-  });
-}
-// Show specific management section
-function showManagement(type) {
-  document.querySelectorAll('.section').forEach(s => s.style.display='none');
-  if (type==='items') { 
-    document.getElementById('section-items').style.display='block'; 
-    renderItems(); 
-  }
-  if (type==='orders') { 
-    document.getElementById('section-orders').style.display='block'; 
-    renderOrders(); 
-  }
-  if (type==='users') { 
-    document.getElementById('section-users').style.display='block'; 
-    renderUsers(); 
-  }
-  if (type==='payment') { 
-    fetchPayments(); 
-    document.getElementById('section-payment').style.display='block'; 
-  }
-}
-
-// Show specific section
-function showSection(sectionId) {
-  document.querySelectorAll('.section').forEach(s => s.style.display='none');
-  document.getElementById('section-' + sectionId).style.display='block';
-}
-
-// Upload Menu
-async function uploadMenu() {
-  const restaurantName = document.getElementById('restaurantName').value.trim();
-  const fileInput = document.getElementById('menuFile');
-  if (!restaurantName || !fileInput.files.length) {
-    alert('Please enter restaurant name and select a PDF file.');
-    return;
-  }
-  const file = fileInput.files[0];
-  try {
-    const filePath = `menus/${restaurantName}_${Date.now()}.pdf`;
-    const { data, error } = await supabase.storage.from('menus').upload(filePath, file);
-    if (error) throw error;
-    await supabase.from('restaurant_menus').insert({ restaurant_name: restaurantName, file_path: filePath });
-    alert('Menu uploaded successfully!');
-  } catch (err) {
-    console.error('Upload error:', err);
-    alert('Error uploading menu: ' + err.message);
-  }
-}
-
-// Save Restaurant Info
-async function saveRestaurantInfo() {
-  const name = document.getElementById('restName').value.trim();
-  const contact = document.getElementById('contact').value.trim();
-  const website = document.getElementById('website').value.trim();
-  const address = document.getElementById('address').value.trim();
-  if (!name || !contact || !website || !address) {
-    alert('Please fill in all fields.');
-    return;
-  }
-  try {
-    await supabase.from('restaurants').insert({ name, contact, website, address });
-    alert('Restaurant details saved!');
-  } catch (err) {
-    console.error('Error saving info:', err);
-    alert('Error saving details: ' + err.message);
-  }
-}
-
-// Add Item
-async function addItem() {
-  const vendor = document.getElementById('itemVendor').value.trim();
-  const itemName = document.getElementById('itemName').value.trim();
-  const price = parseFloat(document.getElementById('itemPrice').value);
-  const stockStatus = document.getElementById('itemStock').value;
-  if (!vendor || !itemName || isNaN(price)) {
-    alert('Please fill all fields correctly.');
-    return;
-  }
-  try {
-    await supabase.from('items').insert({ vendor, item_name: itemName, price, stock_status: stockStatus });
-    alert('Item added!');
-    renderItems();
-  } catch (err) {
-    console.error('Add item error:', err);
-    alert('Error adding item: ' + err.message);
-  }
-}
-
-// Save Order (renamed from second addOrder)
-async function saveOrder() {
-  const orderId = document.getElementById('orderId').value.trim();
-  const userName = document.getElementById('orderUserName').value.trim();
-  const userEmail = document.getElementById('orderUserEmail').value.trim();
-  const amount = parseFloat(document.getElementById('orderAmount').value);
-  const vendorName = document.getElementById('vendorName').value.trim();
-  const vendorContact = document.getElementById('vendorContact').value.trim();
-  const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
-
-  if (!orderId || !userName || !userEmail || isNaN(amount)) {
-    alert('Please fill all fields correctly.');
-    return;
-  }
-  try {
-    await supabase.from('orders').insert({ order_id: orderId, user_name: userName, user_email: userEmail, vendor_name: vendorName, vendor_contact: vendorContact, delivery_address: deliveryAddress, amount });
-    alert('Order added!');
-    renderOrders();
-  } catch (err) {
-    console.error('Add order error:', err);
-    alert('Error adding order: ' + err.message);
-  }
-}
-
-// Add User
-async function addUser() {
-  const email = document.getElementById('userEmail').value.trim();
-  const name = document.getElementById('userName').value.trim();
-
-  if (!email || !name) {
-    alert('Please fill all fields.');
-    return;
-  }
-  try {
-    await supabase.from('users').insert({ email, name });
-    alert('User added!');
-    renderUsers();
-  } catch (err) {
-    console.error('Add user error:', err);
-    alert('Error adding user: ' + err.message);
-  }
+// Call this function after initial render to set up real-time updates
+function setupRealtimeUpdates() {
+  // Items
+  subscribeToTable('items', renderItems);
+  // Orders
+  subscribeToTable('orders', renderOrders);
+  // Users
+  subscribeToTable('users', renderUsers);
+  // Add other tables as needed
 }
 
 // Render functions
@@ -931,6 +779,11 @@ async function renderUsers() {
   html += '</tbody></table>';
   document.getElementById('usersTable').innerHTML = html;
 }
+
+// Call setupRealtimeUpdates after initial load
+window.onload = () => {
+  setupRealtimeUpdates();
+};
 </script><script src="path/to/errorHandler.js"></script>
 <script src="smsAndEmailAPI.js"async></script>
 </script>
