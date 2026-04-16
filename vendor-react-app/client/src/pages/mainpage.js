@@ -1088,7 +1088,47 @@ window.onload = () => {
 window.onload = () => {
   showManagement('items');
 };
+function updateWiFiStatus() {
+      const statusDiv = document.getElementById('connectionStatus');
+      const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
+      if (connection) {
+        if (connection.type === 'wifi') {
+          // Connected to Wi-Fi
+          statusDiv.style.display = 'none';
+        } else {
+          // Not Wi-Fi
+          statusDiv.style.display = 'block';
+        }
+      } else {
+        // Browser doesn't support Network Information API
+        // fallback to online check only
+        if (navigator.onLine) {
+          statusDiv.style.display = 'none';
+        } else {
+          statusDiv.style.display = 'block';
+        }
+      }
+    }
+
+    window.addEventListener('online', updateWiFiStatus);
+    window.addEventListener('offline', updateWiFiStatus);
+
+    // For changes in connection type
+    if (navigator.connection) {
+      navigator.connection.addEventListener('change', updateWiFiStatus);
+    }
+
+    window.addEventListener('load', () => {
+      updateWiFiStatus();
+
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service_worker.js')
+          .then(reg => console.log('Service Worker registered', reg))
+          .catch(err => console.log('Service Worker registration failed', err));
+      }
+    });
 // Logout function (optional)
 function logout() {
   // Implement your logout logic here
