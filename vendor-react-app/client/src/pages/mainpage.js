@@ -1104,7 +1104,16 @@ fetchPayments();
 window.onload = () => {
   showManagement('items');
 };
-
+async function trackRestaurantStock(restaurantId) {
+  const response = await fetch(`https://your-api-gateway-url?restaurantId=${restaurantId}`);
+  const data = await response.json();
+  if (response.ok) {
+    console.log('Stock data:', data);
+    // Update your UI accordingly
+  } else {
+    console.error('Error:', data.message);
+  }
+}
 // Initialize default view
 window.onload = () => {
   showManagement('items');
