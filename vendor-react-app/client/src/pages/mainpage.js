@@ -402,7 +402,10 @@ async function sendTwilioNotification(phoneNumber, message, callback = null, ret
   return { success, data: responseData };
 }
 
-
+// Initialize Supabase with your actual key
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY; // actual key
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // Toggle dropdown menu
 function toggleDropdown() {
@@ -1076,7 +1079,25 @@ async function verifyPayFastPayment(paymentID) {
     console.error('Error verifying payment:', err);
   }
 }
+async function processPaymentViaEdge(paymentId) {
+  try {
+    const response = await fetch('https://your-supabase-project.supabase.co/functions/v1/processPayment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // Include any auth headers if needed
+      },
+      body: JSON.stringify({ paymentId }),
+    });
 
+    const result = await response.json();
+    alert(result.message);
+    // Optionally refresh payment data
+    fetchPayments();
+  } catch (err) {
+    console.error('Error processing payment:', err);
+  }
+}
 // 6. Call fetchPayments initially
 fetchPayments();
 // Initialize default view
