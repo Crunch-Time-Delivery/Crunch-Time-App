@@ -1280,6 +1280,64 @@ async function trackRestaurantStock(restaurantId) {
     console.error('Error:', data.message);
   }
 }
+  // Initialize an empty array to store menu items
+const menuItems = [];
+
+/**
+ * Add a new item to the menu
+ * @param {Object} item - The item details
+ */
+function addItem(item) {
+  menuItems.push(item);
+  console.log('Item added:', item);
+}
+
+/**
+ * Get the list of all menu items
+ * @returns {Array}
+ */
+function getMenuItems() {
+  return menuItems;
+}
+
+/**
+ * Find an item by a specific property (e.g., itemName or vendor)
+ * @param {String} key - Property name to search by
+ * @param {String} value - Value to match
+ * @returns {Object|null}
+ */
+function findItem(key, value) {
+  return menuItems.find(item => item[key] === value) || null;
+}
+
+/**
+ * Update an existing item
+ * @param {String} itemName - Name of the item to update
+ * @param {Object} updates - Object containing properties to update
+ */
+function updateItem(itemName, updates) {
+  const item = findItem('itemName', itemName);
+  if (item) {
+    Object.assign(item, updates);
+    console.log('Item updated:', item);
+  } else {
+    console.log('Item not found:', itemName);
+  }
+}
+
+/**
+ * Remove an item from the menu
+ * @param {String} itemName - Name of the item to remove
+ */
+function removeItem(itemName) {
+  const index = menuItems.findIndex(item => item.itemName === itemName);
+  if (index !== -1) {
+    menuItems.splice(index, 1);
+    console.log('Item removed:', itemName);
+  } else {
+    console.log('Item not found:', itemName);
+  }
+}
 // In your main server file
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
