@@ -536,7 +536,8 @@
   let adminPassword = 'crunchtimeadmin';
 
   let isAuthenticated = false;
-// ================= SMS NOTIFICATIONS =================
+
+// ===================== Notification & SMS Utilities =====================
 
 // Function to display notification messages
 function showNotificationMessage(text, color = '#333') {
@@ -556,7 +557,7 @@ function showNotificationMessage(text, color = '#333') {
       fontSize: '14px',
       zIndex: '9999',
       transition: 'opacity 0.3s ease',
-      opacity: '0', // Start hidden
+      opacity: '0',
     });
     document.body.appendChild(box);
   }
@@ -565,12 +566,12 @@ function showNotificationMessage(text, color = '#333') {
   box.innerText = text;
   box.style.opacity = '1';
 
-  // Clear any existing timeout
+  // Clear previous timeout if exists
   if (showNotificationMessage.timeoutId) {
     clearTimeout(showNotificationMessage.timeoutId);
   }
 
-  // Remove the notification after 4 seconds
+  // Hide after 4 seconds
   showNotificationMessage.timeoutId = setTimeout(() => {
     box.style.opacity = '0';
     setTimeout(() => {
@@ -579,8 +580,8 @@ function showNotificationMessage(text, color = '#333') {
   }, 4000);
 }
 
-// Function to send Twilio notification via serverless endpoint
-function sendTwilioNotification(phoneNumber, message, callback = null) {
+// Function to send notification via AWS SNS through your API Gateway
+function sendAwsSnsNotification(phoneNumber, message, callback = null) {
   if (!phoneNumber || !message) {
     showNotificationMessage('Phone number or message missing', '#f44336');
     return;
@@ -588,11 +589,9 @@ function sendTwilioNotification(phoneNumber, message, callback = null) {
 
   showNotificationMessage('Sending notification...', '#2196F3');
 
-  fetch('/send-twilio', {
+  fetch('https://xyz.execute-api.region.amazonaws.com/send-sms', { // <-- Replace with your API Gateway URL
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phoneNumber, message }),
   })
   .then(res => res.json())
@@ -606,23 +605,23 @@ function sendTwilioNotification(phoneNumber, message, callback = null) {
     }
   })
   .catch((err) => {
-    console.error('Error sending Twilio notification:', err);
+    console.error('Error sending AWS SNS notification:', err);
     showNotificationMessage('Error sending notification.', '#f44336');
     if (callback) callback(false, err);
   });
 }
 
-// Handle checkout order and notify driver
+// Example: Notify driver (or any user) about order checkout
 function checkout_order(orderId, driverPhoneNumber) {
   const message = `Order #${orderId} has been checked out. Please proceed accordingly.`;
   notifyDriver(driverPhoneNumber, message);
 }
 
-// Notify driver via Twilio SMS
+// Function to notify driver specifically
 function notifyDriver(phoneNumber, message) {
   showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
 
-  sendTwilioNotification(phoneNumber, message, (success, data) => {
+  sendAwsSnsNotification(phoneNumber, message, (success, data) => {
     if (success) {
       showNotificationMessage(`Driver notified successfully!`, '#4CAF50');
     } else {
@@ -630,11 +629,9 @@ function notifyDriver(phoneNumber, message) {
     }
   });
 }
-// Usage examples
-// sendTwilioSms('+1234567890', 'Hello from the enhanced script!');
-// Example usage:
-// sendTwilioSms('+1234567890', 'Hello from Twilio!');
 
+// Usage example
+// sendAwsSnsNotification('+1234567890', 'Hello from the integrated notification system!');
 
   // ================== LOGIN & AUTH ==================
   function verifyLogin() {
