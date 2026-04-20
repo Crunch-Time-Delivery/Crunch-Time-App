@@ -1,95 +1,88 @@
+
 import React, { useState, useEffect } from 'react';
 
+// Make sure to install supabase: npm install @supabase/supabase-js
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY;//  actual key
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 function DriverLogin() {
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showOtpModal, setShowOtpModal] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [userType, setUserType] = useState('driver'); // or 'admin'
+  const [showOtpModal, setShowOtpModal] = useState(false);
   const [otp, setOtp] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState('');
-  const [driverData, setDriverData] = useState({});
-  const [driverApproved, setDriverApproved] = useState(false);
-  const [userType, setUserType] = useState(null);
-  
-  // Load driver data from local storage on mount
+  const [driverData, setDriverData] = useState(null);
+  const [message, setMessage] = useState('');
+  const [notification, setNotification] = useState(null);
+
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem('registeredUser')) || {};
+    // Load driver data from localStorage or fetch from API
+    const data = JSON.parse(localStorage.getItem('registeredUser'));
     setDriverData(data);
   }, []);
 
-  const showNotification = (message, type) => {
-    // Implement your notification logic or use a library
-    alert(`${type.toUpperCase()}: ${message}`);
+  const showNotification = (msg, type) => {
+    setNotification({ message: msg, type });
+    setTimeout(() => setNotification(null), 3000);
   };
 
-  const sendSms = (toNumber, message) => {
-    fetch('http://localhost:3000/send-sms', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ to: toNumber, message }),
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) showNotification('SMS sent successfully.', 'success');
-      else showNotification('Failed to send SMS: ' + data.error, 'error');
-    })
-    .catch(() => showNotification('Error sending SMS.', 'error'));
-  };
-
-  const generateAndSendOtp = () => {
-    const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedOtp(otpCode);
-    alert(`OTP sent to Email: ${driverData.email}. (OTP: ${otpCode})`);
-    fetch('/send-otp', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ phoneNumber: driverData.contact, otp: otpCode }),
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) alert(`OTP sent to ${driverData.contact}`);
-      else alert('Failed to send OTP.');
-    })
-    .catch(() => alert('Error sending OTP.'));
-  };
-
-  const handleLogin = () => {
-    if (!userType) {
-      alert('Please select Driver or Admin login.');
-      return;
-    }
+  const handleLogin = async () => {
     if (userType === 'driver') {
-      if (driverData.email?.toLowerCase() === email.toLowerCase() && driverData.password === password) {
-        localStorage.setItem('currentUser', JSON.stringify(driverData));
-        if (driverApproved) {
-          window.location.href = 'http://127.0.0.1:5501/driver-website/public/mainpage.html';
+      const { data, error } = await supabase
+        .from('Drivers')
+        .select('*')
+        .eq('email', email.toLowerCase())
+        .single();
+
+      if (error || !data) {
+        showNotification('Driver not found.', 'error');
+        return;
+      }
+      if (data.password === password) {
+        localStorage.setItem('currentUser', JSON.stringify(data));
+        if (data.approved) {
+          window.location.href = '/mainpage.html'; // your main page
         } else {
           generateAndSendOtp();
           setShowOtpModal(true);
         }
       } else {
-        alert('Invalid driver credentials.');
-      }
-    } else if (userType === 'admin') {
-      const adminUsername = 'admin';
-      const adminPassword = 'adminpass';
-      if (email === adminUsername && password === adminPassword) {
-        window.location.href='http://127.0.0.1:5501/driver-app/admin/admin_dashboard.html';
-      } else {
-        alert('Invalid admin credentials.');
+        showNotification('Incorrect password.', 'error');
       }
     }
   };
 
+  const generateAndSendOtp = () => {
+    const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
+    setGeneratedOtp(otpCode);
+    alert(`OTP sent to Email: ${driverData?.email}. (OTP: ${otpCode})`);
+    // Call your API to send OTP email here
+    fetch('/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: driverData?.contact, otp: otpCode }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) alert(`OTP sent to ${driverData?.contact}`);
+        else alert('Failed to send OTP.');
+      })
+      .catch(() => alert('Error sending OTP.'));
+  };
+
   const verifyOtp = () => {
     if (otp === generatedOtp) {
-      alert('OTP verified! Awaiting admin approval...');
+      alert('OTP verified! Waiting for admin approval...');
       setShowOtpModal(false);
-      if (driverApproved) {
-        alert('Login successful! Accessing driver dashboard...');
-        if (userType === 'driver') {
-          window.location.href='http://127.0.0.1:5501/driver-website/public/mainpage.html';
-        }
+      if (driverData?.approved) {
+        alert('Login successful!');
+        window.location.href = '/mainpage.html';
+      } else {
+        alert('Waiting for admin approval.');
       }
     } else {
       alert('Incorrect OTP.');
@@ -98,85 +91,65 @@ function DriverLogin() {
 
   return (
     <div>
-      {/* Login Modal */}
-      {showLoginModal && (
-        <div className="modal" style={modalStyle}>
-          <div className="modal-content" style={modalContentStyle}>
-            <img src="img/screenshot (251).jpg" alt="Welcome" style={{width: '250px', marginBottom: '20px'}} />
-            <h2>Welcome</h2>
-            <h3>Login</h3>
-            <p>Welcome to CrunchTime halaal food delivery. Login to start ordering.</p>
-            <label>Email Address</label>
-            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <label>Password</label>
-            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            <a href="http://127.0.0.1:5501/vendor-website/public/Login/forgotpassword.html" target="_blank" rel="noopener noreferrer" id="loginForgotPassword">Forgot Password</a>
-            <button style={loginButtonStyle} onClick={handleLogin}>Login</button>
-            <div style={{marginTop: '10px'}}>
-              <button style={driverBtnStyle} onClick={() => window.location.href='http://127.0.0.1:5501/driver-website/public/mainpage.html'}>Driver</button>
-            </div>
-          </div>
+      {notification && (
+        <div className={`notification ${notification.type}`}>
+          {notification.message}
         </div>
       )}
 
-      {/* OTP Modal */}
-      {showOtpModal && (
-        <div className="modal" style={modalStyle}>
-          <div className="modal-content" style={modalContentStyle}>
-            <h3>Verify Account</h3>
-            <p>Please enter the OTP number sent to your email to reset your password</p>
-            <input type="text" maxLength={4} placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} />
-            <div style={{marginTop: '10px'}}>
-              <button onClick={verifyOtp}>Confirm</button>
-              <button onClick={() => { generateAndSendOtp(); alert('OTP resent.'); }}>Resend OTP</button>
+      {/* Login Form */}
+      <div>
+        <h2>Login</h2>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button onClick={handleLogin}>Login</button>
+        <button onClick={() => (window.location.href = '/mainpage.html')}>
+          Driver
+        </button>
+        {/* OTP Modal */}
+        {showOtpModal && (
+          <div className="modal">
+            <div className="modal-content">
+              <h3>Verify Account</h3>
+              <p>
+                Please enter the OTP number sent to your email to reset your
+                password
+              </p>
+              <input
+                type="text"
+                maxLength={4}
+                placeholder="Enter OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+              />
+              <div style={{ marginTop: '10px' }}>
+                <button onClick={verifyOtp}>Confirm</button>
+                <button
+                  onClick={() => {
+                    generateAndSendOtp();
+                  }}
+                >
+                  Resend OTP
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Trigger to show login modal */}
-      <button onClick={() => setShowLoginModal(true)}>Open Login</button>
+        )}
+      </div>
     </div>
   );
 }
 
-// Basic inline styles for modal
-const modalStyle = {
-  display: 'block',
-  position: 'fixed',
-  zIndex: 2000,
-  left: 0, top: 0,
-  width: '100%',
-  height: '100%',
-  overflow: 'auto',
-  backgroundColor: 'rgba(0,0,0,0.4)',
-};
-const modalContentStyle = {
-  backgroundColor: '#fff',
-  margin: '15% auto',
-  padding: '20px',
-  borderRadius: '8px',
-  width: '300px',
-  textAlign: 'center',
-};
-const loginButtonStyle = {
-  marginTop: '20px',
-  backgroundColor: 'red',
-  color: '#fff',
-  padding: '10px',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
-  width: '100%',
-};
-const driverBtnStyle = {
-  backgroundColor: 'red',
-  color: '#fff',
-  border: 'none',
-  padding: '10px 20px',
-  borderRadius: '5px',
-  fontWeight: 'bold',
-  cursor: 'pointer',
-};
-
 export default DriverLogin;
+
+/* Add appropriate CSS for modal and notifications in your CSS file */

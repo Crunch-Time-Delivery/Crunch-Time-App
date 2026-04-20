@@ -100,28 +100,14 @@
     </div>
   </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 <script>
-  // Function to send SMS via backend API
-  function sendSms(toNumber, message) {
-    fetch('http://localhost:3000/send-sms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: toNumber, message: message })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if(data.success) {
-        showNotification('SMS sent successfully.', 'success');
-      } else {
-        showNotification('Failed to send SMS: ' + data.error, 'error');
-      }
-    })
-    .catch(() => {
-      showNotification('Error sending SMS.', 'error');
-    });
-  }
+  // Initialize Supabase
+  const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+  const supabaseKey =process.env.SUPABASE_KEY; // Replace with your actual key
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+  // Notification function
   function showNotification(message, type) {
     const notification = document.createElement('div');
     notification.innerText = message;
@@ -132,7 +118,120 @@
     }, 3000);
   }
 
-// Check message status
+  // Function to login driver via Supabase
+  async function loginDriver(email, password) {
+    const { data, error } = await supabase
+      .from('Drivers')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (error || !data) {
+      showNotification('Driver not found.', 'error');
+      return;
+    }
+
+    if (data.password === password) {
+      localStorage.setItem('currentUser', JSON.stringify(data));
+      if (data.approved) {
+        window.location.href = 'http://127.0.0.1:5501/driver-website/public/mainpage.html';
+      } else {
+        generateAndSendOtp();
+        showOtpModal();
+      }
+    } else {
+      showNotification('Incorrect password.', 'error');
+    }
+  }
+
+  // Login button event
+document.getElementById('loginBtn')?.addEventListener('click', () => {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value.trim();
+  // Set userType elsewhere, e.g., radio buttons
+  if (userType === 'driver') {
+    loginDriver(email, password);
+  }
+});
+
+// OTP functions
+let generatedOtp = '';
+let otpVerified = false;
+
+function generateAndSendOtp() {
+  generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  alert(`OTP sent to Email: ${driverData.email}. (OTP: ${generatedOtp})`);
+  fetch('/send-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phoneNumber: driverData.contact, otp: generatedOtp })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(`OTP sent to ${driverData.contact}.`);
+    } else {
+      alert('Failed to send OTP.');
+    }
+  })
+  .catch(() => {
+    alert('Error sending OTP.');
+  });
+}
+
+function showOtpModal() {
+  document.getElementById('otpModal').style.display='block';
+  document.getElementById('otpInput').value='';
+  otpVerified=false;
+}
+
+document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
+  const enteredOtp = document.getElementById('otpInput').value.trim();
+  if (enteredOtp===generatedOtp) {
+    otpVerified=true;
+    alert('OTP verified! Awaiting admin approval...');
+    hideOtpModal();
+    if (driverData.approved) {
+      alert('Login successful! Accessing driver dashboard...');
+      window.location.href='http://127.0.0.1:5501/driver-website/public/mainpage.html';
+    } else {
+      alert('Waiting for admin approval.');
+    }
+  } else {
+    alert('Incorrect OTP.');
+  }
+});
+
+document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
+  generateAndSendOtp();
+  alert('OTP resent.');
+});
+
+function hideOtpModal() {
+  document.getElementById('otpModal').style.display='none';
+}
+
+// SMS sending via backend API
+function sendSms(toNumber, message) {
+  fetch('http://localhost:3000/send-sms', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ to: toNumber, message: message })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if(data.success) {
+      showNotification('SMS sent successfully.', 'success');
+    } else {
+      showNotification('Failed to send SMS: ' + data.error, 'error');
+    }
+  })
+  .catch(() => {
+    showNotification('Error sending SMS.', 'error');
+  });
+}
+
+// Message status check
 function checkMessageStatus(messageSid, callback) {
   fetch('http://localhost:3001/twilio-message-status', {
     method: 'POST',
@@ -144,37 +243,38 @@ function checkMessageStatus(messageSid, callback) {
     if (callback) callback(data);
   })
   .catch(() => {
-    showNotificationMessage('Error fetching message status.', '#f44336');
+    showNotification('Error fetching message status.', 'error');
   });
 }
 
-// Fetch message logs
-function fetchMessageLogs(limit = 10, callback) {
+// Message logs
+function fetchMessageLogs(limit=10, callback) {
   fetch(`http://localhost:3001/twilio-message-logs`)
     .then(res => res.json())
     .then(data => {
       if (callback) callback(data);
     })
     .catch(() => {
-      showNotificationMessage('Error fetching message logs.', '#f44336');
+      showNotification('Error fetching message logs.', 'error');
     });
 }
+
+// Message status handlers
 function onSendSuccess(sid) {
   console.log(`Message sent successfully. SID: ${sid}`);
-  showNotificationMessage(`Message sent! SID: ${sid}`, '#4CAF50');
+  showNotification(`Message sent! SID: ${sid}`, 'success');
 }
+
 function onSendFailure(error) {
   console.error('Failed to send message:', error);
-  showNotificationMessage(`Failed to send message: ${error}`, '#f44336');
+  showNotification(`Failed to send message: ${error}`, 'error');
 }
+
 function onStatusUpdate(statusData) {
   console.log('Message status update:', statusData);
-  showNotificationMessage(`Status: ${statusData.status} for SID: ${statusData.sid}`, '#2196F3');
+  showNotification(`Status: ${statusData.status} for SID: ${statusData.sid}`, 'info');
 }
-function onError(errorMsg) {
-  console.error('Error:', errorMsg);
-  showNotificationMessage(`Error: ${errorMsg}`, '#f44336');
-}
+
 function monitorMessageStatus(sid) {
   const intervalId = setInterval(() => {
     checkMessageStatus(sid, (statusData) => {
@@ -183,108 +283,64 @@ function monitorMessageStatus(sid) {
         clearInterval(intervalId);
       }
     });
-  }, 5000); // check every 5 seconds
+  }, 5000);
 }
 
+// Load driver data (from localStorage or elsewhere)
+const driverData = JSON.parse(localStorage.getItem('registeredUser')) || {};
+let driverApproved = false; // update accordingly
 
-  // Load driver data
-  const driverData = JSON.parse(localStorage.getItem('registeredUser')) || {};
-  let driverApproved = false; // For demo, default false; set true when approved
-  let generatedOtp = '';
-  let otpVerified = false;
-  let userType = null; // 'driver' or 'admin'
+let userType = null; // set to 'driver' or 'admin'
 
-  function loadLoginPage() {
-    showModal('loginModal');
-  }
+// Modal functions (show/hide)
+function showModal(id) { document.getElementById(id).style.display='block'; }
+function hideModal(id) { document.getElementById(id).style.display='none'; }
 
-  function showModal(modalId) {
-    document.getElementById(modalId).style.display='block';
-  }
+// Generate and send OTP
+function generateAndSendOtp() {
+  generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  alert(`OTP sent to Email: ${driverData.email}. (OTP: ${generatedOtp})`);
+  fetch('/send-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phoneNumber: driverData.contact, otp: generatedOtp })
+  })
+  .then(res => res.json())
+  .then(data => { if(data.success){ alert(`OTP sent to ${driverData.contact}.`);} else { alert('Failed to send OTP.'); }})
+  .catch(() => { alert('Error sending OTP.'); });
+}
 
-  function hideModal(modalId) {
-    document.getElementById(modalId).style.display='none';
-  }
-
-  function generateAndSendOtp() {
-    generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    alert(`OTP sent to Email: ${driverData.email}. (OTP: ${generatedOtp})`);
-    // Send OTP via your backend endpoint (which uses Twilio)
-    fetch('/send-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phoneNumber: driverData.contact, otp: generatedOtp })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert(`OTP sent to ${driverData.contact}.`);
-      } else {
-        alert('Failed to send OTP.');
-      }
-    })
-    .catch(() => {
-      alert('Error sending OTP.');
-    });
-  }
-
-  function showOtpModal() {
-    document.getElementById('otpModal').style.display='block';
-    document.getElementById('otpInput').value='';
-    otpVerified=false;
-  }
-
-  function hideOtpModal() {
-    document.getElementById('otpModal').style.display='none';
-  }
-
-  // OTP verification event
-  document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
-    const enteredOtp = document.getElementById('otpInput').value.trim();
-    if (enteredOtp===generatedOtp) {
-      otpVerified=true;
-      alert('OTP verified! Awaiting admin approval...');
-      hideOtpModal();
-
-      if (driverApproved) {
-        alert('Login successful! Accessing driver dashboard...');
-        if (userType === 'driver') {
-          window.location.href='http://127.0.0.1:5501/driver-website/public/mainpage.html';
-        }
-      }
+// OTP modal event handlers
+document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
+  const enteredOtp = document.getElementById('otpInput').value.trim();
+  if (enteredOtp===generatedOtp) {
+    otpVerified=true;
+    alert('OTP verified! Awaiting admin approval...');
+    hideOtpModal();
+    if (driverData.approved) {
+      alert('Login successful! Accessing driver dashboard...');
+      window.location.href='http://127.0.0.1:5501/driver-website/public/mainpage.html';
     } else {
-      alert('Incorrect OTP.');
+      alert('Waiting for admin approval.');
     }
-  });
+  } else {
+    alert('Incorrect OTP.');
+  }
+});
 
-  document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
-    generateAndSendOtp();
-    alert('OTP resent.');
-  });
+document.getElementById('resendOtpBtn')?.addEventListener('click', () => {
+  generateAndSendOtp();
+  alert('OTP resent.');
+});
 
-  // Handle login button click
-document.getElementById('loginBtn').addEventListener('click', () => {
+// Your existing login logic
+// e.g., login button event
+document.getElementById('loginBtn')?.addEventListener('click', () => {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value.trim();
-
-  if (!userType) {
-    alert('Please select Driver or Admin login.');
-    return;
-  }
-
   if (userType === 'driver') {
-    if (driverData.email && driverData.email.toLowerCase() === email && driverData.password === password) {
-      localStorage.setItem('currentUser', JSON.stringify(driverData));
-      if (driverApproved) {
-        window.location.href='http://127.0.0.1:5501/driver-website/public/mainpage.html';
-      } else {
-        generateAndSendOtp();
-        showOtpModal();
-      }
-    } else {
-      alert('Invalid driver credentials.');
-    }
-  } 
+    loginDriver(email, password);
+  }
 });
 
 // Driver button event
@@ -292,9 +348,9 @@ document.getElementById('driverBtn')?.addEventListener('click', () => {
   window.location.href='http://127.0.0.1:5501/driver-website/public/mainpage.html';
 });
 
-// Initialize on page load
+// On page load
 window.onload = () => {
-  loadLoginPage();
+  // Your existing load code
 };
 </script>
 </body>
