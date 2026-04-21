@@ -13,159 +13,168 @@ const CheckoutOrder = () => {
   const mapInstanceRef = useRef(null);
   const driverTrackingIntervalRef = useRef(null);
 
-  // Initialize Google Map on mount
+ 
+function DriverMap({ driverId }) {
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const driverMarkerRef = useRef(null);
+  const overlayRef = useRef(null);
+  const trackingIntervalRef = useRef(null);
+
+  // Initialize map on component mount
   useEffect(() => {
     const initMap = () => {
-      const map = new window.google.maps.Map(document.getElementById('map'), {
+      const defaultLoc = { lat: -33.9249, lng: 18.4241 };
+      mapInstance.current = new window.google.maps.Map(mapRef.current, {
         zoom: 12,
-        center: { lat: -33.9249, lng: 18.4241 },
+        center: defaultLoc,
       });
-      mapRef.current = map;
-
-      // Create overlay for driver label
-      const overlayDiv = document.createElement('div');
-      overlayDiv.id = 'driverLabelOverlay';
-      overlayDiv.innerText = 'Driver';
-      overlayDiv.style.display = 'none';
-      overlayDiv.style.position = 'absolute';
-      overlayDiv.style.padding = '4px 8px';
-      overlayDiv.style.background = 'rgba(255, 255, 255, 0.8)';
-      overlayDiv.style.borderRadius = '4px';
-      overlayDiv.style.border = '1px solid #ccc';
-      overlayDiv.style.fontWeight = 'bold';
-      overlayDiv.style.fontSize = '14px';
-      overlayDiv.style.color = '#000';
-      document.getElementById('map').appendChild(overlayDiv);
-      overlayRef.current = overlayDiv;
+      createDriverLabelOverlay();
     };
 
-    if (window.google && window.google.maps) {
-      initMap();
-    } else {
-      // Load script if not loaded
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap`;
-      window.initMap = initMap;
-      document.head.appendChild(script);
-    }
-  }, []);
+    // Create custom overlay as a class
+    class DriverLabelOverlay extends window.google.maps.OverlayView {
+      constructor() {
+        super();
+        this.div = null;
+      }
 
-  // Generate order ID and PIN on mount
-  useEffect(() => {
-    const newOrderId = 'ORDER-' + Date.now();
-    setOrderId(newOrderId);
-    const pin = Math.floor(100000 + Math.random() * 900000).toString();
-    setOrderPin(pin);
-    // Show PIN message
-    document.getElementById('topPinMessage').style.display = 'block';
+      onAdd() {
+        this.div = document.createElement('div');
+        this.div.id = 'driverLabelOverlay';
+        this.div.innerText = 'Driver';
+        this.div.style.display = 'none';
+        this.div.style.position = 'absolute';
+        this.div.style.padding = '4px 8px';
+        this.div.style.background = 'rgba(255, 255, 255, 0.8)';
+        this.div.style.borderRadius = '4px';
+        this.div.style.border = '1px solid #ccc';
+        this.div.style.fontWeight = 'bold';
+        this.div.style.fontSize = '14px';
+        this.div.style.color = '#000';
 
-    // Load order status and history
-    loadOrderStatus(newOrderId);
-    loadOrderHistory(newOrderId);
+        this.getPanes().floatPane.appendChild(this.div);
+      }
 
-    // Get driverId from URL
-    const params = new URLSearchParams(window.location.search);
-    const driverId = params.get('driverId');
-    if (driverId) {
-      startTrackingDriver(driverId);
-    }
-  }, []);
+      draw() {
+        if (!this.getProjection() || !driverMarkerRef.current) return;
+        const position = driverMarkerRef.current.getPosition();
+        const projection = this.getProjection();
+        const pixel = projection.fromLatLngToContainerPixel(position);
+        this.div.style.left = `${pixel.x}px`;
+        this.div.style.top = `${pixel.y}px`;
+        this.div.style.display = 'block';
+      }
 
-  const loadOrderStatus = async (orderId) => {
-    // Example: fetch from your database
-    // Replace with actual API call if needed
-    // For demo:
-    setOrderStatus('The courier is on their way to you');
-    setDeliveryTime('12:56');
-  };
-
-  const loadOrderHistory = async (orderId) => {
-    // Example: fetch from your database
-    // For demo:
-    setOrderHistory([
-      { action: 'Order confirmed', created_at: new Date().toISOString() },
-    ]);
-  };
-
- const DriverTracker = ({ map }) => {
-  const driverMarkerRef = useRef(null);
-  const driverPathLineRef = useRef(null);
-  const driverPathCoordinatesRef = useRef([]);
-
-  // Initialize AWS Location
-  useEffect(() => {
-    AWS.config.update({ region: 'us-east-1' }); // your region
-    const location = new AWS.Location({ apiVersion: '2020-11-19' });
-
-    const trackerName = 'YourTrackerName'; // replace with your tracker name
-    const deviceId = 'driver-123'; // replace with your device ID
-
-    // Function to fetch and update driver location
-    const fetchAndUpdateDriverLocation = async () => {
-      const params = {
-        TrackerName: trackerName,
-        DeviceId: deviceId,
-      };
-
-      try {
-        const data = await location.getDevicePosition(params).promise();
-        if (data.Position) {
-          const [lng, lat] = data.Position; // AWS returns [lng, lat]
-          const pos = { lat, lng };
-
-          // Update or create marker
-          if (!driverMarkerRef.current) {
-            driverMarkerRef.current = new google.maps.Marker({
-              position: pos,
-              map: map,
-              icon: {
-                url: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
-                scaledSize: new google.maps.Size(40, 40),
-              },
-              title: 'Driver Location',
-            });
-          } else {
-            driverMarkerRef.current.setPosition(pos);
-          }
-
-          // Add to path coordinates
-          driverPathCoordinatesRef.current.push(pos);
-
-          // Draw or update polyline
-          if (!driverPathLineRef.current) {
-            driverPathLineRef.current = new google.maps.Polyline({
-              path: driverPathCoordinatesRef.current,
-              geodesic: true,
-              strokeColor: '#FF0000',
-              strokeOpacity: 1.0,
-              strokeWeight: 3,
-              map: map,
-            });
-          } else {
-            driverPathLineRef.current.setPath(driverPathCoordinatesRef.current);
-          }
-
-          // Optional: center map
-          map.setCenter(pos);
-
-          // Optional: move label
-          // moveDriverLabel(pos);
+      onRemove() {
+        if (this.div) {
+          this.div.parentNode.removeChild(this.div);
+          this.div = null;
         }
-      } catch (err) {
-        console.error('Error fetching driver location from AWS:', err);
+      }
+    }
+
+    // Function to create overlay
+    const createDriverLabelOverlay = () => {
+      overlayRef.current = new DriverLabelOverlay();
+      overlayRef.current.setMap(mapInstance.current);
+    };
+
+    initMap();
+  }, []);
+
+  // Function to move overlay
+  const moveDriverLabel = () => {
+    if (overlayRef.current) {
+      overlayRef.current.draw();
+    }
+  };
+
+  // Function to create/update marker
+  const updateDriverMarker = (position) => {
+    if (!driverMarkerRef.current) {
+      driverMarkerRef.current = new window.google.maps.Marker({
+        position,
+        map: mapInstance.current,
+        title: 'Driver Location',
+        icon: {
+          url: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
+          scaledSize: new window.google.maps.Size(40, 40),
+        },
+      });
+    } else {
+      animateMarkerTo(driverMarkerRef.current, position);
+    }
+    moveDriverLabel();
+  };
+
+  // Animate marker movement
+  const animateMarkerTo = (marker, newPosition) => {
+    const duration = 1000; // ms
+    const start = marker.getPosition();
+    const end = newPosition;
+    const startTime = performance.now();
+
+    const animate = () => {
+      const now = performance.now();
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      const lat = start.lat() + (end.lat() - start.lat()) * t;
+      const lng = start.lng() + (end.lng() - start.lng()) * t;
+      marker.setPosition(new window.google.maps.LatLng(lat, lng));
+      if (t < 1) {
+        requestAnimationFrame(animate);
       }
     };
 
-    // Start tracking
-    fetchAndUpdateDriverLocation();
-    const intervalId = setInterval(fetchAndUpdateDriverLocation, 10000); // every 10 seconds
+    animate();
+  };
 
-    // Cleanup on unmount
-    return () => clearInterval(intervalId);
-  }, [map]);
+  // Fetch driver location and schedule updates
+  const fetchAndUpdateDriverLocation = () => {
+    // Replace with your API call
+    const newLoc = {
+      lat: -33.9249 + (Math.random() - 0.5) * 0.02,
+      lng: 18.4241 + (Math.random() - 0.5) * 0.02,
+    };
+    updateDriverMarker(newLoc);
+  };
 
-  return null; // This component doesn't render anything itself
-};
+  // Start tracking driver
+  const startTrackingDriver = () => {
+    if (trackingIntervalRef.current) clearInterval(trackingIntervalRef.current);
+    fetchAndUpdateDriverLocation(); // initial
+    trackingIntervalRef.current = setInterval(fetchAndUpdateDriverLocation, 5000);
+  };
+
+  // Stop tracking driver
+  const stopTrackingDriver = () => {
+    if (trackingIntervalRef.current) clearInterval(trackingIntervalRef.current);
+  };
+
+  // Start tracking when driverId changes
+  useEffect(() => {
+    if (driverId) {
+      startTrackingDriver();
+    }
+    return () => {
+      stopTrackingDriver();
+    };
+  }, [driverId]);
+
+  // Optional: on component unmount clean up
+  useEffect(() => {
+    return () => {
+      stopTrackingDriver();
+    };
+  }, []);
+
+  // You can trigger startTrackingDriver() elsewhere, e.g., on button click
+
+  return (
+    <div id="map" ref={mapRef} style={{ width: '100%', height: '500px' }} />
+  );
+}
 
   const generatePIN = () => Math.floor(100000 + Math.random() * 900000).toString();
 
