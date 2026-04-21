@@ -245,9 +245,8 @@ function sendTwilioNotification(phoneNumber, message, callback = null) {
     if (callback) callback(false);
   });
 }
-
 // =================== Map and Driver Tracking ===================
-let map, driverMarker, driverLabelOverlay;
+let map, driverMarker, driverOverlay, driverLabelOverlay, driverTrackingInterval;
 
 function initMap() {
   const defaultLoc = { lat: -33.9249, lng: 18.4241 };
@@ -258,46 +257,131 @@ function initMap() {
   createDriverLabelOverlay();
 }
 
+// Create a custom overlay for the driver label
 function createDriverLabelOverlay() {
-  const overlayDiv = document.createElement('div');
-  overlayDiv.id = 'driverLabelOverlay';
-  overlayDiv.innerText = 'Driver';
-  overlayDiv.style.display = 'none';
-  overlayDiv.style.position = 'absolute'; // Use absolute for overlay
-  overlayDiv.style.padding = '4px 8px';
-  overlayDiv.style.background = 'rgba(255, 255, 255, 0.8)';
-  overlayDiv.style.borderRadius = '4px';
-  overlayDiv.style.border = '1px solid #ccc';
-  overlayDiv.style.fontWeight = 'bold';
-  overlayDiv.style.fontSize = '14px';
-  overlayDiv.style.color = '#000';
-  document.getElementById('map').appendChild(overlayDiv);
-}
+  class DriverLabelOverlay extends google.maps.OverlayView {
+    constructor() {
+      super();
+      this.div = null;
+    }
 
-function moveDriverLabel(position) {
-  const overlayDiv = document.getElementById('driverLabelOverlay');
-  if (!overlayDiv || !map.getProjection) return;
+    onAdd() {
+      this.div = document.createElement('div');
+      this.div.id = 'driverLabelOverlay';
+      this.div.innerText = 'Driver';
+      this.div.style.display = 'none';
+      this.div.style.position = 'absolute';
+      this.div.style.padding = '4px 8px';
+      this.div.style.background = 'rgba(255, 255, 255, 0.8)';
+      this.div.style.borderRadius = '4px';
+      this.div.style.border = '1px solid #ccc';
+      this.div.style.fontWeight = 'bold';
+      this.div.style.fontSize = '14px';
+      this.div.style.color = '#000';
 
-  const latLng = new google.maps.LatLng(position.lat, position.lng);
-  const scale = Math.pow(2, map.getZoom());
-  const projection = map.getProjection();
+      const panes = this.getPanes();
+      panes.floatPane.appendChild(this.div);
+    }
 
-  if (!projection) {
-    // Wait for projection to be ready
-    setTimeout(() => moveDriverLabel(position), 100);
-    return;
+    draw() {
+      if (!this.getProjection() || !driverMarker) return;
+      const position = driverMarker.getPosition();
+      const projection = this.getProjection();
+      const pixel = projection.fromLatLngToContainerPixel(position);
+      this.div.style.left = `${pixel.x}px`;
+      this.div.style.top = `${pixel.y}px`;
+      this.div.style.display = 'block';
+    }
+
+    onRemove() {
+      if (this.div) {
+        this.div.parentNode.removeChild(this.div);
+        this.div = null;
+      }
+    }
   }
 
-  const point = projection.fromLatLngToPoint(latLng);
-  const pixelX = point.x * scale;
-  const pixelY = point.y * scale;
+  driverOverlay = new DriverLabelOverlay();
+  driverOverlay.setMap(map);
+}
 
-  const mapDiv = document.getElementById('map');
-  const rect = mapDiv.getBoundingClientRect();
+// Function to move the driver label overlay
+function moveDriverLabel(position) {
+  if (driverOverlay && driverOverlay.draw) {
+    // Trigger draw to reposition overlay
+    driverOverlay.draw();
+  }
+}
 
-  overlayDiv.style.left = `${pixelX - rect.left + mapDiv.offsetLeft}px`;
-  overlayDiv.style.top = `${pixelY - rect.top + mapDiv.offsetTop}px`;
-  overlayDiv.style.display = 'block';
+// Function to create or update driver marker
+function updateDriverMarker(position) {
+  if (!driverMarker) {
+    driverMarker = new google.maps.Marker({
+      position,
+      map,
+      title: 'Driver Location',
+      icon: {
+        url: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
+        scaledSize: new google.maps.Size(40, 40),
+      },
+    });
+  } else {
+    // Animate marker movement
+    animateMarkerTo(driverMarker, position);
+  }
+  moveDriverLabel(position);
+}
+
+// Animate marker movement for smooth transition
+function animateMarkerTo(marker, newPosition) {
+  const options = {
+    duration: 1000,
+    easing: (t) => t,
+  };
+
+  const start = marker.getPosition();
+  const end = newPosition;
+  const startTime = performance.now();
+
+  function animate() {
+    const now = performance.now();
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / options.duration, 1);
+    const lat = start.lat() + (end.lat() - start.lat()) * t;
+    const lng = start.lng() + (end.lng() - start.lng()) * t;
+    marker.setPosition(new google.maps.LatLng(lat, lng));
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    }
+  }
+  animate();
+}
+
+// ======================= Tracking Functions =======================
+// Start periodic driver location updates
+function startTrackingDriver(driverId) {
+  if (driverTrackingInterval) clearInterval(driverTrackingInterval);
+  fetchAndUpdateDriverLocation(driverId); // Initial fetch
+  driverTrackingInterval = setInterval(() => {
+    fetchAndUpdateDriverLocation(driverId);
+  }, 5000); // Update every 5 seconds
+}
+
+// Stop tracking
+function stopTrackingDriver() {
+  if (driverTrackingInterval) clearInterval(driverTrackingInterval);
+}
+
+// Fetch driver location (simulate with placeholder)
+function fetchAndUpdateDriverLocation(driverId) {
+  // Replace with your actual API call
+  // Example: fetch(`/api/driver/${driverId}/location`)
+  // For demo, generate random location near default
+  const newLoc = {
+    lat: -33.9249 + (Math.random() - 0.5) * 0.02,
+    lng: 18.4241 + (Math.random() - 0.5) * 0.02,
+  };
+  updateDriverMarker(newLoc);
 }
 
 // ======================= Page Load & Initialization =======================
@@ -321,7 +405,6 @@ window.onload = () => {
   loadOrderStatus(orderId);
   loadOrderHistory(orderId);
 };
-
 // ====================== Load Order Status & History ======================
 async function loadOrderStatus(orderId) {
   const { data, error } = await supabase
@@ -367,7 +450,7 @@ async function loadOrderHistory(orderId) {
 // =================== Driver Location Tracking with Route Path (AWS Location) ====================
 let driverPathCoordinates = [];
 let driverPathLine = null;
-let driverMarker = null;
+
 
 // Initialize AWS Location client
 const AWS = require('aws-sdk');
