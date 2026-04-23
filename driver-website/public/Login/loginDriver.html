@@ -80,7 +80,7 @@
     <input type="email" id="loginEmail" placeholder="Email" />
     <label>Password</label>
     <input type="password" id="loginPassword" placeholder="Password" />
-    <a id="loginForgotPassword" href="http://127.0.0.1:5501/driver-website/public/Login/forgotpassword.html" target="_blank">Forgot Password</a>
+    <a id="loginForgotPassword" href="http://127.0.0.1:5500/Crunch-Time-App/driver-website/public/Login/forgotpassword.html" target="_blank">Forgot Password</a>
     <button style="margin-top:20px; background-color:red; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%;" id="loginBtn">Login</button>
     <div id="buttonContainer">
       <button class="redirectBtn" id="driverBtn">Driver</button>
@@ -134,7 +134,7 @@
     if (data.password === password) {
       localStorage.setItem('currentUser', JSON.stringify(data));
       if (data.approved) {
-        window.location.href = 'http://127.0.0.1:5501/driver-website/public/mainpage.html';
+        window.location.href = 'http://127.0.0.1:5500/Crunch-Time-App/driver-website/public/mainpage.html';
       } else {
         generateAndSendOtp();
         showOtpModal();
@@ -193,7 +193,7 @@ document.getElementById('verifyOtpBtn')?.addEventListener('click', () => {
     hideOtpModal();
     if (driverData.approved) {
       alert('Login successful! Accessing driver dashboard...');
-      window.location.href='http://127.0.0.1:5501/driver-website/public/mainpage.html';
+      window.location.href='http://127.0.0.1:5500/Crunch-Time-App/driver-website/public/mainpage.html';
     } else {
       alert('Waiting for admin approval.');
     }

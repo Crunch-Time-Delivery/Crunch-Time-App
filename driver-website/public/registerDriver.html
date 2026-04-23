@@ -173,7 +173,7 @@ form input[type="file"] {
 
       <div class="section-title">Vehicle Information</div>
       <label>Driver License</label>
-      <input type="file" id="driverLicense" accept="image/*" required />
+      <input type="file" id="driverLicense" accept="image/*" required title="Upload your driver license image" />
 
       <label>Car Color</label>
       <input type="text" id="carColor" required />
@@ -231,7 +231,7 @@ document.getElementById('driverForm').addEventListener('submit', e => {
     // Save driverId for later retrieval
     localStorage.setItem('driverId', driverId);
     // Redirect to login page
-    window.location.href = 'http://127.0.0.1:5501/driver-app/client/public/Login/loginDriver.html';
+    window.location.href = 'http://127.0.0.1:5500/driver-app/client/public/Login/loginDriver.html';
   }
 
   // Send form data to backend (placeholder example)

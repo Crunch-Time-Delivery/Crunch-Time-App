@@ -91,7 +91,7 @@
       <label>Password</label>
       <input id="password" placeholder="Password" type="password" />
       <!-- Updated Forgot Password link -->
-    <a id="loginForgotPassword" href="http://127.0.0.1:5501/vendor-website/public/Login/forgotpassword.html" target="_blank">Forgot Password</a>
+    <a id="loginForgotPassword" href="http://127.0.0.1:5500/vendor-website/public/Login/forgotpassword.html" target="_blank">Forgot Password</a>
    
     <!-- Buttons for Driver and Admin -->
       <button style="background:#f40101; color:#fff;" onclick="verifyLogin()">Login</button>
@@ -239,7 +239,7 @@ function monitorMessageStatus(sid) {
 
     // Vendor button - fixed to redirect to specified URL
     document.getElementById('vendorBtn').addEventListener('click', () => {
-      window.location.href = 'http://127.0.0.1:5501/vendor-website/public/mainpage.html';
+      window.location.href = 'http://127.0.0.1:5500/vendor-website/public/mainpage.html';
     });
 
  
@@ -285,7 +285,7 @@ function monitorMessageStatus(sid) {
 
       // Assuming OTP verification leads to user/vendor page
       alert('Login successful!');
-      window.location.href='http://127.0.0.1:5501/vendor-website/public/mainpage.html'; // user/vendor page
+      window.location.href='http://127.0.0.1:5500/vendor-website/public/mainpage.html'; // user/vendor page
     } else {
       alert('Incorrect OTP.');
     }

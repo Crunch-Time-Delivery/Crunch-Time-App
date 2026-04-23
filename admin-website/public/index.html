@@ -950,68 +950,88 @@ window.onload = () => {
     loadVendors();
   };// Example: Load admin credentials
 async function loadAdmins() {
-  const res = await fetch('http://localhost:5501/api/admins');
+  const res = await fetch('http://localhost:5500/api/admins');
   const admins = await res.json();
   console.log('Admins:', admins);
   // Use data as needed, e.g., update UI
 }
-
 // Example: Add new admin
 async function addNewAdmin() {
   const email = document.getElementById('newAdminEmail').value.trim();
   const username = document.getElementById('newAdminUsername').value.trim();
   const password = document.getElementById('newAdminPassword').value.trim();
+
   if (email && username && password) {
     const res = await fetch('http://localhost:5501/api/admins', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ email, username, password })
     });
     const newAdmin = await res.json();
     alert('New admin added: ' + newAdmin.username);
+  } else {
+    alert('Please fill all fields.');
   }
-} async function restaurnat_name(){
- const restaurant_name = document.getElementById('restaurant_name').value.trim();
-  
-  if (!restaurant_name ) {
+}
+
+// Function to add a new restaurant name
+async function restaurant_name() {
+  const restaurantName = document.getElementById('restaurant_name').value.trim();
+
+  if (!restaurantName) {
     alert('Please fill all fields.');
     return;
   }
   try {
-    await supabase.from('vendors').insert({ email});
+    // Assuming you want to insert into 'vendors' with a name field
+    await supabase.from('vendors').insert({ name: restaurantName });
     renderVendors();
-    
   } catch (err) {
-    console.error('vendors error:', err);
+    console.error('Vendors error:', err);
     alert('Vendor error: ' + err.message);
   }
 }
-async function restaurant_menu() {
-  const restaurant_menu = document.getElementById(' restaurant_menu').value.trim();
 
-  if (!restaurant_menu ) {
+// Function to add a new restaurant menu
+async function restaurant_menu() {
+  const restaurantMenu = document.getElementById('restaurant_menu').value.trim();
+
+  if (!restaurantMenu) {
     alert('Please fill all fields.');
     return;
   }
   try {
-    await supabase.from('vendors').insert({ email});
+    // Assuming you want to insert menu info into 'vendors' or another table
+    // Replace 'menu' with the actual column name if different
+    await supabase.from('vendors').insert({ menu: restaurantMenu });
     renderVendors();
-    
   } catch (err) {
-    console.error('vendors error:', err);
+    console.error('Vendors error:', err);
     alert('Vendor error: ' + err.message);
   }
-}// Render functions
+}
+
+// Render function for vendors
 async function renderVendors() {
   const { data, error } = await supabase.from('vendors').select('*');
   if (error) {
     document.getElementById('itemsTable').innerHTML = '<p>Error loading items.</p>';
     return;
   }
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     document.getElementById('itemsTable').innerHTML = '<p>No items available.</p>';
     return;
-  } }
+  }
+
+  // Example: Render vendor data into table
+  let html = '<table><tr><th>Name</th><th>Menu</th></tr>';
+  data.forEach(vendor => {
+    html += `<tr><td>${vendor.name}</td><td>${vendor.menu || 'N/A'}</td></tr>`;
+  });
+  html += '</table>';
+
+  document.getElementById('itemsTable').innerHTML = html;
+}
 </script>
 <script src="supabaseClient.js" async></script>
 <script src="payfast-track.js" async></script>

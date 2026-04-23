@@ -62,7 +62,16 @@ export async function updateRecord(table, updates, filters = {}) {
     return null;
   }
 }
-
+// Function to add a new payment record
+export async function addPaymentRecord(paymentData) {
+  const result = await createRecord('payment_history', paymentData);
+  if (result) {
+    console.log('Payment record added:', result);
+  } else {
+    console.error('Failed to add payment record.');
+  }
+  return result;
+}
 // -- Delete record(s)
 export async function deleteRecord(table, filters = {}) {
   try {
@@ -81,7 +90,20 @@ export async function deleteRecord(table, filters = {}) {
     return null;
   }
 }
+const newPayment = {
+  payment_id: 'abc123xyz',
+  order_id: 456,
+  user_name: 'Jane Doe',
+  user_email: 'jane@example.com',
+  payment_method: 'Credit Card',
+  amount: 150.00,
+  payment_date: new Date().toISOString(),
+  status: 'Pending',
+  payment_reference: 'REF123456',
+  // add other fields as needed
+};
 
+addPaymentRecord(newPayment);
 // -- Version Control Example (assuming a 'version' field exists)
 export async function updateVersion(table, id, newVersion) {
   return await updateRecord(table, { version: newVersion }, { id });
