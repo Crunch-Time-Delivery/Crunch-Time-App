@@ -246,197 +246,222 @@ function hideLoadingIndicator() {
   });
 
   const locationClient = new AWS.Location({ apiVersion: '2020-11-19' });
+// Map and marker variables
+let map;
+let userMarker;
+let pickupMarker;
+let dropoffMarker;
+let driverMarker;
+let routePolyline;
+let directionsService; // Initialize once
+let destination = null;
 
-  // Map and markers
-  let map;
-  let userMarker;
-  let pickupMarker;
-  let dropoffMarker;
-  let driverMarker;
-  let routePolyline;
-  let destination = null;
+// Static constants
+const AWS_TRACKER_NAME = 'YourTrackerName'; // AWS Tracker
+const DEVICE_ID = 'driverDeviceId'; // Driver device ID
+const FETCH_INTERVAL = 5000; // 5 seconds
 
-  // Initialize Google Map
-  function initMap() {
-    const pickup = { lat: -33.9249, lng: 18.4241 }; // Restaurant
-    const dropoff = { lat: -33.9289, lng: 18.4174 }; // Customer
+// Initialize Google Map
+function initMap() {
+  const pickup = { lat: -33.9249, lng: 18.4241 }; // Restaurant
+  const dropoff = { lat: -33.9289, lng: 18.4174 }; // Customer
 
-    const mapElement = document.getElementById("map");
-    if (!mapElement) {
-      console.error("Map element not found");
-      return;
-    }
-
-    map = new google.maps.Map(mapElement, { zoom: 13, center: pickup });
-
-    pickupMarker = new google.maps.Marker({ position: pickup, map, label: 'Pickup', title: 'Restaurant Pickup' });
-    dropoffMarker = new google.maps.Marker({ position: dropoff, map, label: 'Drop-off', title: 'Customer Drop-off' });
-
-    setDestination(dropoff);
-
-    // Start fetching driver location from AWS
-    startFetchingDriverLocation();
-
-    // Optional: Watch user geolocation
-    if (navigator.geolocation) {
-      navigator.geolocation.watchPosition(
-        (position) => {
-          const pos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          if (!userMarker) {
-            userMarker = new google.maps.Marker({
-              position: pos,
-              map,
-              title: "You are here!",
-              icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 6,
-                fillColor: '#4285F4',
-                fillOpacity: 1,
-                strokeColor: 'white',
-                strokeWeight: 2
-              }
-            });
-          } else {
-            userMarker.setPosition(pos);
-          }
-          map.setCenter(pos);
-          // Save location in hidden input if needed
-          const locationInput = document.getElementById("user_location_id");
-          if (locationInput) {
-            locationInput.value = `${pos.lat},${pos.lng}`;
-          }
-        },
-        () => {
-          alert("Geolocation failed or is not supported");
-        },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-      );
-    }
+  const mapElement = document.getElementById("map");
+  if (!mapElement) {
+    console.error("Map element not found");
+    return;
   }
 
-  // Set destination marker
-  function setDestination(latlng) {
-    destination = latlng;
-    if (dropoffMarker) {
-      dropoffMarker.setPosition(latlng);
-    } else {
-      dropoffMarker = new google.maps.Marker({
-        position: latlng,
-        map,
-        label: 'Destination',
-        title: 'Delivery Destination',
-        icon: {
-          url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
-        }
-      });
-    }
-    drawRoute();
-    document.getElementById('destinationInfo')?.innerText = `Destination set at (${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)})`;
+  map = new google.maps.Map(mapElement, { zoom: 13, center: pickup });
+  directionsService = new google.maps.DirectionsService();
+
+  // Create pickup and dropoff markers
+  pickupMarker = new google.maps.Marker({
+    position: pickup,
+    map,
+    label: 'Pickup',
+    title: 'Restaurant Pickup'
+  });
+
+  setDestination(dropoff);
+
+  // Start fetching driver location periodically
+  startFetchingDriverLocation();
+
+  // Watch user geolocation
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+      handleUserLocation,
+      handleGeolocationError,
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+    );
   }
+}
 
-  // Update driver location from AWS
-  function updateDriverLocation(pos) {
-    if (!driverMarker) {
-      driverMarker = new google.maps.Marker({
-        position: pos,
-        map,
-        title: "Driver's Location",
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: '#FF0000',
-          fillOpacity: 1,
-          strokeColor: 'white',
-          strokeWeight: 2
-        }
-      });
-    } else {
-      driverMarker.setPosition(pos);
-    }
-    map.setCenter(pos);
-    drawRoute();
-    document.getElementById('driverLocation')?.innerText = `Driver at (${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)})`;
-  }
+// Handle user geolocation updates
+function handleUserLocation(position) {
+  const pos = {
+    lat: position.coords.latitude,
+    lng: position.coords.longitude
+  };
 
-  // Fetch driver position periodically from AWS
-  function startFetchingDriverLocation() {
-    // Replace 'driverDeviceId' with your device ID
-    const deviceId = 'driverDeviceId'; 
-
-    async function fetchAndUpdate() {
-      try {
-        const position = await getDevicePositionAWS(deviceId);
-        if (position) {
-          updateDriverLocation(position);
-        }
-      } catch (err) {
-        console.error('Error fetching driver position:', err);
+  if (!userMarker) {
+    userMarker = new google.maps.Marker({
+      position: pos,
+      map,
+      title: "You are here!",
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 6,
+        fillColor: '#4285F4',
+        fillOpacity: 1,
+        strokeColor: 'white',
+        strokeWeight: 2
       }
-    }
-
-    // Fetch every 5 seconds
-    setInterval(fetchAndUpdate, 5000);
+    });
+  } else {
+    userMarker.setPosition(pos);
   }
+  map.setCenter(pos);
 
-  // Call AWS Location Service to get device position
-  function getDevicePositionAWS(deviceId) {
-    return new Promise((resolve, reject) => {
-      locationClient.getDevicePosition({ TrackerName: 'YourTrackerName', DeviceId: deviceId }, function(err, data) {
-        if (err) {
-          reject(err);
-        } else {
-          // data.DevicePosition is [lng, lat]
-          const pos = { lat: data.DevicePosition[1], lng: data.DevicePosition[0] };
-          resolve(pos);
-        }
-      });
+  // Optional: Save location in a hidden input
+  const locationInput = document.getElementById("user_location_id");
+  if (locationInput) {
+    locationInput.value = `${pos.lat},${pos.lng}`;
+  }
+}
+
+function handleGeolocationError() {
+  alert("Geolocation failed or is not supported");
+}
+
+// Set destination marker and route
+function setDestination(latlng) {
+  destination = latlng;
+
+  if (dropoffMarker) {
+    dropoffMarker.setPosition(latlng);
+  } else {
+    dropoffMarker = new google.maps.Marker({
+      position: latlng,
+      map,
+      label: 'Destination',
+      title: 'Delivery Destination',
+      icon: {
+        url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+      }
     });
   }
 
-  // Draw route from driver to destination
-  function drawRoute() {
-    if (!driverMarker || !destination) return;
+  drawRoute();
 
-    // Remove previous route if exists
-    if (routePolyline) {
-      routePolyline.setMap(null);
-    }
+  document.getElementById('destinationInfo')?.innerText = `Destination set at (${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)})`;
+}
 
-    const directionsService = new google.maps.DirectionsService();
-
-    directionsService.route(
-      {
-        origin: driverMarker.getPosition(),
-        destination: destination,
-        travelMode: google.maps.TravelMode.DRIVING
-      },
-      (response, status) => {
-        if (status === google.maps.DirectionsStatus.OK) {
-          routePolyline = new google.maps.Polyline({
-            path: response.routes[0].overview_path,
-            geodesic: true,
-            strokeColor: '#0000FF',
-            strokeOpacity: 0.6,
-            strokeWeight: 4,
-          });
-          routePolyline.setMap(map);
-        } else {
-          console.error('Directions request failed due to ' + status);
-        }
+// Update driver location marker
+function updateDriverLocation(pos) {
+  if (!driverMarker) {
+    driverMarker = new google.maps.Marker({
+      position: pos,
+      map,
+      title: "Driver's Location",
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 8,
+        fillColor: '#FF0000',
+        fillOpacity: 1,
+        strokeColor: 'white',
+        strokeWeight: 2
       }
-    );
+    });
+  } else {
+    driverMarker.setPosition(pos);
   }
 
-  // Example: Update destination dynamically
-  function updateDestination(newLat, newLng) {
-    setDestination({ lat: newLat, lng: newLng });
+  map.setCenter(pos);
+  drawRoute();
+
+  document.getElementById('driverLocation')?.innerText = `Driver at (${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)})`;
+}
+
+// Periodically fetch driver position from AWS
+function startFetchingDriverLocation() {
+  async function fetchAndUpdate() {
+    try {
+      const position = await getDevicePositionAWS(DEVICE_ID);
+      if (position) {
+        updateDriverLocation(position);
+      }
+    } catch (err) {
+      console.error('Error fetching driver position:', err);
+    }
   }
 
-  // Initialize map after page loads
-  window.onload = initMap;
+  // Initial fetch
+  fetchAndUpdate();
+
+  // Repeat at interval
+  setInterval(fetchAndUpdate, FETCH_INTERVAL);
+}
+
+// Call AWS Location Service to get device position
+function getDevicePositionAWS(deviceId) {
+  return new Promise((resolve, reject) => {
+    locationClient.getDevicePosition({ TrackerName: AWS_TRACKER_NAME, DeviceId: deviceId }, function(err, data) {
+      if (err) {
+        reject(err);
+      } else if (data && data.DevicePosition) {
+        // data.DevicePosition is [lng, lat]
+        const pos = { lat: data.DevicePosition[1], lng: data.DevicePosition[0] };
+        resolve(pos);
+      } else {
+        reject('No position data');
+      }
+    });
+  });
+}
+
+// Draw route from driver to destination
+function drawRoute() {
+  if (!driverMarker || !destination || !directionsService) return;
+
+  // Remove existing route
+  if (routePolyline) {
+    routePolyline.setMap(null);
+  }
+
+  const origin = driverMarker.getPosition();
+
+  directionsService.route(
+    {
+      origin: origin,
+      destination: destination,
+      travelMode: google.maps.TravelMode.DRIVING
+    },
+    (response, status) => {
+      if (status === google.maps.DirectionsStatus.OK && response.routes.length > 0) {
+        routePolyline = new google.maps.Polyline({
+          path: response.routes[0].overview_path,
+          geodesic: true,
+          strokeColor: '#0000FF',
+          strokeOpacity: 0.6,
+          strokeWeight: 4,
+        });
+        routePolyline.setMap(map);
+      } else {
+        console.error('Directions request failed due to ' + status);
+      }
+    }
+  );
+}
+
+// Example: dynamically update destination
+function updateDestination(newLat, newLng) {
+  setDestination({ lat: newLat, lng: newLng });
+}
+
+// Initialize map on window load
+window.onload = initMap;
 // ================== Load Content Functions ==================
 function loadMainPage() {
   document.getElementById('innerContent').innerHTML = `
