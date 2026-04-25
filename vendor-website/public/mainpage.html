@@ -326,180 +326,6 @@ function saveInStorage() {
     document.getElementById(formId)?.reset();
   }
 
-  // Show notifications with stacking and auto-dismiss
-  function showNotificationMessage(text, color = '#333', duration = 4000) {
-    const containerId = 'notificationContainer';
-    let container = document.getElementById(containerId);
-    if (!container) {
-      container = document.createElement('div');
-      container.id = containerId;
-      container.style.position = 'fixed';
-      container.style.bottom = '20px';
-      container.style.right = '20px';
-      container.style.display = 'flex';
-      container.style.flexDirection = 'column';
-      container.style.alignItems = 'flex-end';
-      container.style.zIndex = '9999';
-      container.style.gap = '10px';
-      document.body.appendChild(container);
-    }
-
-    const box = document.createElement('div');
-    box.innerText = text;
-    box.style.backgroundColor = color;
-    box.style.color = '#fff';
-    box.style.padding = '12px 20px';
-    box.style.borderRadius = '8px';
-    box.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
-    box.style.opacity = '0';
-    box.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-    container.appendChild(box);
-
-    // Animate in
-    requestAnimationFrame(() => {
-      box.style.opacity = '1';
-      box.style.transform = 'translateY(0)';
-    });
-
-    // Auto-dismiss
-    setTimeout(() => {
-      box.style.opacity = '0';
-      box.style.transform = 'translateY(-10px)';
-      setTimeout(() => {
-        box.remove();
-        // Remove container if empty
-        if (container.children.length === 0) container.remove();
-      }, 300);
-    }, duration);
-  }
-
-  // Send Twilio notification with retry logic
-  async function sendTwilioNotification(phoneNumber, message, connectionId = null, retries = 3) {
-    if (!phoneNumber || !message) {
-      showNotificationMessage('Phone number or message missing', '#f44336');
-      return;
-    }
-
-    showNotificationMessage('Sending notification...', '#2196F3');
-
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        const response = await fetch('/send-twilio', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phoneNumber, message, connectionId })
-        });
-        const data = await response.json();
-
-        if (data.success) {
-          showNotificationMessage('Notification sent successfully!', '#4CAF50');
-          if (typeof onSendSuccess === 'function') onSendSuccess(data.sid);
-          return;
-        } else {
-          throw new Error(data.error || 'Unknown error');
-        }
-      } catch (error) {
-        if (attempt === retries) {
-          showNotificationMessage(`Failed to send: ${error.message}`, '#f44336');
-          if (typeof onSendFailure === 'function') onSendFailure(error.message);
-        } else {
-          await new Promise(res => setTimeout(res, 1000 * attempt)); // Exponential backoff
-        }
-      }
-    }
-  }
-
-  // Fetch phone numbers from database (example)
-  async function fetchPhoneNumbers() {
-    try {
-      const { data, error } = await supabase
-        .from('vendor')
-        .select('phone_number');
-      if (error) throw error;
-      return data.map(row => row.phone_number);
-    } catch (err) {
-      console.error('Error fetching phone numbers:', err);
-      showNotificationMessage('Error fetching phone numbers.', '#f44336');
-      return [];
-    }
-  }
-
-  // Send SMS to all numbers with progress indication
-  async function sendSmsToAll() {
-    const phoneNumbers = await fetchPhoneNumbers();
-    const total = phoneNumbers.length;
-    let successCount = 0;
-    let failCount = 0;
-
-    showNotificationMessage(`Sending messages to ${total} contacts...`, '#2196F3');
-
-    for (let i = 0; i < total; i++) {
-      const number = phoneNumbers[i];
-      try {
-        await sendTwilioNotification(number, 'Your message here', 'your-connection-id');
-        successCount++;
-      } catch {
-        failCount++;
-      }
-      // Optional: update progress
-      showNotificationMessage(`Progress: ${i + 1}/${total} sent`, '#2196F3', 2000);
-    }
-
-    showNotificationMessage(`Completed: ${successCount} succeeded, ${failCount} failed.`, '#4CAF50', 5000);
-  }
-
-  // Check message status periodically
-  function checkMessageStatus(messageSid, callback) {
-    fetch('/twilio-message-status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messageSid }),
-    })
-      .then(res => res.json())
-      .then(data => { if (callback) callback(data); })
-      .catch(() => { showNotificationMessage('Error fetching message status.', '#f44336'); });
-  }
-
-  // Fetch message logs
-  function fetchMessageLogs(limit = 10, callback) {
-    fetch(`/twilio-message-logs?limit=${limit}`)
-      .then(res => res.json())
-      .then(data => { if (callback) callback(data); })
-      .catch(() => { showNotificationMessage('Error fetching message logs.', '#f44336'); });
-  }
-
-  // Callbacks for success/failure
-  function onSendSuccess(sid) {
-    console.log(`Message sent successfully. SID: ${sid}`);
-    showNotificationMessage(`Message sent! SID: ${sid}`, '#4CAF50');
-  }
-
-  function onSendFailure(error) {
-    console.error('Failed to send message:', error);
-    showNotificationMessage(`Failed to send message: ${error}`, '#f44336');
-  }
-
-  function onStatusUpdate(statusData) {
-    console.log('Message status update:', statusData);
-    showNotificationMessage(`Status: ${statusData.status} for SID: ${statusData.sid}`, '#2196F3');
-  }
-
-  function onError(errorMsg) {
-    console.error('Error:', errorMsg);
-    showNotificationMessage(`Error: ${errorMsg}`, '#f44336');
-  }
-
-  // Monitor message status
-  function monitorMessageStatus(sid) {
-    const intervalId = setInterval(() => {
-      checkMessageStatus(sid, (statusData) => {
-        onStatusUpdate(statusData);
-        if (statusData.status === 'delivered' || statusData.status === 'failed') {
-          clearInterval(intervalId);
-        }
-      });
-    }, 5000);
-  }
 
   // Handle checkout order
   function checkout_order(orderId, driverPhoneNumber) {
@@ -1053,7 +879,42 @@ async function refreshPaymentStats() {
     console.error('Error fetching stats:', err);
   }
 }
+// Your Supabase setup
+const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY; // Make sure this is accessible in your environment
+const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Define the save function
+async function saveRestaurantInfo() {
+  // Get values from form inputs
+  const name = document.getElementById('restName').value;
+  const contact = document.getElementById('contact').value;
+  const website = document.getElementById('website').value;
+  const address = document.getElementById('address').value;
+
+  // Insert data into your Supabase table, e.g., 'restaurants'
+  const { data, error } = await supabase
+    .from('restaurants')
+    .insert([
+      {
+        name: name,
+        contact: contact,
+        website: website,
+        address: address
+      }
+    ]);
+
+  if (error) {
+    alert('Error saving data: ' + error.message);
+  } else {
+    alert('Restaurant details saved successfully!');
+    // Optionally, clear the form
+    document.getElementById('restName').value = '';
+    document.getElementById('contact').value = '';
+    document.getElementById('website').value = '';
+    document.getElementById('address').value = '';
+  }
+}
 // Function to initiate PayFast payment
 function initiatePayFastPayment(amount, itemName, merchantId, merchantKey, notifyUrl, returnUrl, cancelUrl) {
   const form = document.createElement('form');
@@ -1144,6 +1005,64 @@ async function trackRestaurantStock(restaurantId) {
   }
 }
   // Initialize an empty array to store menu items
+const menuItems = [];
+
+/**
+ * Add a new item to the menu
+ * @param {Object} item - The item details
+ */
+function addItem(item) {
+  menuItems.push(item);
+  console.log('Item added:', item);
+}
+
+/**
+ * Get the list of all menu items
+ * @returns {Array}
+ */
+function getMenuItems() {
+  return menuItems;
+}
+
+/**
+ * Find an item by a specific property (e.g., itemName or vendor)
+ * @param {String} key - Property name to search by
+ * @param {String} value - Value to match
+ * @returns {Object|null}
+ */
+function findItem(key, value) {
+  return menuItems.find(item => item[key] === value) || null;
+}
+
+/**
+ * Update an existing item
+ * @param {String} itemName - Name of the item to update
+ * @param {Object} updates - Object containing properties to update
+ */
+function updateItem(itemName, updates) {
+  const item = findItem('itemName', itemName);
+  if (item) {
+    Object.assign(item, updates);
+    console.log('Item updated:', item);
+  } else {
+    console.log('Item not found:', itemName);
+  }
+}
+
+/**
+ * Remove an item from the menu
+ * @param {String} itemName - Name of the item to remove
+ */
+function removeItem(itemName) {
+  const index = menuItems.findIndex(item => item.itemName === itemName);
+  if (index !== -1) {
+    menuItems.splice(index, 1);
+    console.log('Item removed:', itemName);
+  } else {
+    console.log('Item not found:', itemName);
+  }
+}
+// Initialize an empty array to store menu items
 const menuItems = [];
 
 /**

@@ -7,9 +7,9 @@ exports.handler = async (event) => {
   // Twilio credentials (preferably store in environment variables or Secrets Manager)
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_PHONE_NUMBER; // Twilio sandbox number
+const fromNumber = process.env.TWILIO_PHONE_NUMBER; // Twilio sandbox number
 
-  if (!accountSid || !authToken || !fromNumber) {
+if (!accountSid || !authToken || !fromNumber) {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Twilio credentials not configured' }),
