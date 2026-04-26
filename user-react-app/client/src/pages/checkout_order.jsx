@@ -21,51 +21,48 @@ function DriverMap({ driverId }) {
   const overlayRef = useRef(null);
   const trackingIntervalRef = useRef(null);
 
-  // Initialize map on component mount
+  // Initialize map and overlay on mount
   useEffect(() => {
-    const initMap = () => {
-      const defaultLoc = { lat: -33.9249, lng: 18.4241 };
-      mapInstance.current = new window.google.maps.Map(mapRef.current, {
-        zoom: 12,
-        center: defaultLoc,
-      });
-      createDriverLabelOverlay();
-    };
+    if (!mapRef.current || typeof window.google === 'undefined') return;
 
-    // Create custom overlay as a class
+    // Initialize map
+    mapInstance.current = new window.google.maps.Map(mapRef.current, {
+      zoom: 12,
+      center: { lat: -33.9249, lng: 18.4241 },
+    });
+
+    // Create custom overlay for driver label
     class DriverLabelOverlay extends window.google.maps.OverlayView {
       constructor() {
         super();
         this.div = null;
       }
-
       onAdd() {
         this.div = document.createElement('div');
         this.div.id = 'driverLabelOverlay';
         this.div.innerText = 'Driver';
-        this.div.style.display = 'none';
-        this.div.style.position = 'absolute';
-        this.div.style.padding = '4px 8px';
-        this.div.style.background = 'rgba(255, 255, 255, 0.8)';
-        this.div.style.borderRadius = '4px';
-        this.div.style.border = '1px solid #ccc';
-        this.div.style.fontWeight = 'bold';
-        this.div.style.fontSize = '14px';
-        this.div.style.color = '#000';
-
+        Object.assign(this.div.style, {
+          display: 'none',
+          position: 'absolute',
+          padding: '4px 8px',
+          background: 'rgba(255, 255, 255, 0.8)',
+          borderRadius: '4px',
+          border: '1px solid #ccc',
+          fontWeight: 'bold',
+          fontSize: '14px',
+          color: '#000',
+          pointerEvents: 'none',
+        });
         this.getPanes().floatPane.appendChild(this.div);
       }
-
       draw() {
         if (!this.getProjection() || !driverMarkerRef.current) return;
         const position = driverMarkerRef.current.getPosition();
-        const projection = this.getProjection();
-        const pixel = projection.fromLatLngToContainerPixel(position);
+        const pixel = this.getProjection().fromLatLngToContainerPixel(position);
         this.div.style.left = `${pixel.x}px`;
         this.div.style.top = `${pixel.y}px`;
         this.div.style.display = 'block';
       }
-
       onRemove() {
         if (this.div) {
           this.div.parentNode.removeChild(this.div);
@@ -74,23 +71,23 @@ function DriverMap({ driverId }) {
       }
     }
 
-    // Function to create overlay
-    const createDriverLabelOverlay = () => {
-      overlayRef.current = new DriverLabelOverlay();
-      overlayRef.current.setMap(mapInstance.current);
-    };
+    overlayRef.current = new DriverLabelOverlay();
+    overlayRef.current.setMap(mapInstance.current);
 
-    initMap();
+    // Cleanup on unmount
+    return () => {
+      if (overlayRef.current) overlayRef.current.setMap(null);
+    };
   }, []);
 
   // Function to move overlay
   const moveDriverLabel = () => {
-    if (overlayRef.current) {
+    if (overlayRef.current && typeof overlayRef.current.draw === 'function') {
       overlayRef.current.draw();
     }
   };
 
-  // Function to create/update marker
+  // Function to create or move driver marker
   const updateDriverMarker = (position) => {
     if (!driverMarkerRef.current) {
       driverMarkerRef.current = new window.google.maps.Marker({
@@ -108,46 +105,42 @@ function DriverMap({ driverId }) {
     moveDriverLabel();
   };
 
-  // Animate marker movement
+  // Animate marker movement smoothly
   const animateMarkerTo = (marker, newPosition) => {
     const duration = 1000; // ms
     const start = marker.getPosition();
-    const end = newPosition;
     const startTime = performance.now();
 
     const animate = () => {
       const now = performance.now();
       const elapsed = now - startTime;
       const t = Math.min(elapsed / duration, 1);
-      const lat = start.lat() + (end.lat() - start.lat()) * t;
-      const lng = start.lng() + (end.lng() - start.lng()) * t;
+      const lat = start.lat() + (newPosition.lat - start.lat()) * t;
+      const lng = start.lng() + (newPosition.lng - start.lng()) * t;
       marker.setPosition(new window.google.maps.LatLng(lat, lng));
-      if (t < 1) {
-        requestAnimationFrame(animate);
-      }
+      if (t < 1) requestAnimationFrame(animate);
     };
-
-    animate();
+    requestAnimationFrame(animate);
   };
 
-  // Fetch driver location and schedule updates
+  // Fetch driver location and start periodic updates
   const fetchAndUpdateDriverLocation = () => {
-    // Replace with your API call
+    // Replace this with your actual API call
+    const baseLat = -33.9249;
+    const baseLng = 18.4241;
     const newLoc = {
-      lat: -33.9249 + (Math.random() - 0.5) * 0.02,
-      lng: 18.4241 + (Math.random() - 0.5) * 0.02,
+      lat: baseLat + (Math.random() - 0.5) * 0.02,
+      lng: baseLng + (Math.random() - 0.5) * 0.02,
     };
     updateDriverMarker(newLoc);
   };
 
-  // Start tracking driver
   const startTrackingDriver = () => {
     if (trackingIntervalRef.current) clearInterval(trackingIntervalRef.current);
-    fetchAndUpdateDriverLocation(); // initial
+    fetchAndUpdateDriverLocation(); // initial fetch
     trackingIntervalRef.current = setInterval(fetchAndUpdateDriverLocation, 5000);
   };
 
-  // Stop tracking driver
   const stopTrackingDriver = () => {
     if (trackingIntervalRef.current) clearInterval(trackingIntervalRef.current);
   };
@@ -157,25 +150,22 @@ function DriverMap({ driverId }) {
     if (driverId) {
       startTrackingDriver();
     }
-    return () => {
-      stopTrackingDriver();
-    };
+    return () => stopTrackingDriver();
   }, [driverId]);
 
-  // Optional: on component unmount clean up
+  // Cleanup on component unmount
   useEffect(() => {
     return () => {
       stopTrackingDriver();
     };
   }, []);
 
-  // You can trigger startTrackingDriver() elsewhere, e.g., on button click
-
   return (
-    <div id="map" ref={mapRef} style={{ width: '100%', height: '500px' }} />
+    <div style={{ width: '100%', height: '500px' }}>
+      <div id="map" ref={mapRef} style={{ width: '100%', height: '100%' }} />
+    </div>
   );
 }
-
   const generatePIN = () => Math.floor(100000 + Math.random() * 900000).toString();
 
   const hidePinMessage = () => {

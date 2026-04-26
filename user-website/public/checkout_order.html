@@ -246,8 +246,13 @@ function sendTwilioNotification(phoneNumber, message, callback = null) {
   });
 }
 // =================== Map and Driver Tracking ===================
-let map, driverMarker, driverOverlay, driverLabelOverlay, driverTrackingInterval;
+let map;
+let driverMarker;
+let driverOverlay;
+let driverLabelOverlay;
+let driverTrackingInterval;
 
+// Initialize the map
 function initMap() {
   const defaultLoc = { lat: -33.9249, lng: 18.4241 };
   map = new google.maps.Map(document.getElementById('map'), {
@@ -269,22 +274,25 @@ function createDriverLabelOverlay() {
       this.div = document.createElement('div');
       this.div.id = 'driverLabelOverlay';
       this.div.innerText = 'Driver';
-      this.div.style.display = 'none';
-      this.div.style.position = 'absolute';
-      this.div.style.padding = '4px 8px';
-      this.div.style.background = 'rgba(255, 255, 255, 0.8)';
-      this.div.style.borderRadius = '4px';
-      this.div.style.border = '1px solid #ccc';
-      this.div.style.fontWeight = 'bold';
-      this.div.style.fontSize = '14px';
-      this.div.style.color = '#000';
-
+      Object.assign(this.div.style, {
+        display: 'none',
+        position: 'absolute',
+        padding: '4px 8px',
+        background: 'rgba(255, 255, 255, 0.8)',
+        borderRadius: '4px',
+        border: '1px solid #ccc',
+        fontWeight: 'bold',
+        fontSize: '14px',
+        color: '#000',
+        pointerEvents: 'none',
+      });
       const panes = this.getPanes();
       panes.floatPane.appendChild(this.div);
     }
 
     draw() {
       if (!this.getProjection() || !driverMarker) return;
+
       const position = driverMarker.getPosition();
       const projection = this.getProjection();
       const pixel = projection.fromLatLngToContainerPixel(position);
@@ -305,15 +313,14 @@ function createDriverLabelOverlay() {
   driverOverlay.setMap(map);
 }
 
-// Function to move the driver label overlay
+// Move the driver label overlay to the current driver position
 function moveDriverLabel(position) {
-  if (driverOverlay && driverOverlay.draw) {
-    // Trigger draw to reposition overlay
+  if (driverOverlay && typeof driverOverlay.draw === 'function') {
     driverOverlay.draw();
   }
 }
 
-// Function to create or update driver marker
+// Create or update driver marker with optional smooth animation
 function updateDriverMarker(position) {
   if (!driverMarker) {
     driverMarker = new google.maps.Marker({
@@ -326,7 +333,6 @@ function updateDriverMarker(position) {
       },
     });
   } else {
-    // Animate marker movement
     animateMarkerTo(driverMarker, position);
   }
   moveDriverLabel(position);
@@ -334,27 +340,21 @@ function updateDriverMarker(position) {
 
 // Animate marker movement for smooth transition
 function animateMarkerTo(marker, newPosition) {
-  const options = {
-    duration: 1000,
-    easing: (t) => t,
-  };
-
-  const start = marker.getPosition();
-  const end = newPosition;
+  const duration = 1000; // milliseconds
+  const startPos = marker.getPosition();
   const startTime = performance.now();
 
   function animate() {
-    const now = performance.now();
-    const elapsed = now - startTime;
-    const t = Math.min(elapsed / options.duration, 1);
-    const lat = start.lat() + (end.lat() - start.lat()) * t;
-    const lng = start.lng() + (end.lng() - start.lng()) * t;
+    const elapsed = performance.now() - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    const lat = startPos.lat() + (newPosition.lat - startPos.lat()) * t;
+    const lng = startPos.lng() + (newPosition.lng - startPos.lng()) * t;
     marker.setPosition(new google.maps.LatLng(lat, lng));
     if (t < 1) {
       requestAnimationFrame(animate);
     }
   }
-  animate();
+  requestAnimationFrame(animate);
 }
 
 // ======================= Tracking Functions =======================
@@ -364,26 +364,27 @@ function startTrackingDriver(driverId) {
   fetchAndUpdateDriverLocation(driverId); // Initial fetch
   driverTrackingInterval = setInterval(() => {
     fetchAndUpdateDriverLocation(driverId);
-  }, 5000); // Update every 5 seconds
+  }, 5000); // Every 5 seconds
 }
 
-// Stop tracking
+// Stop tracking driver
 function stopTrackingDriver() {
   if (driverTrackingInterval) clearInterval(driverTrackingInterval);
 }
 
-// Fetch driver location (simulate with placeholder)
+// Fetch driver location (replace with your actual API call)
 function fetchAndUpdateDriverLocation(driverId) {
-  // Replace with your actual API call
+  // TODO: Replace with real API fetch
   // Example: fetch(`/api/driver/${driverId}/location`)
-  // For demo, generate random location near default
+  // Simulate with random nearby location for demo
+  const baseLat = -33.9249;
+  const baseLng = 18.4241;
   const newLoc = {
-    lat: -33.9249 + (Math.random() - 0.5) * 0.02,
-    lng: 18.4241 + (Math.random() - 0.5) * 0.02,
+    lat: baseLat + (Math.random() - 0.5) * 0.02,
+    lng: baseLng + (Math.random() - 0.5) * 0.02,
   };
   updateDriverMarker(newLoc);
 }
-
 // ======================= Page Load & Initialization =======================
 window.onload = () => {
   const orderId = 'ORDER-' + Date.now(); // Or get it dynamically
