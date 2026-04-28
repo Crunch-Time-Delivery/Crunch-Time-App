@@ -220,65 +220,69 @@ const apiKey = 'AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q';
 
   // Set the src attribute of the image
   document.getElementById('staticMap').src = staticMapUrl;
-
-/* Tip selection */
+// ======================= Tip Selection =======================
 function setTip(amount, btn) {
-  tip = amount;
-  document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  recalc();
+  window.tip = amount; // Assuming tip is a global variable
+  document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  recalc(); // Recalculate totals
 }
 
-/* Voucher input */
+// ======================= Voucher Input =======================
 function openVoucher() {
-  document.getElementById("voucherPopup").style.display = "flex";
+  document.getElementById('voucherPopup').style.display = 'flex';
 }
+
 function applyVoucher() {
-  if (document.getElementById("voucherCode").value.toUpperCase() === "SAVE20") {
-    discount = 20;
+  const voucherCode = document.getElementById('voucherCode').value.trim().toUpperCase();
+  if (voucherCode === 'SAVE20') {
+    window.discount = 20; // Assuming discount is a global variable
+  } else {
+    window.discount = 0;
   }
-  document.getElementById("voucherPopup").style.display = "none";
+  document.getElementById('voucherPopup').style.display = 'none';
   recalc();
 }
 
-/* Toggle Card Form */
+// ======================= Card Payment Form Toggle =======================
 function toggleCardForm(show) {
-  document.getElementById("cardForm").classList.toggle("hidden", !show);
+  document.getElementById('cardForm').classList.toggle('hidden', !show);
 }
 
-/* Format Card Number */
+// ======================= Card Number Formatting =======================
 function formatCardNumber(input) {
-  input.value = input.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
+  input.value = input.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
 }
-// Triggered when user clicks "Pay Now"
+
+// ======================= Payment Process =======================
 function payNow() {
-  recalc(); // Recalculate totals if necessary
+  recalc(); // Ensure totals are up-to-date
   const selectedMethod = document.querySelector('input[name="paymethod"]:checked').value;
 
   if (selectedMethod === 'cc') {
-    toggleCardForm(true); // Show card form if credit card selected
+    toggleCardForm(true);
     return;
   }
 
-  document.getElementById("pf_method").value = selectedMethod;
+  // Set payment method for backend
+  document.getElementById('pf_method').value = selectedMethod;
 
-  // Prepare signature and then process payment
+  // Prepare signature then process payment
   preparePayFastSignature().then(() => {
     backendProcessAndRedirect();
   });
 }
 
-// When user submits card form
 function submitCardForm() {
   const selectedMethod = 'cc';
-  document.getElementById("pf_method").value = selectedMethod;
-  toggleCardForm(false); // Hide card form
+  document.getElementById('pf_method').value = selectedMethod;
+  toggleCardForm(false);
   preparePayFastSignature().then(() => {
     backendProcessAndRedirect();
   });
 }
 
-// Generate signature for PayFast (simulate backend signing)
+// ======================= Signature Preparation (simulate backend signing) =======================
 async function preparePayFastSignature() {
   const data = {
     merchant_id: '10000100',
@@ -290,58 +294,56 @@ async function preparePayFastSignature() {
   };
   const passphrase = 'jt7NOE43FZPn';
 
-  // Example signature generation (replace with real method)
   const signature = generateSignature(data, passphrase);
   document.getElementById('pf_signature').value = signature;
   return Promise.resolve();
 }
 
-// Simulate signature generation (replace with actual crypto if needed)
+// Simple signature generator (replace with real crypto in production)
 function generateSignature(data, passphrase) {
   const stringToSign = Object.values(data).join(':') + ':' + passphrase;
-  // For demonstration, simple hash (replace with actual crypto)
-  return btoa(stringToSign);
+  return btoa(stringToSign); // For demo purposes only
 }
 
-// Send data to backend and redirect to PayFast
+// ======================= Backend Payment Processing and Redirect =======================
 function backendProcessAndRedirect() {
   const form = document.getElementById('payfastForm');
   const formData = new FormData(form);
   const dataObj = {};
-  formData.forEach((value, key) => { dataObj[key] = value; });
+
+  formData.forEach((value, key) => {
+    dataObj[key] = value;
+  });
 
   fetch('/process-payment', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(dataObj)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dataObj),
   })
-  .then(response => response.json())
-  .then(result => {
-    if (result.success) {
-      // Submit form to redirect to PayFast
-      form.submit();
-    } else {
-      alert('Payment failed: ' + result.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error in backend process:', error);
-    alert('Error processing payment. Please try again.');
-  });
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        // Submit the form to redirect to PayFast
+        form.submit();
+      } else {
+        alert('Payment failed: ' + result.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error processing payment:', error);
+      alert('Error processing payment. Please try again.');
+    });
 }
 
-// Optional: handle PayFast callback (simulate)
+// ======================= Optional: Handle PayFast Callback =======================
+// Implement server-side notify_url to trigger this
 function handlePayFastCallback() {
-  // This should be called on your server via notify_url
   console.log('Received PayFast notification/callback');
+  // Handle server-side notification
 }
 
-// Optional: you can set up a server endpoint to handle notify_url and call handlePayFastCallback()
-
-// Card form toggle
-function toggleCardForm(show) {
-  document.getElementById("cardForm").classList.toggle("hidden", !show);
-}
+// ======================= Usage =======================
+// Call toggleCardForm(true/false) when needed, e.g., on button clicks.
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
 const supabaseKey = process.env.SUPABASE_KEY; // Ensure this environment variable is set
 

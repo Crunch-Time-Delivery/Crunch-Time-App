@@ -41,38 +41,41 @@ function recalc() {
   document.getElementById("barTotal").innerText = "R" + total.toFixed(2);
   document.getElementById("pf_amount").value = total.toFixed(2);
 }
-
-/* Tip selection */
+// ======================= Tip Selection =======================
 function setTip(amount, btn) {
-  tip = amount;
-  document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  recalc();
+  window.tip = amount; // Assuming tip is a global variable
+  document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  recalc(); // Recalculate totals
 }
 
-/* Voucher input */
+// ======================= Voucher Input =======================
 function openVoucher() {
-  document.getElementById("voucherPopup").style.display = "flex";
+  document.getElementById('voucherPopup').style.display = 'flex';
 }
+
 function applyVoucher() {
-  if (document.getElementById("voucherCode").value.toUpperCase() === "SAVE20") {
-    discount = 20;
+  const code = document.getElementById('voucherCode').value.trim().toUpperCase();
+  if (code === 'SAVE20') {
+    window.discount = 20; // Assuming discount is a global variable
+  } else {
+    window.discount = 0;
   }
-  document.getElementById("voucherPopup").style.display = "none";
+  document.getElementById('voucherPopup').style.display = 'none';
   recalc();
 }
 
-/* Toggle Card Form */
+// ======================= Toggle Card Form =======================
 function toggleCardForm(show) {
-  document.getElementById("cardForm").classList.toggle("hidden", !show);
+  document.getElementById('cardForm').classList.toggle('hidden', !show);
 }
 
-/* Format Card Number */
+// ======================= Card Number Formatting =======================
 function formatCardNumber(input) {
-  input.value = input.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
+  input.value = input.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
 }
 
-/* PayNow - main trigger */
+// ======================= Main Payment Trigger =======================
 function payNow() {
   recalc();
   const selectedMethod = document.querySelector('input[name="paymethod"]:checked').value;
@@ -80,45 +83,29 @@ function payNow() {
     toggleCardForm(true);
     return;
   }
-  document.getElementById("pf_method").value = selectedMethod;
-  document.getElementById("payfastForm").submit();
+  document.getElementById('pf_method').value = selectedMethod;
+  document.getElementById('payfastForm').submit();
 }
 
-/* Submit Card Payment */
+// ======================= Submit Card Payment =======================
 function submitCardForm() {
   const selectedMethod = 'cc';
-  document.getElementById("pf_method").value = selectedMethod;
+  document.getElementById('pf_method').value = selectedMethod;
   toggleCardForm(false);
-  document.getElementById("payfastForm").submit();
+  document.getElementById('payfastForm').submit();
 }
 
-/* Set tip buttons active state */
-function setTip(amount, btn) {
-  tip = amount;
-  document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  recalc();
-}
-
-/* Apply voucher */
-function applyVoucher() {
-  if (document.getElementById("voucherCode").value.toUpperCase() === "SAVE20") {
-    discount = 20;
-  }
-  document.getElementById("voucherPopup").style.display = "none";
-  recalc();
-}
-
-/* Generate Signature for PayFast */
+// ======================= Signature Generation for PayFast =======================
 function generateSignature(data, passphrase) {
   const sortedKeys = Object.keys(data).sort();
   const queryString = sortedKeys.map(k => `${k}=${encodeURIComponent(data[k])}`).join('&');
   const stringToHash = passphrase ? `${queryString}&passphrase=${encodeURIComponent(passphrase)}` : queryString;
-  // Use crypto API for MD5
+  
+  // Using CryptoJS MD5 (ensure CryptoJS is loaded)
   return CryptoJS.MD5(stringToHash).toString();
 }
 
-/* Prepare and set signature for form submission */
+// Prepare signature before form submission
 function preparePayFastSignature() {
   const data = {
     merchant_id: '10000100',
@@ -133,20 +120,15 @@ function preparePayFastSignature() {
   document.getElementById('pf_signature').value = signature;
 }
 
-/* On form submission, generate signature */
-document.getElementById('payfastForm').addEventListener('submit', (e) => {
+// Attach signature generation to form submit
+document.getElementById('payfastForm').addEventListener('submit', () => {
   preparePayFastSignature();
 });
 
-// Card form toggle
-function toggleCardForm(show) {
-  document.getElementById("cardForm").classList.toggle("hidden", !show);
-}
-
-/* Card number formatting */
+// ======================= Utility: Card Number Formatting =======================
 function formatCardNumber(input) {
-  input.value = input.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
+  input.value = input.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
 }
 
-// Initial recalc
-recalc();
+// ======================= Initial Call =======================
+recalc(); // Call recalc initially to set totals
