@@ -681,7 +681,7 @@ const pageSize__
  = 10; // Number of records per page
 // Constants
 const pageSize = 10; // Records per page
-let currentPage = 1; // Current page state
+
 let currentFilters = {}; // Store current filters
 
 // Main function to fetch payments with filters and pagination
@@ -879,42 +879,6 @@ async function refreshPaymentStats() {
     console.error('Error fetching stats:', err);
   }
 }
-// Your Supabase setup
-const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Make sure this is accessible in your environment
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Define the save function
-async function saveRestaurantInfo() {
-  // Get values from form inputs
-  const name = document.getElementById('restName').value;
-  const contact = document.getElementById('contact').value;
-  const website = document.getElementById('website').value;
-  const address = document.getElementById('address').value;
-
-  // Insert data into your Supabase table, e.g., 'restaurants'
-  const { data, error } = await supabase
-    .from('restaurants')
-    .insert([
-      {
-        name: name,
-        contact: contact,
-        website: website,
-        address: address
-      }
-    ]);
-
-  if (error) {
-    alert('Error saving data: ' + error.message);
-  } else {
-    alert('Restaurant details saved successfully!');
-    // Optionally, clear the form
-    document.getElementById('restName').value = '';
-    document.getElementById('contact').value = '';
-    document.getElementById('website').value = '';
-    document.getElementById('address').value = '';
-  }
-}
 // Function to initiate PayFast payment
 function initiatePayFastPayment(amount, itemName, merchantId, merchantKey, notifyUrl, returnUrl, cancelUrl) {
   const form = document.createElement('form');
@@ -1062,8 +1026,7 @@ function removeItem(itemName) {
     console.log('Item not found:', itemName);
   }
 }
-// Initialize an empty array to store menu items
-const menuItems = [];
+
 
 /**
  * Add a new item to the menu
@@ -1158,71 +1121,13 @@ function updateWiFiStatus() {
     window.addEventListener('online', updateWiFiStatus);
     window.addEventListener('offline', updateWiFiStatus);
 
-    // For changes in connection type
-    if (navigator.connection) {
-      navigator.connection.addEventListener('change', updateWiFiStatus);
-    }
-// Initialize an empty array to store menu items
-const menuItems = [];
-
-/**
- * Add a new item to the menu
- * @param {Object} item - The item details
- */
-function addItem(item) {
-  menuItems.push(item);
-  console.log('Item added:', item);
+// For changes in connection type
+if (navigator.connection) {
+  navigator.connection.addEventListener('change', updateWiFiStatus);
 }
 
-/**
- * Get the list of all menu items
- * @returns {Array}
- */
-function getMenuItems() {
-  return menuItems;
-}
-
-/**
- * Find an item by a specific property (e.g., itemName or vendor)
- * @param {String} key - Property name to search by
- * @param {String} value - Value to match
- * @returns {Object|null}
- */
-function findItem(key, value) {
-  return menuItems.find(item => item[key] === value) || null;
-}
-
-/**
- * Update an existing item
- * @param {String} itemName - Name of the item to update
- * @param {Object} updates - Object containing properties to update
- */
-function updateItem(itemName, updates) {
-  const item = findItem('itemName', itemName);
-  if (item) {
-    Object.assign(item, updates);
-    console.log('Item updated:', item);
-  } else {
-    console.log('Item not found:', itemName);
-  }
-}
-
-/**
- * Remove an item from the menu
- * @param {String} itemName - Name of the item to remove
- */
-function removeItem(itemName) {
-  const index = menuItems.findIndex(item => item.itemName === itemName);
-  if (index !== -1) {
-    menuItems.splice(index, 1);
-    console.log('Item removed:', itemName);
-  } else {
-    console.log('Item not found:', itemName);
-  }
-}
-
-    window.addEventListener('load', () => {
-      updateWiFiStatus();
+window.addEventListener('load', () => {
+  updateWiFiStatus();
 
       // Register service worker
       if ('serviceWorker' in navigator) {
