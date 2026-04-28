@@ -47,6 +47,9 @@ body {margin:0;font-family:Arial;background:#f5f5f5}
 .popup input, .popup button {
   width:100%; padding:10px; margin-top:10px;
 }
+.bank-details {
+  font-size:12px; color:#555; margin-bottom:10px;
+}
 </style>
 </head>
 <body>
@@ -108,22 +111,22 @@ body {margin:0;font-family:Arial;background:#f5f5f5}
   <div class="card">
     <!-- Instant EFT -->
     <div class="method">
-      <div class="method-left">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" />
+      <label for="eftRadio" class="method-left">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa logo" />
         Instant EFT (Company Account)
-      </div>
-      <input type="radio" name="paymethod" value="eft" checked onchange="toggleCardForm(false)">
+      </label>
+      <input type="radio" id="eftRadio" name="paymethod" value="eft" checked onchange="toggleCardForm(false)">
     </div>
-    <div style="font-size:12px;color:#555;margin-bottom:10px;">
+    <div class="bank-details">
       Bank: ABSA • Account Name: CrunchTime • Acc #: 1234567890
     </div>
     <!-- Card Payment -->
     <div class="method">
-      <div class="method-left">
-        <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png" />
+      <label for="ccRadio" class="method-left">
+        <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png" alt="Card Payment Icon" />
         Card Payment (Visa / MasterCard / Amex)
-      </div>
-      <input type="radio" name="paymethod" value="cc" onchange="toggleCardForm(true)">
+      </label>
+      <input type="radio" id="ccRadio" name="paymethod" value="cc" onchange="toggleCardForm(true)">
     </div>
     <!-- Card Input Form (hidden toggle) -->
     <div class="card hidden" id="cardForm">
