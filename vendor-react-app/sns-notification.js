@@ -1,24 +1,143 @@
-// sns-notification.js
 
-const AWS = require('aws-sdk');
-const sns = new AWS.SNS();
+// Dependencies
+const express = require("express");
+const twilio = require("twilio");
+const AWS = require("aws-sdk");
+const path = require("path");
 
-async function sendSMS(phoneNumber, message) {
+// Environment variables (consider using dotenv for local dev)
+const accountSid = process.env.TWILIO_ACCOUNT_SID || 'ACXXXXXX'; // Your Twilio SID
+const authToken = process.env.TWILIO_AUTH_TOKEN || 'your_auth_token'; // Your Twilio Auth Token
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER || '+1234567890';
+
+const snsRegion = process.env.AWS_REGION || 'us-east-1'; // AWS region for SNS
+// Initialize clients
+const twilioClient = twilio(accountSid, authToken);
+const sns = new AWS.SNS({ region: snsRegion });
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
+// --------------------- SMS Sending via Twilio ---------------------
+app.post("/send-notification", async (req, res) => {
+  const { to, body } = req.body;
+  if (!to || !body) {
+    return res.status(400).json({ success: false, message: "Missing 'to' or 'body'" });
+  }
+  try {
+    const message = await twilioClient.messages.create({ body, to, from: twilioPhoneNumber });
+    console.log(`Twilio message SID: ${message.sid}`);
+    res.json({ success: true, messageSid: message.sid });
+  } catch (error) {
+    console.error("Twilio Error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// --------------------- Send Multiple SMS via Twilio ---------------------
+app.post("/send-multiple", async (req, res) => {
+  const { messages } = req.body; // [{ to, body }, ...]
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ success: false, message: "Invalid 'messages' array." });
+  }
+  try {
+    const promises = messages.map(({ to, body }) =>
+      twilioClient.messages.create({ to, body, from: twilioPhoneNumber })
+    );
+    const results = await Promise.all(promises);
+    const sids = results.map(m => m.sid);
+    res.json({ success: true, messageSids: sids });
+  } catch (err) {
+    console.error("Error sending messages:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// --------------------- Schedule Message (simple setTimeout) ---------------------
+app.post("/schedule-message", (req, res) => {
+  const { to, body, delaySeconds } = req.body;
+  if (!to || !body || typeof delaySeconds !== "number") {
+    return res.status(400).json({ success: false, message: "Missing or invalid parameters." });
+  }
+  setTimeout(async () => {
+    try {
+      const message = await twilioClient.messages.create({ body, to, from: twilioPhoneNumber });
+      console.log(`Scheduled message sent. SID: ${message.sid}`);
+    } catch (err) {
+      console.error("Error sending scheduled message:", err);
+    }
+  }, delaySeconds * 1000);
+  res.json({ success: true, message: `Message scheduled in ${delaySeconds} seconds.` });
+});
+
+// --------------------- Get Message Status ---------------------
+app.get("/message-status/:sid", async (req, res) => {
+  const { sid } = req.params;
+  try {
+    const message = await twilioClient.messages(sid).fetch();
+    res.json({ success: true, status: message.status, messageSid: message.sid });
+  } catch (error) {
+    console.error("Error fetching message status:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// --------------------- Bulk Send with Concurrency Limit ---------------------
+app.post("/send-bulk", async (req, res) => {
+  const { messages } = req.body; // [{ to, body }, ...]
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ success: false, message: "Invalid 'messages' array." });
+  }
+  const maxConcurrency = 5; // limit concurrent sends
+  const results = [];
+  for (let i = 0; i < messages.length; i += maxConcurrency) {
+    const chunk = messages.slice(i, i + maxConcurrency);
+    const promises = chunk.map(({ to, body }) =>
+      twilioClient.messages.create({ to, body, from: twilioPhoneNumber })
+    );
+    try {
+      const sentMessages = await Promise.all(promises);
+      results.push(...sentMessages);
+    } catch (err) {
+      console.error("Error in bulk message:", err);
+      // Optionally handle retries here
+    }
+  }
+  const sids = results.map(m => m.sid);
+  res.json({ success: true, messageSids: sids });
+});
+
+// --------------------- Send via AWS SNS ---------------------
+async function sendSNS(phoneNumber, message) {
   const params = {
     Message: message,
-    PhoneNumber: phoneNumber, // E.164 format e.g., +1234567890
+    PhoneNumber: phoneNumber, // E.164 format
   };
-
   try {
     const result = await sns.publish(params).promise();
-    console.log('SMS sent:', result);
+    console.log('SNS message sent:', result);
   } catch (err) {
-    console.error('Error sending SMS:', err);
+    console.error('Error sending SNS message:', err);
   }
 }
 
-// Usage example:
-const phoneNumber = '+1234567890'; // replace with actual number
-const message = 'Your order is arriving soon!';
+app.post("/send-sns", async (req, res) => {
+  const { phoneNumber, message } = req.body;
+  if (!phoneNumber || !message) {
+    return res.status(400).json({ success: false, message: "Missing 'phoneNumber' or 'message'" });
+  }
+  try {
+    const result = await sendSNS(phoneNumber, message);
+    res.json({ success: true, result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
-sendSMS(phoneNumber, message);
+// --------------------- Start Server ---------------------
+app.listen(port, () => {
+  console.log(`Server listening at http://localhost:${port}`);
+});
