@@ -1,9 +1,9 @@
 import { LocationClient, BatchUpdateDevicePositionCommand } from "@aws-sdk/client-location";
 
-// Initialize the AWS Location client (ensure AWS credentials are configured in your environment)
+// Initialize AWS Location client (ensure AWS credentials are configured in your environment)
 const client = new LocationClient({ region: "us-east-1" });
 
-// Device ID and Tracker Name (replace with your actual names)
+// Device and tracker configuration (replace with your actual identifiers)
 const TRACKER_NAME = "MyDeviceTracker";
 const DEVICE_ID = "device-001";
 
@@ -24,7 +24,7 @@ async function updateAWSTracker(position) {
 
   try {
     await client.send(command);
-    console.log("Position updated successfully:", position.coords);
+    console.log(`Position updated: (${latitude.toFixed(5)}, ${longitude.toFixed(5)})`);
   } catch (error) {
     console.error("Error updating position:", error);
   }
@@ -38,7 +38,7 @@ function startTracking() {
   }
 
   if (watchId !== null) {
-    console.log("Tracking already active.");
+    console.log("Tracking is already active.");
     return;
   }
 
@@ -62,7 +62,8 @@ function stopTracking() {
   }
 }
 
-// Optionally, automatically start tracking
+// Optional: Automatically start tracking
 // startTracking();
 
-// You can call startTracking() to begin, and stopTracking() to end tracking.
+// Expose functions if needed elsewhere
+// export { startTracking, stopTracking };

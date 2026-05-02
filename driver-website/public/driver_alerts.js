@@ -1,78 +1,91 @@
-// Import the required Twilio library
+// Import the Twilio library
 const twilio = require('twilio');
 
-// Twilio credentials from Twilio Console
+// Twilio credentials from environment variables
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
+const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+
 const client = new twilio(accountSid, authToken);
 
 /**
- * Sends a driver alert via SMS
- * @param {string} driverPhoneNumber - Driver phone number (E.164 format)
- * @param {string} messageBody - The alert message text
+ * Validates phone numbers (basic check for E.164 format)
+ * @param {string} phoneNumber
+ * @returns {boolean}
  */
-function sendDriverAlert(driverPhoneNumber, messageBody) {
-    client.messages
-        .create({
-            body: `DRIVER ALERT: ${messageBody}`,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: driverPhoneNumber,
-        })
-        .then((message) => {
-            console.log(`Driver alert sent: ${message.sid}`);
-        })
-        .catch((error) => {
-            console.error(`Failed to send driver alert: ${error.message}`);
-        });
+function isValidPhoneNumber(phoneNumber) {
+  const e164Regex = /^\+?[1-9]\d{1,14}$/;
+  return e164Regex.test(phoneNumber);
 }
 
 /**
- * Sends a customer notification via SMS
- * @param {string} customerPhoneNumber - Customer phone number (E.164 format)
- * @param {string} messageBody - The notification message text
+ * Sends an SMS message via Twilio
+ * @param {string} to - Recipient phone number
+ * @param {string} message - Message content
+ * @returns {Promise}
  */
-function sendCustomerNotification(customerPhoneNumber, messageBody) {
-    client.messages
-        .create({
-            body: `Notification: ${messageBody}`,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: customerPhoneNumber,
-        })
-        .then((message) => {
-            console.log(`Customer notification sent: ${message.sid}`);
-        })
-        .catch((error) => {
-            console.error(`Failed to send customer notification: ${error.message}`);
-        });
+async function sendMessage(to, message) {
+  if (!isValidPhoneNumber(to)) {
+    console.error(`Invalid phone number: ${to}`);
+    return;
+  }
+  if (!message || typeof message !== 'string') {
+    console.error('Invalid message content.');
+    return;
+  }
+  try {
+    const msg = await client.messages.create({
+      body: message,
+      from: fromNumber,
+      to: to,
+    });
+    console.log(`Message sent: ${msg.sid}`);
+  } catch (error) {
+    console.error(`Failed to send message to ${to}: ${error.message}`);
+  }
 }
 
 /**
- * Sends a delivery status update
- * @param {string} recipientPhoneNumber - Recipient phone number (E.164 format)
- * @param {string} deliveryStatus - Status message (e.g., 'Delivered', 'In Transit')
+ * Sends a driver alert SMS
+ * @param {string} driverPhoneNumber
+ * @param {string} messageBody
  */
-function sendDeliveryStatusUpdate(recipientPhoneNumber, deliveryStatus) {
-    const messageBody = `Your delivery status: ${deliveryStatus}`;
-    client.messages
-        .create({
-            body: messageBody,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: recipientPhoneNumber,
-        })
-        .then((message) => {
-            console.log(`Delivery status update sent: ${message.sid}`);
-        })
-        .catch((error) => {
-            console.error(`Failed to send delivery status: ${error.message}`);
-        });
+async function sendDriverAlert(driverPhoneNumber, messageBody) {
+  await sendMessage(driverPhoneNumber, `DRIVER ALERT: ${messageBody}`);
 }
 
 /**
- * Sends a group notification message to multiple recipients
- * @param {Array<string>} phoneNumbers - Array of phone numbers (E.164 format)
- * @param {string} messageBody - The message text
+ * Sends a customer notification SMS
+ * @param {string} customerPhoneNumber
+ * @param {string} messageBody
  */
+async function sendCustomerNotification(customerPhoneNumber, messageBody) {
+  await sendMessage(customerPhoneNumber, `Notification: ${messageBody}`);
+}
 
+/**
+ * Sends a delivery status update SMS
+ * @param {string} recipientPhoneNumber
+ * @param {string} deliveryStatus
+ */
+async function sendDeliveryStatusUpdate(recipientPhoneNumber, deliveryStatus) {
+  const messageBody = `Your delivery status: ${deliveryStatus}`;
+  await sendMessage(recipientPhoneNumber, messageBody);
+}
+
+/**
+ * Sends a group notification SMS to multiple recipients
+ * @param {Array<string>} phoneNumbers
+ * @param {string} messageBody
+ */
+async function sendGroupNotification(phoneNumbers, messageBody) {
+  if (!Array.isArray(phoneNumbers) || phoneNumbers.length === 0) {
+    console.error('Phone numbers array is invalid or empty.');
+    return;
+  }
+  const promises = phoneNumbers.map((number) => sendMessage(number, messageBody));
+  await Promise.all(promises);
+}
 
 // Example usage:
 // sendDriverAlert('+15551234567', 'New delivery assignment available.');
