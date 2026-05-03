@@ -661,125 +661,148 @@ const supabaseKey = process.env.SUPABASE_KEY; // actual key
 const supabase = createClient(supabaseUrl, supabaseKey)
 const userId = localStorage.getItem('user_id');
 
-// Fetch user data
+// Fetch user data with improved error handling
 async function fetchUser() {
-  const { data: user, error } = await supabase
-    .from('user')
-    .select(
-      `
-      id,
-      username,
-      email,
-      name,
-      role,
-      order_cart,
-      checkout_cart,
-      pick_up_point,
-      drop_off_point,
-      longitude,
-      latitude,
-      location_name,
-      ORDER_ID
-    `
-    );
-  if (error) {
-    console.error('Error fetching user:', error);
+  try {
+    const { data: user, error } = await supabase
+      .from('user')
+      .select(`
+        id,
+        username,
+        email,
+        name,
+        role,
+        order_cart,
+        checkout_cart,
+        pick_up_point,
+        drop_off_point,
+        longitude,
+        latitude,
+        location_name,
+        ORDER_ID
+      `)
+      .single(); // assuming fetching current user, so single() is used
+    if (error) throw error;
+    return user;
+  } catch (err) {
+    console.error('Error fetching user:', err);
     return null;
   }
-  return user;
 }
 
-// Initialize real-time subscriptions
+// Setup real-time subscriptions with optional cleanup
 function subscribeToTable(tableName, callback) {
-  return supabase
-    .from(`${tableName}`)
+  const subscription = supabase
+    .from(tableName)
     .on('*', payload => {
       console.log(`Change received on ${tableName}: `, payload);
       callback(payload);
     })
     .subscribe();
+
+  // Return a function to unsubscribe if needed
+  return () => {
+    supabase.removeSubscription(subscription);
+  };
 }
 
-// Call this function after initial render to set up real-time updates
+// Initialize all real-time subscriptions
 function setupRealtimeUpdates() {
-  // Items
-  subscribeToTable('items', renderItems);
-  // Orders
-  subscribeToTable('orders', renderOrders);
-  // Users
-  subscribeToTable('users', renderUsers);
-  // Add other tables as needed
+  const unsubscribeItems = subscribeToTable('items', renderItems);
+  const unsubscribeOrders = subscribeToTable('orders', renderOrders);
+  const unsubscribeUsers = subscribeToTable('users', renderUsers);
+  // Store these if you need to unsubscribe later
+  // e.g., return [unsubscribeItems, unsubscribeOrders, unsubscribeUsers];
 }
 
-// Render functions
+// Render functions with improved structure
 async function renderItems() {
-  const { data, error } = await supabase.from('items').select('*');
-  if (error) {
+  try {
+    const { data, error } = await supabase.from('items').select('*');
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      document.getElementById('itemsTable').innerHTML = '<p>No items available.</p>';
+      return;
+    }
+    let html = `<table class="table"><thead><tr><th>Vendor</th><th>Name</th><th>Price</th><th>Status</th></tr></thead><tbody>`;
+    data.forEach(item => {
+      html += `<tr>
+        <td>${escapeHTML(item.vendor)}</td>
+        <td>${escapeHTML(item.item_name)}</td>
+        <td>ZAR ${item.price.toFixed(2)}</td>
+        <td>${escapeHTML(item.stock_status)}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('itemsTable').innerHTML = html;
+  } catch (err) {
     document.getElementById('itemsTable').innerHTML = '<p>Error loading items.</p>';
-    return;
+    console.error(err);
   }
-  if (data.length === 0) {
-    document.getElementById('itemsTable').innerHTML = '<p>No items available.</p>';
-    return;
-  }
-  let html = `<table><thead><tr><th>Vendor</th><th>Name</th><th>Price</th><th>Status</th></tr></thead><tbody>`;
-  data.forEach(item => {
-    html += `<tr>
-      <td>${item.vendor}</td>
-      <td>${item.item_name}</td>
-      <td>ZAR ${item.price.toFixed(2)}</td>
-      <td>${item.stock_status}</td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  document.getElementById('itemsTable').innerHTML = html;
 }
 
 async function renderOrders() {
-  const { data, error } = await supabase.from('orders').select('*');
-  if (error) {
+  try {
+    const { data, error } = await supabase.from('orders').select('*');
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      document.getElementById('ordersTable').innerHTML = '<p>No orders available.</p>';
+      return;
+    }
+    let html = `<table class="table"><thead><tr><th>Order ID</th><th>User</th><th>Email</th><th>Method</th><th>Amount</th></tr></thead><tbody>`;
+    data.forEach(order => {
+      html += `<tr>
+        <td>${escapeHTML(order.order_id)}</td>
+        <td>${escapeHTML(order.user_name)}</td>
+        <td>${escapeHTML(order.user_email)}</td>
+        <td>${escapeHTML(order.payment_method)}</td>
+        <td>ZAR ${order.amount.toFixed(2)}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('ordersTable').innerHTML = html;
+  } catch (err) {
     document.getElementById('ordersTable').innerHTML = '<p>Error loading orders.</p>';
-    return;
+    console.error(err);
   }
-  if (data.length === 0) {
-    document.getElementById('ordersTable').innerHTML = '<p>No orders available.</p>';
-    return;
-  }
-  let html = `<table><thead><tr><th>Order ID</th><th>User</th><th>Email</th><th>Method</th><th>Amount</th></tr></thead><tbody>`;
-  data.forEach(order => {
-    html += `<tr>
-      <td>${order.order_id}</td>
-      <td>${order.user_name}</td>
-      <td>${order.user_email}</td>
-      <td>${order.payment_method}</td>
-      <td>ZAR ${order.amount.toFixed(2)}</td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  document.getElementById('ordersTable').innerHTML = html;
 }
 
 async function renderUsers() {
-  const { data, error } = await supabase.from('users').select('*');
-  if (error) {
+  try {
+    const { data, error } = await supabase.from('users').select('*');
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      document.getElementById('usersTable').innerHTML = '<p>No users available.</p>';
+      return;
+    }
+    let html = `<table class="table"><thead><tr><th>Email</th><th>Name</th></tr></thead><tbody>`;
+    data.forEach(user => {
+      html += `<tr>
+        <td>${escapeHTML(user.email)}</td>
+        <td>${escapeHTML(user.name)}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('usersTable').innerHTML = html;
+  } catch (err) {
     document.getElementById('usersTable').innerHTML = '<p>Error loading users.</p>';
-    return;
+    console.error(err);
   }
-  if (data.length === 0) {
-    document.getElementById('usersTable').innerHTML = '<p>No users available.</p>';
-    return;
-  }
-  let html = `<table><thead><tr><th>Email</th><th>Name</th></tr></thead><tbody>`;
-  data.forEach(user => {
-    html += `<tr>
-      <td>${user.email}</td>
-      <td>${user.name}</td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  document.getElementById('usersTable').innerHTML = html;
 }
 
+// Utility to escape HTML to prevent XSS
+function escapeHTML(str) {
+  return str ? str.replace(/[&<>"']/g, match => {
+    const escapeMap = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    };
+    return escapeMap[match];
+  }) : '';
+}
 // Call setupRealtimeUpdates after initial load
 window.onload = () => {
   setupRealtimeUpdates();
