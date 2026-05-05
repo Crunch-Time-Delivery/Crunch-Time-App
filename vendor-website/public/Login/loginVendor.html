@@ -105,9 +105,8 @@
 </div>
 
 <script>
-
-  // Function to send SMS via backend API
-  function sendSms(toNumber, message) {
+// Function to send SMS via backend API
+function sendSms(toNumber, message) {
   fetch('http://localhost:3000/send-sms', {
     method: 'POST',
     headers: {
@@ -117,37 +116,31 @@
   })
   .then(response => response.json())
   .then(data => {
-    if(data.success) {
-      // Show success notification
+    if (data.success) {
       showNotification('SMS sent successfully.', 'success');
     } else {
-      // Show failure notification with error message
-      showNotification('Failed to send SMS: ' + data.error, 'error');
+      showNotification('Failed to send SMS: ' + (data.error || 'Unknown error'), 'error');
     }
   })
   .catch(() => {
-    // Show error notification if fetch fails
     showNotification('Error sending SMS.', 'error');
   });
 }
 
 // Helper function to display notifications
 function showNotification(message, type) {
-  // Create a notification element
   const notification = document.createElement('div');
   notification.innerText = message;
-  notification.className = `notification ${type}`; // style based on type
-  
-  // Append to body or a specific container
+  notification.className = `notification ${type}`; // Apply styles based on type
   document.body.appendChild(notification);
-  
-  // Remove after 3 seconds
   setTimeout(() => {
-    document.body.removeChild(notification);
+    if (notification.parentNode) {
+      notification.parentNode.removeChild(notification);
+    }
   }, 3000);
 }
 
-// Check message status
+// Fetch message status from backend
 function checkMessageStatus(messageSid, callback) {
   fetch('http://localhost:3001/twilio-message-status', {
     method: 'POST',
@@ -159,37 +152,44 @@ function checkMessageStatus(messageSid, callback) {
     if (callback) callback(data);
   })
   .catch(() => {
-    showNotificationMessage('Error fetching message status.', '#f44336');
+    showNotification('Error fetching message status.', 'error');
   });
 }
 
 // Fetch message logs
 function fetchMessageLogs(limit = 10, callback) {
-  fetch(`http://localhost:3001/twilio-message-logs`)
+  fetch(`http://localhost:3001/twilio-message-logs?limit=${limit}`)
     .then(res => res.json())
     .then(data => {
       if (callback) callback(data);
     })
     .catch(() => {
-      showNotificationMessage('Error fetching message logs.', '#f44336');
+      showNotification('Error fetching message logs.', 'error');
     });
 }
+
+// Callbacks for various events
 function onSendSuccess(sid) {
   console.log(`Message sent successfully. SID: ${sid}`);
-  showNotificationMessage(`Message sent! SID: ${sid}`, '#4CAF50');
+  showNotification(`Message sent! SID: ${sid}`, 'success');
 }
+
 function onSendFailure(error) {
   console.error('Failed to send message:', error);
-  showNotificationMessage(`Failed to send message: ${error}`, '#f44336');
+  showNotification(`Failed to send message: ${error}`, 'error');
 }
+
 function onStatusUpdate(statusData) {
   console.log('Message status update:', statusData);
-  showNotificationMessage(`Status: ${statusData.status} for SID: ${statusData.sid}`, '#2196F3');
+  showNotification(`Status: ${statusData.status} for SID: ${statusData.sid}`, 'info');
 }
+
 function onError(errorMsg) {
   console.error('Error:', errorMsg);
-  showNotificationMessage(`Error: ${errorMsg}`, '#f44336');
+  showNotification(`Error: ${errorMsg}`, 'error');
 }
+
+// Monitor message status periodically
 function monitorMessageStatus(sid) {
   const intervalId = setInterval(() => {
     checkMessageStatus(sid, (statusData) => {
@@ -198,10 +198,8 @@ function monitorMessageStatus(sid) {
         clearInterval(intervalId);
       }
     });
-  }, 5000); // check every 5 seconds
+  }, 5000); // Check every 5 seconds
 }
-
- 
   let currentOTP = '';
 
   // Generate OTP

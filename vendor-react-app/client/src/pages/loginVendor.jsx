@@ -17,18 +17,36 @@ function VendorLogin() {
     generateOTP();
   }, []);
 
-  const sendSms = (toNumber, message) => {
-    fetch('http://localhost:3000/send-sms', {
+const sendSms = async (toNumber, message) => {
+  try {
+    const response = await fetch('http://localhost:3000/send-sms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ to: toNumber, message }),
-    })
-    .then(res => res.json())
-    .then(data => {
-      alert(data.success ? 'SMS sent successfully.' : 'Failed to send SMS: ' + data.error);
-    })
-    .catch(() => alert('Error sending SMS.'));
-  };
+    });
+    const data = await response.json();
+    if (data.success) {
+      showNotification('SMS sent successfully.', 'success');
+    } else {
+      showNotification('Failed to send SMS: ' + (data.error || 'Unknown error'), 'error');
+    }
+  } catch {
+    showNotification('Error sending SMS.', 'error');
+  }
+};
+
+// Example notification function
+function showNotification(message, type) {
+  const notification = document.createElement('div');
+  notification.innerText = message;
+  notification.className = `notification ${type}`;
+  document.body.appendChild(notification);
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.parentNode.removeChild(notification);
+    }
+  }, 3000);
+}
 
   const generateOTP = () => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();

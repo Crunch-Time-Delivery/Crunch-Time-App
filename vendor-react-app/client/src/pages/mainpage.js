@@ -740,7 +740,7 @@ const pageSize = 10; // Records per page
 let currentPage = 1; // Track current page
 let currentFilters = {}; // Store filters
 
-// Main fetch function with filters and pagination
+// Fetch payments with filters and pagination
 async function fetchPayments({ page = 1, filters = {} } = {}) {
   currentPage = page;
   currentFilters = filters;
@@ -752,7 +752,7 @@ async function fetchPayments({ page = 1, filters = {} } = {}) {
 
   try {
     let query = supabase.from('payment_history').select('*', { count: 'exact' });
-    
+
     // Apply filters
     if (filters.payment_method) query = query.eq('payment_method', filters.payment_method);
     if (filters.status) query = query.eq('status', filters.status);
@@ -764,12 +764,11 @@ async function fetchPayments({ page = 1, filters = {} } = {}) {
     const { count, error: countError } = await query.order('payment_date', { ascending: false }).range(0, 0);
     if (countError) throw countError;
 
-    // Fetch data for current page
+    // Fetch current page data
     const { data, error } = await query.order('payment_date', { ascending: false }).range((page - 1) * pageSize, (page * pageSize) - 1);
     hideLoadingSpinner();
 
     if (error) throw error;
-
     renderPayments(data, count, page);
   } catch (err) {
     hideLoadingSpinner();
@@ -778,7 +777,7 @@ async function fetchPayments({ page = 1, filters = {} } = {}) {
   }
 }
 
-// Render payments with pagination
+// Render payments with pagination controls
 function renderPayments(data, totalCount, page) {
   const container = document.getElementById('paymentHistoryContainer');
 
@@ -844,15 +843,17 @@ function changePage(page) {
   fetchPayments({ page, filters: currentFilters });
 }
 
-// Show/hide spinner (implement as needed)
+// Placeholder for showing spinner
 function showLoadingSpinner() {
-  // e.g., show overlay or spinner
-}
-function hideLoadingSpinner() {
-  // hide overlay or spinner
+  // Implement spinner show logic
 }
 
-// Apply filters
+// Placeholder for hiding spinner
+function hideLoadingSpinner() {
+  // Implement spinner hide logic
+}
+
+// Apply filters based on UI inputs
 async function applyFilters() {
   const method = document.getElementById('filterMethod').value;
   const status = document.getElementById('filterStatus').value;
@@ -880,7 +881,7 @@ function clearFilters() {
   fetchPayments({ page: 1, filters: {} });
 }
 
-// Export current table to CSV
+// Export table to CSV
 function exportPaymentsToCSV() {
   const table = document.querySelector('.payment-table');
   if (!table) {
@@ -905,105 +906,13 @@ function exportPaymentsToCSV() {
   URL.revokeObjectURL(url);
 }
 
-// Fetch total payment stats
-async function refreshPaymentStats() {
-  try {
-    const { data, error } = await supabase.from('payment_history').select('amount');
-    if (error) throw error;
-    const totalAmount = data.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-    document.getElementById('totalPayments').innerText = `Total Payments: R ${totalAmount.toFixed(2)}`;
-  } catch (err) {
-    console.error('Error fetching stats:', err);
-  }
-}
+// Initial fetch
+fetchPayments();
 
-// Initiate PayFast payment
-function initiatePayFastPayment(amount, itemName, merchantId, merchantKey, notifyUrl, returnUrl, cancelUrl) {
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = 'https://sandbox.payfast.co.za/eng/process'; // Use live URL in production
-
-  form.appendChild(createHiddenInput('merchant_id', merchantId));
-  form.appendChild(createHiddenInput('merchant_key', merchantKey));
-  form.appendChild(createHiddenInput('return_url', returnUrl));
-  form.appendChild(createHiddenInput('cancel_url', cancelUrl));
-  form.appendChild(createHiddenInput('notify_url', notifyUrl));
-  form.appendChild(createHiddenInput('amount', amount));
-  form.appendChild(createHiddenInput('item_name', itemName));
-
-  document.body.appendChild(form);
-  form.submit();
-}
-
-function createHiddenInput(name, value) {
-  const input = document.createElement('input');
-  input.type = 'hidden';
-  input.name = name;
-  input.value = value;
-  return input;
-}
-
-// Event listeners for filters and export buttons
+// Attach filter and export event listeners
 document.getElementById('filterBtn').addEventListener('click', () => fetchPayments({ page: 1, filters: currentFilters }));
 document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
 document.getElementById('exportBtn').addEventListener('click', exportPaymentsToCSV);
-
-// Example: Call fetchPayments() on page load
-fetchPayments();
-
-function createHiddenInput(name, value) {
-  const input = document.createElement('input');
-  input.type = 'hidden';
-  input.name = name;
-  input.value = value;
-  return input;
-}
-
-// 5. Verify payment status (optional, typically server-side)
-async function verifyPayFastPayment(paymentID) {
-  // Usually done server-side, but a stub for client-side trigger
-  try {
-    const response = await fetch('/api/verify-payfast', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paymentID }),
-    });
-    const result = await response.json();
-    if (result.status === 'verified') {
-      alert('Payment verified successfully.');
-      // Update your database status if needed
-    } else {
-      alert('Payment verification failed.');
-    }
-  } catch (err) {
-    console.error('Error verifying payment:', err);
-  }
-}
-async function processPaymentViaEdge(paymentId) {
-  try {
-    const response = await fetch('https://your-supabase-project.supabase.co/functions/v1/processPayment', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Include any auth headers if needed
-      },
-      body: JSON.stringify({ paymentId }),
-    });
-
-    const result = await response.json();
-    alert(result.message);
-    // Optionally refresh payment data
-    fetchPayments();
-  } catch (err) {
-    console.error('Error processing payment:', err);
-  }
-}
-// 6. Call fetchPayments initially
-fetchPayments();
-// Initialize default view
-window.onload = () => {
-  showManagement('items');
-};
 async function trackRestaurantStock(restaurantId) {
   const response = await fetch(`https://your-api-gateway-url?restaurantId=${restaurantId}`);
   const data = await response.json();
