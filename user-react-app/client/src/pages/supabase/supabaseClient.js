@@ -16,30 +16,7 @@ function handleError(context, error) {
 // User functions
 // =========================
 
-// Fetch all users
-export async function fetchUsers() {
-  const { data, error } = await supabase
-    .from('User')
-    .select(`
-      id,
-      username,
-      email,
-      name,
-      role,
-      order_cart,
-      checkout_cart,
-      pick_up_point,
-      drop_off_point,
-      longitude,
-      latitude,
-      location_name,
-      ORDER_ID,
-      created_at
-    `)
-    .order('created_at', { ascending: false });
-  if (error) handleError('fetchUsers', error);
-  return data;
-}
+
 
 // Fetch user by ID
 export async function fetchUserById(id) {

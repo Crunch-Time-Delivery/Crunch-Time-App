@@ -1,6 +1,3 @@
-
-
-
 import React, { useState } from 'react'
 // Import your components & hooks here
 import { Auth } from './components/Auth.jsx'
@@ -20,6 +17,7 @@ function App() {
   const [showRoleInfoPopup, setShowRoleInfoPopup] = useState(false)
   const [currentRole, setCurrentRole] = useState({ email: '', roleType: '' })
   const [infoBoxes, setInfoBoxes] = useState([])
+
   const { showNotificationMessage } = useNotification()
   const { sendTwilioSms } = useSms()
 
@@ -34,6 +32,7 @@ function App() {
   }
 
   const handleSendSms = () => {
+    // Example: send SMS to a fixed number
     sendTwilioSms('+1234567890', 'Hello from the dashboard!')
   }
 
@@ -61,8 +60,8 @@ function App() {
           />
         </>
       )}
-
-    
-
+    </div>
+  )
+}
 
 export default App
