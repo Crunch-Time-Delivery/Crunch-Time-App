@@ -7,7 +7,6 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
 const client = new twilio(accountSid, authToken);
-
 /**
  * Validates phone numbers (basic check for E.164 format)
  * @param {string} phoneNumber
@@ -22,7 +21,7 @@ function isValidPhoneNumber(phoneNumber) {
  * Sends an SMS message via Twilio
  * @param {string} to - Recipient phone number
  * @param {string} message - Message content
- * @returns {Promise}
+ * @returns {Promise<void>}
  */
 async function sendMessage(to, message) {
   if (!isValidPhoneNumber(to)) {
@@ -33,13 +32,14 @@ async function sendMessage(to, message) {
     console.error('Invalid message content.');
     return;
   }
+
   try {
     const msg = await client.messages.create({
       body: message,
       from: fromNumber,
       to: to,
     });
-    console.log(`Message sent: ${msg.sid}`);
+    console.log(`Message sent to ${to}: SID ${msg.sid}`);
   } catch (error) {
     console.error(`Failed to send message to ${to}: ${error.message}`);
   }
@@ -51,7 +51,8 @@ async function sendMessage(to, message) {
  * @param {string} messageBody
  */
 async function sendDriverAlert(driverPhoneNumber, messageBody) {
-  await sendMessage(driverPhoneNumber, `DRIVER ALERT: ${messageBody}`);
+  const message = `DRIVER ALERT: ${messageBody}`;
+  await sendMessage(driverPhoneNumber, message);
 }
 
 /**
@@ -60,7 +61,8 @@ async function sendDriverAlert(driverPhoneNumber, messageBody) {
  * @param {string} messageBody
  */
 async function sendCustomerNotification(customerPhoneNumber, messageBody) {
-  await sendMessage(customerPhoneNumber, `Notification: ${messageBody}`);
+  const message = `Notification: ${messageBody}`;
+  await sendMessage(customerPhoneNumber, message);
 }
 
 /**
@@ -69,13 +71,13 @@ async function sendCustomerNotification(customerPhoneNumber, messageBody) {
  * @param {string} deliveryStatus
  */
 async function sendDeliveryStatusUpdate(recipientPhoneNumber, deliveryStatus) {
-  const messageBody = `Your delivery status: ${deliveryStatus}`;
-  await sendMessage(recipientPhoneNumber, messageBody);
+  const message = `Your delivery status: ${deliveryStatus}`;
+  await sendMessage(recipientPhoneNumber, message);
 }
 
 /**
  * Sends a group notification SMS to multiple recipients
- * @param {Array<string>} phoneNumbers
+ * @param {Array<string>} phoneNumbers - Array of phone numbers
  * @param {string} messageBody
  */
 async function sendGroupNotification(phoneNumbers, messageBody) {
@@ -83,6 +85,14 @@ async function sendGroupNotification(phoneNumbers, messageBody) {
     console.error('Phone numbers array is invalid or empty.');
     return;
   }
+
+  // Validate all phone numbers before sending
+  const invalidNumbers = phoneNumbers.filter((number) => !isValidPhoneNumber(number));
+  if (invalidNumbers.length > 0) {
+    console.error(`Invalid phone numbers found: ${invalidNumbers.join(', ')}`);
+    return;
+  }
+
   const promises = phoneNumbers.map((number) => sendMessage(number, messageBody));
   await Promise.all(promises);
 }
