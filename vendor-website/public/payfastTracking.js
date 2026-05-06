@@ -110,6 +110,38 @@ function handleIPNNotification(ipnData) {
     console.error('Error updating order status:', err);
   });
 }
+// IPN handler route
+app.post('/payfast/ipn', (req, res) => {
+  const ipnData = req.body;
 
+  // Validate the IPN data using payfast-lib or custom validation
+  // Example: validate checksum, transaction status, etc.
+  // For example:
+  const isValid = validatePayFastIPN(ipnData);
+
+  if (isValid) {
+    // Handle the transaction status
+    if (ipnData.payment_status === 'COMPLETE') {
+      // Payment successful
+      // Update order status, notify user, etc.
+      console.log('Payment completed for transaction:', ipnData.merchant_id);
+    } else {
+      // Handle other statuses: PENDING, FAILED, etc.
+      console.log('Payment status:', ipnData.payment_status);
+    }
+    res.status(200).send('OK'); // Respond to PayFast
+  } else {
+    console.error('Invalid IPN data');
+    res.status(400).send('Invalid IPN');
+  }
+});
+
+// Function to validate IPN data (implement according to payfast-lib)
+function validatePayFastIPN(ipnData) {
+  // Use payfast-lib's validation or custom logic
+  // Example: verify checksum, transaction details, etc.
+  // Placeholder:
+  return true; // Replace with actual validation logic
+}
 // Usage example (call when user confirms payment):
 // initiatePayFastPayment(100.00, 'Order #1234', 'customer@example.com');
