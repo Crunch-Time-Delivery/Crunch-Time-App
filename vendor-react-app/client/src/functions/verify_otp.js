@@ -14,14 +14,25 @@ const client = twilio(accountSid, authToken);
 // Endpoint to send the OTP
 app.post('/send-otp', async (req, res) => {
   const { phoneNumber } = req.body;
+
+  // Validate phoneNumber presence and format
+  if (!phoneNumber || typeof phoneNumber !== 'string') {
+    return res.status(400).send({ success: false, message: 'Invalid or missing phoneNumber' });
+  }
+
   try {
+    // Send verification via Twilio Verify Service
     const verification = await client.verify.v2.services(verifyServiceSid)
       .verifications
       .create({ to: phoneNumber, channel: 'sms' });
 
+    // Respond with success and verification SID
     res.status(200).send({ success: true, sid: verification.sid });
   } catch (error) {
-    console.error(error);
+    // Log error details for debugging
+    console.error('Error sending OTP:', error);
+
+    // Respond with error message
     res.status(500).send({ success: false, error: error.message });
   }
 });
