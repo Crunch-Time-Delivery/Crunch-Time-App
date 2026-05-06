@@ -383,7 +383,31 @@ function updateDriverLocation(pos) {
 
   document.getElementById('driverLocation')?.innerText = `Driver at (${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)})`;
 }
+// New function to track user's location.
+const trackLocation = ({ onSuccess, onError = () => { } }) => {
+  if ('geolocation' in navigator === false) {
+    return onError(new Error('Geolocation is not supported by your browser.'));
+  }
 
+  // Use watchPosition instead.
+  return navigator.geolocation.watchPosition(onSuccess, onError);
+};
+
+function init() {
+  const initialPosition = { lat: 59.325, lng: 18.069 };
+  const map = createMap(initialPosition);
+  const marker = createMarker({ map, position: initialPosition });
+
+  // Use the new trackLocation function.
+  trackLocation({
+    onSuccess: ({ coords: { latitude: lat, longitude: lng } }) => {
+      marker.setPosition({ lat, lng });
+      map.panTo({ lat, lng });
+    },
+    onError: err =>
+      alert(`Error: ${getPositionErrorMessage(err.code) || err.message}`)
+  });
+}
 // Periodically fetch driver position from AWS
 function startFetchingDriverLocation() {
   async function fetchAndUpdate() {

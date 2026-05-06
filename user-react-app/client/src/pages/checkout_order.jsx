@@ -87,6 +87,91 @@ function DriverMap({ driverId }) {
     }
   };
 
+function getPositionErrorMessage(code) {
+  // Your existing function to get error messages based on code
+  switch (code) {
+    case 1:
+      return 'Permission denied.';
+    case 2:
+      return 'Position unavailable.';
+    case 3:
+      return 'Timeout expired.';
+    default:
+      return 'An unknown error occurred.';
+  }
+}
+
+const MapComponent = () => {
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const watchIdRef = useRef(null);
+
+  const createMap = (center) => {
+    // Replace with your map creation logic, e.g., Google Maps API
+    const map = new window.google.maps.Map(mapRef.current, {
+      center,
+      zoom: 14,
+    });
+    return map;
+  };
+
+  const createMarker = ({ map, position }) => {
+    const marker = new window.google.maps.Marker({
+      position,
+      map,
+    });
+    return marker;
+  };
+
+  const trackLocation = ({ onSuccess, onError = () => {} }) => {
+    if (!('geolocation' in navigator)) {
+      onError(new Error('Geolocation is not supported by your browser.'));
+      return;
+    }
+
+    // Use watchPosition and store the watch ID for cleanup
+    const id = navigator.geolocation.watchPosition(onSuccess, onError);
+    watchIdRef.current = id;
+    return id;
+  };
+
+  useEffect(() => {
+    const initialPosition = { lat: 59.325, lng: 18.069 };
+    const map = createMap(initialPosition);
+    const marker = createMarker({ map, position: initialPosition });
+    mapRef.current = map;
+    markerRef.current = marker;
+
+    // Start tracking location
+    trackLocation({
+      onSuccess: ({ coords: { latitude: lat, longitude: lng } }) => {
+        if (markerRef.current && mapRef.current) {
+          const newPosition = { lat, lng };
+          markerRef.current.setPosition(newPosition);
+          mapRef.current.panTo(newPosition);
+        }
+      },
+      onError: (err) => {
+        alert(`Error: ${getPositionErrorMessage(err.code) || err.message}`);
+      },
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={mapRef}
+      style={{ width: '100%', height: '400px' }}
+    />
+  );
+};
+
   // Function to create or move driver marker
   const updateDriverMarker = (position) => {
     if (!driverMarkerRef.current) {

@@ -158,7 +158,7 @@ body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
 <div id="notification" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:8px; display:none; z-index:9999;"></div>
 
 <!-- Load Google Maps API -->
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdT7PxOkbqfIt0ejcbRPlm-17YSXzT4LY&callback=initMap"></script>
 
 <script>
 // ======================== Supabase Initialization ========================
@@ -261,7 +261,31 @@ function initMap() {
   });
   createDriverLabelOverlay();
 }
+// New function to track user's location.
+const trackLocation = ({ onSuccess, onError = () => { } }) => {
+  if ('geolocation' in navigator === false) {
+    return onError(new Error('Geolocation is not supported by your browser.'));
+  }
 
+  // Use watchPosition instead.
+  return navigator.geolocation.watchPosition(onSuccess, onError);
+};
+
+function init() {
+  const initialPosition = { lat: 59.325, lng: 18.069 };
+  const map = createMap(initialPosition);
+  const marker = createMarker({ map, position: initialPosition });
+
+  // Use the new trackLocation function.
+  trackLocation({
+    onSuccess: ({ coords: { latitude: lat, longitude: lng } }) => {
+      marker.setPosition({ lat, lng });
+      map.panTo({ lat, lng });
+    },
+    onError: err =>
+      alert(`Error: ${getPositionErrorMessage(err.code) || err.message}`)
+  });
+}
 // Create a custom overlay for the driver label
 function createDriverLabelOverlay() {
   class DriverLabelOverlay extends google.maps.OverlayView {
