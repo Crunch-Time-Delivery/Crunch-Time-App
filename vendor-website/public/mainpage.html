@@ -480,15 +480,15 @@ async function saveRestaurantInfo() {
     alert('Error saving details: ' + err.message);
   }
 }
-
 // Add Item with validation
 async function addItem() {
+  // Get input values and trim whitespace
   const vendor = document.getElementById('itemVendor').value.trim();
   const itemName = document.getElementById('itemName').value.trim();
   const priceValue = document.getElementById('itemPrice').value.trim();
   const stockStatus = document.getElementById('itemStock').value;
 
-  // Validate fields
+  // Validation
   if (!vendor) {
     alert('Please enter the vendor.');
     return;
@@ -506,7 +506,6 @@ async function addItem() {
 
   const price = parseFloat(priceValue);
 
-  // Optional: validate stock status
   const validStockStatuses = ['In Stock', 'Out of Stock', 'Limited'];
   if (!validStockStatuses.includes(stockStatus)) {
     alert('Please select a valid stock status.');
@@ -516,17 +515,22 @@ async function addItem() {
   try {
     const { data, error } = await supabase
       .from('items')
-      .insert({ vendor, item_name: itemName, price, stock_status: stockStatus });
-      
+      .insert({
+        vendor,
+        item_name: itemName,
+        price,
+        stock_status: stockStatus,
+      });
+
     if (error) {
       throw error;
     }
 
-    alert('Item added!');
-    renderItems(); // Refresh the items list
+    alert('Item added successfully!');
+    renderItems(); // Refresh the item list
   } catch (err) {
-    console.error('Add item error:', err);
-    alert('Error adding item: ' + err.message);
+    console.error('Error adding item:', err);
+    alert('Error adding item: ' + (err.message || err));
   }
 }
 
