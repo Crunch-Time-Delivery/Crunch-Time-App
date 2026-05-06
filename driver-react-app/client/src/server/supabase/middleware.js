@@ -2,7 +2,6 @@ import { createServerClient } from "@supabase/ssr";
 
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
 const supabaseKey = process.env.SUPABASE_KEY;
-
 export async function updateDriverStatus(request) {
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
@@ -11,24 +10,52 @@ export async function updateDriverStatus(request) {
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
-          request.cookies.set(name, value);
+          request.cookies.set(name, value, options);
         });
       },
     },
   });
 
-  // Parse request data (assuming JSON body with id and new status)
-  const { id, newStatus } = await request.json();
+  try {
+    // Parse and validate request data
+    const { id, newStatus } = await request.json();
 
-  // Perform the update
-  const { data, error } = await supabase
-    .from('Drivers')
-    .update({ Status: newStatus })
-    .eq('id', id);
+    if (!id || typeof newStatus !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request data' }),
+        { status: 400 }
+      );
+    }
 
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    // Update driver status
+    const { data, error } = await supabase
+      .from('Drivers')
+      .update({ Status: newStatus })
+      .eq('id', id);
+
+    if (error) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status: 500 }
+      );
+    }
+
+    if (!data || data.length === 0) {
+      return new Response(
+        JSON.stringify({ message: 'No driver found with the specified ID' }),
+        { status: 404 }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ message: 'Driver status updated', data }),
+      { status: 200 }
+    );
+  } catch (err) {
+    console.error('Error updating driver status:', err);
+    return new Response(
+      JSON.stringify({ error: 'Internal server error' }),
+      { status: 500 }
+    );
   }
-
-  return new Response(JSON.stringify({ message: 'Driver status updated', data }), { status: 200 });
 }
