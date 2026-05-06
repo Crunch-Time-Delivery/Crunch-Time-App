@@ -5,21 +5,28 @@ const API_ENDPOINT = "https://your-api-id.execute-api.region.amazonaws.com/v1/ex
 
 async function fetchApiData() {
   try {
-    // Making a GET request
+    // Make a GET request to the API endpoint
     const response = await axios.get(API_ENDPOINT, {
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
+      // Optional: add timeout or other configs here
     });
 
-    // Logging the data and status
+    // Log response status and data
     console.log("Status:", response.status);
     console.log("Data:", response.data);
   } catch (error) {
-    // Error handling
+    // Handle errors
     if (error.response) {
-      console.error("Error Response:", error.response.data);
+      // Server responded with a status outside 2xx
+      console.error("Error Response Data:", error.response.data);
+      console.error("Error Response Status:", error.response.status);
+    } else if (error.request) {
+      // No response received after request was sent
+      console.error("No response received:", error.request);
     } else {
+      // Error setting up the request
       console.error("Error Message:", error.message);
     }
   }
