@@ -16,13 +16,13 @@ async function uploadDriverPhoto(file) {
 
   try {
     // Upload the file to Supabase storage
-    const { data, error } = await supabase
+    const { data: uploadData, error: uploadError } = await supabase
       .storage
       .from('driver-photos')
       .upload(`photos/${file.name}`, file);
 
-    if (error) {
-      console.error('Error uploading photo:', error);
+    if (uploadError) {
+      console.error('Error uploading photo:', uploadError);
       return null;
     }
 
