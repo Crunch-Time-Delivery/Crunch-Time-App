@@ -99,7 +99,7 @@ const CheckoutPage = () => {
     // Simulate backend process
     backendProcessAndRedirect();
   };
-const apiKey = 'AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q';
+const apiKey = 'AIzaSyBdT7PxOkbqfIt0ejcbRPlm-17YSXzT4LY';
 
   // Example user_id_location object with latitude and longitude
   const user_id_location = {
