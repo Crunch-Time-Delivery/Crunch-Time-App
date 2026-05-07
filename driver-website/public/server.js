@@ -4,13 +4,15 @@ const app = express();
 const bodyParser = require('body-parser');
 
 app.use(bodyParser.json());
-
 // In-memory database (for demonstration)
 let users = [];
 
 // Middleware to enforce authentication
 function authMiddleware(req, res, next) {
   const email = req.headers['x-user-email'];
+  if (!email) {
+    return res.status(401).json({ message: 'Unauthorized: Missing email header' });
+  }
   const user = users.find(u => u.email === email);
   if (!user) {
     return res.status(401).json({ message: 'Unauthorized: User not found' });
@@ -38,9 +40,14 @@ function driverApprovedMiddleware(req, res, next) {
 // Register user
 app.post('/register', (req, res) => {
   const { email, password, role } = req.body;
-  if (users.find(u => u.email === email)) {
+  if (!email || !password || !role) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+  
+  if (users.some(u => u.email === email)) {
     return res.status(400).json({ message: 'Email already exists' });
   }
+
   const newUser = { email, password, role, approved: false };
   users.push(newUser);
   res.json({ message: 'Registration successful' });
@@ -49,27 +56,36 @@ app.post('/register', (req, res) => {
 // Login user
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Missing email or password' });
+  }
+  
   const user = users.find(u => u.email === email);
   if (!user || user.password !== password) {
     return res.status(401).json({ message: 'Invalid credentials' });
   }
-  // For simplicity, return user data (in real app, use tokens)
+  
+  // For demonstration, returning user data; in production, use tokens (JWT, sessions)
   res.json({ email: user.email, role: user.role, approved: user.approved });
 });
 
-// OTP verification
+// OTP verification route
 app.post('/verify-otp', authMiddleware, (req, res) => {
   const { otp } = req.body;
-  // Assume OTP is valid for demo
-  if (otp === '1234') { // Replace with real OTP check
+  if (!otp) {
+    return res.status(400).json({ message: 'OTP is required' });
+  }
+  
+  // Replace with real OTP validation logic
+  if (otp === '1234') {
     req.user.approved = true;
-    res.json({ message: 'OTP verified and user approved' });
+    return res.json({ message: 'OTP verified and user approved' });
   } else {
-    res.status(400).json({ message: 'Invalid OTP' });
+    return res.status(400).json({ message: 'Invalid OTP' });
   }
 });
 
-// Protected route example
+// Protected route: driver data
 app.get('/driver-data', authMiddleware, driverApprovedMiddleware, (req, res) => {
   if (req.user.role !== 'driver') {
     return res.status(403).json({ message: 'Forbidden: Drivers only' });
@@ -82,6 +98,7 @@ app.get('/admin-data', authMiddleware, adminMiddleware, (req, res) => {
   res.json({ data: 'Sensitive admin data' });
 });
 
+// Start server
 app.listen(3000, () => {
   console.log('Server running on port 3000');
 });
