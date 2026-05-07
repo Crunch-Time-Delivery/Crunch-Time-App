@@ -1,20 +1,17 @@
-// Lambda function to send SMS via SNS
 const AWS = require('aws-sdk');
-
-// Set AWS Region, replace with your region if needed
-AWS.config.update({ region: 'us-east-1' });
-
 const sns = new AWS.SNS();
 
 exports.handler = async (event) => {
   let body;
+
+  // Parse and validate request body
   try {
     body = JSON.parse(event.body);
-  } catch (parseErr) {
-    console.error('Invalid JSON:', parseErr);
+  } catch (err) {
+    console.error('Invalid JSON:', err);
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: 'Invalid JSON in request body' }),
+      body: JSON.stringify({ error: 'Invalid JSON' }),
     };
   }
 
