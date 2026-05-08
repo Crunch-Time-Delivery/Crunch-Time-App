@@ -681,19 +681,19 @@ async function fetchUser() {
         location_name,
         ORDER_ID
       `)
-      .single(); // assuming fetching current user, so single() is used
+      .single(); // assuming fetching current user
     if (error) throw error;
     return user;
   } catch (err) {
     console.error('Error fetching user:', err);
-    return null;
+    return null; // or handle error appropriately
   }
 }
 
 // Setup real-time subscriptions with optional cleanup
 function subscribeToTable(tableName, callback) {
   const subscription = supabase
-    .from(tableName)
+    .from(`${tableName}`)
     .on('*', payload => {
       console.log(`Change received on ${tableName}: `, payload);
       callback(payload);
@@ -792,17 +792,19 @@ async function renderUsers() {
 
 // Utility to escape HTML to prevent XSS
 function escapeHTML(str) {
-  return str ? str.replace(/[&<>"']/g, match => {
+  if (!str) return '';
+  return str.replace(/[&<>"']/g, match => {
     const escapeMap = {
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
-      "'": '&#39;'
+      "'": '&#39;',
     };
     return escapeMap[match];
-  }) : '';
+  });
 }
+
 // Call setupRealtimeUpdates after initial load
 window.onload = () => {
   setupRealtimeUpdates();

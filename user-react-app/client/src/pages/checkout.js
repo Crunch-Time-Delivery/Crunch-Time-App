@@ -95,36 +95,35 @@ function submitCardForm() {
   document.getElementById('payfastForm').submit();
 }
 
-// ======================= Signature Generation for PayFast =======================
-function generateSignature(data, passphrase) {
-  const sortedKeys = Object.keys(data).sort();
-  const queryString = sortedKeys.map(k => `${k}=${encodeURIComponent(data[k])}`).join('&');
-  const stringToHash = passphrase ? `${queryString}&passphrase=${encodeURIComponent(passphrase)}` : queryString;
-  
-  // Using CryptoJS MD5 (ensure CryptoJS is loaded)
-  return CryptoJS.MD5(stringToHash).toString();
+async function generateSignature(data, passphrase) {
+  const stringToSign = Object.values(data).join(':') + ':' + passphrase;
+  const encoder = new TextEncoder();
+  const dataBuffer = encoder.encode(stringToSign);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
 }
 
-// Prepare signature before form submission
-function preparePayFastSignature() {
-  const data = {
-    merchant_id: '10000100',
-    merchant_key: '46f0cd694581a',
-    amount: document.getElementById('pf_amount').value,
-    item_name: 'CrunchTime Order',
-    item_description: 'Food delivery checkout',
-    payment_method: document.querySelector('input[name="paymethod"]:checked').value
-  };
-  const passphrase = 'jt7NOE43FZPn';
-  const signature = generateSignature(data, passphrase);
-  document.getElementById('pf_signature').value = signature;
+async function preparePayFastSignature() {
+  try {
+    const data = {
+      merchant_id: '10000100',
+      merchant_key: '46f0cd694581a',
+      amount: document.getElementById('pf_amount').value,
+      item_name: 'CrunchTime Order',
+      item_description: 'Food delivery checkout',
+      payment_method: document.querySelector('input[name="paymethod"]:checked')?.value || '',
+    };
+    const passphrase = 'jt7NOE43FZPn';
+
+    const signature = await generateSignature(data, passphrase);
+    document.getElementById('pf_signature').value = signature;
+  } catch (error) {
+    console.error('Error generating signature:', error);
+    alert('Error generating payment signature.');
+  }
 }
-
-// Attach signature generation to form submit
-document.getElementById('payfastForm').addEventListener('submit', () => {
-  preparePayFastSignature();
-});
-
 // ======================= Utility: Card Number Formatting =======================
 function formatCardNumber(input) {
   input.value = input.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();

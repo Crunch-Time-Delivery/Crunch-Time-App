@@ -284,60 +284,35 @@ function submitCardForm() {
     backendProcessAndRedirect();
   });
 }
-
-// ======================= Signature Preparation (simulate backend signing) =======================
-async function preparePayFastSignature() {
-  const data = {
-    merchant_id: '10000100',
-    merchant_key: '46f0cd694581a',
-    amount: document.getElementById('pf_amount').value,
-    item_name: 'CrunchTime Order',
-    item_description: 'Food delivery checkout',
-    payment_method: document.querySelector('input[name="paymethod"]:checked').value
-  };
-  const passphrase = 'jt7NOE43FZPn';
-
-  const signature = generateSignature(data, passphrase);
-  document.getElementById('pf_signature').value = signature;
-  return Promise.resolve();
-}
-
-// Simple signature generator (replace with real crypto in production)
-function generateSignature(data, passphrase) {
+async function generateSignature(data, passphrase) {
   const stringToSign = Object.values(data).join(':') + ':' + passphrase;
-  return btoa(stringToSign); // For demo purposes only
+  const encoder = new TextEncoder();
+  const dataBuffer = encoder.encode(stringToSign);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
 }
 
-// ======================= Backend Payment Processing and Redirect =======================
-function backendProcessAndRedirect() {
-  const form = document.getElementById('payfastForm');
-  const formData = new FormData(form);
-  const dataObj = {};
+async function preparePayFastSignature() {
+  try {
+    const data = {
+      merchant_id: '10000100',
+      merchant_key: '46f0cd694581a',
+      amount: document.getElementById('pf_amount').value,
+      item_name: 'CrunchTime Order',
+      item_description: 'Food delivery checkout',
+      payment_method: document.querySelector('input[name="paymethod"]:checked')?.value || '',
+    };
+    const passphrase = 'jt7NOE43FZPn';
 
-  formData.forEach((value, key) => {
-    dataObj[key] = value;
-  });
-
-  fetch('/process-payment', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(dataObj),
-  })
-    .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-        // Submit the form to redirect to PayFast
-        form.submit();
-      } else {
-        alert('Payment failed: ' + result.message);
-      }
-    })
-    .catch(error => {
-      console.error('Error processing payment:', error);
-      alert('Error processing payment. Please try again.');
-    });
+    const signature = await generateSignature(data, passphrase);
+    document.getElementById('pf_signature').value = signature;
+  } catch (error) {
+    console.error('Error generating signature:', error);
+    alert('Error generating payment signature.');
+  }
 }
-
 // ======================= Optional: Handle PayFast Callback =======================
 // Implement server-side notify_url to trigger this
 function handlePayFastCallback() {
