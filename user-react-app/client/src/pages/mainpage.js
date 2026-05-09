@@ -1,3 +1,149 @@
+// Function to display notification messages
+function showNotificationMessage(text, color = '#333') {
+  let box = document.getElementById('notificationMessage');
+
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'notificationMessage';
+    box.style.position = 'fixed';
+    box.style.bottom = '20px';
+    box.style.left = '50%';
+    box.style.transform = 'translateX(-50%)';
+    box.style.padding = '12px 20px';
+    box.style.borderRadius = '8px';
+    box.style.color = '#fff';
+    box.style.fontSize = '14px';
+    box.style.zIndex = '9999';
+    box.style.transition = 'opacity 0.3s ease';
+    document.body.appendChild(box);
+  }
+
+  box.style.backgroundColor = color;
+  box.innerText = text;
+  box.style.opacity = '1';
+
+  // Clear previous timeout if exists
+  if (showNotificationMessage.timeoutId) {
+    clearTimeout(showNotificationMessage.timeoutId);
+  }
+
+  // Fade out after 4 seconds
+  showNotificationMessage.timeoutId = setTimeout(() => {
+    box.style.opacity = '0';
+    setTimeout(() => {
+      if (box) box.remove();
+    }, 300);
+  }, 4000);
+}
+
+// Function to cancel current notification immediately
+function cancelNotification() {
+  if (showNotificationMessage.timeoutId) {
+    clearTimeout(showNotificationMessage.timeoutId);
+  }
+  const box = document.getElementById('notificationMessage');
+  if (box) {
+    box.style.opacity = '0';
+    setTimeout(() => box.remove(), 300);
+  }
+}
+
+// Utility function to validate phone number format
+function isValidPhoneNumber(phoneNumber) {
+  const pattern = /^\+?\d{10,15}$/; // Basic international phone pattern
+  return pattern.test(phoneNumber);
+}
+
+// Function to display notification messages (assuming you have this implemented)
+function showNotificationMessage(message, color) {
+  // Your implementation here
+}
+
+// Function to send Twilio notification with async/await
+async function sendTwilioNotification(to, message) {
+  if (!to || !message) {
+    showNotificationMessage('Recipient and message are required.', '#f44336');
+    return { success: false, error: 'Invalid input' };
+  }
+
+  showNotificationMessage('Sending notification...', '#2196F3');
+
+  try {
+    const response = await fetch('/notify/sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, message }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.success === true) {
+      showNotificationMessage('Notification sent successfully!', '#4CAF50');
+      console.log('SMS sent:', data);
+      return { success: true, data };
+    } else {
+      showNotificationMessage(data.error || 'Failed to send notification.', '#f44336');
+      console.error('SMS failed:', data);
+      return { success: false, data };
+    }
+  } catch (error) {
+    console.error('Error sending SMS:', error);
+    showNotificationMessage('Network error. Please try again.', '#f44336');
+    return { success: false, error: error.message };
+  }
+}
+
+// Function to send notification with retries
+async function sendNotificationWithRetries(to, message, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    const result = await sendTwilioNotification(to, message);
+    if (result.success) {
+      return result;
+    }
+    if (attempt < retries) {
+      showNotificationMessage(`Retrying (${attempt}/${retries})...`, '#FFC107');
+      await new Promise((res) => setTimeout(res, 2000)); // wait 2 seconds before retry
+    }
+  }
+  showNotificationMessage('Failed after retries.', '#f44336');
+  return { success: false };
+}
+// Function to send bulk notifications
+function sendBulkNotifications(notificationsArray) {
+  notificationsArray.forEach(({ to, message }) => {
+    if (isValidPhoneNumber(to)) {
+      sendTwilioNotification(to, message);
+    } else {
+      showNotificationMessage(`Invalid phone number: ${to}`, '#f44336');
+    }
+  });
+}
+
+// Loading indicator functions
+function showLoadingIndicator() {
+  let loader = document.getElementById('loadingIndicator');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'loadingIndicator';
+    loader.innerHTML = 'Loading...'; // Can be styled further
+    loader.style.position = 'fixed';
+    loader.style.top = '50%';
+    loader.style.left = '50%';
+    loader.style.transform = 'translate(-50%, -50%)';
+    loader.style.padding = '20px';
+    loader.style.backgroundColor = '#fff';
+    loader.style.border = '1px solid #ccc';
+    loader.style.borderRadius = '8px';
+    loader.style.zIndex = '99999';
+    document.body.appendChild(loader);
+  }
+  loader.style.display = 'block';
+}
+
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
 const supabaseKey = process.env.SUPABASE_KEY; //  actual key
 const supabase = createClient(supabaseUrl, supabaseKey)

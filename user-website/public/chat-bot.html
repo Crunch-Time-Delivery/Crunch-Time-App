@@ -244,7 +244,7 @@ async function sendMessage() {
 }
 
 // Call your backend proxy for DeepAI
-const API_ENDPOINT = 'http://localhost:3000/deepai'; // your server address
+const API_ENDPOINT = 'http://localhost:3000/deepai'; // Replace with your server address
 
 async function getDeepAIResponse(message) {
   try {
@@ -255,8 +255,21 @@ async function getDeepAIResponse(message) {
       },
       body: JSON.stringify({ message }),
     });
+
+    // Check if response is OK
+    if (!response.ok) {
+      throw new Error(`Network response was not ok (${response.status})`);
+    }
+
     const data = await response.json();
-    return data.reply || 'Sorry, no response.';
+
+    // Validate response data
+    if (typeof data.reply !== 'string') {
+      console.warn('Unexpected response format:', data);
+      return 'Sorry, no response.';
+    }
+
+    return data.reply;
   } catch (err) {
     console.error('Error calling DeepAI proxy:', err);
     return 'Sorry, there was an error.';

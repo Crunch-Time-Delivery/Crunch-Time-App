@@ -67,21 +67,40 @@ function App() {
       return newMsgs;
     });
   };
-
-  const fetchDeepAIResponse = async (message) => {
+const getDeepAIResponse = async (message) => {
+    setLoading(true);
+    setError(null);
     try {
-      const res = await fetch('http://localhost:5501/deepai', {
+      const response = await fetch('http://localhost:3000/deepai', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ message }),
       });
-      const data = await res.json();
-      return data.reply || 'No response.';
+
+      if (!response.ok) {
+        throw new Error(`Network response was not ok (${response.status})`);
+      }
+
+      const data = await response.json();
+
+      if (typeof data.reply !== 'string') {
+        console.warn('Unexpected response format:', data);
+        setResponse('Sorry, no response.');
+      } else {
+        setResponse(data.reply);
+      }
     } catch (err) {
-      console.error(err);
-      return 'Error fetching response.';
+      console.error('Error calling DeepAI proxy:', err);
+      setError('Sorry, there was an error.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  return { response, loading, error, fetchResponse: getDeepAIResponse };
+ 
 
   const addMessage = (text, type, save = true) => {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

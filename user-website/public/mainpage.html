@@ -566,17 +566,33 @@ function isValidPhoneNumber(phoneNumber) {
   return pattern.test(phoneNumber);
 }
 
+// Function to display notification messages (assuming you have this implemented)
+function showNotificationMessage(message, color) {
+  // Your implementation here
+}
+
 // Function to send Twilio notification with async/await
 async function sendTwilioNotification(to, message) {
+  if (!to || !message) {
+    showNotificationMessage('Recipient and message are required.', '#f44336');
+    return { success: false, error: 'Invalid input' };
+  }
+
   showNotificationMessage('Sending notification...', '#2196F3');
+
   try {
     const response = await fetch('/notify/sms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to, message })
+      body: JSON.stringify({ to, message }),
     });
-    if (!response.ok) throw new Error('Server error');
+
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
     const data = await response.json();
+
     if (data.success === true) {
       showNotificationMessage('Notification sent successfully!', '#4CAF50');
       console.log('SMS sent:', data);
@@ -589,7 +605,7 @@ async function sendTwilioNotification(to, message) {
   } catch (error) {
     console.error('Error sending SMS:', error);
     showNotificationMessage('Network error. Please try again.', '#f44336');
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 }
 
@@ -602,13 +618,12 @@ async function sendNotificationWithRetries(to, message, retries = 3) {
     }
     if (attempt < retries) {
       showNotificationMessage(`Retrying (${attempt}/${retries})...`, '#FFC107');
-      await new Promise(res => setTimeout(res, 2000)); // wait 2 seconds before retry
+      await new Promise((res) => setTimeout(res, 2000)); // wait 2 seconds before retry
     }
   }
   showNotificationMessage('Failed after retries.', '#f44336');
   return { success: false };
 }
-
 // Function to send bulk notifications
 function sendBulkNotifications(notificationsArray) {
   notificationsArray.forEach(({ to, message }) => {
