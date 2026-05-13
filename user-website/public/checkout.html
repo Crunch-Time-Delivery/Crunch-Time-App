@@ -256,34 +256,49 @@ function toggleCardForm(show) {
 function formatCardNumber(input) {
   input.value = input.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
 }
-
 // ======================= Payment Process =======================
+
 function payNow() {
   recalc(); // Ensure totals are up-to-date
-  const selectedMethod = document.querySelector('input[name="paymethod"]:checked').value;
+  const selectedMethod = document.querySelector('input[name="paymethod"]:checked');
 
-  if (selectedMethod === 'cc') {
+  if (!selectedMethod) {
+    alert('Please select a payment method.');
+    return;
+  }
+
+  const methodValue = selectedMethod.value;
+
+  if (methodValue === 'cc') {
     toggleCardForm(true);
     return;
   }
 
   // Set payment method for backend
-  document.getElementById('pf_method').value = selectedMethod;
+  document.getElementById('pf_method').value = methodValue;
 
   // Prepare signature then process payment
-  preparePayFastSignature().then(() => {
-    backendProcessAndRedirect();
-  });
+  preparePayFastSignature()
+    .then(() => backendProcessAndRedirect())
+    .catch((err) => {
+      console.error('Error during payment process:', err);
+      alert('Failed to process payment. Please try again.');
+    });
 }
 
 function submitCardForm() {
   const selectedMethod = 'cc';
   document.getElementById('pf_method').value = selectedMethod;
   toggleCardForm(false);
-  preparePayFastSignature().then(() => {
-    backendProcessAndRedirect();
-  });
+
+  preparePayFastSignature()
+    .then(() => backendProcessAndRedirect())
+    .catch((err) => {
+      console.error('Error during card payment:', err);
+      alert('Failed to process card payment. Please try again.');
+    });
 }
+
 async function generateSignature(data, passphrase) {
   const stringToSign = Object.values(data).join(':') + ':' + passphrase;
   const encoder = new TextEncoder();
@@ -296,13 +311,16 @@ async function generateSignature(data, passphrase) {
 
 async function preparePayFastSignature() {
   try {
+    const amount = document.getElementById('pf_amount').value;
+    const paymentMethod = document.querySelector('input[name="paymethod"]:checked')?.value || '';
+
     const data = {
       merchant_id: '10000100',
       merchant_key: '46f0cd694581a',
-      amount: document.getElementById('pf_amount').value,
+      amount: amount,
       item_name: 'CrunchTime Order',
       item_description: 'Food delivery checkout',
-      payment_method: document.querySelector('input[name="paymethod"]:checked')?.value || '',
+      payment_method: paymentMethod,
     };
     const passphrase = 'jt7NOE43FZPn';
 
@@ -311,44 +329,48 @@ async function preparePayFastSignature() {
   } catch (error) {
     console.error('Error generating signature:', error);
     alert('Error generating payment signature.');
+    throw error; // Propagate error to caller
   }
 }
-// ======================= Optional: Handle PayFast Callback =======================
+
+// ======================= Handle PayFast Callback (optional) =======================
 // Implement server-side notify_url to trigger this
 function handlePayFastCallback() {
   console.log('Received PayFast notification/callback');
-  // Handle server-side notification
+  // Handle server-side notification here
 }
 
-// ======================= Usage =======================
-// Call toggleCardForm(true/false) when needed, e.g., on button clicks.
+// ======================= Backend Process and Redirect =======================
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Ensure this environment variable is set
-
+const supabaseKey = process.env.SUPABASE_KEY; // Ensure this env variable is set
+const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(supabaseUrl, supabaseKey);
-// Backend process and redirect
+
 function backendProcessAndRedirect() {
-  const formData = new FormData(document.getElementById('payfastForm'));
+  const form = document.getElementById('payfastForm');
+  const formData = new FormData(form);
   const dataObj = {};
-  formData.forEach((value, key) => { dataObj[key] = value; });
+  formData.forEach((value, key) => {
+    dataObj[key] = value;
+  });
 
   fetch('/process-payment', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(dataObj)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dataObj),
   })
-  .then(response => response.json())
-  .then(result => {
-    if (result.success) {
-      document.getElementById('payfastForm').submit();
-    } else {
-      alert('Payment failed: ' + result.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('Error processing payment.');
-  });
+    .then((response) => response.json())
+    .then((result) => {
+      if (result.success) {
+        form.submit(); // Submit the form to redirect to payment gateway
+      } else {
+        alert('Payment failed: ' + result.message);
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      alert('Error processing payment. Please try again.');
+    });
 }
 // Import necessary modules (make sure to install @supabase/supabase-js if not already)
 const { createClient } = require('@supabase/supabase-js');

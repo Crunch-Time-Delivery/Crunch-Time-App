@@ -74,15 +74,24 @@ function toggleCardForm(show) {
 function formatCardNumber(input) {
   input.value = input.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
 }
-
 // ======================= Main Payment Trigger =======================
 function payNow() {
   recalc();
-  const selectedMethod = document.querySelector('input[name="paymethod"]:checked').value;
+
+  const selectedMethodInput = document.querySelector('input[name="paymethod"]:checked');
+  if (!selectedMethodInput) {
+    alert('Please select a payment method.');
+    return;
+  }
+
+  const selectedMethod = selectedMethodInput.value;
+
   if (selectedMethod === 'cc') {
     toggleCardForm(true);
     return;
   }
+
+  // Set payment method and submit form for other methods
   document.getElementById('pf_method').value = selectedMethod;
   document.getElementById('payfastForm').submit();
 }
@@ -95,6 +104,7 @@ function submitCardForm() {
   document.getElementById('payfastForm').submit();
 }
 
+// ======================= Generate Signature with SHA-256 =======================
 async function generateSignature(data, passphrase) {
   const stringToSign = Object.values(data).join(':') + ':' + passphrase;
   const encoder = new TextEncoder();
@@ -105,16 +115,21 @@ async function generateSignature(data, passphrase) {
   return hashHex;
 }
 
+// ======================= Prepare Payment Signature =======================
 async function preparePayFastSignature() {
   try {
+    const amount = document.getElementById('pf_amount').value;
+    const paymentMethod = document.querySelector('input[name="paymethod"]:checked')?.value || '';
+
     const data = {
       merchant_id: '10000100',
       merchant_key: '46f0cd694581a',
-      amount: document.getElementById('pf_amount').value,
+      amount: amount,
       item_name: 'CrunchTime Order',
       item_description: 'Food delivery checkout',
-      payment_method: document.querySelector('input[name="paymethod"]:checked')?.value || '',
+      payment_method: paymentMethod,
     };
+
     const passphrase = 'jt7NOE43FZPn';
 
     const signature = await generateSignature(data, passphrase);
@@ -124,9 +139,18 @@ async function preparePayFastSignature() {
     alert('Error generating payment signature.');
   }
 }
+
 // ======================= Utility: Card Number Formatting =======================
 function formatCardNumber(input) {
   input.value = input.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
+}
+
+// ======================= Utility: Toggle Card Form =======================
+function toggleCardForm(show) {
+  const cardFormContainer = document.getElementById('cardFormContainer');
+  if (cardFormContainer) {
+    cardFormContainer.style.display = show ? 'block' : 'none';
+  }
 }
 
 // ======================= Usage =======================
