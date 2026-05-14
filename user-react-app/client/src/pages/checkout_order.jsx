@@ -19,19 +19,33 @@ function DriverMap({ driverId }) {
   const mapInstance = useRef(null);
   const driverMarkerRef = useRef(null);
   const overlayRef = useRef(null);
-  const trackingIntervalRef = useRef(null);
+  const watchIdRef = useRef(null);
+
+  // Helper for error messages
+  const getPositionErrorMessage = (code) => {
+    switch (code) {
+      case 1:
+        return 'Permission denied.';
+      case 2:
+        return 'Position unavailable.';
+      case 3:
+        return 'Timeout expired.';
+      default:
+        return 'An unknown error occurred.';
+    }
+  };
 
   // Initialize map and overlay on mount
   useEffect(() => {
-    if (!mapRef.current || typeof window.google === 'undefined') return;
+    if (!window.google || !mapRef.current) return;
 
-    // Initialize map
+    // Create the map
     mapInstance.current = new window.google.maps.Map(mapRef.current, {
       zoom: 12,
       center: { lat: -33.9249, lng: 18.4241 },
     });
 
-    // Create custom overlay for driver label
+    // Define custom overlay for driver label
     class DriverLabelOverlay extends window.google.maps.OverlayView {
       constructor() {
         super();
@@ -74,7 +88,7 @@ function DriverMap({ driverId }) {
     overlayRef.current = new DriverLabelOverlay();
     overlayRef.current.setMap(mapInstance.current);
 
-    // Cleanup on unmount
+    // Cleanup overlay on unmount
     return () => {
       if (overlayRef.current) overlayRef.current.setMap(null);
     };
@@ -87,92 +101,7 @@ function DriverMap({ driverId }) {
     }
   };
 
-function getPositionErrorMessage(code) {
-  // Your existing function to get error messages based on code
-  switch (code) {
-    case 1:
-      return 'Permission denied.';
-    case 2:
-      return 'Position unavailable.';
-    case 3:
-      return 'Timeout expired.';
-    default:
-      return 'An unknown error occurred.';
-  }
-}
-
-const MapComponent = () => {
-  const mapRef = useRef(null);
-  const markerRef = useRef(null);
-  const watchIdRef = useRef(null);
-
-  const createMap = (center) => {
-    // Replace with your map creation logic, e.g., Google Maps API
-    const map = new window.google.maps.Map(mapRef.current, {
-      center,
-      zoom: 14,
-    });
-    return map;
-  };
-
-  const createMarker = ({ map, position }) => {
-    const marker = new window.google.maps.Marker({
-      position,
-      map,
-    });
-    return marker;
-  };
-
-  const trackLocation = ({ onSuccess, onError = () => {} }) => {
-    if (!('geolocation' in navigator)) {
-      onError(new Error('Geolocation is not supported by your browser.'));
-      return;
-    }
-
-    // Use watchPosition and store the watch ID for cleanup
-    const id = navigator.geolocation.watchPosition(onSuccess, onError);
-    watchIdRef.current = id;
-    return id;
-  };
-
-  useEffect(() => {
-    const initialPosition = { lat: 59.325, lng: 18.069 };
-    const map = createMap(initialPosition);
-    const marker = createMarker({ map, position: initialPosition });
-    mapRef.current = map;
-    markerRef.current = marker;
-
-    // Start tracking location
-    trackLocation({
-      onSuccess: ({ coords: { latitude: lat, longitude: lng } }) => {
-        if (markerRef.current && mapRef.current) {
-          const newPosition = { lat, lng };
-          markerRef.current.setPosition(newPosition);
-          mapRef.current.panTo(newPosition);
-        }
-      },
-      onError: (err) => {
-        alert(`Error: ${getPositionErrorMessage(err.code) || err.message}`);
-      },
-    });
-
-    // Cleanup on unmount
-    return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-      }
-    };
-  }, []);
-
-  return (
-    <div
-      ref={mapRef}
-      style={{ width: '100%', height: '400px' }}
-    />
-  );
-};
-
-  // Function to create or move driver marker
+  // Function to create or update the driver marker
   const updateDriverMarker = (position) => {
     if (!driverMarkerRef.current) {
       driverMarkerRef.current = new window.google.maps.Marker({
@@ -185,11 +114,76 @@ const MapComponent = () => {
         },
       });
     } else {
-      animateMarkerTo(driverMarkerRef.current, position);
+      // Animate marker movement if desired
+      driverMarkerRef.current.setPosition(position);
     }
     moveDriverLabel();
   };
 
+  // Function to animate marker smoothly (optional)
+  const animateMarkerTo = (marker, position) => {
+    // For smooth animation, you can implement interpolation here
+    marker.setPosition(position);
+    mapInstance.current.panTo(position);
+  };
+
+  // Function to track user location
+  const trackLocation = ({ onSuccess, onError = () => {} }) => {
+    if (!('geolocation' in navigator)) {
+      onError(new Error('Geolocation is not supported by your browser.'));
+      return;
+    }
+    const id = navigator.geolocation.watchPosition(onSuccess, onError);
+    watchIdRef.current = id;
+    return id;
+  };
+
+  // Main effect to initialize map and start tracking
+  useEffect(() => {
+    const initialPosition = { lat: 59.325, lng: 18.069 };
+    const map = new window.google.maps.Map(mapRef.current, {
+      center: initialPosition,
+      zoom: 14,
+    });
+    mapInstance.current = map;
+
+    const marker = new window.google.maps.Marker({
+      position: initialPosition,
+      map,
+    });
+    driverMarkerRef.current = marker;
+
+    // Start tracking driver location
+    const watchId = trackLocation({
+      onSuccess: ({ coords: { latitude: lat, longitude: lng } }) => {
+        const newPos = { lat, lng };
+        if (driverMarkerRef.current) {
+          driverMarkerRef.current.setPosition(newPos);
+          map.panTo(newPos);
+        }
+      },
+      onError: (err) => {
+        alert(`Error: ${getPositionErrorMessage(err.code) || err.message}`);
+      },
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+  }, []);
+
+  return (
+    <div>
+      <div
+        ref={mapRef}
+        style={{ width: '100%', height: '400px' }}
+      />
+    </div>
+  );
+}
   // Animate marker movement smoothly
   const animateMarkerTo = (marker, newPosition) => {
     const duration = 1000; // ms
@@ -257,87 +251,44 @@ const MapComponent = () => {
     document.getElementById('topPinMessage').style.display = 'none';
   };
 
-  // NotificationContainer component to display notifications
-function NotificationContainer() {
-  const [notifications, setNotifications] = useState([]);
-  const containerRef = useRef();
+  function NotifyDriverComponent({ phoneNumber, message }) {
+  const [notification, setNotification] = useState({ message: '', color: '' });
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Function to add a new notification
-  const addNotification = (text, color = '#333', duration = 4000) => {
-    const id = Date.now() + Math.random();
-    setNotifications(prev => [...prev, { id, text, color, duration }]);
+  const showNotificationMessage = (msg, color) => {
+    setNotification({ message: msg, color });
   };
 
-  // Function to remove a notification
-  const removeNotification = (id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
+  const handleNotify = () => {
+    setIsLoading(true);
+    showNotificationMessage(`Notifying driver at ${phoneNumber}...`, '#2196F3');
 
-  // Expose addNotification globally or via context as needed
-  // For simplicity, attach to window (not recommended for production)
-  useEffect(() => {
-    window.showNotificationMessage = addNotification;
-  }, []);
+    sendTwilioNotification(phoneNumber, message, (success, data) => {
+      setIsLoading(false);
+      if (success) {
+        showNotificationMessage(`Driver notified successfully!`, '#4CAF50');
+      } else {
+        console.error('Notification failed:', data);
+        showNotificationMessage(`Failed to notify driver.`, '#f44336');
+      }
+    });
+  };
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-end',
-        zIndex: 9999,
-        gap: '10px'
-      }}
-    >
-      {notifications.map(({ id, text, color, duration }) => (
-        <NotificationBox
-          key={id}
-          id={id}
-          text={text}
-          color={color}
-          duration={duration}
-          onClose={() => removeNotification(id)}
-        />
-      ))}
+    <div>
+      <button onClick={handleNotify} disabled={isLoading}>
+        Notify Driver
+      </button>
+      {notification.message && (
+        <div style={{ color: notification.color, marginTop: '10px' }}>
+          {notification.message}
+        </div>
+      )}
     </div>
   );
 }
 
-function NotificationBox({ id, text, color, duration, onClose }) {
-  const [opacity, setOpacity] = useState(0);
 
-  useEffect(() => {
-    // Animate in
-    requestAnimationFrame(() => setOpacity(1));
-    // Auto dismiss
-    const timer = setTimeout(() => {
-      setOpacity(0);
-      setTimeout(() => onClose(), 300); // fade out duration
-    }, duration);
-    return () => clearTimeout(timer);
-  }, [duration, onClose]);
-
-  return (
-    <div
-      style={{
-        backgroundColor: color,
-        color: '#fff',
-        padding: '12px 20px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-        opacity: opacity,
-        transform: 'translateY(0)',
-        transition: 'opacity 0.3s ease, transform 0.3s ease'
-      }}
-    >
-      {text}
-    </div>
-  );
-}
   // Callbacks for buttons
   const goBack = () => window.history.back();
   const callDriver = () => alert('Calling driver...');
