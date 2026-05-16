@@ -82,7 +82,7 @@ async function fetchDirections(userId, pickupLocation) {
       console.error('Error fetching pickup location:', pickupError || 'No data');
       return;
     }
-
+//
     const userCoords = `${userLocationData.latitude},${userLocationData.longitude}`;
     const pickupCoords = pickupData.location; // assuming "lat,lng" format
 
