@@ -10,24 +10,30 @@ const twilioPhoneNumber = '+27795349327';
 const express = require('express');
 const path = require('path');
 const twilio = require('twilio');
-
 require('dotenv').config(); // Load environment variables
+
+const express = require('express');
+const path = require('path');
+const twilio = require('twilio');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Twilio configuration from environment variables
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+// Validate essential environment variables
+const {
+  TWILIO_ACCOUNT_SID,
+  TWILIO_AUTH_TOKEN,
+  TWILIO_PHONE_NUMBER,
+} = process.env;
 
-if (!accountSid || !authToken || !twilioPhoneNumber) {
+if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
   console.error('Twilio environment variables are missing. Please set them in your .env file.');
   process.exit(1);
 }
 
-const client = twilio(accountSid, authToken);
+const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
+// Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -40,7 +46,7 @@ app.post('/send-notification', async (req, res) => {
     return res.status(400).json({ success: false, message: "Missing 'to' or 'body' parameter." });
   }
   try {
-    const message = await client.messages.create({ body, to, from: twilioPhoneNumber });
+    const message = await client.messages.create({ body, to, from: TWILIO_PHONE_NUMBER });
     console.log(`Sent message SID: ${message.sid}`);
     res.json({ success: true, messageSid: message.sid });
   } catch (error) {
@@ -50,28 +56,34 @@ app.post('/send-notification', async (req, res) => {
 });
 
 /**
- * Send multiple SMS messages concurrently
+ * Send multiple messages concurrently with controlled concurrency
  */
 app.post('/send-multiple', async (req, res) => {
-  const { messages } = req.body; // array of { to, body }
+  const { messages } = req.body; // Expecting [{ to, body }, ...]
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ success: false, message: "Invalid 'messages' array." });
   }
-  const sendPromises = messages.map(({ to, body }) => {
-    return client.messages.create({ body, to, from: twilioPhoneNumber });
-  });
-  try {
-    const results = await Promise.all(sendPromises);
-    const sids = results.map(msg => msg.sid);
-    res.json({ success: true, messageSids: sids });
-  } catch (error) {
-    console.error('Error sending messages:', error);
-    res.status(500).json({ success: false, error: error.message });
+
+  const maxConcurrency = 5; // Limit concurrent sends
+  const results = [];
+  for (let i = 0; i < messages.length; i += maxConcurrency) {
+    const chunk = messages.slice(i, i + maxConcurrency);
+    const promises = chunk.map(({ to, body }) => client.messages.create({ to, body, from: TWILIO_PHONE_NUMBER }));
+    try {
+      const sentMessages = await Promise.all(promises);
+      results.push(...sentMessages);
+    } catch (err) {
+      console.error('Error in bulk message:', err);
+      // Optionally handle retries or partial success
+    }
   }
+  const sids = results.map(m => m.sid);
+  res.json({ success: true, messageSids: sids });
 });
 
 /**
- * Schedule a message after a delay (note: for production, use a job queue)
+ * Schedule a message after a delay (simple implementation)
+ * Note: For production, consider a job queue or persistent storage
  */
 app.post('/schedule-message', (req, res) => {
   const { to, body, delaySeconds } = req.body;
@@ -80,9 +92,9 @@ app.post('/schedule-message', (req, res) => {
   }
   setTimeout(async () => {
     try {
-      const message = await client.messages.create({ body, to, from: twilioPhoneNumber });
+      const message = await client.messages.create({ body, to, from: TWILIO_PHONE_NUMBER });
       console.log(`Scheduled message sent. SID: ${message.sid}`);
-      // Optionally, store scheduled message info for management
+      // Optional: store info for tracking/cancellation
     } catch (err) {
       console.error('Error sending scheduled message:', err);
     }
@@ -91,7 +103,7 @@ app.post('/schedule-message', (req, res) => {
 });
 
 /**
- * Get message status by SID
+ * Fetch message status by SID
  */
 app.get('/message-status/:sid', async (req, res) => {
   const { sid } = req.params;
@@ -108,22 +120,22 @@ app.get('/message-status/:sid', async (req, res) => {
  * Bulk send messages with concurrency control
  */
 app.post('/send-bulk', async (req, res) => {
-  const { messages } = req.body; // array of { to, body }
+  const { messages } = req.body; // [{ to, body }, ...]
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ success: false, message: "Invalid 'messages' array." });
   }
 
-  const maxConcurrency = 5; // limit concurrent sends
+  const maxConcurrency = 5;
   const results = [];
   for (let i = 0; i < messages.length; i += maxConcurrency) {
     const chunk = messages.slice(i, i + maxConcurrency);
-    const promises = chunk.map(({ to, body }) => client.messages.create({ to, body, from: twilioPhoneNumber }));
+    const promises = chunk.map(({ to, body }) => client.messages.create({ to, body, from: TWILIO_PHONE_NUMBER }));
     try {
       const sentMessages = await Promise.all(promises);
       results.push(...sentMessages);
     } catch (err) {
       console.error('Error in bulk message:', err);
-      // Handle retries or partial success if needed
+      // Optional: handle retries or partial success
     }
   }
   const sids = results.map(m => m.sid);
@@ -131,10 +143,10 @@ app.post('/send-bulk', async (req, res) => {
 });
 
 /**
- * Placeholder for canceling scheduled messages (not supported directly by Twilio)
+ * Placeholder for canceling scheduled messages (not supported directly)
  */
 app.post('/cancel-scheduled', (req, res) => {
-  // Implement your own scheduling system with storage if needed
+  // Implement your own scheduling system with persistent storage if needed
   res.json({ success: false, message: 'Cancellation not supported in this demo.' });
 });
 
@@ -156,7 +168,7 @@ app.post('/send-template', async (req, res) => {
     messageBody = messageBody.replace(`{${key}}`, variables[key]);
   }
   try {
-    const msg = await client.messages.create({ to, body: messageBody, from: twilioPhoneNumber });
+    const msg = await client.messages.create({ to, body: messageBody, from: TWILIO_PHONE_NUMBER });
     res.json({ success: true, messageSid: msg.sid });
   } catch (err) {
     console.error('Error sending template message:', err);
