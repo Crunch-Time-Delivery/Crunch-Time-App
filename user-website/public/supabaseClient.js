@@ -6,17 +6,17 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
 const supabaseKey = process.env.SUPABASE_KEY; // Make sure to set this env variable
 export const supabase = createClient(supabaseUrl, supabaseKey);
-
+// Error handling helper
 function handleError(context, error) {
   console.error(`Supabase error (${context}):`, error);
   throw error;
 }
 
 // =========================
-// CRUD functions for any table
+// CRUD operations for any table
 // =========================
 
-// Create record
+// Create a new record
 export async function createRecord(table, data) {
   const { data: result, error } = await supabase.from(table).insert([data]);
   if (error) handleError(`createRecord in ${table}`, error);
@@ -34,14 +34,14 @@ export async function readRecords(table, filters = {}) {
   return data;
 }
 
-// Read single record by ID
+// Read a single record by ID
 export async function readRecordById(table, id) {
   const { data, error } = await supabase.from(table).select('*').eq('id', id).single();
   if (error) handleError(`readRecordById in ${table}`, error);
   return data;
 }
 
-// Update record by ID
+// Update a record by ID
 export async function updateRecordById(table, id, updates) {
   const { data, error } = await supabase
     .from(table)
@@ -62,7 +62,7 @@ export async function updateMultipleRecords(table, updatesArray) {
   return results;
 }
 
-// Delete record by ID
+// Delete a record by ID
 export async function deleteRecordById(table, id) {
   const { data, error } = await supabase.from(table).delete().eq('id', id);
   if (error) handleError(`deleteRecord in ${table}`, error);
@@ -103,32 +103,24 @@ export async function callEdgeFunction(functionName, payload) {
 }
 
 // =========================
-// Example usage for specific tables
+// Specific table operations examples
 // =========================
 
-// Load users
+// Users
 export async function fetchUsers() {
-  return await readRecords('User', {
-    // optional filters
-  });
+  return await readRecords('User');
 }
-
-// Insert user
 export async function insertUser(userData) {
   return await createRecord('User', userData);
 }
-
-// Update user by ID
 export async function updateUser(id, updates) {
   return await updateRecordById('User', id, updates);
 }
-
-// Delete user by ID
 export async function deleteUser(id) {
   return await deleteRecordById('User', id);
 }
 
-// Similarly, for Admins
+// Admins
 export async function fetchAdmins() {
   return await readRecords('Admins');
 }
@@ -142,33 +134,29 @@ export async function deleteAdmin(id) {
   return await deleteRecordById('Admins', id);
 }
 
-// For delivery locations
+// Delivery Locations
 export async function saveDeliveryLocation(data) {
-  // assuming 'address' is unique
+  // Assuming 'address' is unique key
   return await supabase
     .from('DeliveryLocations')
     .upsert(data, { onConflict: 'address' })
     .select()
     .single();
 }
-
 export async function fetchDeliveryLocations() {
   return await readRecords('DeliveryLocations');
 }
-
 export async function deleteDeliveryLocation(id) {
   return await deleteRecordById('DeliveryLocations', id);
 }
 
-// =========================
-// Example: Call an Edge Function
-// =========================
+// Example: Call a specific edge function
 export async function processOrder(orderId) {
   return await callEdgeFunction('processOrder', { orderId });
 }
 
 // =========================
-// Usage example
+// Usage examples (uncomment to test)
 // =========================
 // fetchUsers();
 // insertUser({ username: 'john', email: 'john@example.com' });
