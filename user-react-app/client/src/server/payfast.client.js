@@ -14,6 +14,7 @@ const API = typeof q1cd2rdny4a53 !== 'undefined' ? q1cd2rdny4a53 : 'http://local
  * @returns {Object} - Response data containing PayFast redirect URL or form fields.
  */
 export async function createPayfastPayment(orderData) {
+  // Basic validation
   if (
     !orderData ||
     typeof orderData !== 'object' ||
@@ -23,17 +24,27 @@ export async function createPayfastPayment(orderData) {
     !orderData.cancel_url ||
     !orderData.notify_url
   ) {
-    throw new Error('Invalid orderData: missing required fields.');
+    throw new Error('Invalid orderData: missing or invalid required fields.');
   }
 
   try {
     const response = await axios.post(`${API}/payfast/create-payment`, orderData);
+
     if (response.status !== 200 || !response.data) {
       throw new Error('Failed to create payment session.');
     }
+
     return response.data;
   } catch (error) {
+    // Log detailed error for debugging
     console.error('Error creating PayFast payment:', error);
-    throw error; // Rethrow for caller to handle
+    // Optional: enhance error message based on error.response or error.message
+    if (error.response) {
+      throw new Error(`API responded with status ${error.response.status}: ${error.response.data}`);
+    } else if (error.message) {
+      throw new Error(`Error: ${error.message}`);
+    } else {
+      throw new Error('Unknown error occurred during payment creation.');
+    }
   }
 }
