@@ -27,31 +27,33 @@ function ForgotResetPassword() {
     }
   }, []);
 
-  const handleForgotPassword = async () => {
-    if (!email.trim()) {
-      setMessage('Please enter your email address.');
-      setMessageColor('red');
-      return;
-    }
-    try {
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'http://yourdomain.com/resetpassword' // replace with your reset password page URL
-      });
-      if (error) {
-        console.error(error.message);
-        setMessage('Error: ' + error.message);
-        setMessageColor('red');
-      } else {
-        setMessage(`A password reset link has been sent to ${email}.`);
-        setMessageColor('black');
-      }
-    } catch (err) {
-      console.error(err);
-      setMessage('An unexpected error occurred.');
-      setMessageColor('red');
-    }
-  };
+const handleForgotPassword = async (email) => {
+  const trimmedEmail = email.trim();
+  if (!trimmedEmail) {
+    setMessage('Please enter your email address.');
+    setMessageColor('red');
+    return;
+  }
 
+  try {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+      redirectTo: 'http://yourdomain.com/resetpassword', // replace with your reset password page URL
+    });
+
+    if (error) {
+      console.error(error.message);
+      setMessage(`Error: ${error.message}`);
+      setMessageColor('red');
+    } else {
+      setMessage(`A password reset link has been sent to ${trimmedEmail}.`);
+      setMessageColor('black');
+    }
+  } catch (err) {
+    console.error(err);
+    setMessage('An unexpected error occurred.');
+    setMessageColor('red');
+  }
+};
   const handleUpdatePassword = async () => {
     if (!newPassword.trim()) {
       setUpdateMessage('Please enter a new password.');
