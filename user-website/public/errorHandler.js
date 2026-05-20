@@ -3,8 +3,7 @@
 // Define helpline number or contact info
 const HELPLINE_NUMBER = '+1234567890'; // Replace with your actual helpline number
 const RELOAD_MESSAGE = 'The system is experiencing heavy load or an error. Please try reloading or contact support.';
-
-// Function to show alert and optionally reload or redirect
+// Function to show alert and handle system recovery actions
 function handleCriticalError() {
   alert(
     `System overload or error detected.\n` +
@@ -12,14 +11,14 @@ function handleCriticalError() {
     `The system will now attempt to reboot.`
   );
 
-  // Optionally, redirect to a support or error info page
+  // Optionally, redirect to a support or info page
   // window.location.href = 'https://your-support-page.com';
 
   // Reload the page to attempt recovery
   window.location.reload();
 }
 
-// Global error handler for uncaught exceptions
+// Handle uncaught JavaScript errors globally
 window.onerror = function (message, source, lineno, colno, error) {
   console.error('Unhandled error:', {
     message,
@@ -29,7 +28,9 @@ window.onerror = function (message, source, lineno, colno, error) {
     error,
   });
   handleCriticalError();
-  return true; // Prevent default handling
+
+  // Return true to prevent default browser error alert
+  return true;
 };
 
 // Handle unhandled promise rejections
@@ -38,6 +39,15 @@ window.onunhandledrejection = function (event) {
   handleCriticalError();
 };
 
-// Optional: Implement custom resource monitoring if needed
-// Note: Browser limitations restrict resource monitoring capabilities
-// You can add custom checks here if you implement specific heavy-load detection
+// Optional: Custom resource monitoring (browser limitations apply)
+// You can add custom checks here if needed, e.g., monitoring CPU/memory via performance APIs
+/*
+function checkResources() {
+  // Example: monitor performance metrics
+  const memoryUsage = performance.memory;
+  if (memoryUsage && memoryUsage.usedJSHeapSize > someThreshold) {
+    handleCriticalError();
+  }
+}
+setInterval(checkResources, 60000); // Check every minute
+*/

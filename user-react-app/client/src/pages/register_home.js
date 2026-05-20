@@ -1,52 +1,57 @@
-function showNotificationMessage(message, color='#4CAF50') {
+// Function to show a notification message
+function showNotificationMessage(message, color = '#4CAF50', duration = 3000) {
   const notif = document.getElementById('notification');
+  if (!notif) {
+    console.warn('Notification element not found.');
+    return;
+  }
   notif.innerHTML = `<div style="background-color:${color}; color:#fff; padding:10px; display:inline-block; border-radius:4px;">${message}</div>`;
   notif.style.display = 'block';
 
-  // Hide after 3 seconds
+  // Hide after specified duration
   setTimeout(() => {
     notif.style.display = 'none';
-  }, 3000);
+  }, duration);
 }
 
-function sendTwilioNotification(to, message) {
-  // Show sending message
-  showNotificationMessage('Sending notification...');
-  
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to: to, message: message })
-  })
-  .then(res => res.json())
-  .then(data => {
+// Function to send SMS via API
+async function sendSms(to, message) {
+  try {
+    const res = await fetch('/notify/sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, message }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showNotificationMessage('SMS sent successfully!', '#4CAF50');
+    } else {
+      showNotificationMessage('Failed to send SMS.', '#f44336');
+    }
+  } catch (err) {
+    console.error('Error sending SMS:', err);
+    showNotificationMessage('Error sending SMS.', '#f44336');
+  }
+}
+
+// Function to send a generic notification (e.g., email, push)
+async function sendNotification(to, message) {
+  try {
+    const res = await fetch('/notify/sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, message }),
+    });
+    const data = await res.json();
     if (data.success) {
       showNotificationMessage('Notification sent successfully!', '#4CAF50');
     } else {
       showNotificationMessage('Failed to send notification.', '#f44336');
     }
-  })
-  .catch(() => {
+  } catch (err) {
+    console.error('Error sending notification:', err);
     showNotificationMessage('Error sending notification.', '#f44336');
-  });
-}
-
-// Assuming you have an API endpoint at /notify/sms
-function sendSms(to, message) {
-  fetch('/notify/sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to, message })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('SMS sent:', data);
-  })
-  .catch(err => {
-    console.error('Error sending SMS:', err);
-  });
+  }
 }
 
 

@@ -1,4 +1,4 @@
-import { initMap, updateDriverPosition, updateUserPosition } from './functions/mapFunctions.js';
+import { initMap, updateDriverPosition, updateUserPosition } from './mapFunctions.js';
 
 function startTracking() {
   initMap(() => {
@@ -32,14 +32,14 @@ function startTracking() {
 
       socket.onerror = (error) => {
         console.error('WebSocket error:', error);
-        socket.close(); // Close socket on error to trigger reconnect
+        socket.close(); // close to trigger reconnect
       };
     };
 
-    // Initiate WebSocket connection
+    // Start WebSocket connection
     connectWebSocket();
 
-    // Optionally, simulate or fetch user location periodically
+    // Function to update user location periodically
     const updateUserLocation = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -55,16 +55,19 @@ function startTracking() {
       }
     };
 
-    // Update user position every 5 seconds
-    updateUserLocation(); // initial fetch
-    const userPositionInterval = setInterval(updateUserLocation, 5000);
+    // Initial user location fetch
+    updateUserLocation();
 
-    // Optional: clear interval when needed, e.g., on page unload
+    // Periodic update every 5 seconds
+    const userLocationInterval = setInterval(updateUserLocation, 5000);
+
+    // Cleanup on page unload
     window.addEventListener('beforeunload', () => {
-      clearInterval(userPositionInterval);
+      clearInterval(userLocationInterval);
       if (socket) socket.close();
     });
   });
 }
 
-window.onload = startTracking;
+// Export the startTracking function
+export { startTracking };

@@ -1,51 +1,67 @@
 // Import AWS SDK
 import AWS from 'aws-sdk';
 
-// Configure AWS SDK
+// Configure AWS SDK with environment variables or configuration object
 AWS.config.update({
-  region: 'YOUR_AWS_REGION', // e.g., 'us-east-1'
-  credentials: new AWS.Credentials('YOUR_ACCESS_KEY_ID', 'YOUR_SECRET_ACCESS_KEY'),
+  region: process.env.AWS_REGION || 'YOUR_AWS_REGION', // e.g., 'us-east-1'
+  credentials: new AWS.Credentials(
+    process.env.AWS_ACCESS_KEY_ID || 'YOUR_ACCESS_KEY_ID',
+    process.env.AWS_SECRET_ACCESS_KEY || 'YOUR_SECRET_ACCESS_KEY'
+  ),
 });
 
-// Create a Location Service client
+// Create Location Service client
 const location = new AWS.Location({ apiVersion: '2020-11-19' });
 
-// Function to send position update for an order
+/**
+ * Send position update for a device (order)
+ * @param {string} deviceId - Unique device or order ID
+ * @param {Array<number>} position - [longitude, latitude]
+ */
 async function updateOrderPosition(deviceId, position) {
   const params = {
-    TrackerName: 'YourTrackerName', // Your tracker resource name
+    TrackerName: 'YourTrackerName', // Replace with your tracker resource name
     DeviceId: deviceId,
     SampleTime: new Date().toISOString(),
-    Position: position, // [longitude, latitude]
-    PositionProperties: {
-      // Optional: additional properties
-    },
+    Position: position,
+    // Optional: add PositionProperties if needed
   };
 
   try {
     const result = await location.sendPositionUpdate(params).promise();
     console.log('Position updated:', result);
   } catch (err) {
-    console.error('Error updating position:', err);
+    console.error(`Error updating position for device ${deviceId}:`, err);
   }
 }
 
-// Function to get the current position of an order
+/**
+ * Get current position of a device (order)
+ * @param {string} deviceId - Unique device or order ID
+ * @returns {Object|null} - Position data or null if error
+ */
 async function getOrderPosition(deviceId) {
   const params = {
-    TrackerName: 'YourTrackerName',
+    TrackerName: 'YourTrackerName', // Your tracker resource name
     DeviceId: deviceId,
   };
 
   try {
     const result = await location.getDevicePosition(params).promise();
-    console.log('Current position:', result);
+    if (result && result.Position) {
+      console.log(`Current position of ${deviceId}:`, result.Position);
+      return result.Position; // [longitude, latitude]
+    } else {
+      console.warn(`No position data found for device ${deviceId}`);
+      return null;
+    }
   } catch (err) {
-    console.error('Error fetching position:', err);
+    console.error(`Error fetching position for device ${deviceId}:`, err);
+    return null;
   }
 }
 
-// Usage example:
+// Usage example: replace with your actual device/order ID and position
 const deviceId = 'order-12345';
 const newPosition = [-123.3656, 48.4284]; // [longitude, latitude]
 
@@ -53,4 +69,8 @@ const newPosition = [-123.3656, 48.4284]; // [longitude, latitude]
 updateOrderPosition(deviceId, newPosition);
 
 // Fetch current position
-getOrderPosition(deviceId);
+getOrderPosition(deviceId).then(position => {
+  if (position) {
+    // Do something with the position
+  }
+});

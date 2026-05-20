@@ -3,7 +3,7 @@ const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
 
 // Configure AWS SDK
-AWS.config.update({ region: 'us-east-1' }); // change to your region
+AWS.config.update({ region: 'us-east-1' }); // Replace with your region
 
 const location = new AWS.Location({ apiVersion: '2020-11-19' });
 
@@ -15,21 +15,15 @@ const driverId = 'driver-123';
 const port = new SerialPort('/dev/ttyUSB0', { baudRate: 9600 });
 const parser = port.pipe(new Readline({ delimiter: '\r\n' }));
 
-// Function to parse GPS NMEA data or custom GPS data
+// Function to parse GPS data (adjust based on your GPS output format)
 function parseGPSData(line) {
-  // Implement your GPS parsing logic here
-  // Example: parse NMEA sentence for latitude and longitude
-  // This is a placeholder example:
-  // return [longitude, latitude];
-
-  // Dummy implementation (replace with real parsing)
-  // For example, if your GPS outputs "LAT,LON" format:
+  // Example: if GPS outputs "LAT,LON"
   const parts = line.split(',');
   if (parts.length >= 2) {
     const latitude = parseFloat(parts[0]);
     const longitude = parseFloat(parts[1]);
     if (!isNaN(latitude) && !isNaN(longitude)) {
-      return [longitude, latitude];
+      return [longitude, latitude]; // AWS expects [lng, lat]
     }
   }
   return null;
@@ -49,7 +43,7 @@ function getCurrentPosition() {
   });
 }
 
-// AWS Location functions
+// AWS Location Service functions
 async function createTracker(trackerName) {
   const params = {
     TrackerName: trackerName,
@@ -61,17 +55,30 @@ async function createTracker(trackerName) {
     const data = await location.createTracker(params).promise();
     console.log('Tracker created:', data);
   } catch (err) {
-    console.error('Error creating tracker:', err);
+    if (err.code === 'ResourceAlreadyExistsException') {
+      console.log(`Tracker "${trackerName}" already exists.`);
+    } else {
+      console.error('Error creating tracker:', err);
+    }
   }
 }
 
 async function createDevice(trackerName, deviceId) {
-  const resourceARN = `arn:aws:geo:region:account-id:tracker/${trackerName}`; // replace 'region' and 'account-id'
+  const resourceARN = `arn:aws:geo:YOUR_REGION:YOUR_ACCOUNT_ID:tracker/${trackerName}`; // replace with your region & account ID
   try {
-    await location.tagResource({ ResourceARN: resourceARN, Tags: { DeviceId: deviceId } }).promise();
+    await location.tagResource({
+      ResourceARN: resourceARN,
+      Tags: { DeviceId: deviceId },
+    }).promise();
     console.log(`Device ${deviceId} registered to tracker ${trackerName}`);
   } catch (err) {
-    console.error('Error registering device:', err);
+    if (err.code === 'ResourceNotFoundException') {
+      console.error('Tracker not found. Make sure to create tracker first.');
+    } else if (err.code === 'ResourceAlreadyExistsException') {
+      console.log(`Device ${deviceId} already registered.`);
+    } else {
+      console.error('Error registering device:', err);
+    }
   }
 }
 
@@ -94,24 +101,24 @@ async function updateDevicePosition(trackerName, deviceId, position) {
   }
 }
 
-// Continuous tracking loop
+// Main loop for live tracking
 async function startLiveTracking() {
   while (true) {
     try {
       const position = await getCurrentPosition();
       await updateDevicePosition(trackerName, driverId, position);
     } catch (err) {
-      console.error('Error during live tracking:', err);
+      console.error('Live tracking error:', err);
     }
-    await new Promise(resolve => setTimeout(resolve, 5000)); // wait 5 seconds
+    await new Promise((resolve) => setTimeout(resolve, 5000)); // wait 5 seconds
   }
 }
 
-// Initialize tracker and device then start tracking
+// Initialize tracker and device, then start tracking
 async function initialize() {
   await createTracker(trackerName);
   await createDevice(trackerName, driverId);
-  startLiveTracking(); // start the loop
+  startLiveTracking(); // run the infinite loop
 }
 
 initialize();

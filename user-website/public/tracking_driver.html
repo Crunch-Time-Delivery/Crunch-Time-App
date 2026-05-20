@@ -102,63 +102,65 @@ let tracking = false;
 let intervalId = null;
 let customerLat = 37.7850, customerLng = -122.4383; // Default customer location
 
-// Initialize the map
+// Initialize Google Map
 function initMap() {
-  let centerCoords = { lat: 0, lng: 0 };
   const currentOrderId = document.getElementById('orderId')?.value.trim();
 
-  if (currentOrderId && currentOrderId === ORDER_ID) {
-    centerCoords = { lat: -33.9249, lng: 18.4241 }; // Cape Town
+  // Decide map center based on order ID
+  const centerCoords = (currentOrderId && currentOrderId === ORDER_ID)
+    ? { lat: -33.9249, lng: 18.4241 } // Cape Town
+    : { lat: 0, lng: 0 };
+
+  if (!map) {
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 14,
+      center: centerCoords,
+      mapTypeId: 'roadmap',
+      disableDefaultUI: false,
+      zoomControl: true,
+    });
+  } else {
+    map.setCenter(centerCoords);
   }
 
-  map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 14,
-    center: centerCoords,
-    mapTypeId: 'roadmap',
-    disableDefaultUI: false,
-    zoomControl: true,
-  });
-
   // Initialize customer marker
-  customerMarker = new google.maps.Marker({
-    map: map,
-    title: "Customer Location",
-    icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      scale: 9,
-      fillColor: '#4285f4',
-      fillOpacity: 1,
-      strokeColor: '#fff',
-      strokeWeight: 2
-    }
-  });
-
-  // Initialize driver marker
-  driverMarker = new google.maps.Marker({
-    map: map,
-    title: "Driver",
-    icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      scale: 11,
-      fillColor: '#d32f2f',
-      fillOpacity: 1,
-      strokeColor: '#fff',
-      strokeWeight: 3
-    }
-  });
-
-  // Load initial customer location
+  if (!customerMarker) {
+    customerMarker = new google.maps.Marker({
+      map,
+      title: "Customer Location",
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 9,
+        fillColor: '#4285f4',
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 2
+      }
+    });
+  }
   updateCustomerMarker();
 
-  // Optionally, start fetching driver's location periodically
-  startTracking();
+  // Initialize driver marker
+  if (!driverMarker) {
+    driverMarker = new google.maps.Marker({
+      map,
+      title: "Driver",
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 11,
+        fillColor: '#d32f2f',
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 3
+      }
+    });
+  }
 }
 
 // Update customer marker position
 function updateCustomerMarker() {
   if (customerMarker) {
     customerMarker.setPosition({ lat: customerLat, lng: customerLng });
-    // Optional: pan to customer location
     map.panTo({ lat: customerLat, lng: customerLng });
   }
 }
@@ -182,18 +184,17 @@ function updateCustomerLocation() {
         customerLng = pos.coords.longitude;
         updateCustomerMarker();
       },
-      () => {
-        console.warn("Geolocation permission denied or unavailable");
-      }
+      () => console.warn("Geolocation permission denied or unavailable")
     );
   }
 }
 
-// Fetch driver location from your API
+// Fetch driver location from your backend API
 function fetchDriverLocation() {
+  // Replace URL with your API endpoint
   fetch(`/api/driver-location?driverId=${driverId}`)
     .then(res => {
-      if (!res.ok) throw new Error('Network response was not ok');
+      if (!res.ok) throw new Error('Network error');
       return res.json();
     })
     .then(data => {
@@ -204,87 +205,62 @@ function fetchDriverLocation() {
     });
 }
 
-// Start periodic driver location updates
+// Start tracking driver
 function startTracking() {
-  if (tracking) return; // Avoid multiple intervals
-  fetchDriverLocation(); // Initial fetch
-  intervalId = setInterval(fetchDriverLocation, 10000); // Every 10 seconds
+  if (tracking) return; // Already tracking
+
+  const orderId = document.getElementById('orderId').value.trim();
+  initMap();
+  document.getElementById('status').className = 'status connecting';
+  document.getElementById('status').textContent = 'Connecting to driver...';
+
+  // Fetch driver location immediately
+  fetchDriverLocation();
+
+  // Set interval for updates
+  intervalId = setInterval(() => {
+    fetchDriverLocation();
+  }, 10000); // every 10 seconds
+
   tracking = true;
+  document.getElementById('trackBtn').disabled = true;
+  document.getElementById('trackBtn').textContent = 'Tracking...';
+
+  // Optional: keep customer location updated
+  setInterval(updateCustomerLocation, 15000);
 }
 
-// Stop tracking
+// Stop tracking driver
 function stopTracking() {
   if (intervalId) {
     clearInterval(intervalId);
     intervalId = null;
     tracking = false;
+    document.getElementById('status').className = 'status idle';
+    document.getElementById('status').textContent = 'Tracking stopped.';
+    document.getElementById('trackBtn').disabled = false;
+    document.getElementById('trackBtn').textContent = 'Track';
   }
 }
 
-// Optionally, update customer location periodically
-// Call this function if you want to keep customer location updated
-// setInterval(updateCustomerLocation, 15000);
+// DOM event setup
+document.addEventListener('DOMContentLoaded', () => {
+  // Load Google Maps
+  window.initMap = initMap;
+  const script = document.createElement('script');
+  script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q&callback=initMap`;
+  script.async = true;
+  document.head.appendChild(script);
 
-  // Start tracking
- document.addEventListener('DOMContentLoaded', () => {
-    const orderInput = document.getElementById('orderId');
-    const trackBtn = document.getElementById('trackBtn');
-    const statusEl = document.getElementById('status');
-
-    // Load Google Maps script
-    window.initMap = initMap;
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${AIzaSyB9sNhi824hNncjfW7HHzaI_s8JtWGfM0Q}&callback=initMap`;
-    script.async = true;
-    document.head.appendChild(script);
-
-    // Update customer location periodically
-    setInterval(updateCustomerLocation, 15000);
-    updateCustomerLocation();
-
-    const startTracking = () => {
-      if (tracking) return; // Already tracking
-      const orderId = orderInput.value.trim();
-      initMap(); // Re-init map for new order
-      statusEl.className = 'status connecting';
-      statusEl.textContent = 'Connecting to driver...';
-
-      // Begin polling
-      intervalId = setInterval(() => pollDriverLocation(orderId), 3000);
-      tracking = true;
-      document.getElementById('trackBtn').disabled = true;
-      document.getElementById('trackBtn').textContent = 'Tracking...';
-    };
-
-    const pollDriverLocation = async (orderId) => {
-      try {
-        // Replace with your server API call to fetch driver location
-        // For demo, simulate driver movement for dummy ID
-        if (orderId === DUMMY_ORDER_ID) {
-          const lat = -33.9249 + Math.random() * 0.02;
-          const lng = 18.4241 + Math.random() * 0.02;
-          updateDriverLocation(lat, lng);
-          statusEl.className = 'status tracking';
-          statusEl.textContent = 'Driver is moving...';
-        } else {
-          throw new Error('Driver not found');
-        }
-      } catch (err) {
-        console.warn('Error:', err);
-        statusEl.className = 'status error';
-        statusEl.textContent = 'Driver not found or offline.';
-        clearInterval(intervalId);
-        tracking = false;
-        document.getElementById('trackBtn').disabled = false;
-        document.getElementById('trackBtn').textContent = 'Track';
-      }
-    };
-
-    document.getElementById('trackBtn').addEventListener('click', startTracking);
-    document.getElementById('orderId').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') startTracking();
-    });
+  document.getElementById('trackBtn').addEventListener('click', startTracking);
+  document.getElementById('orderId').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') startTracking();
   });
+
+  // Optionally, update customer location periodically
+  setInterval(updateCustomerLocation, 15000);
+  updateCustomerLocation();
+});
 </script>
 </body>
 </html>

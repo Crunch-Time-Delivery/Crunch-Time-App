@@ -2,21 +2,24 @@
 
 // Initialize Supabase client
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co';
-const supabaseKey = 'YOUR_PUBLIC_ANON_KEY'; // replace with your actual key
+const supabaseKey =process.env.SUPABASE_KEY ; // actual key
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
 // Function to create table and insert initial data (run once)
 async function setupDatabase() {
-  // Create the table if it doesn't exist
-  await supabase
-    .rpc('create_restaurants_table')
-    .catch(async (err) => {
-      if (err.code !== '42710') { // 'duplicate_table' error code
+  try {
+    // Create the table if it doesn't exist
+    await supabase.rpc('create_restaurants_table').catch((err) => {
+      // Check for specific error code indicating table already exists
+      if (err.code !== '42710') { // 42710 = duplicate_table error code in Postgres
         console.error('Error creating table:', err);
+      } else {
+        console.log('Table already exists, skipping creation.');
       }
     });
+  } catch (err) {
+    console.error('Unexpected error during table creation:', err);
+  }
 
-  // Insert initial data
   const initialData = [
     { name: 'KFC, Parow', category: 'Fast Food', rating: 4.4, description: 'Sponsored - 5 min', image_url: 'Images/RS KFC .jpeg' },
     { name: 'Sannes Palace', category: 'Fast Food', rating: 4.5, description: '20 min - 0.5 km', image_url: 'Images/RS PALACE .jpg' },
@@ -33,9 +36,13 @@ async function setupDatabase() {
   ];
 
   for (const restaurant of initialData) {
-    await supabase
-      .from('restaurants')
-      .upsert(restaurant);
+    try {
+      await supabase
+        .from('restaurants')
+        .upsert(restaurant, { onConflict: 'name' }); // Using 'name' as unique identifier for upsert
+    } catch (err) {
+      console.error(`Error upserting restaurant ${restaurant.name}:`, err);
+    }
   }
 
   console.log('Database setup complete.');

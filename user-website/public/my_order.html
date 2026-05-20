@@ -363,39 +363,54 @@ function addItemFromPopup(item) {
 }
 
 /* ======== SMS Notification Function ======== */
-function sendSMSNotification(to, message) {
-  fetch('http://localhost:3000/send-sms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to: to, message: message }),
-  })
-  .then(res => res.json())
-  .then(data => {
+async function sendSMSNotification(to, message) {
+  if (!to) {
+    console.error('Phone number is missing.');
+    return;
+  }
+
+  try {
+    const response = await fetch('http://localhost:3000/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, message }),
+    });
+
+    const data = await response.json();
+
     if (data.success) {
       console.log('SMS sent successfully');
     } else {
       console.error('Failed to send SMS:', data.error);
     }
-  })
-  .catch(err => console.error('Error sending SMS:', err));
+  } catch (err) {
+    console.error('Error sending SMS:', err);
+  }
 }
 
+function notifyProgressUpdate(status, userPhoneNumber) {
+  if (!userPhoneNumber) {
+    console.warn('User phone number is not provided.');
+    return;
+  }
 
-function notifyProgressUpdate(status) {
-  const userPhoneNumber = null; // actual user number
   let message = '';
 
   if (status === 'inProgress') {
     message = 'Your order is now in progress.';
   } else if (status === 'completed') {
     message = 'Your order has been completed.';
+  } else {
+    console.warn('Unknown status:', status);
+    return;
   }
 
   sendSMSNotification(userPhoneNumber, message);
 }
+
 /* ======== MOCK: Listen to messages from iframe ======== */
-window.addEventListener("message", (e) => {
-  if (e.data && e.data.type === "addToCart") {
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'addToCart') {
     addItemFromPopup(e.data.item);
   }
 });

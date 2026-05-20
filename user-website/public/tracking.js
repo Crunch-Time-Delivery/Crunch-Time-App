@@ -1,37 +1,45 @@
-import { LocationClient, BatchUpdateDevicePositionCommand } from "@aws-sdk/client-location";
+// tracker.js
+
+// Assuming you have included AWS SDK via script tag or installed via npm and bundled appropriately
 
 // AWS configuration
-const AWS_REGION = "us-east-1"; // Replace with your AWS region
-const client = new LocationClient({ region: AWS_REGION });
+var AWS_REGION = "us-east-1"; // Replace with your AWS region
+
+// Initialize AWS SDK client
+var client = new AWS.Location({ region: AWS_REGION });
 
 // Device and tracker configuration
-const TRACKER_NAME = "MyDeviceTracker"; // Replace with your tracker name
-const DEVICE_ID = "device-001"; // Replace with your device ID
+var TRACKER_NAME = "MyDeviceTracker"; // Replace with your tracker name
+var DEVICE_ID = "device-001"; // Replace with your device ID
 
-let watchId = null; // To store the watcher ID
+var watchId = null;
 
 /**
  * Sends the current position to AWS Location Tracker.
  * @param {GeolocationPosition} position - The position object from Geolocation API.
  */
-async function updateAWSTracker(position) {
-  const { latitude, longitude } = position.coords;
+function updateAWSTracker(position) {
+  var latitude = position.coords.latitude;
+  var longitude = position.coords.longitude;
 
-  const command = new BatchUpdateDevicePositionCommand({
+  var params = {
     TrackerName: TRACKER_NAME,
     Updates: [{
       DeviceId: DEVICE_ID,
       SampleTime: new Date().toISOString(),
       Position: [longitude, latitude], // AWS expects [lng, lat]
-    }],
-  });
+    }]
+  };
 
-  try {
-    await client.send(command);
-    console.log(`Position updated: (${latitude.toFixed(6)}, ${longitude.toFixed(6)})`);
-  } catch (error) {
-    console.error("Error updating position:", error);
-  }
+  var command = new AWS.Location.BatchUpdateDevicePositionCommand(params);
+
+  client.send(command, function(err, data) {
+    if (err) {
+      console.error("Error updating position:", err);
+    } else {
+      console.log("Position updated: (" + latitude.toFixed(6) + ", " + longitude.toFixed(6) + ")");
+    }
+  });
 }
 
 /**
@@ -49,7 +57,7 @@ function startTracking() {
 
   watchId = navigator.geolocation.watchPosition(
     updateAWSTracker,
-    (err) => {
+    function(err) {
       console.error("Geolocation error:", err);
     },
     {
@@ -75,8 +83,6 @@ function stopTracking() {
   }
 }
 
-// Optional: Auto-start tracking
-// startTracking();
-
-// Export functions for external control
-export { startTracking, stopTracking };
+// Usage example:
+// startTracking(); // To begin
+// stopTracking();  // To stop

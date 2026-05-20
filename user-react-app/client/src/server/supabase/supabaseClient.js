@@ -9,7 +9,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 // Error handling helper
 function handleError(context, error) {
   console.error(`Supabase error (${context}):`, error);
-  throw error;
+  throw error; // rethrow after logging
 }
 
 // =========================
@@ -25,13 +25,17 @@ export async function createRecord(table, data) {
 
 // Read records with optional filters
 export async function readRecords(table, filters = {}) {
-  let query = supabase.from(table).select('*');
-  Object.entries(filters).forEach(([field, value]) => {
-    query = query.eq(field, value);
-  });
-  const { data, error } = await query;
-  if (error) handleError(`readRecords in ${table}`, error);
-  return data;
+  try {
+    let query = supabase.from(table).select('*');
+    Object.entries(filters).forEach(([field, value]) => {
+      query = query.eq(field, value);
+    });
+    const { data, error } = await query;
+    if (error) handleError(`readRecords in ${table}`, error);
+    return data;
+  } catch (err) {
+    handleError(`readRecords in ${table}`, err);
+  }
 }
 
 // Read a single record by ID
@@ -97,13 +101,12 @@ export async function callEdgeFunction(functionName, payload) {
     }
     return await response.json();
   } catch (err) {
-    console.error(`Error calling Edge Function ${functionName}:`, err);
-    throw err;
+    handleError(`callEdgeFunction ${functionName}`, err);
   }
 }
 
 // =========================
-// Specific table operations examples
+// Specific table operations
 // =========================
 
 // Users
@@ -136,7 +139,7 @@ export async function deleteAdmin(id) {
 
 // Delivery Locations
 export async function saveDeliveryLocation(data) {
-  // Assuming 'address' is unique key
+  // Assuming 'address' is a unique key
   return await supabase
     .from('DeliveryLocations')
     .upsert(data, { onConflict: 'address' })

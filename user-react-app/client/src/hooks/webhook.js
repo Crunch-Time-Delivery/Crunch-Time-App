@@ -1,24 +1,26 @@
-// webhook.js - Lambda function to process webhook requests
 exports.handler = async (event) => {
-  // Parse the request body
   let body;
+
+  // Parse the request body with error handling
   try {
     body = JSON.parse(event.body);
   } catch (err) {
     console.error('Invalid JSON:', err);
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: 'Invalid JSON' }),
+      body: JSON.stringify({ error: 'Invalid JSON in request body' }),
     };
   }
 
-  // Process the webhook data
+  // Log the received payload for debugging/monitoring
   console.log('Webhook payload:', body);
 
-  // Example: Save to DynamoDB, trigger other services, etc.
-  // For now, just respond with a success message
+  // TODO: Add your processing logic here
+  // e.g., save to DynamoDB, trigger other services, validate payload structure, etc.
+
+  // Respond with success
   return {
     statusCode: 200,
-    body: JSON.stringify({ message: 'Webhook received', data: body }),
+    body: JSON.stringify({ message: 'Webhook received successfully', data: body }),
   };
 };

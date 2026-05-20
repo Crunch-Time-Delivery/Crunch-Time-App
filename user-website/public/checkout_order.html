@@ -255,38 +255,81 @@ let driverTrackingInterval;
 // Initialize the map
 function initMap() {
   const defaultLoc = { lat: -33.9249, lng: 18.4241 };
-  map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 12,
-    center: defaultLoc,
-  });
+  if (!map) {
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 12,
+      center: defaultLoc,
+    });
+  }
   createDriverLabelOverlay();
 }
-// New function to track user's location.
-const trackLocation = ({ onSuccess, onError = () => { } }) => {
-  if ('geolocation' in navigator === false) {
+
+// Function to track user's location
+const trackLocation = ({ onSuccess, onError = () => {} }) => {
+  if (!('geolocation' in navigator)) {
     return onError(new Error('Geolocation is not supported by your browser.'));
   }
-
-  // Use watchPosition instead.
   return navigator.geolocation.watchPosition(onSuccess, onError);
 };
 
+// Initialize everything
 function init() {
   const initialPosition = { lat: 59.325, lng: 18.069 };
-  const map = createMap(initialPosition);
+  if (!map) {
+    initMap();
+  }
   const marker = createMarker({ map, position: initialPosition });
 
-  // Use the new trackLocation function.
-  trackLocation({
+  // Start watching position
+  const watcherId = trackLocation({
     onSuccess: ({ coords: { latitude: lat, longitude: lng } }) => {
-      marker.setPosition({ lat, lng });
+      updateMarkerPosition(marker, { lat, lng });
       map.panTo({ lat, lng });
     },
-    onError: err =>
-      alert(`Error: ${getPositionErrorMessage(err.code) || err.message}`)
+    onError: (err) =>
+      alert(`Error: ${getPositionErrorMessage(err.code) || err.message}`),
+  });
+
+  // Optional: store watcherId if you want to stop tracking later
+  return watcherId;
+}
+
+// Helper to create marker
+function createMarker({ map, position }) {
+  return new google.maps.Marker({
+    position,
+    map,
+    title: 'Current Location',
   });
 }
-// Create a custom overlay for the driver label
+
+// Helper to update marker position with optional smooth animation
+function updateMarkerPosition(marker, position) {
+  if (!marker) return;
+  // Optional: animate marker movement
+  animateMarkerTo(marker, position);
+}
+
+// Animate marker movement smoothly (simple linear interpolation)
+function animateMarkerTo(marker, targetPos, duration = 1000) {
+  const startPos = marker.getPosition();
+  const startTime = performance.now();
+
+  function animate(currentTime) {
+    const elapsed = currentTime - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    const lat = startPos.lat() + (targetPos.lat - startPos.lat()) * t;
+    const lng = startPos.lng() + (targetPos.lng - startPos.lng()) * t;
+    marker.setPosition({ lat, lng });
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+// Create custom overlay for driver label
 function createDriverLabelOverlay() {
   class DriverLabelOverlay extends google.maps.OverlayView {
     constructor() {
@@ -316,7 +359,6 @@ function createDriverLabelOverlay() {
 
     draw() {
       if (!this.getProjection() || !driverMarker) return;
-
       const position = driverMarker.getPosition();
       const projection = this.getProjection();
       const pixel = projection.fromLatLngToContainerPixel(position);
@@ -332,19 +374,18 @@ function createDriverLabelOverlay() {
       }
     }
   }
-
   driverOverlay = new DriverLabelOverlay();
   driverOverlay.setMap(map);
 }
 
-// Move the driver label overlay to the current driver position
+// Move the driver label overlay to current driver position
 function moveDriverLabel(position) {
   if (driverOverlay && typeof driverOverlay.draw === 'function') {
     driverOverlay.draw();
   }
 }
 
-// Create or update driver marker with optional smooth animation
+// Create or update driver marker
 function updateDriverMarker(position) {
   if (!driverMarker) {
     driverMarker = new google.maps.Marker({
@@ -361,6 +402,18 @@ function updateDriverMarker(position) {
   }
   moveDriverLabel(position);
 }
+
+// Optional: stop tracking
+function stopTracking() {
+  if (trackingInterval) {
+    clearInterval(trackingInterval);
+    trackingInterval = null;
+  }
+}
+
+// Usage example
+// init(); // Call once to start
+// stopTracking(); // Call to stop
 
 // Animate marker movement for smooth transition
 function animateMarkerTo(marker, newPosition) {
@@ -475,32 +528,6 @@ async function loadOrderHistory(orderId) {
 // =================== Driver Location Tracking with Route Path (AWS Location) ====================
 let driverPathCoordinates = [];
 let driverPathLine = null;
-
-
-// Initialize AWS SDK and Location client
-import AWS from 'aws-sdk';
-
-AWS.config.update({ region: 'us-east-1' }); // Replace with your region
-const location = new AWS.Location({ apiVersion: '2020-11-19' });
-
-// Tracker and device identifiers
-const trackerName = 'YourTrackerName'; // Replace with your tracker name
-const deviceId = 'driver-123'; // Replace with your device ID
-
-// Map and marker references
-let map; // Your Google Map instance
-let driverMarker = null;
-let driverPathLine = null;
-let driverPathCoordinates = [];
-
-// Function to initialize map (call this before tracking)
-function initializeMap() {
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: { lat: 0, lng: 0 },
-    zoom: 14,
-  });
-}
-
 // Function to fetch latest driver location and update map
 async function fetchAndUpdateDriverLocation() {
   const params = {
@@ -515,7 +542,7 @@ async function fetchAndUpdateDriverLocation() {
       const [lng, lat] = data.Position; // AWS returns [lng, lat]
       const pos = { lat, lng };
 
-      // Create marker if it doesn't exist
+      // Create driver marker if it doesn't exist
       if (!driverMarker) {
         driverMarker = new google.maps.Marker({
           position: pos,
@@ -527,10 +554,11 @@ async function fetchAndUpdateDriverLocation() {
           title: 'Driver Location',
         });
       } else {
+        // Update existing marker position
         driverMarker.setPosition(pos);
       }
 
-      // Append position to path
+      // Add position to path
       driverPathCoordinates.push(pos);
 
       // Create polyline if it doesn't exist
@@ -544,33 +572,38 @@ async function fetchAndUpdateDriverLocation() {
           map,
         });
       } else {
+        // Update polyline path
         driverPathLine.setPath(driverPathCoordinates);
       }
 
-      // Center map on driver
+      // Center map on driver position
       map.setCenter(pos);
 
-      // Optional: update driver label position
+      // Optional: move driver label or perform other updates
       moveDriverLabel(pos);
     }
   } catch (err) {
     console.error('Error fetching driver location from AWS:', err);
-    // Optional: display user-friendly message or retry logic
+    // Optional: implement retry logic or user notification
   }
 }
 
-// Function to start periodic tracking
+// Function to start periodic driver tracking
 function startTrackingDriver(intervalMs = 10000) {
   fetchAndUpdateDriverLocation(); // initial fetch
+  if (window.driverTrackingInterval) clearInterval(window.driverTrackingInterval);
   window.driverTrackingInterval = setInterval(fetchAndUpdateDriverLocation, intervalMs);
 }
 
-// Call initializeMap() once your map container is ready, then start tracking
-// Example:
-// window.onload = () => {
-//   initializeMap();
-//   startTrackingDriver();
-// }
+// Function to stop tracking
+function stopTrackingDriver() {
+  if (window.driverTrackingInterval) {
+    clearInterval(window.driverTrackingInterval);
+    window.driverTrackingInterval = null;
+  }
+}
+
+
 // ====================== Utility Functions ======================
 function generatePIN() {
   return Math.floor(100000 + Math.random() * 900000).toString();

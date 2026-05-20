@@ -1,25 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-export const useAuth = () => {
+export const useAuth = (options = { persist: true }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Initialize auth state from localStorage or other storage
   useEffect(() => {
     const email = localStorage.getItem('driverEmail');
     const password = localStorage.getItem('driverPassword');
-    setIsAuthenticated(!!(email && password));
-  }, []);
+    if (options.persist) {
+      setIsAuthenticated(!!(email && password));
+    } else {
+      setIsAuthenticated(false);
+    }
+  }, [options.persist]);
 
-  const login = (email, password) => {
-    localStorage.setItem('driverEmail', email);
-    localStorage.setItem('driverPassword', password);
+  // Login function
+  const login = useCallback((email, password) => {
+    if (options.persist) {
+      localStorage.setItem('driverEmail', email);
+      localStorage.setItem('driverPassword', password);
+    }
     setIsAuthenticated(true);
-  };
+  }, [options.persist]);
 
-  const logout = () => {
-    localStorage.removeItem('driverEmail');
-    localStorage.removeItem('driverPassword');
+  // Logout function
+  const logout = useCallback(() => {
+    if (options.persist) {
+      localStorage.removeItem('driverEmail');
+      localStorage.removeItem('driverPassword');
+    }
     setIsAuthenticated(false);
-  };
+  }, [options.persist]);
 
   return { isAuthenticated, login, logout };
 };

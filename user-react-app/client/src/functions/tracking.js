@@ -1,3 +1,4 @@
+// tracker.js
 import { LocationClient, BatchUpdateDevicePositionCommand } from "@aws-sdk/client-location";
 
 // AWS configuration
@@ -8,7 +9,7 @@ const client = new LocationClient({ region: AWS_REGION });
 const TRACKER_NAME = "MyDeviceTracker"; // Replace with your tracker name
 const DEVICE_ID = "device-001"; // Replace with your device ID
 
-let watchId = null; // To store the watcher ID
+let watchId = null;
 
 /**
  * Sends the current position to AWS Location Tracker.
@@ -75,8 +76,5 @@ function stopTracking() {
   }
 }
 
-// Optional: Auto-start tracking
-// startTracking();
-
-// Export functions for external control
+// Export functions
 export { startTracking, stopTracking };

@@ -1,12 +1,12 @@
-import { memo } from 'react';
-import { Source, Layer } from 'react-map-gl/maplibre';
+import React, { memo } from 'react';
+import { Source, Layer } from 'react-map-gl';
 
 const layerStyle = {
   id: 'linesLayer',
   type: 'line',
-  source: 'my-data',
   layout: {
     'line-cap': 'round',
+    'line-join': 'round',
   },
   paint: {
     'line-color': 'purple',
@@ -15,30 +15,30 @@ const layerStyle = {
 };
 
 const LineOverlay = ({ messages }) => {
-  if (messages.length === 0) return null;
+  if (!messages || messages.length === 0) return null;
+
+  const coordinates = messages
+    .filter(({ position }) => Array.isArray(position) && position.length >= 2)
+    .map(({ position }) => [position[0], position[1]]);
+
+  if (coordinates.length < 2) return null; // Need at least two points to draw a line
+
+  const geojsonData = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates,
+        },
+        properties: {}, // You can add properties here if needed
+      },
+    ],
+  };
 
   return (
-    <Source
-      key="source"
-      id="my-data"
-      type="geojson"
-      data={{
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            geometry: {
-              type: 'LineString',
-              coordinates: messages.map(({ position }) => [
-                position[0],
-                position[1],
-              ]),
-            },
-            properties: null,
-          },
-        ],
-      }}
-    >
+    <Source id="my-data" type="geojson" data={geojsonData}>
       <Layer {...layerStyle} />
     </Source>
   );

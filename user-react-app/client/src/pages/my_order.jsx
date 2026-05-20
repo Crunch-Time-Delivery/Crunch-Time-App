@@ -269,5 +269,71 @@ function OrdersPage() {
     </div>
   );
 }
+const useNotification = () => {
+  const sendSMSNotification = useCallback(async (to, message) => {
+    if (!to) {
+      console.error('Phone number is missing.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, message }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log('SMS sent successfully');
+      } else {
+        console.error('Failed to send SMS:', data.error);
+      }
+    } catch (err) {
+      console.error('Error sending SMS:', err);
+    }
+  }, []);
+
+  const notifyProgressUpdate = useCallback((status, userPhoneNumber) => {
+    if (!userPhoneNumber) {
+      console.warn('User phone number is not provided.');
+      return;
+    }
+
+    let message = '';
+
+    if (status === 'inProgress') {
+      message = 'Your order is now in progress.';
+    } else if (status === 'completed') {
+      message = 'Your order has been completed.';
+    } else {
+      console.warn('Unknown status:', status);
+      return;
+    }
+
+    sendSMSNotification(userPhoneNumber, message);
+  }, [sendSMSNotification]);
+
+  // Register message event listener
+  React.useEffect(() => {
+    const handleMessage = (e) => {
+      if (e.data && e.data.type === 'addToCart') {
+        // Replace this with your actual handler
+        addItemFromPopup(e.data.item);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
+
+  return {
+    sendSMSNotification,
+    notifyProgressUpdate,
+  };
+};
 
 export default OrdersPage;

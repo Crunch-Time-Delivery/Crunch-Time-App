@@ -1,28 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export const useFetch = (url, options) => {
+export const useFetch = (url, options = {}) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const abortControllerRef = useRef(null);
 
   useEffect(() => {
-    let isMounted = true;
-    fetch(url, options)
-      .then((res) => res.json())
-      .then((json) => {
-        if (isMounted) {
-          setData(json);
-          setLoading(false);
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    setLoading(true);
+    fetch(url, { ...options, signal: abortController.signal })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Network response was not ok (${res.status})`);
         }
+        return res.json();
+      })
+      .then((json) => {
+        setData(json);
+        setLoading(false);
       })
       .catch((err) => {
-        if (isMounted) {
+        if (err.name !== 'AbortError') {
           setError(err);
           setLoading(false);
         }
       });
-    return () => { isMounted = false; };
-  }, [url, options]);
+
+    // Cleanup
+    return () => {
+      abortController.abort();
+    };
+  }, [url, JSON.stringify(options)]); // stringify options to detect deep changes
 
   return { data, loading, error };
 };

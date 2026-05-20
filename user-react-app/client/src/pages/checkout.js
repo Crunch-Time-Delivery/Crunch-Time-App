@@ -1,80 +1,96 @@
-// Utility functions
+// ======================= Utility Functions =======================
+
+/**
+ * Generate MD5 hash signature for payment data.
+ * @param {Object} data - Payment data object.
+ * @param {string|null} passPhrase - Optional passphrase.
+ * @returns {string} - MD5 hash signature.
+ */
 function generateSignature(data, passPhrase = null) {
-    let pfOutput = '';
-    for (const [key, val] of Object.entries(data)) {
-        if (val !== '') {
-            pfOutput += `${key}=${encodeURIComponent(val.trim())}&`;
-        }
+  let pfOutput = '';
+  for (const [key, val] of Object.entries(data)) {
+    if (val !== '') {
+      pfOutput += `${key}=${encodeURIComponent(val.trim())}&`;
     }
-    let getString = pfOutput.slice(0, -1);
-    if (passPhrase !== null) {
-        getString += `&passphrase=${encodeURIComponent(passPhrase.trim())}`;
-    }
-    // For MD5 hashing, we use CryptoJS
-    return CryptoJS.MD5(getString).toString();
+  }
+  let getString = pfOutput.slice(0, -1);
+  if (passPhrase !== null) {
+    getString += `&passphrase=${encodeURIComponent(passPhrase.trim())}`;
+  }
+  // Using CryptoJS MD5 hashing
+  return CryptoJS.MD5(getString).toString();
 }
 
-// On page load, retrieve cart total
-window.addEventListener('DOMContentLoaded', () => {
-  const savedSubtotal = localStorage.getItem('cartTotal');
-  let savedAmount = parseFloat(savedSubtotal);
-  if (isNaN(savedAmount)) savedAmount = 0;
-  subtotal = savedAmount;
-  document.getElementById('subtotal').innerText = "R" + subtotal.toFixed(2);
-  recalc();
-});
-
-// Variables
-let subtotal = 0; // will be set from localStorage
-let discount = 0;
-let tip = 0;
-const serviceFee = 10;
-const deliveryFee = 20;
-
-/* Recalculate total */
+/**
+ * Recursively recalculate totals (called on page load and updates).
+ */
 function recalc() {
+  const subtotal = parseFloat(localStorage.getItem('cartTotal')) || 0;
+  const discount = window.discount || 0;
+  const tip = window.tip || 0;
+  const serviceFee = 10;
+  const deliveryFee = 20;
+
   const total = subtotal - discount + serviceFee + deliveryFee + tip;
-  document.getElementById("subtotal").innerText = "R" + subtotal.toFixed(2);
-  document.getElementById("discount").innerText = "-R" + discount.toFixed(2);
-  document.getElementById("tipAmount").innerText = "R" + tip.toFixed(2);
-  document.getElementById("total").innerText = "R" + total.toFixed(2);
-  document.getElementById("barTotal").innerText = "R" + total.toFixed(2);
-  document.getElementById("pf_amount").value = total.toFixed(2);
+
+  document.getElementById('subtotal').innerText = `R${subtotal.toFixed(2)}`;
+  document.getElementById('discount').innerText = `-R${discount.toFixed(2)}`;
+  document.getElementById('tipAmount').innerText = `R${tip.toFixed(2)}`;
+  document.getElementById('total').innerText = `R${total.toFixed(2)}`;
+  document.getElementById('barTotal').innerText = `R${total.toFixed(2)}`;
+  document.getElementById('pf_amount').value = total.toFixed(2);
 }
-// ======================= Tip Selection =======================
+
+/**
+ * Set tip amount and update UI.
+ * @param {number} amount - Tip amount.
+ * @param {HTMLElement} btn - Button element clicked.
+ */
 function setTip(amount, btn) {
-  window.tip = amount; // Assuming tip is a global variable
+  window.tip = amount;
   document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  recalc(); // Recalculate totals
+  recalc();
 }
 
-// ======================= Voucher Input =======================
+/**
+ * Open voucher popup.
+ */
 function openVoucher() {
   document.getElementById('voucherPopup').style.display = 'flex';
 }
 
+/**
+ * Apply voucher code for discount.
+ */
 function applyVoucher() {
   const code = document.getElementById('voucherCode').value.trim().toUpperCase();
-  if (code === 'SAVE20') {
-    window.discount = 20; // Assuming discount is a global variable
-  } else {
-    window.discount = 0;
-  }
+  window.discount = (code === 'SAVE20') ? 20 : 0;
   document.getElementById('voucherPopup').style.display = 'none';
   recalc();
 }
 
-// ======================= Toggle Card Form =======================
+/**
+ * Show or hide the card input form.
+ * @param {boolean} show - Whether to show the form.
+ */
 function toggleCardForm(show) {
   document.getElementById('cardForm').classList.toggle('hidden', !show);
 }
 
-// ======================= Card Number Formatting =======================
+/**
+ * Format credit card number input.
+ * @param {HTMLInputElement} input - Card number input element.
+ */
 function formatCardNumber(input) {
   input.value = input.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
 }
-// ======================= Main Payment Trigger =======================
+
+// ======================= Payment Processing =======================
+
+/**
+ * Initiate payment based on selected method.
+ */
 function payNow() {
   recalc();
 
@@ -83,39 +99,51 @@ function payNow() {
     alert('Please select a payment method.');
     return;
   }
+  const method = selectedMethodInput.value;
 
-  const selectedMethod = selectedMethodInput.value;
-
-  if (selectedMethod === 'cc') {
+  if (method === 'cc') {
     toggleCardForm(true);
     return;
   }
 
-  // Set payment method and submit form for other methods
-  document.getElementById('pf_method').value = selectedMethod;
+  // Set payment method for backend
+  document.getElementById('pf_method').value = method;
+  // Submit form or process payment
   document.getElementById('payfastForm').submit();
 }
 
-// ======================= Submit Card Payment =======================
+/**
+ * Handle card payment submission.
+ */
 function submitCardForm() {
-  const selectedMethod = 'cc';
-  document.getElementById('pf_method').value = selectedMethod;
+  document.getElementById('pf_method').value = 'cc';
   toggleCardForm(false);
   document.getElementById('payfastForm').submit();
 }
 
-// ======================= Generate Signature with SHA-256 =======================
-async function generateSignature(data, passphrase) {
-  const stringToSign = Object.values(data).join(':') + ':' + passphrase;
-  const encoder = new TextEncoder();
-  const dataBuffer = encoder.encode(stringToSign);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex;
+/**
+ * Generate MD5 signature for PayFast.
+ * @param {Object} data - Payment data.
+ * @param {string} passPhrase - Secret passphrase.
+ * @returns {string} - MD5 hash signature.
+ */
+function generateSignature(data, passPhrase) {
+  let stringToSign = '';
+  for (const [key, val] of Object.entries(data)) {
+    if (val !== '') {
+      stringToSign += `${key}=${encodeURIComponent(val.trim())}&`;
+    }
+  }
+  stringToSign = stringToSign.slice(0, -1);
+  if (passPhrase) {
+    stringToSign += `&passphrase=${encodeURIComponent(passPhrase.trim())}`;
+  }
+  return CryptoJS.MD5(stringToSign).toString();
 }
 
-// ======================= Prepare Payment Signature =======================
+/**
+ * Prepare and set the signature before payment.
+ */
 async function preparePayFastSignature() {
   try {
     const amount = document.getElementById('pf_amount').value;
@@ -129,29 +157,27 @@ async function preparePayFastSignature() {
       item_description: 'Food delivery checkout',
       payment_method: paymentMethod,
     };
-
     const passphrase = 'jt7NOE43FZPn';
 
-    const signature = await generateSignature(data, passphrase);
+    const signature = generateSignature(data, passphrase);
     document.getElementById('pf_signature').value = signature;
-  } catch (error) {
-    console.error('Error generating signature:', error);
+  } catch (err) {
+    console.error('Error generating signature:', err);
     alert('Error generating payment signature.');
   }
 }
 
-// ======================= Utility: Card Number Formatting =======================
-function formatCardNumber(input) {
-  input.value = input.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
-}
+// ======================= Initialize on Page Load =======================
 
-// ======================= Utility: Toggle Card Form =======================
-function toggleCardForm(show) {
-  const cardFormContainer = document.getElementById('cardFormContainer');
-  if (cardFormContainer) {
-    cardFormContainer.style.display = show ? 'block' : 'none';
-  }
-}
+window.addEventListener('DOMContentLoaded', () => {
+  // Retrieve cart total from localStorage
+  const savedSubtotal = localStorage.getItem('cartTotal');
+  let amount = parseFloat(savedSubtotal);
+  if (isNaN(amount)) amount = 0;
+  window.subtotal = amount;
+  document.getElementById('subtotal').innerText = `R${amount.toFixed(2)}`;
+  recalc();
+});
 
 // ======================= Usage =======================
 // Call toggleCardForm(true/false) when needed, e.g., on button clicks.

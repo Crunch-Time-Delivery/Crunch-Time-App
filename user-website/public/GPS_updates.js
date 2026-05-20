@@ -1,11 +1,14 @@
 import { LocationClient, BatchUpdateDevicePositionCommand } from "@aws-sdk/client-location";
 
-// Initialize the AWS Location client (ensure AWS credentials are configured in your environment)
-const client = new LocationClient({ region: "us-east-1" });
+// Configure your AWS region
+const AWS_REGION = "us-east-1";
 
-// Device ID and Tracker Name (replace with your actual names)
-const TRACKER_NAME = "MyDeviceTracker";
-const DEVICE_ID = "device-001";
+// Initialize the AWS Location client (ensure AWS credentials are configured)
+const client = new LocationClient({ region: AWS_REGION });
+
+// Device and tracker configuration
+const TRACKER_NAME = "MyDeviceTracker"; // Replace with your tracker name
+const DEVICE_ID = "device-001";         // Replace with your device ID
 
 let watchId = null; // To store the watcher ID
 
@@ -24,7 +27,7 @@ async function updateAWSTracker(position) {
 
   try {
     await client.send(command);
-    console.log("Position updated successfully:", position.coords);
+    console.log(`Position updated: (${latitude.toFixed(6)}, ${longitude.toFixed(6)})`);
   } catch (error) {
     console.error("Error updating position:", error);
   }
@@ -36,9 +39,8 @@ function startTracking() {
     console.error("Geolocation is not supported by this browser.");
     return;
   }
-
   if (watchId !== null) {
-    console.log("Tracking already active.");
+    console.log("Tracking is already active.");
     return;
   }
 
@@ -62,7 +64,8 @@ function stopTracking() {
   }
 }
 
-// Optionally, automatically start tracking
+// Optional: Auto-start tracking
 // startTracking();
 
-// You can call startTracking() to begin, and stopTracking() to end tracking.
+// Export functions if you want to control from other modules
+export { startTracking, stopTracking };

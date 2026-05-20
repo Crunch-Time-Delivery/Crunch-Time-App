@@ -14,12 +14,13 @@ const CheckoutOrder = () => {
   const driverTrackingIntervalRef = useRef(null);
 
  
-function DriverMap({ driverId }) {
+function DriverMap({ driverId, updateDriverMarker }) {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const driverMarkerRef = useRef(null);
   const overlayRef = useRef(null);
   const watchIdRef = useRef(null);
+  const trackingIntervalRef = useRef(null);
 
   // Helper for error messages
   const getPositionErrorMessage = (code) => {
@@ -114,137 +115,101 @@ function DriverMap({ driverId }) {
         },
       });
     } else {
-      // Animate marker movement if desired
-      driverMarkerRef.current.setPosition(position);
+      animateMarkerTo(driverMarkerRef.current, position);
     }
     moveDriverLabel();
   };
 
-  // Function to animate marker smoothly (optional)
-  const animateMarkerTo = (marker, position) => {
-    // For smooth animation, you can implement interpolation here
-    marker.setPosition(position);
-    mapInstance.current.panTo(position);
-  };
-
-  // Function to track user location
-  const trackLocation = ({ onSuccess, onError = () => {} }) => {
-    if (!('geolocation' in navigator)) {
-      onError(new Error('Geolocation is not supported by your browser.'));
-      return;
-    }
-    const id = navigator.geolocation.watchPosition(onSuccess, onError);
-    watchIdRef.current = id;
-    return id;
-  };
-
-  // Main effect to initialize map and start tracking
-  useEffect(() => {
-    const initialPosition = { lat: 59.325, lng: 18.069 };
-    const map = new window.google.maps.Map(mapRef.current, {
-      center: initialPosition,
-      zoom: 14,
-    });
-    mapInstance.current = map;
-
-    const marker = new window.google.maps.Marker({
-      position: initialPosition,
-      map,
-    });
-    driverMarkerRef.current = marker;
-
-    // Start tracking driver location
-    const watchId = trackLocation({
-      onSuccess: ({ coords: { latitude: lat, longitude: lng } }) => {
-        const newPos = { lat, lng };
-        if (driverMarkerRef.current) {
-          driverMarkerRef.current.setPosition(newPos);
-          map.panTo(newPos);
-        }
-      },
-      onError: (err) => {
-        alert(`Error: ${getPositionErrorMessage(err.code) || err.message}`);
-      },
-    });
-
-    // Cleanup on unmount
-    return () => {
-      if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-      }
-    };
-  }, []);
-
-  return (
-    <div>
-      <div
-        ref={mapRef}
-        style={{ width: '100%', height: '400px' }}
-      />
-    </div>
-  );
-}
-  // Animate marker movement smoothly
-  const animateMarkerTo = (marker, newPosition) => {
-    const duration = 1000; // ms
-    const start = marker.getPosition();
+  // Function for smooth marker animation
+  const animateMarkerTo = (marker, targetPos, duration = 1000) => {
+    const startPos = marker.getPosition();
     const startTime = performance.now();
 
     const animate = () => {
       const now = performance.now();
       const elapsed = now - startTime;
       const t = Math.min(elapsed / duration, 1);
-      const lat = start.lat() + (newPosition.lat - start.lat()) * t;
-      const lng = start.lng() + (newPosition.lng - start.lng()) * t;
+      const lat = startPos.lat() + (targetPos.lat - startPos.lat()) * t;
+      const lng = startPos.lng() + (targetPos.lng - startPos.lng()) * t;
       marker.setPosition(new window.google.maps.LatLng(lat, lng));
       if (t < 1) requestAnimationFrame(animate);
     };
     requestAnimationFrame(animate);
   };
 
-  // Fetch driver location and start periodic updates
-  const fetchAndUpdateDriverLocation = () => {
-    // Replace this with your actual API call
-    const baseLat = -33.9249;
-    const baseLng = 18.4241;
-    const newLoc = {
-      lat: baseLat + (Math.random() - 0.5) * 0.02,
-      lng: baseLng + (Math.random() - 0.5) * 0.02,
-    };
-    updateDriverMarker(newLoc);
-  };
-
-  const startTrackingDriver = () => {
-    if (trackingIntervalRef.current) clearInterval(trackingIntervalRef.current);
-    fetchAndUpdateDriverLocation(); // initial fetch
-    trackingIntervalRef.current = setInterval(fetchAndUpdateDriverLocation, 5000);
-  };
-
-  const stopTrackingDriver = () => {
-    if (trackingIntervalRef.current) clearInterval(trackingIntervalRef.current);
-  };
-
-  // Start tracking when driverId changes
+  // Track user's location once on mount
   useEffect(() => {
-    if (driverId) {
-      startTrackingDriver();
-    }
-    return () => stopTrackingDriver();
+    if (!navigator.geolocation || !mapInstance.current) return;
+
+    const id = navigator.geolocation.watchPosition(
+      ({ coords: { latitude: lat, longitude: lng } }) => {
+        // Optionally, update user's marker here
+        // e.g., userMarker.setPosition({ lat, lng });
+        // mapInstance.current.panTo({ lat, lng });
+      },
+      (err) => {
+        alert(`Error: ${getPositionErrorMessage(err.code) || err.message}`);
+      }
+    );
+    watchIdRef.current = id;
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
+
+  // Effect to handle driverId change and starting periodic updates
+  useEffect(() => {
+    if (!driverId || !mapInstance.current) return;
+
+    // Example: simulate fetching driver location periodically
+    const fetchAndUpdateDriverLocation = () => {
+      // Replace with your real API call
+      const baseLat = -33.9249;
+      const baseLng = 18.4241;
+      const newLoc = {
+        lat: baseLat + (Math.random() - 0.5) * 0.02,
+        lng: baseLng + (Math.random() - 0.5) * 0.02,
+      };
+      updateDriverMarker(newLoc);
+    };
+
+    fetchAndUpdateDriverLocation(); // initial
+    if (trackingIntervalRef.current) clearInterval(trackingIntervalRef.current);
+    trackingIntervalRef.current = setInterval(fetchAndUpdateDriverLocation, 5000);
+
+    // Cleanup on driverId change or unmount
+    return () => {
+      if (trackingIntervalRef.current) {
+        clearInterval(trackingIntervalRef.current);
+        trackingIntervalRef.current = null;
+      }
+    };
   }, [driverId]);
 
-  // Cleanup on component unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      stopTrackingDriver();
+      if (trackingIntervalRef.current) {
+        clearInterval(trackingIntervalRef.current);
+      }
     };
   }, []);
 
   return (
     <div style={{ width: '100%', height: '500px' }}>
-      <div id="map" ref={mapRef} style={{ width: '100%', height: '100%' }} />
+      <div
+        id="map"
+        ref={mapRef}
+        style={{ width: '100%', height: '100%' }}
+      />
     </div>
   );
 }
+
+
   const generatePIN = () => Math.floor(100000 + Math.random() * 900000).toString();
 
   const hidePinMessage = () => {

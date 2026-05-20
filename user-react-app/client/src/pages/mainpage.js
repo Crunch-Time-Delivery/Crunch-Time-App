@@ -178,17 +178,16 @@ async function fetchUser() {
   }
 }
 
-// Setup real-time subscriptions with optional cleanup
+// Setup real-time subscriptions with cleanup
 function subscribeToTable(tableName, callback) {
   const subscription = supabase
-    .from(`${tableName}`)
+    .from(tableName)
     .on('*', payload => {
       console.log(`Change received on ${tableName}: `, payload);
       callback(payload);
     })
     .subscribe();
 
-  // Return a function to unsubscribe if needed
   return () => {
     supabase.removeSubscription(subscription);
   };
@@ -203,15 +202,18 @@ function setupRealtimeUpdates() {
   // e.g., return [unsubscribeItems, unsubscribeOrders, unsubscribeUsers];
 }
 
-// Render functions with improved structure
+// Render functions with improved error handling and structure
 async function renderItems() {
   try {
     const { data, error } = await supabase.from('items').select('*');
     if (error) throw error;
+
+    const container = document.getElementById('itemsTable');
     if (!data || data.length === 0) {
-      document.getElementById('itemsTable').innerHTML = '<p>No items available.</p>';
+      container.innerHTML = '<p>No items available.</p>';
       return;
     }
+
     let html = `<table class="table"><thead><tr><th>Vendor</th><th>Name</th><th>Price</th><th>Status</th></tr></thead><tbody>`;
     data.forEach(item => {
       html += `<tr>
@@ -222,10 +224,10 @@ async function renderItems() {
       </tr>`;
     });
     html += '</tbody></table>';
-    document.getElementById('itemsTable').innerHTML = html;
+    container.innerHTML = html;
   } catch (err) {
     document.getElementById('itemsTable').innerHTML = '<p>Error loading items.</p>';
-    console.error(err);
+    console.error('renderItems error:', err);
   }
 }
 
@@ -233,10 +235,13 @@ async function renderOrders() {
   try {
     const { data, error } = await supabase.from('orders').select('*');
     if (error) throw error;
+
+    const container = document.getElementById('ordersTable');
     if (!data || data.length === 0) {
-      document.getElementById('ordersTable').innerHTML = '<p>No orders available.</p>';
+      container.innerHTML = '<p>No orders available.</p>';
       return;
     }
+
     let html = `<table class="table"><thead><tr><th>Order ID</th><th>User</th><th>Email</th><th>Method</th><th>Amount</th></tr></thead><tbody>`;
     data.forEach(order => {
       html += `<tr>
@@ -248,10 +253,10 @@ async function renderOrders() {
       </tr>`;
     });
     html += '</tbody></table>';
-    document.getElementById('ordersTable').innerHTML = html;
+    container.innerHTML = html;
   } catch (err) {
     document.getElementById('ordersTable').innerHTML = '<p>Error loading orders.</p>';
-    console.error(err);
+    console.error('renderOrders error:', err);
   }
 }
 
@@ -259,10 +264,13 @@ async function renderUsers() {
   try {
     const { data, error } = await supabase.from('users').select('*');
     if (error) throw error;
+
+    const container = document.getElementById('usersTable');
     if (!data || data.length === 0) {
-      document.getElementById('usersTable').innerHTML = '<p>No users available.</p>';
+      container.innerHTML = '<p>No users available.</p>';
       return;
     }
+
     let html = `<table class="table"><thead><tr><th>Email</th><th>Name</th></tr></thead><tbody>`;
     data.forEach(user => {
       html += `<tr>
@@ -271,14 +279,14 @@ async function renderUsers() {
       </tr>`;
     });
     html += '</tbody></table>';
-    document.getElementById('usersTable').innerHTML = html;
+    container.innerHTML = html;
   } catch (err) {
     document.getElementById('usersTable').innerHTML = '<p>Error loading users.</p>';
-    console.error(err);
+    console.error('renderUsers error:', err);
   }
 }
 
-// Utility to escape HTML to prevent XSS
+// Utility function to escape HTML to prevent XSS
 function escapeHTML(str) {
   if (!str) return '';
   return str.replace(/[&<>"']/g, match => {
@@ -297,51 +305,56 @@ function escapeHTML(str) {
 window.onload = () => {
   setupRealtimeUpdates();
 };
+
 window.openProfile = () => {
   document.getElementById('profileModal').style.display = 'flex';
   loadProfile();
-}
+};
 
 window.closeProfile = () => {
   document.getElementById('profileModal').style.display = 'none';
-}
+};
 
 window.updatePassword = async () => {
   const password = document.getElementById('password').value;
-  const { error } = await supabase
-    .from('User')
-    .update({ password })
-    .eq('id', userId);
-  alert(error ? 'Password update failed' : 'Password updated');
-}
-// Function to filter items based on search input
-  document.getElementById('searchInput').addEventListener('input', function() {
-    const query = this.value.toLowerCase();
-    const items = document.querySelectorAll('#items-container .item');
-
-    items.forEach(item => {
-      const text = item.textContent.toLowerCase();
-      if (text.includes(query)) {
-        item.style.display = '';
-      } else {
-        item.style.display = 'none';
-      }
-    });
-  });
-
-  // Function to filter by category
-  function selectCategory(category) {
-    const items = document.querySelectorAll('#items-container .item');
-
-    items.forEach(item => {
-      const itemCategory = item.getAttribute('data-category');
-      if (category === 'All' || itemCategory === category) {
-        item.style.display = '';
-      } else {
-        item.style.display = 'none';
-      }
-    });
+  try {
+    const { error } = await supabase
+      .from('User')
+      .update({ password })
+      .eq('id', userId);
+    alert(error ? 'Password update failed' : 'Password updated');
+  } catch (err) {
+    console.error('Update password error:', err);
+    alert('Error updating password.');
   }
+};
+
+// Function to filter items based on search input
+document.getElementById('searchInput').addEventListener('input', function () {
+  const query = this.value.toLowerCase();
+  const items = document.querySelectorAll('#items-container .item');
+
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    item.style.display = text.includes(query) ? '' : 'none';
+  });
+});
+
+// Function to filter by category
+function selectCategory(category) {
+  const items = document.querySelectorAll('#items-container .item');
+
+  items.forEach(item => {
+    const itemCategory = item.getAttribute('data-category');
+    if (category === 'All' || itemCategory === category) {
+      item.style.display = '';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+// Save Card Details
 window.saveCardDetails = async () => {
   const data = {
     card_type: document.getElementById('cardType').value,
@@ -349,10 +362,16 @@ window.saveCardDetails = async () => {
     cvv: document.getElementById('cvv').value,
     security_code: document.getElementById('securityCode').value
   };
-  const { error } = await supabase.from('User').update(data).eq('id', userId);
-  alert(error ? 'Card save failed' : 'Card saved');
-}
-// Shared data structure for categories
+  try {
+    const { error } = await supabase.from('User').update(data).eq('id', userId);
+    alert(error ? 'Card save failed' : 'Card saved');
+  } catch (err) {
+    console.error('saveCardDetails error:', err);
+    alert('Error saving card details.');
+  }
+};
+
+// Shared categories data
 const categoriesData = {
   'Fast Food': 'fastfoodList',
   'Burgers': 'burgersList',
@@ -360,52 +379,49 @@ const categoriesData = {
   'Pizza': 'pizzaList'
 };
 
-// Function to initialize category buttons with live connection
+// Setup category filters with event listeners
 function setupCategoryFilters() {
   Object.keys(categoriesData).forEach(category => {
     const buttons = document.querySelectorAll(`button[onclick="selectCategory('${category}')"]`);
     buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        selectCategory(category);
-      });
+      btn.removeEventListener('click', () => selectCategory(category));
+      btn.addEventListener('click', () => selectCategory(category));
     });
   });
 }
 
-// Function to handle category selection
+// Handle category selection
 function selectCategory(categoryName) {
-  // Hide all lists
   Object.values(categoriesData).forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  // Show selected category list
   const selectedId = categoriesData[categoryName];
   if (selectedId) {
     document.getElementById(selectedId).style.display = 'block';
   }
 }
 
-// Function to update categories dynamically (called from vendor page)
+// Update categories dynamically
 function updateCategory(category, listId) {
   categoriesData[category] = listId;
-  // Re-setup the buttons to reflect new categories (optional)
   setupCategoryFilters();
 }
 
-// Call setup on DOMContentLoaded
+// Initialize filters on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
   setupCategoryFilters();
 });
-function updateVendor(){
-const listContainer = document.getElementById('vendorList');
+
+// Update vendor list
+function updateVendor() {
+  const listContainer = document.getElementById('vendorList');
   listContainer.innerHTML = '';
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (key.startsWith('sectionData_')) {
       const vendorId = key.substring('sectionData_'.length);
       const data = JSON.parse(localStorage.getItem(key));
-
       const li = document.createElement('li');
       li.style.padding = '8px';
       li.style.borderBottom = '1px solid #eee';
@@ -418,18 +434,24 @@ const listContainer = document.getElementById('vendorList');
       } else if (data.itemName) {
         displayText += ` | Item: ${data.itemName}`;
       }
-
       li.innerText = displayText;
       listContainer.appendChild(li);
     }
   }
 }
+
+// Delete user account
 window.deleteUser = async () => {
   if (!confirm('Delete account permanently?')) return;
-  await supabase.from('User').delete().eq('id', userId);
-  localStorage.clear();
-  location.href = 'http://127.0.0.1:5501/user-app/register_home.html';
-}
+  try {
+    await supabase.from('User').delete().eq('id', userId);
+    localStorage.clear();
+    window.location.href = 'http://127.0.0.1:5500/user-app/register_home.html';
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    alert('Failed to delete account.');
+  }
+};
 function updateWiFiStatus() {
       const statusDiv = document.getElementById('connectionStatus');
       const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;

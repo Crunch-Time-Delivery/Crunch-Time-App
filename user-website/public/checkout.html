@@ -258,20 +258,23 @@ function formatCardNumber(input) {
 }
 // ======================= Payment Process =======================
 
+/**
+ * Initiates the payment process based on the selected method.
+ */
 function payNow() {
   recalc(); // Ensure totals are up-to-date
-  const selectedMethod = document.querySelector('input[name="paymethod"]:checked');
 
-  if (!selectedMethod) {
+  const selectedMethodElement = document.querySelector('input[name="paymethod"]:checked');
+  if (!selectedMethodElement) {
     alert('Please select a payment method.');
     return;
   }
 
-  const methodValue = selectedMethod.value;
+  const methodValue = selectedMethodElement.value;
 
   if (methodValue === 'cc') {
     toggleCardForm(true);
-    return;
+    return; // Wait for user to submit card form
   }
 
   // Set payment method for backend
@@ -279,36 +282,53 @@ function payNow() {
 
   // Prepare signature then process payment
   preparePayFastSignature()
-    .then(() => backendProcessAndRedirect())
+    .then(backendProcessAndRedirect)
     .catch((err) => {
       console.error('Error during payment process:', err);
       alert('Failed to process payment. Please try again.');
     });
 }
 
+/**
+ * Handles the submission of the card payment form.
+ */
 function submitCardForm() {
   const selectedMethod = 'cc';
   document.getElementById('pf_method').value = selectedMethod;
   toggleCardForm(false);
 
   preparePayFastSignature()
-    .then(() => backendProcessAndRedirect())
+    .then(backendProcessAndRedirect)
     .catch((err) => {
       console.error('Error during card payment:', err);
       alert('Failed to process card payment. Please try again.');
     });
 }
 
+/**
+ * Generates a SHA-256 signature based on data and passphrase.
+ * @param {Object} data - Payment data.
+ * @param {string} passphrase - Secret passphrase.
+ * @returns {Promise<string>} - Hexadecimal signature string.
+ */
 async function generateSignature(data, passphrase) {
-  const stringToSign = Object.values(data).join(':') + ':' + passphrase;
-  const encoder = new TextEncoder();
-  const dataBuffer = encoder.encode(stringToSign);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex;
+  try {
+    const stringToSign = Object.values(data).join(':') + ':' + passphrase;
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(stringToSign);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+  } catch (err) {
+    console.error('Error generating signature:', err);
+    throw err;
+  }
 }
 
+/**
+ * Prepares the PayFast signature before submitting payment.
+ */
 async function preparePayFastSignature() {
   try {
     const amount = document.getElementById('pf_amount').value;
@@ -326,18 +346,37 @@ async function preparePayFastSignature() {
 
     const signature = await generateSignature(data, passphrase);
     document.getElementById('pf_signature').value = signature;
-  } catch (error) {
-    console.error('Error generating signature:', error);
+  } catch (err) {
     alert('Error generating payment signature.');
-    throw error; // Propagate error to caller
+    throw err;
   }
 }
 
-// ======================= Handle PayFast Callback (optional) =======================
-// Implement server-side notify_url to trigger this
+/**
+ * Placeholder for backend process and redirect after signature is ready.
+ */
+function backendProcessAndRedirect() {
+  // Implement your backend submission or form submit here
+  // For example:
+  // document.getElementById('paymentForm').submit();
+  console.log('Processing payment and redirecting...');
+}
+
+/**
+ * Toggle the visibility/state of the card form.
+ * @param {boolean} show - Whether to show or hide the card form.
+ */
+function toggleCardForm(show) {
+  const formContainer = document.getElementById('cardFormContainer'); // Your card form container
+  if (formContainer) {
+    formContainer.style.display = show ? 'block' : 'none';
+  }
+}
+
+// Optional: Handle PayFast callback notification
 function handlePayFastCallback() {
   console.log('Received PayFast notification/callback');
-  // Handle server-side notification here
+  // Implement server-side notification handler
 }
 
 // ======================= Backend Process and Redirect =======================

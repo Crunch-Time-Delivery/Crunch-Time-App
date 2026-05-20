@@ -1,11 +1,25 @@
-// iotTopicRule.js
-const { IoTClient, CreateTopicRuleCommand, UpdateTopicRuleCommand, DeleteTopicRuleCommand, DescribeTopicRuleCommand } = require("@aws-sdk/client-iot");
+const {
+  IoTClient,
+  CreateTopicRuleCommand,
+  UpdateTopicRuleCommand,
+  DeleteTopicRuleCommand,
+  DescribeTopicRuleCommand
+} = require("@aws-sdk/client-iot");
 
-// Initialize the client
-const client = new IoTClient({ region: "us-east-1" }); // replace with your region
+// Initialize the IoT client with your region
+const client = new IoTClient({ region: "us-east-1" }); // Replace with your region
 
-// Create a topic rule
+/**
+ * Creates a new IoT topic rule.
+ * @param {string} ruleName - Name of the rule.
+ * @param {string} sql - SQL statement for the rule.
+ * @param {Array} actions - Array of actions for the rule.
+ * @param {string} [description] - Optional description.
+ */
 async function createTopicRule(ruleName, sql, actions, description = "") {
+  if (!ruleName || !sql || !actions) {
+    throw new Error("Missing required parameters for createTopicRule");
+  }
   const command = new CreateTopicRuleCommand({
     ruleName,
     topicRulePayload: {
@@ -13,18 +27,29 @@ async function createTopicRule(ruleName, sql, actions, description = "") {
       actions,
       description,
       ruleDisabled: false,
-    }
+    },
   });
   try {
     const result = await client.send(command);
     console.log("Topic rule created:", result);
+    return result;
   } catch (err) {
-    console.error("Error creating topic rule:", err);
+    console.error(`Error creating topic rule "${ruleName}":`, err);
+    throw err;
   }
 }
 
-// Update an existing topic rule
+/**
+ * Updates an existing IoT topic rule.
+ * @param {string} ruleName - Name of the rule.
+ * @param {string} sql - SQL statement for the rule.
+ * @param {Array} actions - Array of actions.
+ * @param {string} [description] - Optional description.
+ */
 async function updateTopicRule(ruleName, sql, actions, description = "") {
+  if (!ruleName || !sql || !actions) {
+    throw new Error("Missing required parameters for updateTopicRule");
+  }
   const command = new UpdateTopicRuleCommand({
     ruleName,
     topicRulePayload: {
@@ -32,42 +57,59 @@ async function updateTopicRule(ruleName, sql, actions, description = "") {
       actions,
       description,
       ruleDisabled: false,
-    }
+    },
   });
   try {
     const result = await client.send(command);
     console.log("Topic rule updated:", result);
+    return result;
   } catch (err) {
-    console.error("Error updating topic rule:", err);
+    console.error(`Error updating topic rule "${ruleName}":`, err);
+    throw err;
   }
 }
 
-// Delete a topic rule
+/**
+ * Deletes an IoT topic rule.
+ * @param {string} ruleName - Name of the rule to delete.
+ */
 async function deleteTopicRule(ruleName) {
+  if (!ruleName) {
+    throw new Error("Missing ruleName for deleteTopicRule");
+  }
   const command = new DeleteTopicRuleCommand({ ruleName });
   try {
     const result = await client.send(command);
     console.log("Topic rule deleted:", result);
+    return result;
   } catch (err) {
-    console.error("Error deleting topic rule:", err);
+    console.error(`Error deleting topic rule "${ruleName}":`, err);
+    throw err;
   }
 }
 
-// Describe a topic rule
+/**
+ * Describes an IoT topic rule.
+ * @param {string} ruleName - Name of the rule.
+ */
 async function describeTopicRule(ruleName) {
+  if (!ruleName) {
+    throw new Error("Missing ruleName for describeTopicRule");
+  }
   const command = new DescribeTopicRuleCommand({ ruleName });
   try {
     const result = await client.send(command);
     console.log("Topic rule description:", result);
+    return result;
   } catch (err) {
-    console.error("Error describing topic rule:", err);
+    console.error(`Error describing topic rule "${ruleName}":`, err);
+    throw err;
   }
 }
 
-// Export functions
 module.exports = {
   createTopicRule,
   updateTopicRule,
   deleteTopicRule,
-  describeTopicRule
+  describeTopicRule,
 };

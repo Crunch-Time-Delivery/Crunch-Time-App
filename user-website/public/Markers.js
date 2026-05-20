@@ -1,10 +1,12 @@
-import { useState, memo } from 'react';
+import React, { useState, memo } from 'react';
+import PropTypes from 'prop-types';
 import { Marker, Popup } from 'react-map-gl/maplibre';
 import Pin from './Pin.js';
 
 const Markers = ({ messages }) => {
   const [popupInfo, setPopupInfo] = useState(null);
-  if (messages.length === 0) return null;
+
+  if (!messages || messages.length === 0) return null;
 
   return (
     <>
@@ -37,7 +39,6 @@ const Markers = ({ messages }) => {
           latitude={position[1]}
           color="blue"
           onClick={(e) => {
-            console.log('click', e);
             e.originalEvent.stopPropagation();
             setPopupInfo({ position, sampleTime });
           }}
@@ -49,4 +50,14 @@ const Markers = ({ messages }) => {
   );
 };
 
+Markers.propTypes = {
+  messages: PropTypes.arrayOf(
+    PropTypes.shape({
+      position: PropTypes.arrayOf(PropTypes.number).isRequired,
+      sampleTime: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+};
+
+// Wrap with React.memo for performance optimization
 export default memo(Markers);

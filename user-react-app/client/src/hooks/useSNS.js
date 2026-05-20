@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 
 const useSNS = () => {
   const [loading, setLoading] = useState(false);
@@ -20,13 +21,15 @@ const useSNS = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to send SMS');
+        // Extract error message if available
+        const errorMsg = data.error || 'Failed to send SMS';
+        throw new Error(errorMsg);
       }
 
-      return data;
+      return data; // e.g., { messageId: '...' }
     } catch (err) {
       setError(err.message);
-      throw err;
+      throw err; // Re-throw to allow caller to handle error if needed
     } finally {
       setLoading(false);
     }

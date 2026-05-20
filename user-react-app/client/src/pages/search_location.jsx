@@ -93,6 +93,95 @@ function MapComponent() {
     </div>
   );
 }
+function LocationComponent({ geocoder, updateMap, saveLocation, startLiveTracking }) {
+  const [connectionLink, setConnectionLink] = useState('');
+  const userIdRef = useRef(null); // store userId across renders
+
+  // Helper to wrap geocoder.geocode in a Promise
+  const geocodePromise = (request) => {
+    return new Promise((resolve, reject) => {
+      geocoder.geocode(request, (results, status) => {
+        if (status === "OK" && results[0]) {
+          resolve(results);
+        } else {
+          reject(new Error(`Geocode failed: ${status}`));
+        }
+      });
+    });
+  };
+
+  // Geocode address
+  const geocodeAddress = async (address) => {
+    try {
+      const results = await geocodePromise({ address });
+      const result = results[0];
+      const loc = {
+        lat: result.geometry.location.lat(),
+        lng: result.geometry.location.lng(),
+      };
+      const userId = generateUserId();
+      userIdRef.current = userId;
+
+      await saveLocation(loc, result.formatted_address);
+      updateMap(loc, result.formatted_address);
+      
+      // Set connection link
+      const liveUrl = `https://yourdomain.com/connection/${userId}`;
+      setConnectionLink(liveUrl);
+
+      // Start live tracking
+      startLiveTracking(userId);
+      alert('Location set and saved!');
+      
+      // Save userId to state if needed
+    } catch (error) {
+      console.error('Geocode address error:', error);
+      alert('Unable to find location. Please try again.');
+    }
+  };
+
+  // Reverse geocode location
+  const reverseGeocodeLocation = async (pos) => {
+    try {
+      const results = await geocodePromise({ location: pos });
+      const result = results[0];
+      const address = result.formatted_address;
+      const userId = generateUserId();
+      userIdRef.current = userId;
+
+      await saveLocation(pos, address);
+      updateMap(pos, address);
+
+      const liveUrl = `https://yourdomain.com/connection/${userId}`;
+      setConnectionLink(liveUrl);
+
+      startLiveTracking(userId);
+    } catch (error) {
+      console.error('Reverse geocode error:', error);
+      alert('Unable to get address for this location.');
+    }
+  };
+
+  // Example generateUserId function
+  const generateUserId = () => {
+    return Math.random().toString(36).substr(2, 9);
+  };
+
+  return (
+    <div>
+      {/* Your UI components, e.g.: */}
+      <button onClick={() => geocodeAddress('1600 Amphitheatre Parkway, Mountain View, CA')}>
+        Geocode Address
+      </button>
+      {/* Or call reverseGeocodeLocation with a position object */}
+      <div>
+        <a href={connectionLink} target="_blank" rel="noopener noreferrer">
+          {connectionLink}
+        </a>
+      </div>
+    </div>
+  );
+}
 
   const handleGeocode = (e) => {
     e.preventDefault();
