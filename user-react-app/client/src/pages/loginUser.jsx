@@ -16,21 +16,122 @@ function UserLogin() {
     const data = JSON.parse(localStorage.getItem('registeredUser')) || {};
     setDriverData(data);
   }, []);
+function SmsComponent() {
+  const [notifications, setNotifications] = useState([]);
 
-  const sendSms = (toNumber, message) => {
-    fetch('http://localhost:3000/send-sms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: toNumber, message }),
-    })
-    .then(res => res.json())
-    .then(data => {
-      showNotification(data.success ? 'SMS sent successfully.' : 'Failed to send SMS: ' + data.error, data.success ? 'success' : 'error');
-    })
-    .catch(() => {
-      showNotification('Error sending SMS.', 'error');
-    });
+  // Helper to add notifications
+  const showNotification = (message, type) => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { id, message, type }]);
+    // Remove notification after 3 seconds
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(notif => notif.id !== id));
+    }, 3000);
   };
+
+  // Send SMS
+  const sendSms = async (toNumber, message) => {
+    try {
+      const response = await fetch('http://localhost:5501/send-sms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ to: toNumber, message })
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification('SMS sent successfully.', 'success');
+      } else {
+        showNotification(`Failed to send SMS: ${data.error || 'Unknown error'}`, 'error');
+      }
+    } catch (error) {
+      showNotification(`Error sending SMS: ${error.message}`, 'error');
+    }
+  };
+
+  // Check message status
+  const checkMessageStatus = async (messageSid) => {
+    try {
+      const response = await fetch('http://localhost:3001/twilio-message-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageSid }),
+      });
+      return await response.json();
+    } catch {
+      showNotification('Error fetching message status.', 'error');
+      return null;
+    }
+  };
+
+  // Fetch message logs
+  const fetchMessageLogs = async (limit = 10) => {
+    try {
+      const response = await fetch(`http://localhost:3001/twilio-message-logs`);
+      const data = await response.json();
+      return data;
+    } catch {
+      showNotification('Error fetching message logs.', 'error');
+      return [];
+    }
+  };
+
+  // Callbacks
+  const onSendSuccess = (sid) => {
+    console.log(`Message sent successfully. SID: ${sid}`);
+    showNotification(`Message sent! SID: ${sid}`, 'success');
+  };
+
+  const onSendFailure = (error) => {
+    console.error('Failed to send message:', error);
+    showNotification(`Failed to send message: ${error}`, 'error');
+  };
+
+  const onStatusUpdate = (statusData) => {
+    console.log('Message status update:', statusData);
+    showNotification(`Status: ${statusData.status} for SID: ${statusData.sid}`, 'info');
+  };
+
+  const onError = (errorMsg) => {
+    console.error('Error:', errorMsg);
+    showNotification(`Error: ${errorMsg}`, 'error');
+  };
+
+  // Monitor message status
+  const monitorMessageStatus = (sid, intervalMs = 5000) => {
+    const intervalId = setInterval(async () => {
+      const statusData = await checkMessageStatus(sid);
+      if (statusData) {
+        onStatusUpdate(statusData);
+        if (statusData.status === 'delivered' || statusData.status === 'failed') {
+          clearInterval(intervalId);
+        }
+      }
+    }, intervalMs);
+    // Cleanup
+    return () => clearInterval(intervalId);
+  };
+
+  // Example usage inside component
+  // You could trigger sendSms, monitorMessageStatus, etc., via buttons or effects
+
+  return (
+    <div>
+      {/* Notifications */}
+      <div className="notifications">
+        {notifications.map(({ id, message, type }) => (
+          <div key={id} className={`notification ${type}`}>
+            {message}
+          </div>
+        ))}
+      </div>
+      {/* Your UI for sending SMS, etc., goes here */}
+    </div>
+  );
+}
+
 
   const generateAndSendOtp = () => {
     const otpCode = Math.floor(1000 + Math.random() * 9000).toString();

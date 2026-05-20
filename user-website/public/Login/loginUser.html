@@ -120,100 +120,104 @@
 <script>
 
  // Function to send SMS via backend API
- function sendSms(toNumber, message) {
-  fetch('http://localhost:5501/send-sms', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to: toNumber, message: message })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if(data.success) {
-      // Show success notification
+async function sendSms(toNumber, message) {
+  try {
+    const response = await fetch('http://localhost:5501/send-sms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ to: toNumber, message: message })
+    });
+    const data = await response.json();
+
+    if (data.success) {
       showNotification('SMS sent successfully.', 'success');
     } else {
-      // Show failure notification with error message
-      showNotification('Failed to send SMS: ' + data.error, 'error');
+      showNotification(`Failed to send SMS: ${data.error || 'Unknown error'}`, 'error');
     }
-  })
-  .catch(() => {
-    // Show error notification if fetch fails
-    showNotification('Error sending SMS.', 'error');
-  });
+  } catch (error) {
+    showNotification(`Error sending SMS: ${error.message}`, 'error');
+  }
 }
 
 // Helper function to display notifications
 function showNotification(message, type) {
-  // Create a notification element
   const notification = document.createElement('div');
   notification.innerText = message;
   notification.className = `notification ${type}`; // style based on type
-  
+
   // Append to body or a specific container
   document.body.appendChild(notification);
-  
+
   // Remove after 3 seconds
   setTimeout(() => {
-    document.body.removeChild(notification);
+    if (notification.parentNode) {
+      document.body.removeChild(notification);
+    }
   }, 3000);
 }
 
 // Check message status
-function checkMessageStatus(messageSid, callback) {
-  fetch('http://localhost:3001/twilio-message-status', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messageSid }),
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (callback) callback(data);
-  })
-  .catch(() => {
-    showNotificationMessage('Error fetching message status.', '#f44336');
-  });
+async function checkMessageStatus(messageSid) {
+  try {
+    const response = await fetch('http://localhost:3001/twilio-message-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messageSid }),
+    });
+    return await response.json();
+  } catch {
+    showNotification('Error fetching message status.', 'error');
+    return null;
+  }
 }
 
 // Fetch message logs
-function fetchMessageLogs(limit = 10, callback) {
-  fetch(`http://localhost:3001/twilio-message-logs`)
-    .then(res => res.json())
-    .then(data => {
-      if (callback) callback(data);
-    })
-    .catch(() => {
-      showNotificationMessage('Error fetching message logs.', '#f44336');
-    });
+async function fetchMessageLogs(limit = 10) {
+  try {
+    const response = await fetch(`http://localhost:3001/twilio-message-logs`);
+    const data = await response.json();
+    return data;
+  } catch {
+    showNotification('Error fetching message logs.', 'error');
+    return [];
+  }
 }
+
+// Callbacks for different message events
 function onSendSuccess(sid) {
   console.log(`Message sent successfully. SID: ${sid}`);
-  showNotificationMessage(`Message sent! SID: ${sid}`, '#4CAF50');
+  showNotification(`Message sent! SID: ${sid}`, 'success');
 }
+
 function onSendFailure(error) {
   console.error('Failed to send message:', error);
-  showNotificationMessage(`Failed to send message: ${error}`, '#f44336');
+  showNotification(`Failed to send message: ${error}`, 'error');
 }
+
 function onStatusUpdate(statusData) {
   console.log('Message status update:', statusData);
-  showNotificationMessage(`Status: ${statusData.status} for SID: ${statusData.sid}`, '#2196F3');
+  showNotification(`Status: ${statusData.status} for SID: ${statusData.sid}`, 'info');
 }
+
 function onError(errorMsg) {
   console.error('Error:', errorMsg);
-  showNotificationMessage(`Error: ${errorMsg}`, '#f44336');
+  showNotification(`Error: ${errorMsg}`, 'error');
 }
-function monitorMessageStatus(sid) {
-  const intervalId = setInterval(() => {
-    checkMessageStatus(sid, (statusData) => {
+
+// Monitor message status periodically
+function monitorMessageStatus(sid, intervalMs = 5000) {
+  const intervalId = setInterval(async () => {
+    const statusData = await checkMessageStatus(sid);
+    if (statusData) {
       onStatusUpdate(statusData);
       if (statusData.status === 'delivered' || statusData.status === 'failed') {
         clearInterval(intervalId);
       }
-    });
-  }, 5000); // check every 5 seconds
+    }
+  }, intervalMs);
 }
-
 
   const driverData = JSON.parse(localStorage.getItem('registeredUser')) || {};
   let driverApproved = false; // Set to true when admin approves
