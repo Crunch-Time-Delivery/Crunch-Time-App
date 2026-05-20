@@ -1,4 +1,4 @@
-// In Twilio serverless environment, Twilio is provided globally as 'Twilio'
+// In Twilio serverless environment, Twilio is provided as 'Twilio'
 // If outside, you'd instantiate with require('twilio')(accountSid, authToken)
 
 exports.handler = async (context, event, callback) => {
@@ -17,16 +17,18 @@ exports.handler = async (context, event, callback) => {
   }
 
   // Validate environment variable
-  if (!context.TWILIO_PHONE_NUMBER) {
+  const fromNumber = context.TWILIO_PHONE_NUMBER;
+  if (!fromNumber) {
     return callback(new Error('TWILIO_PHONE_NUMBER environment variable is not set.'));
   }
 
   try {
     const sentMessage = await client.messages.create({
       body: message,
-      from: context.TWILIO_PHONE_NUMBER,
+      from: fromNumber,
       to,
     });
+    // Return success with message SID
     callback(null, { success: true, sid: sentMessage.sid });
   } catch (err) {
     console.error('Error sending SMS:', err);
