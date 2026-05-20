@@ -4,7 +4,13 @@ import Pin from './Pin.js';
 
 const Markers = ({ messages }) => {
   const [popupInfo, setPopupInfo] = useState(null);
-  if (messages.length === 0) return null;
+
+  if (!messages || messages.length === 0) return null;
+
+  const handleMarkerClick = (e, markerData) => {
+    e.originalEvent.stopPropagation();
+    setPopupInfo(markerData);
+  };
 
   return (
     <>
@@ -19,13 +25,13 @@ const Markers = ({ messages }) => {
         >
           <div>
             <p>
-              <b>Time:</b> {popupInfo.sampleTime}
+              <strong>Time:</strong> {popupInfo.sampleTime}
             </p>
             <p>
-              <b>Lat:</b> {popupInfo.position[1]}
+              <strong>Lat:</strong> {popupInfo.position[1]}
             </p>
             <p>
-              <b>Lon:</b> {popupInfo.position[0]}
+              <strong>Lon:</strong> {popupInfo.position[0]}
             </p>
           </div>
         </Popup>
@@ -36,11 +42,7 @@ const Markers = ({ messages }) => {
           longitude={position[0]}
           latitude={position[1]}
           color="blue"
-          onClick={(e) => {
-            console.log('click', e);
-            e.originalEvent.stopPropagation();
-            setPopupInfo({ position, sampleTime });
-          }}
+          onClick={(e) => handleMarkerClick(e, { position, sampleTime })}
         >
           <Pin />
         </Marker>

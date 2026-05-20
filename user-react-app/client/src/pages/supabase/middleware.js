@@ -6,40 +6,39 @@ const supabaseKey = process.env.SUPABASE_KEY;
 
 // Create the Supabase client with cookie management
 export const createClient = (request) => {
-  let supabaseResponse = NextResponse.next({
+  // Initialize response object
+  let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
 
+  // Create Supabase client with custom cookie handlers
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
-        return request.cookies.getAll(); // Get all cookies
+        return request.cookies.getAll(); // Retrieve all cookies from request
       },
       setAll(cookiesToSet) {
-        // Set multiple cookies
+        // Set cookies in response
         cookiesToSet.forEach(({ name, value, options }) => {
-          request.cookies.set(name, value, options);
+          response.cookies.set(name, value, options);
         });
-        // Update response cookies
-        supabaseResponse = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => {
-          supabaseResponse.cookies.set(name, value, options);
-        });
+      },
+      delete(name) {
+        // Delete cookie in response
+        response.cookies.delete(name);
       },
     },
   });
 
-  return { supabase, supabaseResponse };
+  return { supabase, response };
 };
 
-// Utility function to get current session
+// Get current session
 export async function getSession(supabase) {
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     return session;
   } catch (error) {
     console.error('Error fetching session:', error);
@@ -47,17 +46,25 @@ export async function getSession(supabase) {
   }
 }
 
-// Utility function to refresh session cookies after login/logout
+// Refresh session cookies after login/logout
 export async function refreshSession(supabase, res) {
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
 
     if (session) {
       // Set session cookies
-      res.cookies.set('sb-access-token', session.access_token, { path: '/', httpOnly: true, sameSite: 'lax' });
-      res.cookies.set('sb-refresh-token', session.refresh_token, { path: '/', httpOnly: true, sameSite: 'lax' });
+      res.cookies.set('sb-access-token', session.access_token, {
+        path: '/',
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: true,
+      });
+      res.cookies.set('sb-refresh-token', session.refresh_token, {
+        path: '/',
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: true,
+      });
     } else {
       // Clear cookies if no session
       res.cookies.delete('sb-access-token');
@@ -70,20 +77,21 @@ export async function refreshSession(supabase, res) {
   }
 }
 
-// Utility to set multiple cookies
+// Utility: Set multiple cookies
 export function setCookies(res, cookies) {
   cookies.forEach(({ name, value, options }) => {
     res.cookies.set(name, value, options);
   });
 }
 
-// Example: Middleware to protect route
+// Middleware example: protect route
 export async function handleAuth(request) {
-  const { supabase, supabaseResponse } = createClient(request);
+  const { supabase, response } = createClient(request);
   const session = await getSession(supabase);
   if (!session) {
-    // Redirect or respond with unauthorized
+    // Redirect to login if not authenticated
     return NextResponse.redirect('/login');
   }
-  return { session, response: supabaseResponse };
+  // Proceed with authenticated response
+  return { session, response };
 }
