@@ -438,48 +438,35 @@ function showSection(sectionId) {
   document.querySelectorAll('.section').forEach(s => s.style.display='none');
   document.getElementById('section-' + sectionId).style.display='block';
 }
-
 // Upload Menu
 async function uploadMenu() {
   const restaurantName = document.getElementById('restaurantName').value.trim();
   const fileInput = document.getElementById('menuFile');
-  
+
   if (!restaurantName || !fileInput.files.length) {
     alert('Please enter restaurant name and select a PDF file.');
     return;
   }
-  
+
   const file = fileInput.files[0];
-  
-  // Ensure the file is a PDF
+
   if (file.type !== 'application/pdf') {
-    alert('Please select a PDF file.');
+    alert('Please select a valid PDF file.');
     return;
   }
 
   try {
-    // Create a unique file path
     const timestamp = Date.now();
-    const sanitizedRestaurantName = restaurantName.replace(/\s+/g, '_').toLowerCase();
-    const filePath = `menus/${sanitizedRestaurantName}_${timestamp}.pdf`;
+    const sanitizedName = restaurantName.replace(/\s+/g, '_').toLowerCase();
+    const filePath = `menus/${sanitizedName}_${timestamp}.pdf`;
 
-    // Upload the file to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('menus')
-      .upload(filePath, file);
-      
-    if (uploadError) {
-      throw uploadError;
-    }
-    
-    // Insert record into database
-    const { error: insertError } = await supabase
-      .from('restaurant_menus')
-      .insert({ restaurant_name: restaurantName, file_path: filePath });
-      
-    if (insertError) {
-      throw insertError;
-    }
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage.from('menus').upload(filePath, file);
+    if (uploadError) throw uploadError;
+
+    // Insert record into DB
+    const { error: insertError } = await supabase.from('restaurant_menus').insert({ restaurant_name: restaurantName, file_path: filePath });
+    if (insertError) throw insertError;
 
     alert('Menu uploaded successfully!');
   } catch (err) {
@@ -487,6 +474,7 @@ async function uploadMenu() {
     alert('Error uploading menu: ' + err.message);
   }
 }
+
 // Save Restaurant Info with validation
 async function saveRestaurantInfo() {
   const name = document.getElementById('restName').value.trim();
@@ -495,103 +483,48 @@ async function saveRestaurantInfo() {
   const address = document.getElementById('address').value.trim();
 
   // Basic validation
-  if (!name) {
-    alert('Please enter the restaurant name.');
-    return;
-  }
+  if (!name) return alert('Please enter the restaurant name.');
+  if (!contact) return alert('Please enter contact information.');
 
-  if (!contact) {
-    alert('Please enter the contact information.');
-    return;
-  }
+  const contactPattern = /^[\w\s@.-]+$/;
+  if (!contactPattern.test(contact)) return alert('Please enter a valid contact.');
 
-  // Optional: validate contact format (e.g., phone number or email)
-  const contactPattern = /^[\w\s@.-]+$/; // simple pattern, adjust as needed
-  if (!contactPattern.test(contact)) {
-    alert('Please enter a valid contact.');
-    return;
-  }
-
-  if (!website) {
-    alert('Please enter the website.');
-    return;
-  }
-
-  // Optional: validate website URL format
+  if (!website) return alert('Please enter the website.');
   const urlPattern = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-./?%&=]*)?$/;
-  if (!urlPattern.test(website)) {
-    alert('Please enter a valid website URL.');
-    return;
-  }
+  if (!urlPattern.test(website)) return alert('Please enter a valid website URL.');
 
-  if (!address) {
-    alert('Please enter the address.');
-    return;
-  }
+  if (!address) return alert('Please enter the address.');
 
   try {
-    const { data, error } = await supabase
-      .from('restaurants')
-      .insert({ name, contact, website, address });
-
-    if (error) {
-      throw error;
-    }
-
+    const { error } = await supabase.from('restaurants').insert({ name, contact, website, address });
+    if (error) throw error;
     alert('Restaurant details saved!');
   } catch (err) {
     console.error('Error saving info:', err);
     alert('Error saving details: ' + err.message);
   }
 }
+
 // Add Item with validation
 async function addItem() {
-  // Get input values and trim whitespace
   const vendor = document.getElementById('itemVendor').value.trim();
   const itemName = document.getElementById('itemName').value.trim();
-  const priceValue = document.getElementById('itemPrice').value.trim();
+  const priceStr = document.getElementById('itemPrice').value.trim();
   const stockStatus = document.getElementById('itemStock').value;
 
-  // Validation
-  if (!vendor) {
-    alert('Please enter the vendor.');
-    return;
-  }
+  if (!vendor) return alert('Please enter the vendor.');
+  if (!itemName) return alert('Please enter the item name.');
+  if (!priceStr || isNaN(priceStr)) return alert('Please enter a valid price.');
 
-  if (!itemName) {
-    alert('Please enter the item name.');
-    return;
-  }
-
-  if (!priceValue || isNaN(priceValue)) {
-    alert('Please enter a valid price.');
-    return;
-  }
-
-  const price = parseFloat(priceValue);
-
-  const validStockStatuses = ['In Stock', 'Out of Stock', 'Limited'];
-  if (!validStockStatuses.includes(stockStatus)) {
-    alert('Please select a valid stock status.');
-    return;
-  }
+  const price = parseFloat(priceStr);
+  const validStatuses = ['In Stock', 'Out of Stock', 'Limited'];
+  if (!validStatuses.includes(stockStatus)) return alert('Please select a valid stock status.');
 
   try {
-    const { data, error } = await supabase
-      .from('items')
-      .insert({
-        vendor,
-        item_name: itemName,
-        price,
-        stock_status: stockStatus,
-      });
-
-    if (error) {
-      throw error;
-    }
-
+    const { error } = await supabase.from('items').insert({ vendor, item_name: itemName, price, stock_status: stockStatus });
+    if (error) throw error;
     alert('Item added successfully!');
-    renderItems(); // Refresh the item list
+    renderItems();
   } catch (err) {
     console.error('Error adding item:', err);
     alert('Error adding item: ' + (err.message || err));
@@ -603,65 +536,44 @@ async function saveOrder() {
   const orderId = document.getElementById('orderId').value.trim();
   const userName = document.getElementById('orderUserName').value.trim();
   const userEmail = document.getElementById('orderUserEmail').value.trim();
-  const amountValue = document.getElementById('orderAmount').value.trim();
+  const amountStr = document.getElementById('orderAmount').value.trim();
   const vendorName = document.getElementById('vendorName').value.trim();
   const vendorContact = document.getElementById('vendorContact').value.trim();
   const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
 
-  // Basic validation
-  if (!orderId) {
-    alert('Please enter the order ID.');
-    return;
-  }
-  if (!userName) {
-    alert('Please enter the user name.');
-    return;
-  }
-  if (!userEmail || !validateEmail(userEmail)) {
-    alert('Please enter a valid email address.');
-    return;
-  }
-  if (!amountValue || isNaN(amountValue)) {
-    alert('Please enter a valid amount.');
-    return;
-  }
+  if (!orderId) return alert('Please enter the order ID.');
+  if (!userName) return alert('Please enter the user name.');
+  if (!userEmail || !validateEmail(userEmail)) return alert('Please enter a valid email.');
+  if (!amountStr || isNaN(amountStr)) return alert('Please enter a valid amount.');
 
-  const amount = parseFloat(amountValue);
+  const amount = parseFloat(amountStr);
 
   try {
-    const { data, error } = await supabase
-      .from('orders')
-      .insert({
-        order_id: orderId,
-        user_name: userName,
-        user_email: userEmail,
-        vendor_name: vendorName,
-        vendor_contact: vendorContact,
-        delivery_address: deliveryAddress,
-        amount
-      });
-
-    if (error) {
-      throw error;
-    }
-
+    const { error } = await supabase.from('orders').insert({
+      order_id: orderId,
+      user_name: userName,
+      user_email: userEmail,
+      vendor_name: vendorName,
+      vendor_contact: vendorContact,
+      delivery_address: deliveryAddress,
+      amount
+    });
+    if (error) throw error;
     alert('Order added!');
-    renderOrders(); // Refresh the order list
+    renderOrders();
   } catch (err) {
     console.error('Add order error:', err);
     alert('Error adding order: ' + err.message);
   }
 }
 
-// Add User
+// Add User with validation
 async function addUser() {
   const email = document.getElementById('userEmail').value.trim();
   const name = document.getElementById('userName').value.trim();
 
-  if (!email || !name) {
-    alert('Please fill all fields.');
-    return;
-  }
+  if (!email || !name) return alert('Please fill all fields.');
+
   try {
     await supabase.from('users').insert({ email, name });
     alert('User added!');
@@ -679,7 +591,7 @@ async function renderItems() {
     document.getElementById('itemsTable').innerHTML = '<p>Error loading items.</p>';
     return;
   }
-  if (data.length === 0) {
+  if (!data.length) {
     document.getElementById('itemsTable').innerHTML = '<p>No items available.</p>';
     return;
   }
@@ -702,7 +614,7 @@ async function renderOrders() {
     document.getElementById('ordersTable').innerHTML = '<p>Error loading orders.</p>';
     return;
   }
-  if (data.length === 0) {
+  if (!data.length) {
     document.getElementById('ordersTable').innerHTML = '<p>No orders available.</p>';
     return;
   }
@@ -726,7 +638,7 @@ async function renderUsers() {
     document.getElementById('usersTable').innerHTML = '<p>Error loading users.</p>';
     return;
   }
-  if (data.length === 0) {
+  if (!data.length) {
     document.getElementById('usersTable').innerHTML = '<p>No users available.</p>';
     return;
   }
@@ -740,11 +652,18 @@ async function renderUsers() {
   html += '</tbody></table>';
   document.getElementById('usersTable').innerHTML = html;
 }
-const pageSize = 10; // Records per page
-let currentPage = 1; // Track current page
-let currentFilters = {}; // Store filters
 
-// Fetch payments with filters and pagination
+// Helper: validate email format
+function validateEmail(email) {
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return pattern.test(email);
+}
+
+// Pagination for payments
+let currentPage = 1;
+const pageSize = 10;
+let currentFilters = {};
+
 async function fetchPayments({ page = 1, filters = {} } = {}) {
   currentPage = page;
   currentFilters = filters;
@@ -756,20 +675,20 @@ async function fetchPayments({ page = 1, filters = {} } = {}) {
 
   try {
     let query = supabase.from('payment_history').select('*', { count: 'exact' });
-
-    // Apply filters
     if (filters.payment_method) query = query.eq('payment_method', filters.payment_method);
     if (filters.status) query = query.eq('status', filters.status);
     if (filters.startDate && filters.endDate) {
       query = query.gte('payment_date', filters.startDate).lte('payment_date', filters.endDate);
     }
 
-    // Get total count for pagination
+    // Get total count
     const { count, error: countError } = await query.order('payment_date', { ascending: false }).range(0, 0);
     if (countError) throw countError;
 
-    // Fetch current page data
-    const { data, error } = await query.order('payment_date', { ascending: false }).range((page - 1) * pageSize, (page * pageSize) - 1);
+    // Get current page data
+    const { data, error } = await query
+      .order('payment_date', { ascending: false })
+      .range((page - 1) * pageSize, (page * pageSize) - 1);
     hideLoadingSpinner();
 
     if (error) throw error;
@@ -777,14 +696,12 @@ async function fetchPayments({ page = 1, filters = {} } = {}) {
   } catch (err) {
     hideLoadingSpinner();
     console.error('Error loading payment history:', err);
-    container.innerHTML = `<p style="color:red;">❌ Error loading payment history: ${err.message}</p>`;
+    container.innerHTML = `<p style="color:red;">❌ Error: ${err.message}</p>`;
   }
 }
 
-// Render payments with pagination controls
 function renderPayments(data, totalCount, page) {
   const container = document.getElementById('paymentHistoryContainer');
-
   if (!data || data.length === 0) {
     container.innerHTML = '<p>No payment records found.</p>';
     return;
@@ -807,15 +724,13 @@ function renderPayments(data, totalCount, page) {
         <tbody>
   `;
   data.forEach(p => {
-    const statusClass = p.status?.toLowerCase() === 'completed' || p.status?.toLowerCase() === 'success'
-      ? 'status-success' : 'status-pending';
-
+    const statusClass = ['completed', 'success'].includes(p.status?.toLowerCase()) ? 'status-success' : 'status-pending';
     html += `
       <tr>
-        <td style="font-family: monospace; font-size: 12px;">#${p.payment_id.slice(0, 8)}...</td>
+        <td style="font-family: monospace; font-size: 12px;">#${p.payment_id.slice(0,8)}...</td>
         <td>
             <strong>Order:</strong> #${p.order_id}<br>
-            <small style="color: #666;">Ref: ${p.payment_reference || 'N/A'}</small>
+            <small style="color:#666;">Ref: ${p.payment_reference || 'N/A'}</small>
         </td>
         <td>
             <strong>${p.user_name || 'Guest'}</strong><br>
@@ -829,41 +744,27 @@ function renderPayments(data, totalCount, page) {
     `;
   });
   html += `</tbody></table></div>`;
-
   const totalPages = Math.ceil(totalCount / pageSize);
   html += `
     <div class="pagination-controls" style="margin-top:10px; text-align:center;">
-      <button ${page === 1 ? 'disabled' : ''} onclick="changePage(${page - 1})">Previous</button>
+      <button ${page === 1 ? 'disabled' : ''} onclick="fetchPayments({ page: ${page - 1}, filters: currentFilters })">Previous</button>
       <span>Page ${page} of ${totalPages}</span>
-      <button ${page === totalPages ? 'disabled' : ''} onclick="changePage(${page + 1})">Next</button>
+      <button ${page === totalPages ? 'disabled' : ''} onclick="fetchPayments({ page: ${page + 1}, filters: currentFilters })">Next</button>
     </div>
   `;
-
   container.innerHTML = html;
 }
 
-// Change page handler
-function changePage(page) {
-  fetchPayments({ page, filters: currentFilters });
-}
+// Show/hide spinner functions (implement as needed)
+function showLoadingSpinner() { /* ... */ }
+function hideLoadingSpinner() { /* ... */ }
 
-// Placeholder for showing spinner
-function showLoadingSpinner() {
-  // Implement spinner show logic
-}
-
-// Placeholder for hiding spinner
-function hideLoadingSpinner() {
-  // Implement spinner hide logic
-}
-
-// Apply filters based on UI inputs
-async function applyFilters() {
+// Filter application
+function applyFilters() {
   const method = document.getElementById('filterMethod').value;
   const status = document.getElementById('filterStatus').value;
   const startDate = document.getElementById('filterStartDate').value;
   const endDate = document.getElementById('filterEndDate').value;
-
   currentFilters = {};
   if (method !== 'All') currentFilters.payment_method = method;
   if (status !== 'All') currentFilters.status = status;
@@ -871,11 +772,9 @@ async function applyFilters() {
     currentFilters.startDate = startDate;
     currentFilters.endDate = endDate;
   }
-
   fetchPayments({ page: 1, filters: currentFilters });
 }
 
-// Clear filters
 function clearFilters() {
   document.getElementById('filterMethod').value = 'All';
   document.getElementById('filterStatus').value = 'All';
@@ -885,20 +784,16 @@ function clearFilters() {
   fetchPayments({ page: 1, filters: {} });
 }
 
-// Export table to CSV
+// Export to CSV
 function exportPaymentsToCSV() {
   const table = document.querySelector('.payment-table');
-  if (!table) {
-    alert('No data to export.');
-    return;
-  }
-  const filename = prompt('Enter filename for CSV:', 'payment_history');
-  if (!filename) return;
+  if (!table) return alert('No data to export.');
+  const filename = prompt('Enter filename:', 'payment_history') || 'payment_history';
 
   const rows = Array.from(table.querySelectorAll('tr'));
   const csvContent = rows.map(row => {
     const cells = Array.from(row.querySelectorAll('th, td'));
-    return cells.map(cell => `"${cell.innerText.replace(/"/g, '""')}"`).join(',');
+    return cells.map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(',');
   }).join('\n');
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -910,79 +805,46 @@ function exportPaymentsToCSV() {
   URL.revokeObjectURL(url);
 }
 
-// Initial fetch
-fetchPayments();
-
-// Attach filter and export event listeners
+// Attach event listeners for filters/buttons
 document.getElementById('filterBtn').addEventListener('click', () => fetchPayments({ page: 1, filters: currentFilters }));
 document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
 document.getElementById('exportBtn').addEventListener('click', exportPaymentsToCSV);
+
+// Initialize
+fetchPayments();
+
 async function trackRestaurantStock(restaurantId) {
   const response = await fetch(`https://your-api-gateway-url?restaurantId=${restaurantId}`);
   const data = await response.json();
   if (response.ok) {
     console.log('Stock data:', data);
-    // Update your UI accordingly
   } else {
     console.error('Error:', data.message);
   }
-}// Initialize an empty array to store menu items
+}
+
+// --- Menu management (simplified example) ---
 const menuItems = [];
 
-/**
- * Add a new item to the menu
- * @param {Object} item - The item details
- */
 function addItem(item) {
   menuItems.push(item);
   console.log('Item added:', item);
 }
-
-/**
- * Get the list of all menu items
- * @returns {Array}
- */
 function getMenuItems() {
   return menuItems;
 }
-
-/**
- * Find an item by a specific property (e.g., itemName or vendor)
- * @param {String} key - Property name to search by
- * @param {String} value - Value to match
- * @returns {Object|null}
- */
 function findItem(key, value) {
   return menuItems.find(item => item[key] === value) || null;
 }
-
-/**
- * Update an existing item
- * @param {String} itemName - Name of the item to update
- * @param {Object} updates - Object containing properties to update
- */
 function updateItem(itemName, updates) {
   const item = findItem('itemName', itemName);
-  if (item) {
-    Object.assign(item, updates);
-    console.log('Item updated:', item);
-  } else {
-    console.log('Item not found:', itemName);
-  }
+  if (item) Object.assign(item, updates);
+  else console.log('Item not found:', itemName);
 }
-
-/**
- * Remove an item from the menu
- * @param {String} itemName - Name of the item to remove
- */
 function removeItem(itemName) {
-  const index = menuItems.findIndex(item => item.itemName === itemName);
-  if (index !== -1) {
-    menuItems.splice(index, 1);
-    console.log('Item removed:', itemName);
-  } else {
-    console.log('Item not found:', itemName);
-  }
+  const index = menuItems.findIndex(i => i.itemName === itemName);
+  if (index !== -1) menuItems.splice(index, 1);
+  else console.log('Item not found:', itemName);
 }
 
 // Initialize default view

@@ -1,5 +1,3 @@
-// payfastTracking.js
-
 // Replace these with your actual PayFast credentials and URLs
 const PAYFAST_MERCHANT_ID = '10004002';
 const PAYFAST_MERCHANT_KEY = 'q1cd2rdny4a53';
@@ -32,7 +30,7 @@ async function initiatePayFastPayment(amount, itemName, customerEmail) {
     const signature = await generateSignature(paymentData, PAYFAST_MERCHANT_KEY);
     paymentData['signature'] = signature;
 
-    // Create form and submit
+    // Create and submit form to PayFast
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = 'https://www.payfast.co.za/eng/process';
@@ -48,7 +46,7 @@ async function initiatePayFastPayment(amount, itemName, customerEmail) {
     document.body.appendChild(form);
     form.submit();
 
-    // Save transaction ID for tracking
+    // Save transaction ID locally for tracking
     localStorage.setItem('currentTransactionId', transactionId);
     console.log('Redirecting to PayFast for payment...');
   } catch (err) {
@@ -74,7 +72,7 @@ async function generateSignature(data, merchantKey) {
 }
 
 /**
- * Checks transaction status via your backend
+ * Checks transaction status via your backend API
  * @param {string} transactionId
  * @returns {Promise<Object>} Transaction status info
  */
@@ -91,11 +89,11 @@ async function checkTransactionStatus(transactionId) {
 
 /**
  * Handles IPN notifications received from your server
- * Call this function with the IPN data received
+ * Call this function with the IPN data received from your backend
  */
 function handleIPNNotification(ipnData) {
   console.log('Received IPN:', ipnData);
-  // For example, update order status in your database
+  // Example: update order status in your database
   fetch('/api/update-order-status', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -104,29 +102,26 @@ function handleIPNNotification(ipnData) {
   .then(res => res.json())
   .then(data => {
     console.log('Order status updated:', data);
-    // Optional: Notify user or update UI
+    // Optional: update UI or notify user
   })
   .catch(err => {
     console.error('Error updating order status:', err);
   });
 }
-// IPN handler route
+
+// Example Express route to handle IPN (server-side, Node.js)
 app.post('/payfast/ipn', (req, res) => {
   const ipnData = req.body;
 
-  // Validate the IPN data using payfast-lib or custom validation
-  // Example: validate checksum, transaction status, etc.
-  // For example:
+  // Validate the IPN data (implement your validation logic)
   const isValid = validatePayFastIPN(ipnData);
 
   if (isValid) {
-    // Handle the transaction status
     if (ipnData.payment_status === 'COMPLETE') {
-      // Payment successful
-      // Update order status, notify user, etc.
+      // Payment successful: update order, notify user, etc.
       console.log('Payment completed for transaction:', ipnData.merchant_id);
     } else {
-      // Handle other statuses: PENDING, FAILED, etc.
+      // Handle other statuses like PENDING, FAILED
       console.log('Payment status:', ipnData.payment_status);
     }
     res.status(200).send('OK'); // Respond to PayFast
@@ -136,12 +131,17 @@ app.post('/payfast/ipn', (req, res) => {
   }
 });
 
-// Function to validate IPN data (implement according to payfast-lib)
+/**
+ * Validate PayFast IPN data
+ * Implement actual validation logic here, e.g., verify checksum, transaction details
+ * @param {Object} ipnData
+ * @returns {boolean}
+ */
 function validatePayFastIPN(ipnData) {
-  // Use payfast-lib's validation or custom logic
-  // Example: verify checksum, transaction details, etc.
-  // Placeholder:
-  return true; // Replace with actual validation logic
+  // Placeholder: replace with actual validation logic
+  // For example, verify checksum, compare transaction details, etc.
+  return true;
 }
-// Usage example (call when user confirms payment):
+
+// Usage example (call this function when user confirms payment)
 // initiatePayFastPayment(100.00, 'Order #1234', 'customer@example.com');

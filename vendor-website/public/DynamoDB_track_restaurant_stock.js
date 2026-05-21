@@ -4,37 +4,40 @@ const AWS = require('aws-sdk');
 // Initialize DynamoDB Document Client
 const dynamo = new AWS.DynamoDB.DocumentClient();
 
-// Table name where stock data is stored
-const TABLE_NAME = 'RestaurantStock';
+// Table name from environment variables for flexibility
+const TABLE_NAME = process.env.TABLE_NAME || 'RestaurantStock';
 
 exports.handler = async (event) => {
-  // Extract restaurantId from query parameters
-  const restaurantId = event.queryStringParameters?.restaurantId;
-
-  // Validate input
-  if (!restaurantId) {
-    return {
-      statusCode: 400,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: 'Missing required query parameter: restaurantId' }),
-    };
-  }
-
-  const params = {
-    TableName: TABLE_NAME,
-    Key: {
-      restaurant_id: restaurantId,
-    },
-  };
-
   try {
+    // Extract restaurantId from query parameters
+    const restaurantId = event.queryStringParameters?.restaurantId;
+
+    // Validate the presence of restaurantId
+    if (!restaurantId || typeof restaurantId !== 'string' || restaurantId.trim() === '') {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Missing or invalid restaurantId parameter' }),
+      };
+    }
+
+    // Set DynamoDB get parameters
+    const params = {
+      TableName: TABLE_NAME,
+      Key: {
+        restaurant_id: restaurantId,
+      },
+    };
+
+    // Fetch data from DynamoDB
     const data = await dynamo.get(params).promise();
 
     if (!data.Item) {
+      // Restaurant not found
       return {
         statusCode: 404,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'Restaurant not found' }),
+        body: JSON.stringify({ message: `Restaurant with ID ${restaurantId} not found` }),
       };
     }
 
@@ -44,7 +47,7 @@ exports.handler = async (event) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         restaurantId: restaurantId,
-        stock: data.Item.stock, // assuming stock is stored as an attribute
+        stock: data.Item.stock, // assuming 'stock' attribute exists
       }),
     };
   } catch (error) {
