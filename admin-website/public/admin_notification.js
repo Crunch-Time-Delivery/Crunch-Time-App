@@ -6,12 +6,22 @@ require('dotenv').config(); // Load environment variables from .env file
 const accountSid = process.env.TWILIO_ACCOUNT_SID || 'AC031642049dd74fcc581b0fd106936a4f';
 const authToken = process.env.TWILIO_AUTH_TOKEN || '1447e415a2fc483bd2bfbea57451d55d';
 const adminPhoneNumber = process.env.ADMIN_PHONE_NUMBER || '+27795349327'; // Admin phone number
+
+// Import Twilio SDK
 const twilio = require('twilio');
 
+// Load environment variables
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
+const adminPhoneNumber = process.env.ADMIN_PHONE_NUMBER;
 const fromNumber = process.env.TWILIO_PHONE_NUMBER || '+27795349327';
 
+// Validate essential environment variables
+if (!accountSid || !authToken || !adminPhoneNumber) {
+  throw new Error('Missing essential environment variables: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, or ADMIN_PHONE_NUMBER.');
+}
+
+// Initialize Twilio client
 const client = twilio(accountSid, authToken);
 
 /**
@@ -19,9 +29,13 @@ const client = twilio(accountSid, authToken);
  * @param {string} newUserName - The username of the new user.
  */
 async function sendAdminNotification(newUserName) {
+  if (!newUserName) {
+    console.warn('sendAdminNotification called with empty username.');
+    return;
+  }
   try {
     const message = await client.messages.create({
-      to: process.env.ADMIN_PHONE_NUMBER,
+      to: adminPhoneNumber,
       from: fromNumber,
       body: `New user logged in: ${newUserName}`,
     });
@@ -36,6 +50,10 @@ async function sendAdminNotification(newUserName) {
  * @param {Object} user - User object with username and isNewUser flag.
  */
 function handleUserLogin(user) {
+  if (!user || !user.username) {
+    console.warn('handleUserLogin called with invalid user object.');
+    return;
+  }
   console.log(`User logged in: ${user.username}`);
   if (user.isNewUser) {
     sendAdminNotification(user.username);
@@ -49,6 +67,10 @@ function handleUserLogin(user) {
  * @param {string} messageBody - The message content.
  */
 async function sendUserNotification(userPhoneNumber, messageBody) {
+  if (!userPhoneNumber || !messageBody) {
+    console.warn('sendUserNotification called with missing parameters.');
+    return;
+  }
   try {
     const message = await client.messages.create({
       to: userPhoneNumber,
