@@ -1,14 +1,34 @@
-
 import { GetDevicePositionCommand } from "@aws-sdk/client-location";
 
-// Assuming you have initialized AWS SDK client and marker elsewhere
-// For better modularity, consider passing them as parameters to the function
+/**
+ * Fetches live device location and updates the marker on the map.
+ * @param {Object} client - AWS Location client instance.
+ * @param {Object} marker - MapLibre marker instance.
+ * @param {Object} options - Optional configuration.
+ * @param {string} options.trackerName - Name of the AWS Location tracker.
+ * @param {string} options.deviceId - Device ID to fetch position for.
+ * @param {number} options.pollInterval - Polling interval in milliseconds.
+ */
+async function getLiveLocation(client, marker, options = {}) {
+  const {
+    trackerName = "MyDeviceTracker",
+    deviceId = "device-001",
+    pollInterval = 5000,
+  } = options;
 
-async function getLiveLocation(client, marker) {
+  if (!client || typeof client.send !== 'function') {
+    console.error('Invalid AWS Location client.');
+    return;
+  }
+  if (!marker || typeof marker.setLngLat !== 'function') {
+    console.error('Invalid MapLibre marker.');
+    return;
+  }
+
   try {
     const command = new GetDevicePositionCommand({
-      TrackerName: "MyDeviceTracker",
-      DeviceId: "device-001",
+      TrackerName: trackerName,
+      DeviceId: deviceId,
     });
 
     const response = await client.send(command);
@@ -23,12 +43,19 @@ async function getLiveLocation(client, marker) {
     }
   } catch (error) {
     console.error("Error fetching device position:", error);
+  } finally {
+    // Schedule next update
+    setTimeout(() => getLiveLocation(client, marker, options), pollInterval);
   }
 }
 
 // Usage example (replace with your actual client and marker instances)
-const client = /* initialize your AWS Location client */;
-const marker = /* your MapLibre marker instance */;
+const awsLocationClient = /* initialize your AWS Location client */;
+const mapLibreMarker = /* your MapLibre marker instance */;
 
-// Poll for updates every 5 seconds (5000 ms)
-setInterval(() => getLiveLocation(client, marker), 5000);
+// Start polling
+getLiveLocation(awsLocationClient, mapLibreMarker, {
+  trackerName: "YourTrackerName",
+  deviceId: "your-device-id",
+  pollInterval: 5000,
+});

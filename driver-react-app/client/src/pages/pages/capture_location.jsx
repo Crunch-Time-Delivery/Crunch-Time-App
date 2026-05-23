@@ -20,7 +20,7 @@ class CaptureLocation extends React.Component {
   }
 
   componentDidMount() {
-    // Expose reference for callback
+    // Expose reference for external callback
     if (window.CaptureLocationRef !== this) {
       window.CaptureLocationRef = this;
     }
@@ -29,6 +29,12 @@ class CaptureLocation extends React.Component {
   initMap() {
     const defaultPos = { lat: 0, lng: 0 };
     const mapDiv = document.getElementById('map');
+
+    if (!mapDiv) {
+      console.error('Map container not found');
+      this.setState({ message: 'Map container not found', loading: false });
+      return;
+    }
 
     const map = new google.maps.Map(mapDiv, {
       center: defaultPos,
@@ -67,7 +73,7 @@ class CaptureLocation extends React.Component {
   placeMarker(position) {
     if (this.state.marker) {
       this.state.marker.setPosition(position);
-    } else {
+    } else if (this.state.map) {
       const marker = new google.maps.Marker({
         position: position,
         map: this.state.map,
@@ -83,23 +89,39 @@ class CaptureLocation extends React.Component {
       return;
     }
 
-    const { data, error } = await supabase
-      .from('locations') // Ensure your table exists
-      .insert([
-        {
-          latitude: currentPosition.lat,
-          longitude: currentPosition.lng,
-          created_at: new Date().toISOString(),
-        },
-      ]);
+    try {
+      const { data, error } = await supabase
+        .from('locations') // Ensure your table exists
+        .insert([
+          {
+            latitude: currentPosition.lat,
+            longitude: currentPosition.lng,
+            created_at: new Date().toISOString(),
+          },
+        ]);
 
-    if (error) {
-      alert('Error saving location: ' + error.message);
-    } else {
-      alert('Location saved successfully!');
+      if (error) {
+        alert('Error saving location: ' + error.message);
+      } else {
+        alert('Location saved successfully!');
+      }
+    } catch (err) {
+      alert('Unexpected error: ' + err.message);
     }
   }
 
+  render() {
+    const { loading, message } = this.state;
+    return (
+      <div>
+        <div id="map" style={{ width: '100%', height: '400px' }}></div>
+        {loading && <p>Loading map...</p>}
+        {message && <p>{message}</p>}
+        <button onClick={this.handleSaveLocation}>Save Location</button>
+      </div>
+    );
+  }
+}
   render() {
     return React.createElement(
       'div',

@@ -23,30 +23,40 @@
 <!-- Load Google Maps with callback -->
 <script type="text/babel">
   // Initialize Google Maps after it loads
-  function initMap() {
-    // Trigger React component to initialize map
-    if (window.CaptureLocationRef) {
-      window.CaptureLocationRef.initMap();
-    }
+function initMap() {
+  if (window.CaptureLocationRef && typeof window.CaptureLocationRef.initMap === 'function') {
+    window.CaptureLocationRef.initMap();
+  } else {
+    console.warn('CaptureLocationRef or initMap method not available.');
+  }
+}
+
+// Load Google Maps script dynamically
+(function loadGoogleMaps() {
+  if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+    // Already loaded
+    initMap();
+    return;
   }
 
-  // Load Google Maps script dynamically
-  (function loadGoogleMaps() {
-    if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
-      // Already loaded
-      initMap();
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBdT7PxOkbqfIt0ejcbRPlm-17YSXzT4LY&callback=initMap`;
-    script.async = true;
-    script.defer = true;
-    script.onerror = () => alert('Failed to load Google Maps. Check API key.');
-    document.head.appendChild(script);
-  })();
+  // Assign initMap globally for callback
+  window.initMap = initMap;
 
-  // Render React component
-  ReactDOM.render(<CaptureLocation ref={(ref) => { window.CaptureLocationRef = ref; }} />, document.getElementById('root'));
+  const script = document.createElement('script');
+  script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap`;
+  script.async = true;
+  script.defer = true;
+
+  script.onerror = () => alert('Failed to load Google Maps. Please check your API key and network connection.');
+
+  document.head.appendChild(script);
+})();
+
+// Render React component and assign ref globally
+ReactDOM.render(
+  <CaptureLocation ref={(ref) => { window.CaptureLocationRef = ref; }} />,
+  document.getElementById('root')
+);
 </script>
 
 <!-- Navigation link -->
