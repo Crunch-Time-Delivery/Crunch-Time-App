@@ -5,19 +5,23 @@ function showNotificationMessage(text, color = '#333') {
   if (!box) {
     box = document.createElement('div');
     box.id = 'notificationMessage';
-    box.style.position = 'fixed';
-    box.style.bottom = '20px';
-    box.style.left = '50%';
-    box.style.transform = 'translateX(-50%)';
-    box.style.padding = '12px 20px';
-    box.style.borderRadius = '8px';
-    box.style.color = '#fff';
-    box.style.fontSize = '14px';
-    box.style.zIndex = '9999';
-    box.style.transition = 'opacity 0.3s ease';
+    Object.assign(box.style, {
+      position: 'fixed',
+      bottom: '20px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      padding: '12px 20px',
+      borderRadius: '8px',
+      color: '#fff',
+      fontSize: '14px',
+      zIndex: '9999',
+      transition: 'opacity 0.3s ease',
+      opacity: '0', // start hidden
+    });
     document.body.appendChild(box);
   }
 
+  // Update styles
   box.style.backgroundColor = color;
   box.innerText = text;
   box.style.opacity = '1';
@@ -30,6 +34,7 @@ function showNotificationMessage(text, color = '#333') {
   // Fade out after 4 seconds
   showNotificationMessage.timeoutId = setTimeout(() => {
     box.style.opacity = '0';
+    // Remove after fade out
     setTimeout(() => {
       if (box) box.remove();
     }, 300);
@@ -54,12 +59,7 @@ function isValidPhoneNumber(phoneNumber) {
   return pattern.test(phoneNumber);
 }
 
-// Function to display notification messages (assuming you have this implemented)
-function showNotificationMessage(message, color) {
-  // Your implementation here
-}
-
-// Function to send Twilio notification with async/await
+// Function to send SMS via backend API endpoint
 async function sendTwilioNotification(to, message) {
   if (!to || !message) {
     showNotificationMessage('Recipient and message are required.', '#f44336');
@@ -81,7 +81,7 @@ async function sendTwilioNotification(to, message) {
 
     const data = await response.json();
 
-    if (data.success === true) {
+    if (data.success) {
       showNotificationMessage('Notification sent successfully!', '#4CAF50');
       console.log('SMS sent:', data);
       return { success: true, data };
@@ -112,6 +112,7 @@ async function sendNotificationWithRetries(to, message, retries = 3) {
   showNotificationMessage('Failed after retries.', '#f44336');
   return { success: false };
 }
+
 // Function to send bulk notifications
 function sendBulkNotifications(notificationsArray) {
   notificationsArray.forEach(({ to, message }) => {
@@ -129,19 +130,28 @@ function showLoadingIndicator() {
   if (!loader) {
     loader = document.createElement('div');
     loader.id = 'loadingIndicator';
-    loader.innerHTML = 'Loading...'; // Can be styled further
-    loader.style.position = 'fixed';
-    loader.style.top = '50%';
-    loader.style.left = '50%';
-    loader.style.transform = 'translate(-50%, -50%)';
-    loader.style.padding = '20px';
-    loader.style.backgroundColor = '#fff';
-    loader.style.border = '1px solid #ccc';
-    loader.style.borderRadius = '8px';
-    loader.style.zIndex = '99999';
+    loader.innerHTML = 'Loading...'; // Style as needed
+    Object.assign(loader.style, {
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      padding: '20px',
+      backgroundColor: '#fff',
+      border: '1px solid #ccc',
+      borderRadius: '8px',
+      zIndex: '99999',
+    });
     document.body.appendChild(loader);
   }
   loader.style.display = 'block';
+}
+
+function hideLoadingIndicator() {
+  const loader = document.getElementById('loadingIndicator');
+  if (loader) {
+    loader.style.display = 'none';
+  }
 }
 
 const supabaseUrl = 'https://wbpgmgtoyzlnawvsfeiu.supabase.co'
