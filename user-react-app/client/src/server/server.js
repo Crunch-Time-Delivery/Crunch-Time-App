@@ -157,6 +157,76 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const connectDB = require('./config/db');
+const cors = require('cors');
+require('dotenv').config();
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
+
+connectDB();
+
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/restaurants', require('./routes/restaurantRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
+app.use('/api/delivery', require('./routes/deliveryRoutes'));
+
+// Real-time tracking
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+
+  socket.on('joinOrder', (orderId) => {
+    socket.join(orderId);
+  });
+
+  socket.on('updateLocation', ({ orderId, location }) => {
+    io.to(orderId).emit('locationUpdated', location);
+  });
+});
+
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => console.log(`🚀 Crunch Time Backend running on port ${PORT}`));
+
+
+This is Data base connection Jesse
+
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('MongoDB Connected');
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
+};
+
+module.exports = connectDB;
+
+
+
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true },
+  password: String,
+  role: { type: String, enum: ['customer', 'restaurant', 'driver', 'admin'], default: 'customer' },
+  address: String,
+  phone: String,
+  profilePic: String
+}, { timestamps: true });
+
+module.exports = mongoose.model('User', userSchema);
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
