@@ -1174,64 +1174,45 @@ const categoriesData = {
   'Asian': 'asianList',
   'Pizza': 'pizzaList'
 };
+
 // Function to filter items based on search input
-  document.getElementById('searchInput').addEventListener('input', function() {
-    const query = this.value.toLowerCase();
-    const items = document.querySelectorAll('#items-container .item');
+document.getElementById('searchInput').addEventListener('input', function() {
+  const query = this.value.toLowerCase();
+  const items = document.querySelectorAll('#items-container .item');
 
-    items.forEach(item => {
-      const text = item.textContent.toLowerCase();
-      if (text.includes(query)) {
-        item.style.display = '';
-      } else {
-        item.style.display = 'none';
-      }
-    });
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    if (text.includes(query)) {
+      item.style.display = '';
+    } else {
+      item.style.display = 'none';
+    }
   });
-// Example placeholders for your functions
-  function showToast(msg) {
-    alert(msg);
-  }
-  function navigateTo(page) {
-    alert('Navigate to ' + page);
-  }
-  function showMenu(name) {
-    alert('Show menu for ' + name);
-  }
-  function toggleFavorite(elem) {
-    alert('Toggle favorite');
-  }
-  function openProfile() {
-    alert('Open profile modal');
-  }
-  function closeProfile() {
-    alert('Close profile modal');
-  }
-  function updatePassword() {
-    alert('Update password');
-  }
-  function saveCardDetails() {
-    alert('Save card details');
-  }
-  function deleteUser() {
-    alert('Delete user');
-  }
-  function selectCategory(name) {
-    alert('Selected category: ' + name);
-  }
-  // Function to filter by category
-  function selectCategory(category) {
-    const items = document.querySelectorAll('#items-container .item');
+});
 
-    items.forEach(item => {
-      const itemCategory = item.getAttribute('data-category');
-      if (category === 'All' || itemCategory === category) {
-        item.style.display = '';
-      } else {
-        item.style.display = 'none';
-      }
-    });
-  }
+// Example placeholders for your functions
+function showToast(msg) {
+  alert(msg);
+}
+function navigateTo(page) {
+  alert('Navigate to ' + page);
+}
+function openProfile() {
+  alert('Open profile modal');
+}
+function closeProfile() {
+  alert('Close profile modal');
+}
+function updatePassword() {
+  alert('Update password');
+}
+function saveCardDetails() {
+  alert('Save card details');
+}
+function deleteUser() {
+  alert('Delete user');
+}
+
 // Function to initialize category buttons with live connection
 function setupCategoryFilters() {
   Object.keys(categoriesData).forEach(category => {
